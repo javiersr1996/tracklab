@@ -1,0 +1,274 @@
+{
+  "table": "aggregates_physical",
+  "sport": "football",
+  "source_id": "opendata-football",
+  "commit": "4340d274572876239c154c90bc507a9b3250a656",
+  "n_columns": 65,
+  "header_sha256": "124e4404c4f6fdedd2a6a3252e85b2f132ec2ae1edabe5225198e8db0d3a3cdf",
+  "columns": [
+    {
+      "name": "player_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_short_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "player_birthdate",
+      "type": "DATE"
+    },
+    {
+      "name": "team_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "team_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "competition_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "competition_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "season_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "season_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "position_group",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "minutes_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "minutes_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "minutes_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "count_match",
+      "type": "BIGINT"
+    },
+    {
+      "name": "count_match_failed",
+      "type": "BIGINT"
+    },
+    {
+      "name": "total_distance_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "total_metersperminute_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "running_distance_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hsr_distance_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hsr_count_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "sprint_distance_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "sprint_count_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hi_distance_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hi_count_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "medaccel_count_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "highaccel_count_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "meddecel_count_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "highdecel_count_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "explacceltohsr_count_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "timetohsr_top3",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "explacceltosprint_count_full_all",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "timetosprint_top3",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "psv99",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "psv99_top5",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "total_distance_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "total_metersperminute_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "running_distance_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hsr_distance_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hsr_count_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "sprint_distance_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "sprint_count_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hi_distance_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hi_count_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "medaccel_count_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "highaccel_count_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "meddecel_count_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "highdecel_count_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "explacceltohsr_count_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "explacceltosprint_count_full_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "total_distance_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "total_metersperminute_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "running_distance_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hsr_distance_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hsr_count_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "sprint_distance_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "sprint_count_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hi_distance_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "hi_count_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "medaccel_count_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "highaccel_count_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "meddecel_count_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "highdecel_count_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "explacceltohsr_count_full_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "explacceltosprint_count_full_otip",
+      "type": "DOUBLE"
+    }
+  ],
+  "all_null_columns": [],
+  "frozen_from": [
+    "data/aggregates/aus1league_physicalaggregates_20242025.csv"
+  ]
+}

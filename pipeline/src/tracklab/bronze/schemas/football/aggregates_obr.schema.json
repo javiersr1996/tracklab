@@ -1,0 +1,534 @@
+{
+  "table": "aggregates_obr",
+  "sport": "football",
+  "source_id": "opendata-football",
+  "commit": "4340d274572876239c154c90bc507a9b3250a656",
+  "n_columns": 130,
+  "header_sha256": "54841afd8f98f660b28ad29b956afa4c554fcdafae015d27a32e8bc2a78a3802",
+  "columns": [
+    {
+      "name": "competition_edition_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "competition_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "competition_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "season_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "season_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "player_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_short_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_birthdate",
+      "type": "DATE"
+    },
+    {
+      "name": "team_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "team_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "position_group",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "minutes",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "minutes_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "minutes_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "performance_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "performance_included_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "performance_failed_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "offballrun_count_total",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "behindrun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "comingshortrun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "crossreceiverrun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "droppingoffrun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "overlaprun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullinghalfspacerun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullingwiderun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "aheadoftheballrun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "supportrun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "underlaprun_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "behindrun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "comingshortrun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "crossreceiverrun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "droppingoffrun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "overlaprun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullinghalfspacerun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullingwiderun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "aheadoftheballrun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "supportrun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "underlaprun_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "behindrun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "comingshortrun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "crossreceiverrun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "droppingoffrun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "overlaprun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullinghalfspacerun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullingwiderun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "aheadoftheballrun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "supportrun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "underlaprun_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "behindrun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "comingshortrun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "crossreceiverrun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "droppingoffrun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "overlaprun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullinghalfspacerun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullingwiderun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "aheadoftheballrun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "supportrun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "underlaprun_count_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "behindrun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "comingshortrun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "crossreceiverrun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "droppingoffrun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "overlaprun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullinghalfspacerun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullingwiderun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "aheadoftheballrun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "supportrun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "underlaprun_count_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "behindrun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "comingshortrun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "crossreceiverrun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "droppingoffrun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "overlaprun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullinghalfspacerun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullingwiderun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "aheadoftheballrun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "supportrun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "underlaprun_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "behindrun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "comingshortrun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "crossreceiverrun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "droppingoffrun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "overlaprun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullinghalfspacerun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullingwiderun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "aheadoftheballrun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "supportrun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "underlaprun_count_abovehsr_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_count_penaltyarea_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "behindrun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "comingshortrun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "crossreceiverrun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "droppingoffrun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "overlaprun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullinghalfspacerun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullingwiderun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "aheadoftheballrun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "supportrun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "underlaprun_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "behindrun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "comingshortrun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "crossreceiverrun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "droppingoffrun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "overlaprun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullinghalfspacerun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullingwiderun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "aheadoftheballrun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "supportrun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "underlaprun_count_dangerous_targeted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "offballrun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "behindrun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "comingshortrun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "crossreceiverrun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "droppingoffrun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "overlaprun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullinghalfspacerun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pullingwiderun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "aheadoftheballrun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "supportrun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "underlaprun_count_dangerous_received_p30tip",
+      "type": "DOUBLE"
+    }
+  ],
+  "all_null_columns": [],
+  "frozen_from": [
+    "data/aggregates/aus1league_obraggregates_20242025.csv"
+  ]
+}

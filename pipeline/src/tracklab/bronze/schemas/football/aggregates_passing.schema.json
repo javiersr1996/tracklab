@@ -1,0 +1,206 @@
+{
+  "table": "aggregates_passing",
+  "sport": "football",
+  "source_id": "opendata-football",
+  "commit": "4340d274572876239c154c90bc507a9b3250a656",
+  "n_columns": 48,
+  "header_sha256": "4d9921aec9fbed34e6345f2c28fd67d7345e50ac1e149e633f1bc66e58d8374e",
+  "columns": [
+    {
+      "name": "competition_edition_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "competition_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "competition_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "season_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "season_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "player_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_short_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_birthdate",
+      "type": "DATE"
+    },
+    {
+      "name": "team_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "team_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "position_group",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "minutes",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "minutes_tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "minutes_otip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "performance_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "performance_included_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "performance_failed_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "passopportunity_count_total",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "passopportunity_count_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_attempted_total",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_attempted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_completed_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_pct_completed",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_avgxpass_attempted",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_avgdistance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_longrange_attempted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_onetouch_attempted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_quickpass_attempted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_onetouch_dangerous_attempted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_quickpass_dangerous_attempted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "passopportunity_count_linebreak_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_linebreak_attempted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_linebreak_completed_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "passopportunity_count_torun_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_torun_attempted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_torun_completed_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_pct_torun_completed",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_avgxpass_torun_attempted",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_torun_shotwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_torun_goalwithin10s_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "passopportunity_count_dangerous_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_dangerous_attempted_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_pct_dangerous_completed",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_dangerous_completed_p30tip",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "pass_count_difficultpass_attempted_p30tip",
+      "type": "DOUBLE"
+    }
+  ],
+  "all_null_columns": [],
+  "frozen_from": [
+    "data/aggregates/aus1league_passingaggregates_20242025.csv"
+  ]
+}
