@@ -9,9 +9,12 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import time
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from tracklab.bronze.basketball.tracking import build_tracking as build_basketball_tracking
+from tracklab.bronze.common import raw_root_for
 from tracklab.formats.football_report import freeze_football
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
@@ -19,6 +22,13 @@ from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 
 _Handler = Callable[[argparse.Namespace], int]
 _DEFAULT_SCHEMAS_DIR = Path(__file__).resolve().parent / "bronze" / "schemas"
+
+# (sport, table group) -> builder. Each bronze task registers its group here; asking
+# for a group that is not registered fails before anything is built.
+_BronzeBuilder = Callable[[Source, Path, Path], object]
+_BRONZE_BUILDERS: dict[tuple[str, str], _BronzeBuilder] = {
+    ("basketball", "tracking"): build_basketball_tracking,
+}
 
 
 def _source(args: argparse.Namespace) -> Source:
@@ -69,7 +79,27 @@ def _cmd_freeze_schema(args: argparse.Namespace) -> int:
 
 
 def _cmd_bronze(args: argparse.Namespace) -> int:
-    raise NotImplementedError("tracklab bronze: not implemented yet")
+    manifest = load_manifest(args.manifest)
+    sources = [s for s in manifest.sources if s.sport == args.sport]
+    if len(sources) != 1:
+        sys.exit(
+            f"tracklab: expected one {args.sport} source in the manifest, found {len(sources)}"
+        )
+    source = sources[0]
+    groups = [g for g in args.tables.split(",") if g] if args.tables else None
+    known = sorted(g for sport, g in _BRONZE_BUILDERS if sport == args.sport)
+    if groups is None:
+        groups = known
+    unknown = [g for g in groups if (args.sport, g) not in _BRONZE_BUILDERS]
+    if unknown:
+        sys.exit(f"tracklab: no bronze builder for {args.sport} {unknown} (known: {known})")
+    raw_root = raw_root_for(args.data_dir, source.source_id)
+    started = time.perf_counter()
+    for group in groups:
+        print(f"bronze {args.sport} {group}: {raw_root}")
+        _BRONZE_BUILDERS[(args.sport, group)](source, raw_root, args.data_dir)
+    print(f"total seconds={time.perf_counter() - started:.1f}")
+    return 0
 
 
 def _cmd_publish(args: argparse.Namespace) -> int:
@@ -166,6 +196,24 @@ def build_parser() -> argparse.ArgumentParser:
     freeze_schema.set_defaults(func=_cmd_freeze_schema)
 
     bronze = subparsers.add_parser("bronze", help="Convert verified raw files to typed Parquet.")
+    bronze.add_argument("sport", choices=("football", "basketball"))
+    bronze.add_argument(
+        "--tables",
+        default=None,
+        help="Comma-separated table groups to build, e.g. tracking (default: every group).",
+    )
+    bronze.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path("manifest/sources.json"),
+        help="Path to sources.json (default: manifest/sources.json).",
+    )
+    bronze.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path("data"),
+        help="Data root: reads raw/<source_id>/, writes bronze/<sport>/<table>/ (default: data).",
+    )
     bronze.set_defaults(func=_cmd_bronze)
 
     publish = subparsers.add_parser("publish", help="Write JSON for the web from silver.")
