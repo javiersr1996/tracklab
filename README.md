@@ -27,3 +27,18 @@ uv run tracklab --help
 ```
 
 Python 3.13, pinned in `.python-version`.
+
+## Ingest
+
+Sources are pinned in `pipeline/manifest/sources.json` (commit, bytes and sha256 per file).
+From `pipeline/`:
+
+```
+uv run tracklab freeze opendata-football    # re-pin: resolve the ref, read LFS pointers, hash the rest
+uv run tracklab ingest opendata-football    # download to data/raw/opendata-football/, verify sha256
+```
+
+`ingest` is idempotent: files whose sha256 already matches are skipped, mismatches are deleted and
+downloaded again, and `data/raw/<source>/_receipt.json` records the outcome. Exit code 1 means at
+least one file could not be verified. LFS files are fetched from `media.githubusercontent.com` by
+URL, so neither `git-lfs` nor a clone is needed. `GITHUB_TOKEN`, if set, is used for the API calls.
