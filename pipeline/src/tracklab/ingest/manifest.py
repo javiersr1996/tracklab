@@ -27,6 +27,11 @@ _ROLE_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"^data/aggregates/[^/]+\.csv$"), "aggregate"),
     (re.compile(r"^data/matches\.json$"), "matches"),
     (re.compile(r"^data/bodypose/[^/]+\.jsonl\.gz$"), "bodypose_sample"),
+    # Basketball (opendata-basketball): same bundle shape, different filenames.
+    (re.compile(r"^data/matches/(\d+)/\1_tracking_data\.jsonl\.gz$"), "tracking"),
+    (re.compile(r"^data/matches/(\d+)/\1_game_data\.json$"), "game_data"),
+    (re.compile(r"^data/matches/(\d+)/\1_dynamic_events\.json$"), "events"),
+    (re.compile(r"^data/player_id_aliases\.csv$"), "player_aliases"),
 )
 _MATCH_DIR = re.compile(r"^data/matches/(\d+)/")
 

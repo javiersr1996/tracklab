@@ -12,6 +12,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
+from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 
 _Handler = Callable[[argparse.Namespace], int]
@@ -27,16 +28,23 @@ def _source(args: argparse.Namespace) -> Source:
 def _cmd_ingest(args: argparse.Namespace) -> int:
     source = _source(args)
     raw_root: Path = args.data_dir / "raw" / source.source_id
-    with make_client() as client:
-        receipt = ingest_source(client, source, raw_root)
+    if args.from_existing is not None:
+        receipt = ingest_local(source, args.from_existing, raw_root)
+    else:
+        with make_client() as client:
+            receipt = ingest_source(client, source, raw_root)
     print(receipt.summary)
     return 1 if receipt.failed else 0
 
 
 def _cmd_freeze(args: argparse.Namespace) -> int:
     manifest = load_manifest(args.manifest)
-    with make_client() as client:
-        frozen = freeze_source(client, _source(args))
+    source = _source(args)
+    if args.from_existing is not None:
+        frozen = freeze_local(args.from_existing, source)
+    else:
+        with make_client() as client:
+            frozen = freeze_source(client, source)
     manifest.replace(frozen)
     save_manifest(manifest, args.manifest)
     lfs = sum(1 for f in frozen.files if f.lfs)
@@ -74,6 +82,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("data"),
         help="Data root; files land under <data-dir>/raw/<source_id>/ (default: data).",
     )
+    ingest.add_argument(
+        "--from-existing",
+        type=Path,
+        default=None,
+        help="Verify a source in place inside an existing clone, instead of downloading.",
+    )
     ingest.set_defaults(func=_cmd_ingest)
 
     freeze = subparsers.add_parser("freeze", help="Pin a source's commit and file hashes.")
@@ -83,6 +97,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("manifest/sources.json"),
         help="Path to sources.json (default: manifest/sources.json).",
+    )
+    freeze.add_argument(
+        "--from-existing",
+        type=Path,
+        default=None,
+        help="Freeze from an existing local clone's HEAD instead of the GitHub API.",
     )
     freeze.set_defaults(func=_cmd_freeze)
 

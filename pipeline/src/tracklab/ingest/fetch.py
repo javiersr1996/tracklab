@@ -173,6 +173,7 @@ class Receipt:
     downloaded: int
     failed: list[str]
     finished_at: str
+    source_path: str | None = None  # set by ingest_local: where --from-existing verified in place
 
     @property
     def summary(self) -> str:
