@@ -1,0 +1,12 @@
+# Normalise to LF in the repository and in every checkout.
+# Git for Windows defaults to core.autocrlf=true, which rewrites line endings on
+# checkout. That makes a file on disk hash differently from the blob GitHub serves,
+# which cost this project an hour on the SkillCorner basketball clone: five text
+# files failed sha256 verification and the checksum was right, the checkout was not.
+* text=auto eol=lf
+
+# Data formats are bytes, never text.
+*.jsonl binary
+*.gz binary
+*.parquet binary
+*.png binary
