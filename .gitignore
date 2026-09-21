@@ -1,0 +1,22 @@
+# Data (raw/bronze/silver/gold/publish) - never committed
+data/
+
+# dbt
+target/
+dbt_packages/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node (web/)
+node_modules/
+.next/
+
+# OS
+.DS_Store
