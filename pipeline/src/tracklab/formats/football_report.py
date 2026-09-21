@@ -247,6 +247,7 @@ def render_doc(
         f"{n} matches of the frozen bundle; the per-match rows live in "
         f"`pipeline/reports/{REPORT_NAME}`, and the tables here are rendered from them.\n"
     )
+    add_traps_summary(add, rows)
     add("## Source\n")
     add(
         f"- Repository `{source.repo}`, ref `{source.ref}`, **commit `{source.commit}`** "
@@ -518,6 +519,30 @@ def _p1_start_span(rows: Sequence[Row]) -> str:
     return f"{min(starts)}" if min(starts) == max(starts) else f"{min(starts)}-{max(starts)}"
 
 
+def add_traps_summary(add: Callable[[str], None], rows: Sequence[Row]) -> None:
+    """One line per trap, for the reader who opens the file, finds a column name and leaves."""
+    new_layout = [r for r in rows if int(str(r["frames_outside_periods"])) >= 100]
+    orphan_rows = sum(int(str(r["ev_rows_with_unknown_player"])) for r in rows)
+    missing_last = sum(1 for r in rows if int(str(r["frame_max_minus_last_end"])) < 0)
+    add("## Read this first\n")
+    add(
+        "Four things in this bundle mislead without ever raising an error:\n\n"
+        "1. **Events and phases are not in the tracking coordinate frame.** They are normalised "
+        "so the attacker always goes towards +x; map (x, y) to (-x, -y) when `attacking_side` is "
+        "`right_to_left`, or half of every match comes out mirrored. "
+        "[Measured](#the-events-and-phases-are-not-in-the-tracking-coordinate-frame).\n"
+        "2. **`end_frame` declares a range, not the frames that exist.** The declared last frame "
+        f"is missing in {missing_last} of {len(rows)} files; never join tracking against a "
+        "generated range. [Measured](#end-frame-declares-a-range-not-existing-frames).\n"
+        "3. **`events.player_id` is not a foreign key.** One id with "
+        f"{orphan_rows} event rows exists neither in `players[]` nor in the tracking. "
+        "[Measured](#events-player_id-is-not-an-enforceable-foreign-key).\n"
+        f"4. **Two tracking layouts.** {len(new_layout)} matches ({_ids(new_layout)}) carry "
+        "pre-match, half-time and post-match footage as null frames. "
+        "[Measured](#two-tracking-layouts).\n"
+    )
+
+
 def add_read_this_first(add: Callable[[str], None], rows: Sequence[Row]) -> None:
     """The findings that silently break a naive join, on top, with their numbers."""
     n = len(rows)
@@ -530,7 +555,7 @@ def add_read_this_first(add: Callable[[str], None], rows: Sequence[Row]) -> None
     n_short_plus = sum(0 < d < 100 for d in deltas)
     n_long_plus = sum(d >= 100 for d in deltas)
 
-    add("## Read this first\n")
+    add("## The four traps, measured\n")
     add("### The events and phases are NOT in the tracking coordinate frame\n")
     add(
         "**`dynamic_events.csv` and `phases_of_play.csv` are attack-normalised: the team in "
@@ -566,9 +591,9 @@ def add_read_this_first(add: Callable[[str], None], rows: Sequence[Row]) -> None
         f"detected: {_span(rows, 'pct_frames_22_all_detected')}%). Bronze needs no "
         "partial-frame logic; silver must keep `is_detected` per object.\n"
     )
-    add("### Anomalies bronze will meet\n")
+    add("### Events player_id is not an enforceable foreign key\n")
     add(
-        "- **`events.player_id` is not a foreign key bronze can enforce.** "
+        "**`events.player_id` is not a foreign key bronze can enforce.** "
         + "; ".join(
             f"match {r['match_id']}: `player_id` {r['ev_unknown_player_ids']} has "
             f"{r['ev_rows_with_unknown_player']} event rows and exists neither in `players[]` "
@@ -577,14 +602,20 @@ def add_read_this_first(add: Callable[[str], None], rows: Sequence[Row]) -> None
         )
         + f" ({n - len(unknown)} other matches are clean). Load events as they come and "
         "report the orphan rows; do not drop them and do not declare the relationship.\n"
-        f"- **Two tracking layouts.** {len(old_layout)} matches start period 1 at frame "
+    )
+    add("### Two tracking layouts\n")
+    add(
+        f"{len(old_layout)} matches start period 1 at frame "
         f"{_p1_start_span(old_layout)} with {_span(old_layout, 'frames_outside_periods')} frames "
         f"outside the periods. {len(new_layout)} matches ({_ids(new_layout)}) keep pre-match, "
         f"half-time and post-match footage: period 1 starts at frame {_p1_start_span(new_layout)}, "
         f"{_span(new_layout, 'frames_outside_periods')} frames lie outside the periods "
         "(`timestamp` and `period` null, no players, no ball) and the file runs "
         f"{_span(new_layout, 'frame_max_minus_last_end')} frames past `end_frame`.\n"
-        "- **`end_frame` declares a range; it does not guarantee that every frame of the range "
+    )
+    add("### End frame declares a range, not existing frames\n")
+    add(
+        "**`end_frame` declares a range; it does not guarantee that every frame of the range "
         f"exists.** `frame_max - end_frame` of the last period is 0 in {n_zero} matches, -1 in "
         f"{n_minus} (the declared last frame of period 2 is missing from the file), +10 in "
         f"{n_short_plus} and +390 to +1030 in the {n_long_plus} with post-match footage (per match "
