@@ -1,11 +1,16 @@
 """Contract of the orientation probe against the artefacts `tracklab orientation` wrote:
-the table `bronze.common.orientation` and the two per-match reports.
+the table `bronze.common.orientation` and the per-match, per-group and per-residual-shot
+reports.
 
 Skipped when the artefacts are not built. Every figure is read from the Parquet or the
 CSV on disk with DuckDB or the csv module, never recomputed from the probe's own code,
-and printed per match, never as an aggregate. The two "recomputed from bronze" tests
-derive the signs again with their own SQL over the bronze tables, so the table is
-checked by a second path that shares nothing with `silver.orientation`.
+and printed per match or per group, never as an aggregate. The two "recomputed from
+bronze" tests derive the signs again with their own SQL over the bronze tables, so the
+table is checked by a second path that shares nothing with `silver.orientation`. The
+orientation assertion is binary per group with no threshold; the share within 0.5 m is
+printed as a number; the residual shots are pinned to the literal count and
+classification measured on the frozen bundle, so a regression has to change them on
+purpose.
 """
 
 from __future__ import annotations
@@ -20,10 +25,9 @@ from tracklab.ingest.manifest import load_manifest
 from tracklab.silver.orientation import (
     FIBA,
     ORIENTATION_SCHEMA,
-    SHOT_MEDIAN_MAX_FT,
-    SHOT_PASS_PCT,
     load_report,
     orientation_path,
+    report_path,
 )
 
 PIPELINE = Path(__file__).resolve().parents[2]
@@ -31,8 +35,23 @@ DATA = PIPELINE / "data"
 BRONZE = DATA / "bronze"
 REPORTS = PIPELINE / "reports"
 TABLE = orientation_path(DATA)
-REPORT = {sport: REPORTS / f"orientation_{sport}.csv" for sport in ("basketball", "football")}
+REPORT = {
+    name: report_path(REPORTS, name)
+    for name in ("basketball", "basketball_groups", "basketball_residual_shots", "football")
+}
 EXPECTED_ROWS = {"basketball": 82, "football": 80}  # 9 x 4 + 1 x 5 periods, 20 x 2; x 2 teams
+EXPECTED_GROUPS = 82
+# Measured on the frozen bundle (commit 4bbed2e3...): of the 1,433 shots with a location,
+# a possession and a shooter position at startFrame, 10 lie more than 0.5 m from the
+# rotated shooter position. 2 are extrapolated positions (isDetected false), 7 are found
+# within 0.5 m of the shooter at another frame of the tracking (the frame of closest
+# approach within 100 frames), at these offsets (frames at 25 fps, both signs), and 1
+# (shot-114169-4-139) is found at no frame: its closest approach is 1.85 ft at -4 frames.
+EXPECTED_MATCHED = 1433
+EXPECTED_RESIDUAL = 10
+EXPECTED_EXTRAPOLATED = 2
+EXPECTED_OFFSETS = [-14, -7, 8, 20, 20, 31, 33]
+EXPECTED_UNEXPLAINED = ["shot-114169-4-139"]
 
 pytestmark = pytest.mark.skipif(
     not (TABLE.is_file() and all(p.is_file() for p in REPORT.values())),
@@ -132,36 +151,89 @@ def test_football_signs_equal_home_team_side_recomputed_from_bronze() -> None:
 
 
 def test_reports_have_one_row_per_match() -> None:
-    for sport, path in REPORT.items():
-        rows = load_report(path)
+    for sport in ("basketball", "football"):
+        rows = load_report(REPORT[sport])
         ids = [int(r["match_id"]) for r in rows]
         print(f"\n{sport}: {len(rows)} rows, {len(rows[0])} columns")
         assert ids == _match_ids(sport)
 
 
-def test_basketball_shot_probe_bar_per_match() -> None:
+def test_basketball_rotation_wins_in_every_group() -> None:
+    """Binary, per (match, period, team), no threshold: the rotation `leftHoop` predicts
+    is the closer one for every matched shot and the opposite lands within 0.5 m of none."""
+    groups = load_report(REPORT["basketball_groups"])
+    print(
+        f"\n{'match_id':>8} {'p':>2} {'team':>5} {'left':>5} {'sign':>4} {'poss':>4} "
+        f"{'matched':>7} {'closer':>6} {'within':>6} {'flipped':>7} {'median':>6} {'verdict':>8}"
+    )
+    bad = []
+    for g in groups:
+        print(
+            f"{g['match_id']:>8} {g['period']:>2} {g['team_id']:>5} {g['left_hoop']:>5} "
+            f"{g['attack_sign']:>4} {g['possessions']:>4} {g['shots_matched']:>7} "
+            f"{g['shots_rule_closer']:>6} {g['shots_within_0_5m']:>6} "
+            f"{g['shots_within_0_5m_flipped']:>7} {g['shot_median_ft']:>6} {g['verdict']:>8}"
+        )
+        if g["verdict"] != "ok":
+            bad.append((g["match_id"], g["period"], g["team_id"], g["verdict"]))
+        assert g["shots_rule_closer"] == g["shots_matched"]
+        assert g["shots_within_0_5m_flipped"] == "0"
+    assert len(groups) == EXPECTED_GROUPS
+    assert bad == [], f"groups where the rotation does not win outright: {bad}"
+    assert sum(int(g["shots_matched"]) for g in groups) == EXPECTED_MATCHED
+
+
+def test_basketball_share_within_half_metre_is_a_number_per_match() -> None:
     rows = load_report(REPORT["basketball"])
     print(
-        f"\n{'match_id':>8} {'matched':>7} {'within':>6} {'pct':>6} {'flipped':>7} {'verdict':>7}"
+        f"\n{'match_id':>8} {'matched':>7} {'closer':>6} {'within':>6} {'pct':>6} "
+        f"{'flipped':>7} {'median':>6} {'p95':>6} {'max':>6} {'residual':>8}"
     )
-    below = []
     for r in rows:
-        pct = float(r["shots_within_0_5m_pct"])
         print(
-            f"{r['match_id']:>8} {r['shots_matched']:>7} {r['shots_within_0_5m']:>6} "
-            f"{pct:>6} {r['shots_within_0_5m_flipped_pct']:>7} {r['shot_probe']:>7}"
+            f"{r['match_id']:>8} {r['shots_matched']:>7} {r['shots_rule_closer']:>6} "
+            f"{r['shots_within_0_5m']:>6} {r['shots_within_0_5m_pct']:>6} "
+            f"{r['shots_within_0_5m_flipped']:>7} {r['shot_median_ft']:>6} "
+            f"{r['shot_p95_ft']:>6} {r['shot_max_ft']:>6} {r['shots_residual']:>8}"
         )
-        assert float(r["shots_within_0_5m_flipped_pct"]) == 0.0
-        assert float(r["shot_median_ft"]) <= SHOT_MEDIAN_MAX_FT
         assert r["left_hoop_consensus"] == "ok"
-        assert r["shot_probe"] == "pass"
-        if pct < SHOT_PASS_PCT:
-            below.append(r["match_id"])
-    # The share is printed, never asserted: the rotation is decided by the two asserts
-    # above (the opposite rotation matches nothing, the rule's median residual is ~0),
-    # and the shots outside the tolerance are a timing mismatch in `shots.location`,
-    # not an orientation error. See `docs/decisions.md` and the note in orientation.py.
-    print(f"below {SHOT_PASS_PCT}% within 0.5 m: {below or 'none'}")
+        assert r["orientation_check"] == "ok"
+        assert r["shots_within_0_5m_flipped"] == "0"
+        assert 0.0 <= float(r["shots_within_0_5m_pct"]) <= 100.0
+        assert float(r["shot_median_ft"]) < 0.01, "median residual of the rule is ~0 ft"
+        assert int(r["shots_matched"]) - int(r["shots_within_0_5m"]) == int(r["shots_residual"])
+
+
+def test_basketball_residual_shots_are_pinned() -> None:
+    """10 of 1,433: 2 extrapolated, 7 found at another frame with offsets of both signs, 1
+    found nowhere; in every one with a touch, its endLoc sits on the tracking, not on
+    shots.location."""
+    residuals = load_report(REPORT["basketball_residual_shots"])
+    print(
+        f"\n{'match_id':>8} {'shot_id':>20} {'d_rule':>6} {'det':>5} {'predErr':>7} "
+        f"{'kind':>12} {'offset':>6} {'d_off':>6} {'touch->trk':>10} {'touch->loc':>10}"
+    )
+    for r in residuals:
+        print(
+            f"{r['match_id']:>8} {r['shot_id']:>20} {r['d_rule_ft']:>6} {r['is_detected']:>5} "
+            f"{r['pred_error_ft']:>7} {r['kind']:>12} {r['frame_offset']:>6} "
+            f"{r['d_at_offset_ft']:>6} {r['touch_endloc_to_tracking_ft']:>10} "
+            f"{r['touch_endloc_to_location_ft']:>10}"
+        )
+    assert len(residuals) == EXPECTED_RESIDUAL
+    kinds = [r["kind"] for r in residuals]
+    assert kinds.count("extrapolated") == EXPECTED_EXTRAPOLATED
+    assert [r["shot_id"] for r in residuals if r["kind"] == "unexplained"] == EXPECTED_UNEXPLAINED
+    offsets = sorted(int(r["frame_offset"]) for r in residuals if r["kind"] == "time_offset")
+    assert offsets == EXPECTED_OFFSETS
+    assert min(offsets) < 0 < max(offsets), "both signs: not a release-frame effect"
+    for r in residuals:
+        if r["touch_id"] == "":
+            continue
+        assert float(r["touch_endloc_to_tracking_ft"]) == 0.0, r["shot_id"]
+        assert float(r["touch_endloc_to_location_ft"]) == float(r["d_rule_ft"]), r["shot_id"]
+    matches = load_report(REPORT["basketball"])
+    assert sum(int(r["shots_residual"]) for r in matches) == EXPECTED_RESIDUAL
 
 
 def test_basketball_court_is_fiba_in_every_match() -> None:
@@ -204,16 +276,20 @@ def test_football_attack_frame_wins_in_every_match() -> None:
         assert float(r["attack_within_1m_pct"]) > float(r["venue_within_1m_pct"])
 
 
-def test_the_ten_residual_shots_stay_ten_and_stay_explained() -> None:
-    """Pins the residual so a regression has to change this number on purpose.
-
-    10 of 1,433 matched shots sit outside 0.5 m of the shooter's tracking position at
-    `startFrame`. They are not an orientation error: the opposite rotation matches none
-    of them either, and their declared location is misaligned in time with `startFrame`.
-    Counted here from the per-match report, which the probe writes from bronze."""
-    rows = load_report(REPORT["basketball"])
-    matched = sum(int(r["shots_matched"]) for r in rows)
-    within = sum(int(r["shots_within_0_5m"]) for r in rows)
-    residual = matched - within
-    print(f"\nmatched={matched} within={within} residual={residual}")
-    assert (matched, residual) == (1433, 10)
+def test_football_event_regime_coincides_with_players_last_modified() -> None:
+    """The matches whose events equal the tracking exactly are the matches whose
+    players[] carry last_modified: two independent signals, one cut."""
+    rows = load_report(REPORT["football"])
+    print(f"\n{'match_id':>8} {'last_modified':>13} {'attack_1m':>9} {'median_m':>8} {'max_m':>7}")
+    exact, with_lm = set(), set()
+    for r in rows:
+        print(
+            f"{r['match_id']:>8} {r['players_last_modified']:>13} {r['attack_within_1m_pct']:>9} "
+            f"{r['attack_median_m']:>8} {r['attack_max_m']:>7}"
+        )
+        if float(r["attack_median_m"]) == 0.0:
+            exact.add(r["match_id"])
+        if r["players_last_modified"] == "yes":
+            with_lm.add(r["match_id"])
+    assert len(exact) == 10 and len(with_lm) == 10
+    assert exact == with_lm

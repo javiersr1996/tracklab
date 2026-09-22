@@ -465,7 +465,7 @@ class ResidualShot:
     def kind(self) -> str:
         if not self.is_detected:
             return "extrapolated"
-        if self.frame_offset is not None:
+        if self.d_at_offset_ft is not None and self.d_at_offset_ft <= SHOT_TOL_FT:
             return "time_offset"
         return "unexplained"
 
@@ -512,22 +512,22 @@ class ShotProbe:
         return sum(1 for r in self.residuals if r.kind == kind)
 
 
-def _nearest_frame_within(
+def _closest_frame(
     con: duckdb.DuckDBPyConnection, tracking: str, row: ShotRow
 ) -> tuple[int, float] | None:
-    """The tracking frame of the shooter, other than ``startFrame`` and within
-    ``RESIDUAL_WINDOW_FRAMES`` of it, whose rotated position lies within 0.5 m of the
-    declared location; the closest in time wins, earlier on a tie."""
+    """The frame of closest approach: among the shooter's tracking frames other than
+    ``startFrame`` and within ``RESIDUAL_WINDOW_FRAMES`` of it, the one whose rotated
+    position is nearest to the declared location, as (offset, distance in ft); the
+    closest in time wins a tie, earlier first. None when the window holds no frame."""
     assert row.location is not None
     lx, ly = row.location
     f = row.factor
     found = con.execute(
         """
-        SELECT offset, d FROM (
-          SELECT frameIdx - ? AS offset, sqrt((? * x - ?)^2 + (? * y - ?)^2) AS d
-          FROM read_parquet(?)
-          WHERE playerId = ? AND frameIdx BETWEEN ? AND ? AND frameIdx != ?
-        ) WHERE d <= ? ORDER BY abs(offset), offset LIMIT 1
+        SELECT frameIdx - ? AS frame_offset, sqrt((? * x - ?)^2 + (? * y - ?)^2) AS d
+        FROM read_parquet(?)
+        WHERE playerId = ? AND frameIdx BETWEEN ? AND ? AND frameIdx != ?
+        ORDER BY d, abs(frame_offset), frame_offset LIMIT 1
         """,
         [
             row.start_frame,
@@ -540,7 +540,6 @@ def _nearest_frame_within(
             row.start_frame - RESIDUAL_WINDOW_FRAMES,
             row.start_frame + RESIDUAL_WINDOW_FRAMES,
             row.start_frame,
-            SHOT_TOL_FT,
         ],
     ).fetchone()
     return None if found is None else (int(found[0]), float(found[1]))
@@ -586,7 +585,7 @@ def basketball_shot_probe(
         if r.d_rule <= SHOT_TOL_FT:
             continue
         assert r.tracking is not None and r.location is not None
-        near = _nearest_frame_within(con, tracking, r)
+        near = _closest_frame(con, tracking, r)
         rotated = _rot(r.factor, r.tracking)
         residuals.append(
             ResidualShot(
@@ -1364,11 +1363,17 @@ def _total(rows: Sequence[Row], column: str) -> int:
     return sum(int(str(r[column])) for r in rows)
 
 
-def _render_basketball(matches: Sequence[Row], groups: Sequence[Row], residuals: Sequence[Row]) -> str:
+def _render_basketball(
+    matches: Sequence[Row], groups: Sequence[Row], residuals: Sequence[Row]
+) -> str:
     n = len(matches)
     ok = [g for g in groups if g["verdict"] == "ok"]
     no_shots = [g for g in groups if g["verdict"] == "no_shots"]
-    failing = [f"{g['match_id']} p{g['period']} team {g['team_id']}" for g in groups if g["verdict"] == "FAIL"]
+    failing = [
+        f"{g['match_id']} p{g['period']} team {g['team_id']}"
+        for g in groups
+        if g["verdict"] == "FAIL"
+    ]
     matched, closer, flipped = (
         _total(groups, "shots_matched"),
         _total(groups, "shots_rule_closer"),
@@ -1378,6 +1383,7 @@ def _render_basketball(matches: Sequence[Row], groups: Sequence[Row], residuals:
     extrapolated = [r for r in residuals if r["kind"] == "extrapolated"]
     offsets = sorted(int(str(r["frame_offset"])) for r in residuals if r["kind"] == "time_offset")
     unexplained = [r for r in residuals if r["kind"] == "unexplained"]
+    with_touch = [r for r in residuals if str(r["touch_id"]) != ""]
     parts = [
         "### Basketball: `possessions.leftHoop` gives the sign, the shot probe corroborates it "
         "per group\n",
@@ -1408,17 +1414,22 @@ def _render_basketball(matches: Sequence[Row], groups: Sequence[Row], residuals:
     else:
         parts.append(
             f"**Orientation consistent in {len(ok)} of {len(groups)} groups**"
-            + (f" ({len(no_shots)} groups without a matched shot, listed as `no_shots`)" if no_shots else "")
+            + (
+                f" ({len(no_shots)} groups without a matched shot, listed as `no_shots`)"
+                if no_shots
+                else ""
+            )
             + f": the rotation `leftHoop` predicts is the closer one for {closer} of {matched} "
-            f"matched shots, the opposite rotation is within {SHOT_TOL_M} m of {flipped} of them, "
-            f"and the per-match median residual of the rule is {_span(matches, 'shot_median_ft')} ft.\n"
+            f"matched shots, the opposite rotation is within {SHOT_TOL_M} m of {flipped} of "
+            "them, and the per-match median residual of the rule is "
+            f"{_span(matches, 'shot_median_ft')} ft.\n"
         )
     parts += [
         "### Basketball: the share within 0.5 m, per match, as a number\n",
         f"The share of matched shots whose rotated shooter position lies within {SHOT_TOL_M} m "
         "of `shots.location` is published per match and is **not a bar**: it mixes the "
         "orientation question, answered above, with a second one, whether `shots.location` "
-        "is the shooter's position exactly at `startFrame`, whose answer is \"not always\", "
+        'is the shooter\'s position exactly at `startFrame`, whose answer is "not always", '
         "for reasons unrelated to orientation (next section). A threshold on the mix would "
         "pass a 99% that hid a wrong rotation in the remaining 1% and fail a perfect rotation "
         "with a clock misalignment, the same reason `docs/formats/football.md` reports "
@@ -1447,31 +1458,38 @@ def _render_basketball(matches: Sequence[Row], groups: Sequence[Row], residuals:
         f"median residual {_span(matches, 'shot_median_ft')} ft, p95 "
         f"{_span(matches, 'shot_p95_ft')} ft, maximum {_span(matches, 'shot_max_ft')} ft.\n",
         f"### Basketball: the {len(residuals)} shots beyond 0.5 m, one by one\n",
-        f"{len(residuals)} of {matched} matched shots. `kind` is `extrapolated` when the "
-        "shooter's tracking entry at `startFrame` has `isDetected = false` (an extrapolated "
-        "position, with its `predError`), `time_offset` when the declared location is within "
-        f"{SHOT_TOL_M} m of the shooter's rotated position at another frame of the same "
-        f"tracking, within {RESIDUAL_WINDOW_FRAMES} frames of `startFrame` (`frame_offset`, "
-        "the closest in time), and `unexplained` otherwise. `touch_endloc_to_tracking_ft` is "
-        "the distance from `touches.endLoc` of the shot's `touchId` to the same rotated "
-        "tracking position at `startFrame`; `touch_endloc_to_location_ft`, to "
-        "`shots.location`.\n",
+        f"{len(residuals)} of {matched} matched shots. For every one, `frame_offset` and "
+        "`d_at_offset_ft` locate the shooter's frame of closest approach to the declared "
+        f"location, within {RESIDUAL_WINDOW_FRAMES} frames of `startFrame` (offset in frames "
+        "at 25 fps, distance in feet). `kind` is `extrapolated` when the shooter's tracking "
+        "entry at `startFrame` has `isDetected = false` (an extrapolated position, with its "
+        f"`predError`), `time_offset` when that closest approach lies within {SHOT_TOL_M} m, "
+        "and `unexplained` when it does not. `touch_endloc_to_tracking_ft` is the distance "
+        "from `touches.endLoc` of the shot's `touchId` to the rotated tracking position at "
+        "`startFrame`; `touch_endloc_to_location_ft`, to `shots.location`.\n",
         _md_table(residuals, RESIDUAL_COLUMNS) + "\n",
         f"{len(extrapolated)} are extrapolated positions (`predError` "
         f"{_span(extrapolated, 'pred_error_ft') if extrapolated else 'n/a'} ft), "
         f"{len(offsets)} are found at another frame of the tracking, with offsets of "
         f"{', '.join(f'{o:+d}' for o in offsets)} frames at 25 fps"
-        + (f", and {len(unexplained)} are found at no frame within the window" if unexplained else "")
-        + ". The offsets carry both signs, so \"the provider takes the location at the "
-        "release rather than at `startFrame`\" does not explain them: a release happens "
+        + (
+            f", and {len(unexplained)} "
+            f"{'is' if len(unexplained) == 1 else 'are'} found at no frame within the window "
+            f"(closest approach {_span(unexplained, 'd_at_offset_ft')} ft at "
+            f"{_span(unexplained, 'frame_offset')} frames)"
+            if unexplained
+            else ""
+        )
+        + '. The offsets carry both signs, so "the provider takes the location at the '
+        'release rather than at `startFrame`" does not explain them: a release happens '
         "after `startFrame`, never before it. What the data supports is more modest: in these "
         "shots the declared location and the tracking are misaligned in time, between "
         f"{min(offsets, default=0)} and {max(offsets, default=0):+d} frames, with no consistent "
-        "sign. In every one of them `touches.endLoc` of the shot's touch sits on the rotated "
-        "tracking position at `startFrame` (`touch_endloc_to_tracking_ft` "
-        f"{_span(residuals, 'touch_endloc_to_tracking_ft')} ft) and away from "
-        "`shots.location` (`touch_endloc_to_location_ft` "
-        f"{_span(residuals, 'touch_endloc_to_location_ft')} ft): it is `shots.location` "
+        f"sign. In every one of them that has a touch ({len(with_touch)} of {len(residuals)}), "
+        "`touches.endLoc` sits on the rotated tracking position at `startFrame` "
+        f"(`touch_endloc_to_tracking_ft` {_span(with_touch, 'touch_endloc_to_tracking_ft')} ft) "
+        "and away from `shots.location` (`touch_endloc_to_location_ft` "
+        f"{_span(with_touch, 'touch_endloc_to_location_ft')} ft): it is `shots.location` "
         "that departs, not the tracking. Over all matched shots with a touch, "
         "`touches.endLoc` is within 0.5 m of the tracking at `startFrame` in "
         f"{_span(matches, 'touch_endloc_within_0_5m_pct')}% per match "

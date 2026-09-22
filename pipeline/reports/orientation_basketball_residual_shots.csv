@@ -1,0 +1,11 @@
+match_id,shot_id,period,team_id,start_frame,shooter_id,d_rule_ft,is_detected,pred_error_ft,kind,frame_offset,d_at_offset_ft,touch_id,touch_endloc_to_tracking_ft,touch_endloc_to_location_ft
+114169,shot-114169-4-139,4,1334,157490,59095,1.95,true,0.57,unexplained,-4,1.85,touch-114169-4-626,0.0,1.95
+114234,shot-114234-1-34,1,1322,26950,28410,1.87,true,1.43,time_offset,-7,1.525,touch-114234-1-149,0.0,1.87
+114234,shot-114234-4-122,4,1322,129560,28410,2.88,false,13.65,extrapolated,-19,1.754,,,
+114243,shot-114243-1-4,1,1330,6905,35806,1.98,false,7.62,extrapolated,33,0.453,touch-114243-1-39,0.0,1.98
+178442,shot-178442-3-97,3,1335,87237,59148,2.4,true,1.17,time_offset,-14,1.222,touch-178442-3-439,0.0,2.4
+178442,shot-178442-4-137,4,1335,141430,35376,1.74,true,0.78,time_offset,8,0.664,touch-178442-4-613,0.0,1.74
+179612,shot-179612-3-98,3,1325,86997,59142,2.26,true,0.96,time_offset,20,0.576,touch-179612-3-498,0.0,2.26
+179612,shot-179612-3-102,3,1325,90739,59142,1.66,true,1.57,time_offset,20,0.056,touch-179612-3-524,0.0,1.66
+184439,shot-184439-3-84,3,1333,71675,59116,1.74,true,1.12,time_offset,31,1.146,touch-184439-3-392,0.0,1.74
+188630,shot-188630-3-92,3,1328,86690,59295,2.29,true,2.18,time_offset,33,0.323,touch-188630-3-450,0.0,2.29
