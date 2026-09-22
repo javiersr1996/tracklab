@@ -1,0 +1,288 @@
+version: 2
+
+models:
+  - name: dim_sport
+    description: >
+      The two rows that turn `sport` into a column. Every constant of a bundle
+      that silver needs lives here once: the unit and its factor to metres, the
+      sample rate, the semantics of the official clock, how many players are on
+      the surface and which frame the provider's events arrive in.
+    columns:
+      - name: sport
+        data_tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ["basketball", "football"]
+      - name: id_prefix
+        data_tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ["bb", "fb"]
+      - name: unit_to_m
+        data_tests:
+          - not_null
+      - name: sample_rate_hz
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [25, 10]
+                quote: false
+      - name: clock_kind
+        description: countdown in basketball (600 -> 0), elapsed in football.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["countdown", "elapsed"]
+      - name: players_on_surface
+        data_tests:
+          - not_null
+      - name: native_event_frame
+        description: >
+          The frame the provider's events arrive in, before silver rotates them
+          to the venue frame. Measured by task 9 in both sports.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["attacking_neg_x", "attacking_pos_x", "venue"]
+
+  - name: dim_match
+    description: One row per match, 20 in total, with the surface, the periods and the pinned commit.
+    columns:
+      - name: match_id
+        data_tests:
+          - not_null
+          - unique
+      - name: sport
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_sport')
+                field: sport
+      - name: native_match_id
+        data_tests:
+          - not_null
+      - name: competition
+        data_tests:
+          - not_null
+      - name: season
+        data_tests:
+          - not_null
+      - name: kickoff_utc
+        data_tests:
+          - not_null
+      - name: home_team_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_team')
+                field: team_id
+      - name: away_team_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_team')
+                field: team_id
+      - name: home_score
+        data_tests:
+          - not_null
+      - name: away_score
+        data_tests:
+          - not_null
+      - name: surface_length_m
+        data_tests:
+          - not_null
+      - name: surface_width_m
+        data_tests:
+          - not_null
+      - name: surface_spec
+        description: fiba_28x15 in basketball, provider_<length>x<width> in football.
+        data_tests:
+          - not_null
+      - name: n_periods
+        description: Counted from dim_period, never declared. 4 or 5 in basketball, 2 in football.
+        data_tests:
+          - not_null
+      - name: z_ball_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["biased", "measured", "unverified", "absent"]
+      - name: z_player_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["constant_zero", "measured", "unverified", "absent"]
+      - name: source_commit
+        description: The provider commit the bytes came from, read from the ingest manifest.
+        data_tests:
+          - not_null
+
+  - name: dim_period
+    description: >
+      One row per match and period. Football declares its boundaries in
+      match.json; basketball's are read off the tracking, which is the only
+      place its period changes.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ["match_id", "period"]
+    columns:
+      - name: match_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_match')
+                field: match_id
+      - name: period
+        data_tests:
+          - not_null
+      - name: frame_native_start
+        data_tests:
+          - not_null
+      - name: frame_native_end
+        data_tests:
+          - not_null
+      - name: t_ms_start
+        data_tests:
+          - not_null
+      - name: t_ms_end
+        data_tests:
+          - not_null
+      - name: regulation_s
+        description: What the competition gives the period, not what it lasted.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [600, 300, 2700]
+                quote: false
+
+  - name: dim_team
+    description: One row per team, 30 in total (17 basketball, 13 football).
+    columns:
+      - name: team_id
+        data_tests:
+          - not_null
+          - unique
+      - name: sport
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_sport')
+                field: sport
+      - name: native_team_id
+        data_tests:
+          - not_null
+      - name: name
+        data_tests:
+          - not_null
+
+  - name: dim_team_period
+    description: >
+      Task 9 in silver keys: which way each team attacks in each period, and the
+      evidence that fixed it. Two rows per (match, period), opposite signs,
+      asserted by tests/assert_attack_signs_opposite.sql.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ["match_id", "period", "team_id"]
+    columns:
+      - name: match_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_match')
+                field: match_id
+      - name: period
+        data_tests:
+          - not_null
+      - name: team_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_team')
+                field: team_id
+      - name: attack_sign
+        description: +1 when that team attacks towards +x of the venue frame in that period.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [-1, 1]
+                quote: false
+      - name: evidence
+        data_tests:
+          - not_null
+
+  - name: dim_entity
+    description: >
+      Everything that can hold a position in a match: both benches and the ball.
+      Built from the roster, which covers every id the tracking uses in both
+      sports and also the players who never left the bench.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ["match_id", "entity_id"]
+    columns:
+      - name: match_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_match')
+                field: match_id
+      - name: entity_id
+        data_tests:
+          - not_null
+      - name: entity_kind
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["player", "ball"]
+      - name: team_id
+        description: NULL for the ball, which belongs to no team.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_team')
+                field: team_id
+      - name: name
+        data_tests:
+          - not_null
+
+seeds:
+  - name: surface_spec
+    description: >
+      The surface specs a match can be played on, with their dimensions in
+      metres. Two rows: the FIBA court task 9 measured, and the NBA court it
+      rejected, kept so the rejection stays visible instead of disappearing into
+      a WHERE clause. Football does not appear here because its pitch is
+      declared per match by the provider.
+    columns:
+      - name: surface_spec
+        data_tests:
+          - not_null
+          - unique
+      - name: length_m
+        data_tests:
+          - not_null
+      - name: width_m
+        data_tests:
+          - not_null

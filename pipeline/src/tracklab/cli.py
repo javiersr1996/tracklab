@@ -28,6 +28,7 @@ from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.silver.orientation import SPORTS, run_orientation
+from tracklab.silver.stats import run_stats
 
 _Handler = Callable[[argparse.Namespace], int]
 _DEFAULT_SCHEMAS_DIR = Path(__file__).resolve().parent / "bronze" / "schemas"
@@ -143,7 +144,7 @@ def _cmd_publish(args: argparse.Namespace) -> int:
 
 
 def _cmd_stats(args: argparse.Namespace) -> int:
-    raise NotImplementedError("tracklab stats: not implemented yet")
+    return run_stats(data_dir=args.data_dir, reports_dir=args.reports_dir)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -291,7 +292,21 @@ def build_parser() -> argparse.ArgumentParser:
     publish = subparsers.add_parser("publish", help="Write JSON for the web from silver.")
     publish.set_defaults(func=_cmd_publish)
 
-    stats = subparsers.add_parser("stats", help="Compute and write stats.json.")
+    stats = subparsers.add_parser(
+        "stats", help="Count what silver holds; write reports/stats_silver.csv."
+    )
+    stats.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path("data"),
+        help="Data root; the silver tables are read from <data-dir>/silver/ (default: data).",
+    )
+    stats.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where stats_silver.csv goes (default: reports).",
+    )
     stats.set_defaults(func=_cmd_stats)
 
     return parser

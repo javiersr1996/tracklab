@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: bronze_football
+    description: >
+      The A-League bundle in Parquet, native names and native rows, as
+      `tracklab bronze football` wrote it.
+    meta:
+      external_location: "{{ var('data_dir', 'data') }}/bronze/football/{name}/*.parquet"
+    tables:
+      - name: match
+        description: >
+          One row per match, folded from match.json. Carries the score, the
+          pitch (which is not the same in every match: 104, 105 and 106 m long)
+          and the competition edition.
+      - name: match_periods
+        description: One row per match and period, with the frame the period starts and ends at.
+      - name: match_players
+        description: >
+          One row per player and match. `id` is the key the tracking uses
+          (`tracking_objects.player_id`), not `trackable_object`.

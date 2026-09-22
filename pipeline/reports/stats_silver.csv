@@ -1,0 +1,13 @@
+table,sport,rows
+dim_entity,basketball,244
+dim_entity,football,739
+dim_match,basketball,10
+dim_match,football,20
+dim_period,basketball,41
+dim_period,football,40
+dim_sport,basketball,1
+dim_sport,football,1
+dim_team,basketball,17
+dim_team,football,13
+dim_team_period,basketball,82
+dim_team_period,football,80

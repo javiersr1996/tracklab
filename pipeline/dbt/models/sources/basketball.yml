@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: bronze_basketball
+    description: >
+      The basketball bundle in Parquet, native names and native rows, as
+      `tracklab bronze basketball` wrote it. One file per match and table
+      (`<table>/<match_id>.parquet`), except the season tables, which are a
+      single `data.parquet`; `*.parquet` reads either shape.
+    meta:
+      external_location: "{{ var('data_dir', 'data') }}/bronze/basketball/{name}/*.parquet"
+    tables:
+      - name: matches
+        description: One row per match of the ACB season bundle; the only place with the score.
+      - name: game_players
+        description: One row per player and match, both benches included.
+      - name: player_id_aliases
+        description: >
+          Season table. 18 rows, 9 of which map a duplicated player id onto its
+          canonical one. It never rewrites an id in silver (decision 4): it fills
+          dim_entity.canonical_player_id and gold applies it.
+      - name: tracking_frames
+        description: >
+          One row per frame, timeouts included. dim_period reads its period
+          boundaries from here because game_data.json does not publish them.

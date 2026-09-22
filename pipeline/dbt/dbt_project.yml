@@ -1,0 +1,54 @@
+name: tracklab
+version: 0.1.0
+config-version: 2
+profile: tracklab
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+require-dbt-version: [">=1.12.0", "<2.0.0"]
+
+# Where silver lands on disk. The naming convention of tasks/todo.md is
+# data/silver/<table>/data.parquet, one directory per table, so every model
+# names its own file: dbt-duckdb's default (<external_root>/<name>.parquet)
+# does not produce that layout. The root is TRACKLAB_SILVER_DIR and not a dbt
+# var because the plugin that creates those directories reads it too, and a
+# plugin cannot see dbt vars; CI and the fixtures of task 14 set the env var.
+models:
+  tracklab:
+    silver:
+      +materialized: external
+      +format: parquet
+      +tags: ["silver"]
+      dim_sport:
+        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_sport/data.parquet"
+        +tags: ["dims"]
+      dim_match:
+        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_match/data.parquet"
+        +tags: ["dims"]
+      dim_period:
+        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_period/data.parquet"
+        +tags: ["dims"]
+      dim_team:
+        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_team/data.parquet"
+        +tags: ["dims"]
+      dim_team_period:
+        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_team_period/data.parquet"
+        +tags: ["dims"]
+      dim_entity:
+        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_entity/data.parquet"
+        +tags: ["dims"]
+
+seeds:
+  tracklab:
+    +tags: ["dims"]
+    surface_spec:
+      +column_types:
+        surface_spec: VARCHAR
+        length_m: DOUBLE
+        width_m: DOUBLE
+        source: VARCHAR

@@ -1,0 +1,19 @@
+# Paths are relative to the process working directory, which is pipeline/ for
+# every command in tasks/todo.md. TRACKLAB_DUCKDB lets CI and the fixture runs
+# of task 14 point at a throwaway database without editing this file.
+tracklab:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('TRACKLAB_DUCKDB', 'data/tracklab.duckdb') }}"
+      threads: 4
+      plugins:
+        # Creates one output directory per silver model before dbt copies into it.
+        # DuckDB will not create it and dbt cannot; see src/tracklab/silver/dbt_plugin.py.
+        # The root is an env var and not a dbt var because a plugin cannot read dbt vars,
+        # and dbt_project.yml reads the same one when it writes each model's `location`.
+        - module: tracklab.silver.dbt_plugin
+          config:
+            silver_dir: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}"
+            models_dir: "{{ env_var('TRACKLAB_SILVER_MODELS', 'dbt/models/silver') }}"

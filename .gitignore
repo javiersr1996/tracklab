@@ -4,6 +4,8 @@ data/
 # dbt
 target/
 dbt_packages/
+logs/
+.user.yml
 
 # Python
 __pycache__/
