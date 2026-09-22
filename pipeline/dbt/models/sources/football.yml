@@ -19,3 +19,9 @@ sources:
         description: >
           One row per player and match. `id` is the key the tracking uses
           (`tracking_objects.player_id`), not `trackable_object`.
+      - name: tracking_frames
+        description: >
+          One row per frame, the ball among its columns rather than as an object.
+          Frames outside every period carry a null period, no player and no ball.
+      - name: tracking_objects
+        description: One row per frame and player; the ball is not here, it is in tracking_frames.

@@ -42,6 +42,14 @@ models:
       dim_entity:
         +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_entity/data.parquet"
         +tags: ["dims"]
+      # `frames` is partitioned, so its location is the directory and DuckDB names
+      # the file inside each partition. A silver match_id carries a colon
+      # (`bb:114086`), which is not a legal directory name on Windows and gets
+      # percent-escaped, so the partition is the native id and the prefixed key
+      # stays a column of the file.
+      frames:
+        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/frames"
+        +tags: ["facts"]
 
 seeds:
   tracklab:

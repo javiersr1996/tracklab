@@ -267,6 +267,86 @@ models:
         data_tests:
           - not_null
 
+  - name: frames
+    description: >
+      The physical record of both sports in one shape: one row per match, native
+      frame and entity, in metres and in the venue frame. Built from the tracking
+      and from nothing else. Partitioned on disk by sport and native match id,
+      because a silver match_id carries a colon and that is not a directory name
+      on Windows.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ["match_id", "frame_native", "entity_id"]
+    columns:
+      - name: sport
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_sport')
+                field: sport
+      - name: match_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_match')
+                field: match_id
+      - name: native_match_id
+        data_tests:
+          - not_null
+      - name: period
+        description: Never null; a frame outside every period does not reach silver.
+        data_tests:
+          - not_null
+      - name: frame_native
+        data_tests:
+          - not_null
+      - name: t_ms
+        description: frame_native x 1000 / sample_rate_hz, exact in both sports.
+        data_tests:
+          - not_null
+      - name: clock_s
+        description: >
+          The official clock in its own semantics: counting down from 600 s in
+          basketball, elapsed within the period in football.
+        data_tests:
+          - not_null
+      - name: entity_id
+        data_tests:
+          - not_null
+      - name: entity_kind
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["player", "ball"]
+      - name: team_id
+        description: NULL for the ball, which belongs to no team.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_team')
+                field: team_id
+      - name: x_m
+        data_tests:
+          - not_null
+      - name: y_m
+        data_tests:
+          - not_null
+      - name: z_m
+        description: >
+          NULL for every player in both sports (decision 6) and the provider's
+          uncorrected value for the ball. assert_frames_z_only_on_the_ball.sql
+          holds both halves of that.
+      - name: is_detected
+        description: >
+          False means the provider extrapolated the position rather than seeing
+          it. Almost everything that lands outside the surface is one of these.
+        data_tests:
+          - not_null
+
 seeds:
   - name: surface_spec
     description: >

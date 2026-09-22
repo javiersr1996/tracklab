@@ -1,9 +1,9 @@
 """`tracklab stats` on fabricated silver tables.
 
-The point of every case here is a shape the built repository cannot show: a
-sport missing from a table, a table with no sport at all, a (match, period)
-group with the wrong number of teams, and a silver directory that is not there.
-Counting the real tables is the contract test's job.
+The point of every case here is a shape the built repository cannot show: a sport
+missing from a table, a table with no sport at all, a (match, period) group with
+the wrong number of teams, a partitioned table, and a silver directory that is
+not there. Counting the real tables is the contract tests' job.
 """
 
 from __future__ import annotations
@@ -14,14 +14,21 @@ from pathlib import Path
 import duckdb
 import pytest
 
-from tracklab.silver.stats import run_stats, stats_report_path
+from tracklab.silver.stats import run_stats, silver_tables, stats_report_path
 
 
 def _table(data_dir: Path, name: str, sql: str) -> None:
     path = data_dir / "silver" / name
     path.mkdir(parents=True, exist_ok=True)
+    target = (path / "data.parquet").as_posix()
+    duckdb.connect().execute(f"COPY ({sql}) TO '{target}' (FORMAT PARQUET)")
+
+
+def _partitioned(data_dir: Path, name: str, sql: str, by: str) -> None:
+    path = data_dir / "silver" / name
+    path.mkdir(parents=True, exist_ok=True)
     duckdb.connect().execute(
-        f"COPY ({sql}) TO '{(path / 'data.parquet').as_posix()}' (FORMAT PARQUET)"
+        f"COPY ({sql}) TO '{path.as_posix()}' (FORMAT PARQUET, PARTITION_BY ({by}), OVERWRITE)"
     )
 
 
@@ -43,9 +50,9 @@ def test_counts_by_the_sport_column_when_there_is_one(
 
     assert "silver dim_match: 3 rows (basketball 1, football 2)" in capsys.readouterr().out
     assert _report(tmp_path / "reports") == [
-        ["table", "sport", "rows"],
-        ["dim_match", "basketball", "1"],
-        ["dim_match", "football", "2"],
+        ["table", "sport", "match_id", "rows"],
+        ["dim_match", "basketball", "", "1"],
+        ["dim_match", "football", "", "2"],
     ]
 
 
@@ -69,6 +76,33 @@ def test_a_table_with_neither_is_counted_whole(
     run_stats(tmp_path, tmp_path / "reports")
 
     assert "silver event_type_map: 2 rows (all 2)" in capsys.readouterr().out
+
+
+def test_a_partitioned_table_is_also_counted_per_match(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The grain task 11 compares against bronze, and the reason the per-match
+    rows exist at all."""
+    _partitioned(
+        tmp_path,
+        "frames",
+        "SELECT 'basketball' AS sport, 114086 AS native_match_id, 'bb:114086' AS match_id "
+        "UNION ALL SELECT 'basketball', 114086, 'bb:114086' "
+        "UNION ALL SELECT 'football', 1874553, 'fb:1874553'",
+        by="sport, native_match_id",
+    )
+
+    assert run_stats(tmp_path, tmp_path / "reports") == 0
+
+    out = capsys.readouterr().out
+    assert "silver frames: 3 rows (basketball 2, football 1)" in out
+    assert "silver frames bb:114086: 2 rows" in out
+    assert "silver frames fb:1874553: 1 rows" in out
+    assert _report(tmp_path / "reports")[1:] == [
+        ["frames", "basketball", "bb:114086", "2"],
+        ["frames", "football", "fb:1874553", "1"],
+    ]
+    assert silver_tables(tmp_path) == [("frames", True)]
 
 
 def test_prints_the_team_per_group_range_even_when_it_is_wrong(

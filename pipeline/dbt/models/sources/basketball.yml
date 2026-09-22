@@ -23,3 +23,8 @@ sources:
         description: >
           One row per frame, timeouts included. dim_period reads its period
           boundaries from here because game_data.json does not publish them.
+      - name: tracking_objects
+        description: >
+          One row per frame and object, the ball included as a side of its own.
+          A timeout frame has no row here at all, which is why `frames` loses
+          about 44% of the basketball file and keeps the timeline in bronze.
