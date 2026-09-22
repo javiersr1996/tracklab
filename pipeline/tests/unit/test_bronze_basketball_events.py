@@ -192,3 +192,22 @@ def test_a_value_that_does_not_cast_names_the_file_row_and_key(families: FamilyF
         ValueError, match=r"closeouts\[0\]\.touchWallClock: invalid literal for int"
     ):
         family_batch(frozen["closeouts"], schemas["closeouts"], bad, MATCH_A, events_path(MATCH_A))
+
+
+def test_a_value_wrong_typed_for_a_column_with_no_declared_cast_names_the_file_row_and_key(
+    families: FamilyFixture,
+) -> None:
+    """The team lead's exact repro: a DOUBLE column with no cast override (unlike
+    touchWallClock) getting a string. Its failure used to surface only as a bare
+    `column shotClock: ...` from `batch_from_columns`, with no file, family or row."""
+    frozen, _ = families
+    good_rows: list[dict[str, Any]] = [
+        {"id": "shot-1", "gameId": MATCH_A, "shotClock": 7.1},
+    ]
+    rel = events_path(MATCH_A)
+    shots_with_clock = freeze_family("shots", [(rel, good_rows)], SPORT, SOURCE_ID, COMMIT)
+    schema = pa_schema(shots_with_clock)
+
+    bad = [{"id": "shot-1", "gameId": MATCH_A, "shotClock": "seven"}]
+    with pytest.raises(ValueError, match=r"shots\[0\]\.shotClock: Could not convert 'seven'"):
+        family_batch(shots_with_clock, schema, bad, MATCH_A, rel)
