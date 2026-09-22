@@ -24,6 +24,7 @@ _PA_TYPES: dict[str, pa.DataType] = {
     "BIGINT": pa.int64(),
     "DOUBLE": pa.float64(),
     "VARCHAR": pa.string(),
+    "DATE": pa.date32(),
 }
 # Dialect stated explicitly: giving `columns` to read_csv turns auto-detection off.
 _DIALECT = "header=true, delim=',', quote='\"', escape='\"'"
@@ -158,8 +159,20 @@ def impose(schema: FrozenSchema, path: Path, con: duckdb.DuckDBPyConnection) -> 
 def pa_schema(schema: FrozenSchema) -> pa.Schema:
     """The pyarrow schema of a frozen CSV family, all columns nullable: sniffing a
     file's type says nothing about whether a column is ever null in it, so the caller
-    (bronze) cannot declare NOT NULL from this alone. It prepends its own lineage."""
-    return pa.schema([pa.field(c.name, _PA_TYPES[c.type], nullable=True) for c in schema.columns])
+    (bronze) cannot declare NOT NULL from this alone. It prepends its own lineage.
+
+    A frozen type this module does not know how to store fails naming the table,
+    the column and the type, instead of a bare `KeyError` that sends the caller
+    hunting through the schema file to find which column it was.
+    """
+    fields = []
+    for c in schema.columns:
+        try:
+            pa_type = _PA_TYPES[c.type]
+        except KeyError as exc:
+            raise ValueError(f"{schema.table}.{c.name}: no pyarrow type for {c.type!r}") from exc
+        fields.append(pa.field(c.name, pa_type, nullable=True))
+    return pa.schema(fields)
 
 
 def read_typed(schema: FrozenSchema, path: Path, con: duckdb.DuckDBPyConnection) -> pa.Table:

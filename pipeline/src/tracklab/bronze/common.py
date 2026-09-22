@@ -35,15 +35,20 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import Any
 
+import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from tracklab.formats.csvschema import FrozenSchema, pa_schema, read_typed
 from tracklab.ingest.fetch import RECEIPT_NAME
+from tracklab.ingest.manifest import FileEntry
 
 ROW_GROUP_ROWS = 100_000
 COMPRESSION = "zstd"
@@ -164,3 +169,58 @@ class ParquetSink:
             return
         os.replace(self._tmp, self.path)
         self.bytes = self.path.stat().st_size
+
+
+@dataclass(frozen=True)
+class SeasonCsvStats:
+    table: str
+    rows: int
+    seconds: float
+    mb: float
+
+
+def season_csv_schema(frozen: FrozenSchema) -> pa.Schema:
+    """``SEASON_LINEAGE_FIELDS`` plus every frozen column of a season CSV family."""
+    return pa.schema([*SEASON_LINEAGE_FIELDS, *pa_schema(frozen)])
+
+
+def build_season_csv_table(
+    sport: str,
+    table: str,
+    frozen: FrozenSchema,
+    entry: FileEntry,
+    raw_root: Path,
+    commit: str,
+    data_dir: Path,
+    con: duckdb.DuckDBPyConnection,
+) -> SeasonCsvStats:
+    """One frozen, season-grain CSV (no match dimension) to Parquet with
+    ``SEASON_LINEAGE_FIELDS``. Shared by basketball's and football's season
+    aggregates (``bronze/{basketball,football}/aggregates.py``): bronze does not
+    sniff the file, it loads the ``*.schema.json`` the sport's ``freeze-schema``
+    already froze and imposes it with ``formats.csvschema.read_typed`` (DuckDB
+    ``read_csv(columns=...)``, so a value that does not parse fails here with the
+    file name). Each file is at most a few hundred rows, so it is read whole into
+    pyarrow, no streaming.
+    """
+    started = time.perf_counter()
+    schema = season_csv_schema(frozen)
+    data = read_typed(frozen, raw_root / entry.path, con)
+    n = data.num_rows
+    columns: dict[str, Any] = {
+        "sport": sport,
+        "source_file": entry.path,
+        "source_row": list(range(n)),
+        **{name: data.column(name).to_pylist() for name in data.column_names},
+    }
+    batch = batch_from_columns(schema, columns, n)
+    metadata = {
+        "tracklab.sport": sport,
+        "tracklab.source_file": entry.path,
+        "tracklab.source_sha256": entry.sha256,
+        "tracklab.source_commit": commit,
+    }
+    out_path = bronze_season_path(data_dir, sport, table)
+    with ParquetSink(out_path, schema, metadata) as sink:
+        sink.write(batch)
+    return SeasonCsvStats(table, sink.rows, time.perf_counter() - started, sink.bytes / 1e6)

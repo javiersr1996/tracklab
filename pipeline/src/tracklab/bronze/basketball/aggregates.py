@@ -8,87 +8,44 @@ live at the season path (``bronze_season_path``), like ``player_id_aliases`` in
 with ``formats.csvschema.read_typed`` (DuckDB ``read_csv(columns=...)``, so a value
 that does not parse fails here with the file name). Each file is at most a few
 hundred rows, so it is read whole into pyarrow, no streaming.
+
+The CSV-to-Parquet body (read typed, add lineage, write) is identical to football's
+season aggregates, so it lives once in ``bronze.common.build_season_csv_table``; this
+module only knows basketball's schemas directory and its 3 family names
+(``formats.basketball.aggregate_table``).
 """
 
 from __future__ import annotations
 
-import time
 from collections.abc import Callable
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 import duckdb
-import pyarrow as pa
 
-from tracklab.bronze.common import (
-    SEASON_LINEAGE_FIELDS,
-    ParquetSink,
-    batch_from_columns,
-    bronze_season_path,
-)
+from tracklab.bronze.common import SeasonCsvStats, build_season_csv_table
 from tracklab.formats.basketball import aggregate_table
-from tracklab.formats.csvschema import load_schema, pa_schema, read_typed
-from tracklab.ingest.manifest import FileEntry, Source
+from tracklab.formats.csvschema import load_schema
+from tracklab.ingest.manifest import Source
 
 SPORT = "basketball"
 SCHEMAS_DIR = Path(__file__).resolve().parents[1] / "schemas" / "basketball"
 Log = Callable[[str], None]
 
 
-@dataclass(frozen=True)
-class AggregateStats:
-    table: str
-    rows: int
-    seconds: float
-    mb: float
-
-
-def build_aggregate_table(
-    table: str,
-    entry: FileEntry,
-    raw_root: Path,
-    commit: str,
-    data_dir: Path,
-    con: duckdb.DuckDBPyConnection,
-) -> AggregateStats:
-    started = time.perf_counter()
-    frozen = load_schema(SCHEMAS_DIR / f"{table}.schema.json")
-    schema = pa.schema([*SEASON_LINEAGE_FIELDS, *pa_schema(frozen)])
-    data = read_typed(frozen, raw_root / entry.path, con)
-    n = data.num_rows
-    columns: dict[str, Any] = {
-        "sport": SPORT,
-        "source_file": entry.path,
-        "source_row": list(range(n)),
-        **{name: data.column(name).to_pylist() for name in data.column_names},
-    }
-    batch = batch_from_columns(schema, columns, n)
-    metadata = {
-        "tracklab.sport": SPORT,
-        "tracklab.source_file": entry.path,
-        "tracklab.source_sha256": entry.sha256,
-        "tracklab.source_commit": commit,
-    }
-    out_path = bronze_season_path(data_dir, SPORT, table)
-    with ParquetSink(out_path, schema, metadata) as sink:
-        sink.write(batch)
-    return AggregateStats(table, sink.rows, time.perf_counter() - started, sink.bytes / 1e6)
-
-
 def build_aggregates(
     source: Source, raw_root: Path, data_dir: Path, log: Log = print
-) -> list[AggregateStats]:
+) -> list[SeasonCsvStats]:
     commit = source.commit
     if commit is None:
         raise RuntimeError(f"{source.source_id} is not frozen; run `tracklab freeze` first")
     entries = sorted((f for f in source.files if f.role == "aggregate"), key=lambda f: f.path)
     con = duckdb.connect()
     log(f"{'table':>17} {'rows':>6} {'seconds':>8} {'MB':>7}")
-    stats: list[AggregateStats] = []
+    stats: list[SeasonCsvStats] = []
     for entry in entries:
         table = aggregate_table(Path(entry.path))
-        s = build_aggregate_table(table, entry, raw_root, commit, data_dir, con)
+        frozen = load_schema(SCHEMAS_DIR / f"{table}.schema.json")
+        s = build_season_csv_table(SPORT, table, frozen, entry, raw_root, commit, data_dir, con)
         log(f"{s.table:>17} {s.rows:>6} {s.seconds:>8.2f} {s.mb:>7.2f}")
         stats.append(s)
     return stats
