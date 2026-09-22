@@ -18,6 +18,8 @@ from tracklab.bronze.basketball.events import build_events as build_basketball_e
 from tracklab.bronze.basketball.meta import build_meta as build_basketball_meta
 from tracklab.bronze.basketball.tracking import build_tracking as build_basketball_tracking
 from tracklab.bronze.common import raw_root_for
+from tracklab.bronze.football.meta import build_meta as build_football_meta
+from tracklab.bronze.football.tracking import build_tracking as build_football_tracking
 from tracklab.formats.basketball import freeze_basketball
 from tracklab.formats.football_report import freeze_football
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
@@ -35,6 +37,8 @@ _BRONZE_BUILDERS: dict[tuple[str, str], _BronzeBuilder] = {
     ("basketball", "events"): build_basketball_events,
     ("basketball", "meta"): build_basketball_meta,
     ("basketball", "aggregates"): build_basketball_aggregates,
+    ("football", "tracking"): build_football_tracking,
+    ("football", "meta"): build_football_meta,
 }
 
 
