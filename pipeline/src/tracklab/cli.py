@@ -27,6 +27,7 @@ from tracklab.formats.football_report import freeze_football
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
+from tracklab.silver.orientation import SPORTS, run_orientation
 
 _Handler = Callable[[argparse.Namespace], int]
 _DEFAULT_SCHEMAS_DIR = Path(__file__).resolve().parent / "bronze" / "schemas"
@@ -124,6 +125,17 @@ def _cmd_bronze(args: argparse.Namespace) -> int:
         _BRONZE_BUILDERS[(args.sport, group)](source, raw_root, args.data_dir)
     print(f"total seconds={time.perf_counter() - started:.1f}")
     return 0
+
+
+def _cmd_orientation(args: argparse.Namespace) -> int:
+    sports = SPORTS if args.sport == "both" else (args.sport,)
+    return run_orientation(
+        sports=sports,
+        manifest_path=args.manifest,
+        data_dir=args.data_dir,
+        reports_dir=args.reports_dir,
+        docs_dir=args.docs_dir,
+    )
 
 
 def _cmd_publish(args: argparse.Namespace) -> int:
@@ -239,6 +251,42 @@ def build_parser() -> argparse.ArgumentParser:
         help="Data root: reads raw/<source_id>/, writes bronze/<sport>/<table>/ (default: data).",
     )
     bronze.set_defaults(func=_cmd_bronze)
+
+    orientation = subparsers.add_parser(
+        "orientation",
+        help="Probe attack direction and court geometry; write bronze.common.orientation.",
+    )
+    orientation.add_argument(
+        "--sport",
+        choices=(*SPORTS, "both"),
+        default="both",
+        help="Which sport to probe (default: both).",
+    )
+    orientation.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path("manifest/sources.json"),
+        help="Path to sources.json (default: manifest/sources.json).",
+    )
+    orientation.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path("data"),
+        help="Data root: reads bronze/<sport>/, writes bronze/common/orientation/ (default: data).",
+    )
+    orientation.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where orientation_<sport>.csv go (default: reports).",
+    )
+    orientation.add_argument(
+        "--docs-dir",
+        type=Path,
+        default=Path("../docs"),
+        help="Where decisions.md goes (default: ../docs, the repo's docs from pipeline/).",
+    )
+    orientation.set_defaults(func=_cmd_orientation)
 
     publish = subparsers.add_parser("publish", help="Write JSON for the web from silver.")
     publish.set_defaults(func=_cmd_publish)
