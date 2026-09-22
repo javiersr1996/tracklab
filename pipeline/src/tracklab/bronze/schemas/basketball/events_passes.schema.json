@@ -1,0 +1,174 @@
+{
+  "table": "events_passes",
+  "family": "passes",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 30,
+  "keys_sha256": "e6d243eab7348ffe8e3eca4debaf6f96113dea6bab4ea184a6b8dbaade27f4be",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "chanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "startFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endFrame",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "startWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endWallClock",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "startGameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "endGameClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "shotClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "offTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "defTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "passerId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "receiverId",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "toReceiverId",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "complete",
+      "type": "BOOLEAN",
+      "nullable": true
+    },
+    {
+      "name": "turnover",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "ledToShot",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "assistOpp",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "inbounds",
+      "type": "BOOLEAN",
+      "nullable": true
+    },
+    {
+      "name": "backcourt",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "passerLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "receiverLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "passerRegion",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "receiverRegion",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "distance",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "touchId",
+      "type": "VARCHAR",
+      "nullable": true
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 4786
+}

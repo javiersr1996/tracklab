@@ -1,0 +1,180 @@
+{
+  "table": "events_closeouts",
+  "family": "closeouts",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 31,
+  "keys_sha256": "d4ecc3c8b35cc599c782df550438be096bf66287f674a425454318c970b13753",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "chanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "touchGameClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "touchFrame",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "touchWallClock",
+      "type": "BIGINT",
+      "nullable": true,
+      "source_type": "VARCHAR"
+    },
+    {
+      "name": "startGameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "startFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endGameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "endFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "direct",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "location",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "region",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "startLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "endLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "touchLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "startDistance",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "touchDistance",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "endDistance",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "ballhandlerId",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "ballhandlerDefId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "offTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "defTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "bhrOutcomes",
+      "type": "LIST<VARCHAR>",
+      "nullable": false
+    },
+    {
+      "name": "bhrAction",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "touchId",
+      "type": "VARCHAR",
+      "nullable": true
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 601
+}

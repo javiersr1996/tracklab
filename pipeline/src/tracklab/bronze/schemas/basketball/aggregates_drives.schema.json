@@ -1,0 +1,298 @@
+{
+  "table": "aggregates_drives",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_columns": 71,
+  "header_sha256": "a78b84b754ea379c02f9a1ad3e69eb4f4122abff50da70520befec765a9a0627",
+  "columns": [
+    {
+      "name": "competition_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "competition_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "season_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "season_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "player_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "team_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "team_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "games_played",
+      "type": "BIGINT"
+    },
+    {
+      "name": "total_drives",
+      "type": "BIGINT"
+    },
+    {
+      "name": "direct_drives_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "blowby_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "dribble_through_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "end_type_kickout_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "end_type_turnover_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "end_type_pullout_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "end_type_pullup_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "end_type_interior_pass_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "end_type_stoppage_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "end_type_shot_near_basket_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_mid_range_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_above_break_3_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "direction_left_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "direction_right_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "category_iso_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "category_off_ball_screen_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "category_pick_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "category_handoff_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "category_closeout_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "category_miscellaneous_count",
+      "type": "BIGINT"
+    },
+    {
+      "name": "points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "made_baskets",
+      "type": "BIGINT"
+    },
+    {
+      "name": "assists",
+      "type": "BIGINT"
+    },
+    {
+      "name": "potential_assists",
+      "type": "BIGINT"
+    },
+    {
+      "name": "fouls",
+      "type": "BIGINT"
+    },
+    {
+      "name": "successful_drives",
+      "type": "BIGINT"
+    },
+    {
+      "name": "unsuccessful_drives",
+      "type": "BIGINT"
+    },
+    {
+      "name": "field_points_in_drive",
+      "type": "BIGINT"
+    },
+    {
+      "name": "fga_in_drive",
+      "type": "BIGINT"
+    },
+    {
+      "name": "ft_attempts_in_drive",
+      "type": "BIGINT"
+    },
+    {
+      "name": "ft_mades_in_drive",
+      "type": "BIGINT"
+    },
+    {
+      "name": "blowby_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "dribble_through_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "end_type_kickout_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "end_type_turnover_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "end_type_pullout_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "end_type_pullup_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "end_type_interior_pass_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "end_type_stoppage_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "end_type_shot_near_basket_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_mid_range_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_corner_3_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_above_break_3_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "direction_left_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "direction_right_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "category_iso_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "category_off_ball_screen_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "category_pick_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "category_handoff_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "category_closeout_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "category_miscellaneous_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "points_per_drive",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "made_baskets_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "assists_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "potential_assists_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "fouls_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "successful_drives_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "unsuccessful_drives_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "points_per_shot_in_drive",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "possessions_played",
+      "type": "BIGINT"
+    }
+  ],
+  "all_null_columns": [],
+  "frozen_from": [
+    "data/aggregates/acb_drivesaggregates_20252026.csv"
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "table": "events_touches",
+  "family": "touches",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 27,
+  "keys_sha256": "4231cf3110ca281c5f9bb5f53778e82a2ce1988dab3f6d2bcae10f5bd37010bf",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "chanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "startFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startGameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "endGameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "shotClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "offTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "defTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "playerId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "defenderId",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "closestDefLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "location",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "endLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "numDribbles",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "ledToShot",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "touchTime",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "outcomes",
+      "type": "LIST<VARCHAR>",
+      "nullable": false
+    },
+    {
+      "name": "regionsIn",
+      "type": "LIST<VARCHAR>",
+      "nullable": false
+    },
+    {
+      "name": "endClosestDefLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "direct",
+      "type": "BOOLEAN",
+      "nullable": false
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 6662
+}

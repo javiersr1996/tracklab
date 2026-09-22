@@ -1,0 +1,154 @@
+{
+  "table": "events_picks",
+  "family": "picks",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 26,
+  "keys_sha256": "96c6e7957e3e32c744c6c87d4c1b4ba5947e92c0f4784e73eecd6e65b3e4e16c",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "chanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "gameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "frame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "wallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "direct",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "location",
+      "type": "POINT2D",
+      "nullable": false
+    },
+    {
+      "name": "region",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "shotClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "ballhandlerId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "screenerId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "ballhandlerDefId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "screenerDefId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "offTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "defTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "locationType",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "bhrDefType",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "scrDefType",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "bhrOutcomes",
+      "type": "LIST<VARCHAR>",
+      "nullable": false
+    },
+    {
+      "name": "scrOutcomes",
+      "type": "LIST<VARCHAR>",
+      "nullable": false
+    },
+    {
+      "name": "handoffPick",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "touchId",
+      "type": "VARCHAR",
+      "nullable": true
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 1520
+}

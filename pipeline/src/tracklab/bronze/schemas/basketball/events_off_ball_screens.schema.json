@@ -1,0 +1,159 @@
+{
+  "table": "events_off_ball_screens",
+  "family": "off_ball_screens",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 27,
+  "keys_sha256": "d932dde188a76809312a8d08618a8703eca247ff343a60a609715b9cc9546261",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "chanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "gameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "frame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "wallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "direct",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "location",
+      "type": "POINT2D",
+      "nullable": false
+    },
+    {
+      "name": "region",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "shotClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "cutterId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "screenerId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "cutterDefId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "screenerDefId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "offTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "defTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "cutterDefType",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "screenerDefType",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "outcomes",
+      "type": "LIST<VARCHAR>",
+      "nullable": false
+    },
+    {
+      "name": "ledToTouch",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "ledToShot",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "scrOutcomes",
+      "type": "LIST<VARCHAR>",
+      "nullable": false
+    },
+    {
+      "name": "touchId",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "scrTouchId",
+      "type": "VARCHAR",
+      "nullable": true
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 1103
+}

@@ -1,0 +1,174 @@
+{
+  "table": "events_chances",
+  "family": "chances",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 30,
+  "keys_sha256": "29dfd3d70915260b03b8361a989cd4a741cfd99dec3167fd1b6c8968bcb5314c",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startGameClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "endGameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "offTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "defTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startType",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "outcome",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "offPlayerIds",
+      "type": "LIST<BIGINT>",
+      "nullable": false
+    },
+    {
+      "name": "defPlayerIds",
+      "type": "LIST<BIGINT>",
+      "nullable": false
+    },
+    {
+      "name": "homeStartScore",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "awayStartScore",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "ptsScored",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startShotClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "endShotClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "ballInPaint",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "endOfPossession",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "endLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "frontcourtFrame",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "transition",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "lastChanceId",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "qualityIndex",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "usable",
+      "type": "BOOLEAN",
+      "nullable": false
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 2055
+}

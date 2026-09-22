@@ -1,0 +1,94 @@
+{
+  "table": "events_chance_players",
+  "family": "chance_players",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 14,
+  "keys_sha256": "1b026ba4dfe8982f3cd480272d7459678a5acb494e0a0c476e5eb0063ff509e6",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "chanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "playerId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "offense",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "startMatchupId",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "endMatchupId",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "shotLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "rimLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "reboundLoc",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "minutesPlayedBefore",
+      "type": "DOUBLE",
+      "nullable": false
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 20540
+}

@@ -1,0 +1,164 @@
+{
+  "table": "events_drives",
+  "family": "drives",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 28,
+  "keys_sha256": "aaad107d0664ff7147d49ee0d78fd5c6db5bd91b8d41a0919b648dd701d34826",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "chanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startGameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "startFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endGameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "endFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "direct",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "location",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "region",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "endLoc",
+      "type": "POINT2D",
+      "nullable": false
+    },
+    {
+      "name": "shotClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "ballhandlerId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "ballhandlerDefId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "offTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "defTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "category",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "blowby",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "endType",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "direction",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "bhrOutcomes",
+      "type": "LIST<VARCHAR>",
+      "nullable": false
+    },
+    {
+      "name": "dribbleThrough",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "touchId",
+      "type": "VARCHAR",
+      "nullable": false
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 660
+}

@@ -23,6 +23,12 @@ builder (basketball tracking and events, football tracking and CSV families) cop
   and the sha256 of the raw file travel in the Parquet key-value metadata.
 - Input: bronze reads the raw root that ``tracklab ingest`` verified, resolved from
   the receipt it wrote (``source_path`` when the bytes live in an outside clone).
+
+Exception to lineage: a handful of basketball tables have no match in their grain at
+all (``player_id_aliases``, the 3 ``aggregates_*``: they are one row per player-team-
+season or per CSV data row, not per match). Those use ``SEASON_LINEAGE_FIELDS``
+(``sport, source_file, source_row``, no ``match_id``) and live at
+``bronze_season_path()`` instead of ``bronze_path()``.
 """
 
 from __future__ import annotations
@@ -45,6 +51,13 @@ COMPRESSION = "zstd"
 LINEAGE_FIELDS: tuple[pa.Field, ...] = (
     pa.field("sport", pa.string(), nullable=False),
     pa.field("match_id", pa.int64(), nullable=False),
+    pa.field("source_file", pa.string(), nullable=False),
+    pa.field("source_row", pa.int64(), nullable=False),
+)
+
+# For the season-grain tables that carry no match_id (see the module docstring).
+SEASON_LINEAGE_FIELDS: tuple[pa.Field, ...] = (
+    pa.field("sport", pa.string(), nullable=False),
     pa.field("source_file", pa.string(), nullable=False),
     pa.field("source_row", pa.int64(), nullable=False),
 )
@@ -75,6 +88,11 @@ def raw_root_for(data_dir: Path, source_id: str) -> Path:
 
 def bronze_path(data_dir: Path, sport: str, table: str, match_id: int) -> Path:
     return data_dir / "bronze" / sport / table / f"{match_id}.parquet"
+
+
+def bronze_season_path(data_dir: Path, sport: str, table: str) -> Path:
+    """Path of a season-grain table (no match_id): one file for the whole bundle."""
+    return data_dir / "bronze" / sport / table / "data.parquet"
 
 
 def batch_from_columns(

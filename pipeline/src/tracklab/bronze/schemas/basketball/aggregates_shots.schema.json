@@ -1,0 +1,1246 @@
+{
+  "table": "aggregates_shots",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_columns": 308,
+  "header_sha256": "bf17310b28fd7b28989fc3b2203e9393f31e92c3152843d392a9af3539e98d69",
+  "columns": [
+    {
+      "name": "competition_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "competition_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "season_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "season_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "player_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "team_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "team_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "games_played",
+      "type": "BIGINT"
+    },
+    {
+      "name": "attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "three_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "two_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "three_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "two_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "fouled_fg_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "fouled_fg_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "assisted_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "blocked_on_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "avg_attempts_distance",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cns_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cns_three_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cns_two_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cns_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cns_three_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cns_two_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cns_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "od_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "od_three_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "od_two_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "od_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "od_three_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "od_two_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "od_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "contested_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "contested_three_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "contested_two_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "contested_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "contested_three_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "contested_two_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "contested_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "uncontested_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "uncontested_three_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "uncontested_two_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "uncontested_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "uncontested_three_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "uncontested_two_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "uncontested_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_restricted_area_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_restricted_area_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_restricted_area_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_restricted_area_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_paint_non_ra_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_paint_non_ra_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_paint_non_ra_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_paint_non_ra_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_mid_range_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_mid_range_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_mid_range_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_mid_range_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_above_break_3_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_above_break_3_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_above_break_3_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_above_break_3_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_backcourt_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_backcourt_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_backcourt_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_backcourt_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_far_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_far_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_far_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_far_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_other_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_other_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_other_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_other_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_average_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_average_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_average_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_average_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_blocked_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_blocked_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_blocked_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_blocked_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_light_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_light_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_light_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_light_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_open_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_open_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_open_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_open_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_plus_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_plus_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_plus_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cl_plus_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_catch_and_shoot_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_catch_and_shoot_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_catch_and_shoot_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_catch_and_shoot_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_dribble_pull_up_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_dribble_pull_up_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_dribble_pull_up_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_dribble_pull_up_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_dunk_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_dunk_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_dunk_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_dunk_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_floater_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_floater_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_floater_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_floater_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_heave_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_heave_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_heave_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_heave_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_hook_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_hook_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_hook_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_hook_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_layup_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_layup_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_layup_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_layup_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_leaner_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_leaner_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_leaner_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_leaner_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_lob_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_lob_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_lob_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_lob_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_off_move_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_off_move_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_off_move_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_off_move_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_post_fadeaway_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_post_fadeaway_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_post_fadeaway_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_post_fadeaway_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_shake_and_raise_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_shake_and_raise_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_shake_and_raise_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_shake_and_raise_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_stepback_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_stepback_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_stepback_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_stepback_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_tip_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_tip_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_tip_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cst_tip_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "ft_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "ft_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cns_ft_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "cns_ft_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "od_ft_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "od_ft_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "contested_ft_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "contested_ft_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "uncontested_ft_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "uncontested_ft_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "two_pt_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "three_pt_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "ft_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "efg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "fouled_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "three_pa_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cns_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cns_two_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cns_three_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cns_efg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cns_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cns_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "od_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "od_two_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "od_three_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "od_efg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "od_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "od_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "contested_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "contested_two_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "contested_three_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "contested_efg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "contested_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "contested_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "uncontested_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "uncontested_two_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "uncontested_three_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "uncontested_efg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "uncontested_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "uncontested_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_average_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_average_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_average_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_blocked_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_blocked_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_blocked_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_light_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_light_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_light_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_open_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_open_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_open_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_plus_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_plus_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cl_plus_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_catch_and_shoot_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_catch_and_shoot_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_catch_and_shoot_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_dribble_pull_up_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_dribble_pull_up_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_dribble_pull_up_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_dunk_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_dunk_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_dunk_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_floater_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_floater_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_floater_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_heave_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_heave_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_heave_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_hook_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_hook_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_hook_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_layup_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_layup_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_layup_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_leaner_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_leaner_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_leaner_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_lob_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_lob_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_lob_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_off_move_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_off_move_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_off_move_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_post_fadeaway_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_post_fadeaway_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_post_fadeaway_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_shake_and_raise_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_shake_and_raise_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_shake_and_raise_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_stepback_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_stepback_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_stepback_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_tip_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_tip_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "cst_tip_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "rim_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "rim_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "rim_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "rim_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "short_midrange_paint_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "short_midrange_paint_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "short_midrange_paint_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "short_midrange_paint_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "long_midrange_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "long_midrange_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "long_midrange_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "long_midrange_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_three_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_three_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_three_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_three_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_corner_3_left_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_left_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_left_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_left_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_left_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_corner_3_left_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_corner_3_left_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_corner_3_right_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_right_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_right_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_right_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_corner_3_right_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_corner_3_right_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_corner_3_right_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_top_3_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_top_3_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_top_3_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_top_3_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_top_3_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_top_3_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_top_3_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_wing_3_left_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_wing_3_left_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_wing_3_left_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_wing_3_left_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_wing_3_left_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_wing_3_left_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_wing_3_left_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_wing_3_right_attempts",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_wing_3_right_mades",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_wing_3_right_misses",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_wing_3_right_total_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "zone_wing_3_right_fg_percentage",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_wing_3_right_attempt_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "zone_wing_3_right_points_per_shot",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "possessions_played",
+      "type": "BIGINT"
+    }
+  ],
+  "all_null_columns": [],
+  "frozen_from": [
+    "data/aggregates/acb_shotsaggregates_20252026.csv"
+  ]
+}

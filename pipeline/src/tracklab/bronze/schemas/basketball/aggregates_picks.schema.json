@@ -1,0 +1,2756 @@
+{
+  "table": "aggregates_picks",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_columns": 684,
+  "header_sha256": "bbaeae88e085b335e754c6c351bbc7c79945bef5c1f179ee7d0783de6fcdbc15",
+  "columns": [
+    {
+      "name": "competition_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "competition_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "season_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "season_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "player_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "player_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "team_id",
+      "type": "BIGINT"
+    },
+    {
+      "name": "team_name",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "games_played",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_total_picks",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_2pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_3pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_2pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_3pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_2pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_3pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_screener",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_other",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_screener",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_other",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_turnover",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_foul",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_block",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_screener",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_other",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_successful_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_unsuccessful_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_shot_taken",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_only_pass_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_no_outcome_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_2pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_2pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_2pt_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_2pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_2pt_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_3pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_3pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_3pt_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_3pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_3pt_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_2pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_2pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_2pt_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_2pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_2pt_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_3pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_3pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_3pt_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_3pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_3pt_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_2pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_2pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_2pt_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_2pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_2pt_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_3pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_3pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_3pt_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_3pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_3pt_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_screener_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_screener_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_screener_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_screener_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_screener_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_other_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_other_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_other_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_other_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_to_other_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_screener_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_screener_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_screener_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_screener_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_screener_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_other_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_other_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_other_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_other_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_opportunity_to_other_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_turnover_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_turnover_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_turnover_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_turnover_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_turnover_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_foul_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_foul_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_foul_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_foul_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_foul_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_block_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_block_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_block_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_block_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_block_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_screener_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_screener_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_screener_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_screener_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_screener_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_other_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_other_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_other_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_other_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_pass_to_other_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_successful_pick_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_successful_pick_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_successful_pick_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_successful_pick_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_successful_pick_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_unsuccessful_pick_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_unsuccessful_pick_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_unsuccessful_pick_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_unsuccessful_pick_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_unsuccessful_pick_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_shot_taken_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_shot_taken_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_shot_taken_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_shot_taken_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_shot_taken_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_only_pass_pick_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_only_pass_pick_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_only_pass_pick_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_only_pass_pick_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_only_pass_pick_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_no_outcome_pick_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_no_outcome_pick_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_no_outcome_pick_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_no_outcome_pick_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_no_outcome_pick_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_points_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_points_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_points_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_points_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_points_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_picks_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_picks_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_picks_vs_over",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_picks_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_picks_vs_under",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_score_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_points_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_points_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_points_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_points_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_miss_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_assist_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_turnover_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_turnover_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_turnover_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_turnover_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_picks_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_picks_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_picks_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_picks_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_field_points_in_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_fga_in_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_ft_attempts_in_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_ft_mades_in_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_total_picks",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_2pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_3pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_2pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_3pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_2pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_3pt",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_screener",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_other",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_screener",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_other",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_turnover",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_foul",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_block",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_screener",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_other",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_successful_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_unsuccessful_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_shot_taken",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_only_pass_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_no_outcome_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_points",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_2pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_2pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_2pt_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_2pt_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_2pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_3pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_3pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_3pt_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_3pt_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_3pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_2pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_2pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_2pt_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_2pt_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_2pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_3pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_3pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_3pt_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_3pt_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_3pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_2pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_2pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_2pt_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_2pt_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_2pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_3pt_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_3pt_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_3pt_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_3pt_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_3pt_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_screener_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_screener_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_screener_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_screener_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_screener_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_other_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_other_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_other_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_other_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_to_other_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_screener_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_screener_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_screener_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_screener_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_screener_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_other_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_other_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_other_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_other_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_opportunity_to_other_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_turnover_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_turnover_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_turnover_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_turnover_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_turnover_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_foul_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_foul_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_foul_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_foul_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_foul_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_block_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_block_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_block_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_block_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_block_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_screener_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_screener_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_screener_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_screener_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_screener_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_other_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_other_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_other_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_other_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_pass_to_other_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_successful_pick_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_successful_pick_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_successful_pick_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_successful_pick_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_successful_pick_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_unsuccessful_pick_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_unsuccessful_pick_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_unsuccessful_pick_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_unsuccessful_pick_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_unsuccessful_pick_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_shot_taken_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_shot_taken_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_shot_taken_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_shot_taken_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_shot_taken_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_only_pass_pick_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_only_pass_pick_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_only_pass_pick_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_only_pass_pick_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_only_pass_pick_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_no_outcome_pick_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_no_outcome_pick_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_no_outcome_pick_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_no_outcome_pick_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_no_outcome_pick_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_points_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_points_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_points_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_points_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_points_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_picks_vs_blitz",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_picks_vs_ice",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_picks_vs_show",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_picks_vs_soft",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_picks_vs_switch",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_score_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_points_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_points_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_points_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_points_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_miss_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_assist_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_turnover_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_turnover_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_turnover_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_turnover_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_picks_at_middle",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_picks_at_stepUp",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_picks_at_unknown",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_picks_at_wing",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_field_points_in_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_fga_in_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_ft_attempts_in_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "screener_ft_mades_in_pick",
+      "type": "BIGINT"
+    },
+    {
+      "name": "handler_ppp",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_score_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_turnover_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_points_per_pick_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_points_per_pick_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_points_per_pick_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_points_per_pick_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_points_per_pick_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_score_rate_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_score_rate_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_score_rate_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_score_rate_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_score_rate_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_ppp_at_middle",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_ppp_at_stepUp",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_ppp_at_unknown",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "handler_ppp_at_wing",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_score_rate_at_middle",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_score_rate_at_stepUp",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_score_rate_at_unknown",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "handler_score_rate_at_wing",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pick_rate_at_middle",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pick_rate_at_stepUp",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pick_rate_at_unknown",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pick_rate_at_wing",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_points_per_shot_in_pick",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_ppp",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_score_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_turnover_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_points_per_pick_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_points_per_pick_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_points_per_pick_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_points_per_pick_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_points_per_pick_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_score_rate_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_score_rate_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_score_rate_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_score_rate_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_score_rate_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_ppp_at_middle",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_ppp_at_stepUp",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_ppp_at_unknown",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "screener_ppp_at_wing",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_score_rate_at_middle",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_score_rate_at_stepUp",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_score_rate_at_unknown",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "screener_score_rate_at_wing",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pick_rate_at_middle",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pick_rate_at_stepUp",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pick_rate_at_unknown",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pick_rate_at_wing",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_points_per_shot_in_pick",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_success_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_rate_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_rate_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_rate_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_rate_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_rate_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_success_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_rate_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_rate_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_rate_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_rate_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_rate_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_2pt_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_3pt_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_opportunity_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_opportunity_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_other_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_screener_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_block_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_foul_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_no_outcome_pick_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_only_pass_pick_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_other_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_screener_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_taken_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_successful_pick_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_unsuccessful_pick_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_turnover_rate_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_turnover_rate_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_turnover_rate_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_turnover_rate_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_turnover_rate_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_2pt_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_2pt_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_2pt_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_2pt_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_2pt_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_3pt_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_3pt_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_3pt_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_3pt_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_3pt_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_opportunity_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_opportunity_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_opportunity_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_opportunity_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_opportunity_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_other_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_other_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_other_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_other_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_other_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_screener_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_screener_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_screener_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_screener_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_assist_to_screener_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_block_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_block_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_block_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_block_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_block_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_foul_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_foul_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_foul_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_foul_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_foul_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_no_outcome_pick_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_no_outcome_pick_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_no_outcome_pick_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_no_outcome_pick_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_no_outcome_pick_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_only_pass_pick_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_only_pass_pick_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_only_pass_pick_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_only_pass_pick_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_only_pass_pick_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_other_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_other_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_other_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_other_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_other_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_screener_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_screener_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_screener_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_screener_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_pass_to_screener_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_taken_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_taken_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_taken_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_taken_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_taken_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_successful_pick_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_successful_pick_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_successful_pick_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_successful_pick_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_successful_pick_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_unsuccessful_pick_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_unsuccessful_pick_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_unsuccessful_pick_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_unsuccessful_pick_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_unsuccessful_pick_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_2pt_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_3pt_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_opportunity_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_opportunity_rate",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_other_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_screener_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_block_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_foul_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_no_outcome_pick_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_only_pass_pick_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_other_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_screener_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_taken_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_successful_pick_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_unsuccessful_pick_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_turnover_rate_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_turnover_rate_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_turnover_rate_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_turnover_rate_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_turnover_rate_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_2pt_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_2pt_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_2pt_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_2pt_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_2pt_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_3pt_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_3pt_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_3pt_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_3pt_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_3pt_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_opportunity_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_opportunity_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_opportunity_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_opportunity_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_opportunity_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_other_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_other_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_other_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_other_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_other_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_screener_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_screener_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_screener_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_screener_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_assist_to_screener_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_block_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_block_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_block_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_block_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_block_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_foul_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_foul_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_foul_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_foul_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_foul_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_no_outcome_pick_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_no_outcome_pick_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_no_outcome_pick_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_no_outcome_pick_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_no_outcome_pick_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_only_pass_pick_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_only_pass_pick_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_only_pass_pick_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_only_pass_pick_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_only_pass_pick_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_other_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_other_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_other_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_other_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_other_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_screener_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_screener_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_screener_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_screener_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_pass_to_screener_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_taken_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_taken_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_taken_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_taken_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_taken_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_successful_pick_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_successful_pick_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_successful_pick_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_successful_pick_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_successful_pick_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_unsuccessful_pick_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_unsuccessful_pick_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_unsuccessful_pick_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_unsuccessful_pick_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_unsuccessful_pick_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg2_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg2_pct_vs_blitz",
+      "type": "VARCHAR"
+    },
+    {
+      "name": "handler_fg2_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg2_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg2_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg2_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg3_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg3_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg3_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg3_pct_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg3_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_fg3_pct_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_2pt",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_2pt_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_2pt_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_2pt_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_2pt_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_2pt_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_3pt",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_3pt_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_3pt_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_3pt_vs_over",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_3pt_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "handler_shot_rate_3pt_vs_under",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg2_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg2_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg2_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg2_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg2_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg2_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg3_pct",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg3_pct_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg3_pct_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg3_pct_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg3_pct_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_fg3_pct_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_2pt",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_2pt_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_2pt_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_2pt_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_2pt_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_2pt_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_3pt",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_3pt_vs_blitz",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_3pt_vs_ice",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_3pt_vs_show",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_3pt_vs_soft",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "screener_shot_rate_3pt_vs_switch",
+      "type": "DOUBLE"
+    },
+    {
+      "name": "possessions_played",
+      "type": "BIGINT"
+    }
+  ],
+  "all_null_columns": [
+    "handler_ppp_at_unknown",
+    "handler_score_rate_at_unknown",
+    "screener_ppp_at_unknown",
+    "screener_score_rate_at_unknown",
+    "handler_fg2_pct_vs_blitz"
+  ],
+  "frozen_from": [
+    "data/aggregates/acb_picksaggregates_20252026.csv"
+  ]
+}

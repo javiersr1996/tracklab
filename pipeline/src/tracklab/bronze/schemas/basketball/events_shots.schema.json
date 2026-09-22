@@ -1,0 +1,224 @@
+{
+  "table": "events_shots",
+  "family": "shots",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 40,
+  "keys_sha256": "2e37a58c2320dbc856dd5e9abd981b8682082ce8bbbb49c0b425b68f1acd5f94",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "chanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "startFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "startGameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "endFrame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endWallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "endGameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "location",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "region",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "shotClock",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "shooterId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "offTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "defTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "three",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "outcome",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "fouled",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "foulId",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "assisted",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "assistOpp",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "passerId",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "blocked",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "blockerId",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "distance",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "dribblesBefore",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "shotType",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "complexShotType",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "catchAndShoot",
+      "type": "BOOLEAN",
+      "nullable": true
+    },
+    {
+      "name": "shotQuality",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "createdFromPaint",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "contested",
+      "type": "BOOLEAN",
+      "nullable": true
+    },
+    {
+      "name": "contestLevel",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "releaseTime",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "closestDefDist",
+      "type": "DOUBLE",
+      "nullable": true
+    },
+    {
+      "name": "closestDefId",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "touchId",
+      "type": "VARCHAR",
+      "nullable": true
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 1459
+}

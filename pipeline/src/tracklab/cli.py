@@ -13,8 +13,12 @@ import time
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from tracklab.bronze.basketball.aggregates import build_aggregates as build_basketball_aggregates
+from tracklab.bronze.basketball.events import build_events as build_basketball_events
+from tracklab.bronze.basketball.meta import build_meta as build_basketball_meta
 from tracklab.bronze.basketball.tracking import build_tracking as build_basketball_tracking
 from tracklab.bronze.common import raw_root_for
+from tracklab.formats.basketball import freeze_basketball
 from tracklab.formats.football_report import freeze_football
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
@@ -28,6 +32,9 @@ _DEFAULT_SCHEMAS_DIR = Path(__file__).resolve().parent / "bronze" / "schemas"
 _BronzeBuilder = Callable[[Source, Path, Path], object]
 _BRONZE_BUILDERS: dict[tuple[str, str], _BronzeBuilder] = {
     ("basketball", "tracking"): build_basketball_tracking,
+    ("basketball", "events"): build_basketball_events,
+    ("basketball", "meta"): build_basketball_meta,
+    ("basketball", "aggregates"): build_basketball_aggregates,
 }
 
 
@@ -66,16 +73,25 @@ def _cmd_freeze(args: argparse.Namespace) -> int:
 
 
 def _cmd_freeze_schema(args: argparse.Namespace) -> int:
-    if args.sport != "football":
-        raise NotImplementedError(f"tracklab freeze-schema {args.sport}: not implemented yet")
-    return freeze_football(
-        manifest_path=args.manifest,
-        data_dir=args.data_dir,
-        reports_dir=args.reports_dir,
-        docs_dir=args.docs_dir,
-        schemas_dir=args.schemas_dir or _DEFAULT_SCHEMAS_DIR / args.sport,
-        workers=args.workers,
-    )
+    schemas_dir = args.schemas_dir or _DEFAULT_SCHEMAS_DIR / args.sport
+    if args.sport == "football":
+        return freeze_football(
+            manifest_path=args.manifest,
+            data_dir=args.data_dir,
+            reports_dir=args.reports_dir,
+            docs_dir=args.docs_dir,
+            schemas_dir=schemas_dir,
+            workers=args.workers,
+        )
+    if args.sport == "basketball":
+        return freeze_basketball(
+            manifest_path=args.manifest,
+            data_dir=args.data_dir,
+            reports_dir=args.reports_dir,
+            docs_dir=args.docs_dir,
+            schemas_dir=schemas_dir,
+        )
+    raise NotImplementedError(f"tracklab freeze-schema {args.sport}: not implemented yet")
 
 
 def _cmd_bronze(args: argparse.Namespace) -> int:

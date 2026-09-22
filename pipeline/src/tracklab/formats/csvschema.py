@@ -16,8 +16,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import duckdb
+import pyarrow as pa
 
 _PROMOTION = {"BOOLEAN": 0, "BIGINT": 1, "DOUBLE": 2, "VARCHAR": 3}
+_PA_TYPES: dict[str, pa.DataType] = {
+    "BOOLEAN": pa.bool_(),
+    "BIGINT": pa.int64(),
+    "DOUBLE": pa.float64(),
+    "VARCHAR": pa.string(),
+}
 # Dialect stated explicitly: giving `columns` to read_csv turns auto-detection off.
 _DIALECT = "header=true, delim=',', quote='\"', escape='\"'"
 
@@ -146,3 +153,26 @@ def impose(schema: FrozenSchema, path: Path, con: duckdb.DuckDBPyConnection) -> 
     ).fetchone()
     assert row is not None
     return int(row[0])
+
+
+def pa_schema(schema: FrozenSchema) -> pa.Schema:
+    """The pyarrow schema of a frozen CSV family, all columns nullable: sniffing a
+    file's type says nothing about whether a column is ever null in it, so the caller
+    (bronze) cannot declare NOT NULL from this alone. It prepends its own lineage."""
+    return pa.schema([pa.field(c.name, _PA_TYPES[c.type], nullable=True) for c in schema.columns])
+
+
+def read_typed(schema: FrozenSchema, path: Path, con: duckdb.DuckDBPyConnection) -> pa.Table:
+    """`impose`, but returning the data: the whole file, typed to the frozen columns.
+
+    For bronze tables built from a handful of season-sized CSVs (the basketball
+    aggregates, and the football aggregates that will reuse this), the frozen columns
+    are few enough rows and columns that reading the file whole into pyarrow is
+    simpler than streaming it, and the caller casts and adds lineage from there.
+    """
+    if header_names(path) != list(schema.names):
+        raise ValueError(f"{path.name}: header does not match frozen {schema.table}")
+    return con.execute(
+        f"SELECT * FROM read_csv(?, columns=?, {_DIALECT})",
+        [str(path), schema.duckdb_columns()],
+    ).to_arrow_table()

@@ -1,0 +1,144 @@
+{
+  "table": "events_fouls",
+  "family": "fouls",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 24,
+  "keys_sha256": "d54a9b6259b9c601f52ce326068f663a35b551b2c6b35a6d75593b9b9b8900fc",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "chanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "gameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "frame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "wallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "foulerId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "fouledId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "foulerTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "fouledTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "shooting",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "location",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "region",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "offTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "defTeamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "foulType",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "isBonus",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "isTeam",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "isTechnical",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "touchId",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "shotId",
+      "type": "VARCHAR",
+      "nullable": true
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 443
+}

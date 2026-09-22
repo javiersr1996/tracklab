@@ -372,13 +372,16 @@ def test_raw_root_from_receipt(tmp_path: Path) -> None:
 
 def test_cli_refuses_an_unknown_table_group(bundle: tuple[Path, Path]) -> None:
     manifest_path, data_dir = bundle
-    with pytest.raises(SystemExit, match="no bronze builder for basketball \\['events'\\]"):
+    # 'silver' is never registered for any sport: a stand-in for whatever group does
+    # not exist yet, so this test survives new groups (events, meta, aggregates)
+    # being registered by later tasks.
+    with pytest.raises(SystemExit, match="no bronze builder for basketball \\['silver'\\]"):
         main(
             [
                 "bronze",
                 "basketball",
                 "--tables",
-                "tracking,events",
+                "tracking,silver",
                 "--manifest",
                 str(manifest_path),
                 "--data-dir",

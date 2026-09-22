@@ -1,0 +1,119 @@
+{
+  "table": "events_rebounds",
+  "family": "rebounds",
+  "sport": "basketball",
+  "source_id": "opendata-basketball",
+  "commit": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+  "n_keys": 19,
+  "keys_sha256": "28edab3ab0135acbc2faf6f4e6d501f449a0a07be850d9a42aae5b8b34e14a4e",
+  "columns": [
+    {
+      "name": "id",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "shotId",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "gameId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "season",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "chanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "possessionId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "period",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "gameClock",
+      "type": "DOUBLE",
+      "nullable": false
+    },
+    {
+      "name": "frame",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "wallClock",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "teamId",
+      "type": "BIGINT",
+      "nullable": false
+    },
+    {
+      "name": "rebounderId",
+      "type": "BIGINT",
+      "nullable": true
+    },
+    {
+      "name": "fgReb",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "rebounded",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "defensive",
+      "type": "BOOLEAN",
+      "nullable": false
+    },
+    {
+      "name": "location",
+      "type": "POINT2D",
+      "nullable": true
+    },
+    {
+      "name": "region",
+      "type": "VARCHAR",
+      "nullable": true
+    },
+    {
+      "name": "nextChanceId",
+      "type": "VARCHAR",
+      "nullable": false
+    },
+    {
+      "name": "touchId",
+      "type": "VARCHAR",
+      "nullable": true
+    }
+  ],
+  "frozen_from": [
+    "data/matches/114086/114086_dynamic_events.json",
+    "data/matches/114099/114099_dynamic_events.json",
+    "data/matches/114169/114169_dynamic_events.json",
+    "data/matches/114234/114234_dynamic_events.json",
+    "data/matches/114243/114243_dynamic_events.json",
+    "data/matches/178442/178442_dynamic_events.json",
+    "data/matches/179612/179612_dynamic_events.json",
+    "data/matches/184439/184439_dynamic_events.json",
+    "data/matches/188630/188630_dynamic_events.json",
+    "data/matches/191313/191313_dynamic_events.json"
+  ],
+  "rows_read": 768
+}
