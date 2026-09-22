@@ -19,7 +19,7 @@ import duckdb
 import pyarrow.parquet as pq
 import pytest
 
-from tracklab.bronze.common import raw_root_for
+from tracklab.bronze.common import LINEAGE_FIELDS, raw_root_for
 from tracklab.bronze.football.events import load_frozen_tables, table_schema
 from tracklab.ingest.manifest import load_manifest
 
@@ -32,6 +32,19 @@ SOURCE_ID = "opendata-football"
 # (see the task 8 brief); this test re-derives the per-match rows independently and
 # checks the totals against these frozen numbers.
 EXPECTED_TOTAL = {"dynamic_events": 94_361, "phases_of_play": 8_834}
+
+# docs/formats/football.md: 322 and 44 columns frozen by task 4. Both CSVs carry a
+# native `match_id` column, the same name `bronze.common.LINEAGE_FIELDS` already
+# reserves for the match id every table starts with; a pyarrow schema cannot
+# usefully carry two fields of one name, so `events.py` folds the native one into
+# the lineage one instead of writing it twice (see its module docstring). Written
+# columns are therefore lineage + frozen columns minus that one fold, spelled out
+# here so the subtraction is explicit instead of hidden behind a single total.
+FROZEN_COLUMNS = {"dynamic_events": 322, "phases_of_play": 44}
+FOLDED_NATIVE_COLUMNS = 1  # match_id
+EXPECTED_WRITTEN_COLUMNS = {
+    table: len(LINEAGE_FIELDS) + n - FOLDED_NATIVE_COLUMNS for table, n in FROZEN_COLUMNS.items()
+}
 ORPHAN_MATCH = 1953632
 ORPHAN_PLAYER_ID = 973077
 ORPHAN_ROWS = 35
@@ -67,13 +80,33 @@ def raw_csv(table: str, match_id: int) -> Path:
     return raw_root / "data" / "matches" / str(match_id) / f"{match_id}_{table}.csv"
 
 
+def test_written_column_counts_are_325_and_47() -> None:
+    """Literal figures, not just the derivation: 4 lineage + 322 frozen - 1 folded
+    native match_id = 325 for `dynamic_events`; 4 + 44 - 1 = 47 for
+    `phases_of_play`."""
+    assert EXPECTED_WRITTEN_COLUMNS == {"dynamic_events": 325, "phases_of_play": 47}
+
+
 def test_every_file_has_the_declared_schema(match_ids: list[int]) -> None:
     frozen = load_frozen_tables()
     for table in ("dynamic_events", "phases_of_play"):
+        assert len(frozen[table].columns) == FROZEN_COLUMNS[table], (
+            f"{table}: the frozen *.schema.json itself must still declare "
+            f"{FROZEN_COLUMNS[table]} columns (the fold only affects what bronze "
+            f"writes, never the frozen file)"
+        )
         declared = table_schema(frozen[table])
+        expected = len(LINEAGE_FIELDS) + FROZEN_COLUMNS[table] - FOLDED_NATIVE_COLUMNS
+        assert expected == EXPECTED_WRITTEN_COLUMNS[table]
+        assert len(declared) == expected, (
+            f"{table}: declared {len(declared)} columns, expected "
+            f"{len(LINEAGE_FIELDS)} lineage + {FROZEN_COLUMNS[table]} frozen - "
+            f"{FOLDED_NATIVE_COLUMNS} folded native match_id = {expected}"
+        )
         for match_id in match_ids:
             written = pq.read_schema(parquet(table, match_id))
             print(f"{table} {match_id} columns={len(written)}")
+            assert len(written) == expected, f"{table} {match_id}: {len(written)} != {expected}"
             assert written.equals(declared, check_metadata=False), f"{table} {match_id}: {written}"
 
 
