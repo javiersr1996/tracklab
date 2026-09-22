@@ -28,3 +28,33 @@ sources:
           One row per frame and object, the ball included as a side of its own.
           A timeout frame has no row here at all, which is why `frames` loses
           about 44% of the basketball file and keeps the timeline in bronze.
+      - name: events_chance_players
+      - name: events_chances
+      - name: events_closeouts
+      - name: events_dribbles
+      - name: events_drives
+      - name: events_fouls
+      - name: events_free_throws
+        description: >
+          Conformed as `shot`; native_family keeps them apart from open play.
+      - name: events_handoffs
+      - name: events_isolations
+      - name: events_matchups
+      - name: events_off_ball_screens
+      - name: events_passes
+        description: >
+          A family of its own here; football has no equivalent event and marks a pass on how a player_possession ended.
+      - name: events_picks
+      - name: events_possessions
+        description: >
+          The native team possession, and the carrier of `leftHoop`: every other family rotates its coordinates by the one its `possessionId` points at.
+      - name: events_posts
+      - name: events_rebounds
+      - name: events_shots
+        description: >
+          `location` is where the provider says the shot happened, not where the shooter stood at `startFrame` (task 9).
+      - name: events_timeouts
+      - name: events_touches
+        description: >
+          One player holding the ball. Conformed as `player_possession`.
+      - name: events_turnovers

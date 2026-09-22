@@ -48,6 +48,28 @@ def stats_report_path(reports_dir: Path) -> Path:
     return reports_dir / "stats_silver.csv"
 
 
+def event_type_report_path(reports_dir: Path) -> Path:
+    """The conformed vocabulary counted per sport and match. A different grain from
+    the row counts, so a file of its own rather than a wider one."""
+    return reports_dir / "stats_event_type.csv"
+
+
+@dataclass(frozen=True)
+class EventTypeCount:
+    sport: str
+    match_id: str
+    event_type: str
+    rows: int
+
+
+def count_event_types(con: duckdb.DuckDBPyConnection, source: str) -> list[EventTypeCount]:
+    rows = con.execute(
+        f"SELECT sport, match_id, event_type, count(*) FROM read_parquet('{source}') "
+        "GROUP BY ALL ORDER BY 1, 2, 3"
+    ).fetchall()
+    return [EventTypeCount(str(s), str(m), str(t), int(n)) for s, m, t, n in rows]
+
+
 @dataclass(frozen=True)
 class TableCount:
     table: str
@@ -120,6 +142,7 @@ def run_stats(data_dir: Path, reports_dir: Path) -> int:
 
     con = duckdb.connect()
     counts: list[TableCount] = []
+    event_types: list[EventTypeCount] = []
     for table, partitioned in present:
         source = table_glob(data_dir, table)
         per_match = count_table(con, table, source, per_match=partitioned)
@@ -134,6 +157,14 @@ def run_stats(data_dir: Path, reports_dir: Path) -> int:
         if partitioned:
             for count in per_match:
                 print(f"silver {table} {count.match_id}: {count.rows} rows")
+        if table == "events":
+            event_types = count_event_types(con, source)
+            by_type: dict[tuple[str, str], int] = {}
+            for typed in event_types:
+                key = (typed.sport, typed.event_type)
+                by_type[key] = by_type.get(key, 0) + typed.rows
+            for (sport, event_type), n in sorted(by_type.items()):
+                print(f"silver {table} {sport} {event_type}: {n} rows")
         if table == "dim_team_period":
             groups, lo, hi = team_period_groups(con, source)
             print(
@@ -148,4 +179,12 @@ def run_stats(data_dir: Path, reports_dir: Path) -> int:
         writer.writerow(["table", "sport", "match_id", "rows"])
         writer.writerows([[c.table, c.sport, c.match_id, c.rows] for c in counts])
     print(f"report: {report} ({len(counts)} rows)")
+
+    if event_types:
+        by_match = event_type_report_path(reports_dir)
+        with by_match.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.writer(handle, lineterminator="\n")
+            writer.writerow(["sport", "match_id", "event_type", "rows"])
+            writer.writerows([[c.sport, c.match_id, c.event_type, c.rows] for c in event_types])
+        print(f"report: {by_match} ({len(event_types)} rows)")
     return 0

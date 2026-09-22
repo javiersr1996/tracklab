@@ -50,6 +50,14 @@ models:
       frames:
         +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/frames"
         +tags: ["facts"]
+      events:
+        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/events"
+        +tags: ["facts"]
+      # Views are computed on demand and write no file, so they need no location
+      # and no directory of their own.
+      views:
+        +materialized: view
+        +tags: ["views"]
 
 seeds:
   tracklab:

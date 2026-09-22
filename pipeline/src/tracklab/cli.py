@@ -28,6 +28,7 @@ from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.silver.orientation import SPORTS, run_orientation
+from tracklab.silver.possessions import run_possessions
 from tracklab.silver.stats import run_stats
 
 _Handler = Callable[[argparse.Namespace], int]
@@ -137,6 +138,10 @@ def _cmd_orientation(args: argparse.Namespace) -> int:
         reports_dir=args.reports_dir,
         docs_dir=args.docs_dir,
     )
+
+
+def _cmd_possessions(args: argparse.Namespace) -> int:
+    return run_possessions(data_dir=args.data_dir, reports_dir=args.reports_dir)
 
 
 def _cmd_publish(args: argparse.Namespace) -> int:
@@ -288,6 +293,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Where decisions.md goes (default: ../docs, the repo's docs from pipeline/).",
     )
     orientation.set_defaults(func=_cmd_orientation)
+
+    possessions = subparsers.add_parser(
+        "possessions",
+        help="Score the two candidate rules for a football team possession.",
+    )
+    possessions.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path("data"),
+        help="Data root; the football bronze tables are read from it (default: data).",
+    )
+    possessions.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where possessions_football.csv goes (default: reports).",
+    )
+    possessions.set_defaults(func=_cmd_possessions)
 
     publish = subparsers.add_parser("publish", help="Write JSON for the web from silver.")
     publish.set_defaults(func=_cmd_publish)

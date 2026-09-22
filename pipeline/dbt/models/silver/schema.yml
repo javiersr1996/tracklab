@@ -347,6 +347,92 @@ models:
         data_tests:
           - not_null
 
+  - name: events
+    description: >
+      Every event of both bundles in one shape: 20 native families in basketball,
+      4 plus the phases of play in football, and the football team possession
+      this project derives. Coordinates are rotated to the venue frame, and a row
+      whose rotation cannot be resolved carries none.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ["match_id", "event_id"]
+    columns:
+      - name: sport
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_sport')
+                field: sport
+      - name: match_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_match')
+                field: match_id
+      - name: event_id
+        data_tests:
+          - not_null
+          - unique
+      - name: event_type
+        description: The conformed vocabulary; everything the seed does not name is `other`.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["possession", "player_possession", "pass", "shot", "other"]
+      - name: native_family
+        description: What the provider calls this family, and how `other` is told apart.
+        data_tests:
+          - not_null
+      - name: period
+        data_tests:
+          - not_null
+      - name: team_id
+        description: NULL where the provider names no team, as in a basketball matchup.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_team')
+                field: team_id
+      - name: possession_id
+        description: >
+          The event_id of the possession this event belongs to. NULL for the
+          football events that fall between two team possessions.
+
+  - name: frame_possession
+    description: >
+      Which team possession a frame belongs to. A view, because expanding the
+      possessions to their frames would write tens of millions of rows that are
+      one range join away from what silver already holds.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: ["match_id", "frame_native"]
+    columns:
+      - name: match_id
+        data_tests:
+          - not_null
+      - name: frame_native
+        data_tests:
+          - not_null
+      - name: possession_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('events')
+                field: event_id
+      - name: team_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_team')
+                field: team_id
+
 seeds:
   - name: surface_spec
     description: >
@@ -364,5 +450,22 @@ seeds:
         data_tests:
           - not_null
       - name: width_m
+        data_tests:
+          - not_null
+
+  - name: event_type_map
+    description: >
+      The conformed vocabulary, one row per (sport, native family, subtype
+      pattern). A row with a literal subtype wins over the `*` of its family,
+      which is how a football player_possession that ended in a pass becomes a
+      `pass` while the rest stay `player_possession`.
+    columns:
+      - name: sport
+        data_tests:
+          - not_null
+      - name: native_family
+        data_tests:
+          - not_null
+      - name: event_type
         data_tests:
           - not_null
