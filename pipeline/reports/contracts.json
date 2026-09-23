@@ -1,0 +1,191 @@
+{
+  "ball_z_pct": {
+    "basketball:114086": 100.0,
+    "basketball:114099": 100.0,
+    "basketball:114169": 100.0,
+    "basketball:114234": 100.0,
+    "basketball:114243": 100.0,
+    "basketball:178442": 100.0,
+    "basketball:179612": 100.0,
+    "basketball:184439": 100.0,
+    "basketball:188630": 100.0,
+    "basketball:191313": 100.0,
+    "football:1874553": 100.0,
+    "football:1886347": 100.0,
+    "football:1899585": 100.0,
+    "football:1925299": 100.0,
+    "football:1927964": 100.0,
+    "football:1953632": 100.0,
+    "football:1959846": 100.0,
+    "football:1986691": 100.0,
+    "football:1996435": 100.0,
+    "football:1996436": 100.0,
+    "football:2006229": 100.0,
+    "football:2006363": 100.0,
+    "football:2007448": 100.0,
+    "football:2007721": 100.0,
+    "football:2010085": 100.0,
+    "football:2011166": 100.0,
+    "football:2013725": 100.0,
+    "football:2015213": 100.0,
+    "football:2016236": 100.0,
+    "football:2017461": 100.0
+  },
+  "entity_ids_in_two_sports": 0,
+  "fact_columns": {
+    "events": 22,
+    "frames": 14
+  },
+  "filled_by_one_sport_only": {
+    "dim_team.short_name": "football"
+  },
+  "frame_entities_missing_from_dim_entity": 0,
+  "player_rows_with_z": {
+    "basketball": 0,
+    "football": 0
+  },
+  "rows_by_sport": {
+    "dim_entity": {
+      "basketball": 244,
+      "football": 739
+    },
+    "dim_match": {
+      "basketball": 10,
+      "football": 20
+    },
+    "dim_period": {
+      "basketball": 41,
+      "football": 40
+    },
+    "dim_sport": {
+      "basketball": 1,
+      "football": 1
+    },
+    "dim_team": {
+      "basketball": 17,
+      "football": 13
+    },
+    "dim_team_period": {
+      "basketball": 82,
+      "football": 80
+    },
+    "events": {
+      "basketball": 71984,
+      "football": 107193
+    },
+    "frame_possession": {
+      "basketball": 815474,
+      "football": 665751
+    },
+    "frames": {
+      "basketball": 9126744,
+      "football": 20213849
+    },
+    "frames_attacking": {
+      "basketball": 8970214,
+      "football": 15312273
+    }
+  },
+  "shots_attacking_half": {
+    "114086": {
+      "attacking_pct": 99.26,
+      "buzzer": 0,
+      "flipped_pct": 0.74,
+      "in_view": 136,
+      "judged": 136,
+      "shots": 139,
+      "to_rival": 0,
+      "to_rival_on_boundary": 0
+    },
+    "114099": {
+      "attacking_pct": 100.0,
+      "buzzer": 2,
+      "flipped_pct": 0.0,
+      "in_view": 149,
+      "judged": 147,
+      "shots": 150,
+      "to_rival": 0,
+      "to_rival_on_boundary": 0
+    },
+    "114169": {
+      "attacking_pct": 100.0,
+      "buzzer": 0,
+      "flipped_pct": 0.0,
+      "in_view": 147,
+      "judged": 147,
+      "shots": 148,
+      "to_rival": 0,
+      "to_rival_on_boundary": 0
+    },
+    "114234": {
+      "attacking_pct": 100.0,
+      "buzzer": 3,
+      "flipped_pct": 0.0,
+      "in_view": 142,
+      "judged": 139,
+      "shots": 144,
+      "to_rival": 0,
+      "to_rival_on_boundary": 0
+    },
+    "114243": {
+      "attacking_pct": 100.0,
+      "buzzer": 1,
+      "flipped_pct": 0.0,
+      "in_view": 159,
+      "judged": 158,
+      "shots": 159,
+      "to_rival": 0,
+      "to_rival_on_boundary": 0
+    },
+    "178442": {
+      "attacking_pct": 100.0,
+      "buzzer": 0,
+      "flipped_pct": 0.0,
+      "in_view": 155,
+      "judged": 149,
+      "shots": 158,
+      "to_rival": 6,
+      "to_rival_on_boundary": 5
+    },
+    "179612": {
+      "attacking_pct": 100.0,
+      "buzzer": 0,
+      "flipped_pct": 0.0,
+      "in_view": 142,
+      "judged": 139,
+      "shots": 145,
+      "to_rival": 3,
+      "to_rival_on_boundary": 2
+    },
+    "184439": {
+      "attacking_pct": 100.0,
+      "buzzer": 0,
+      "flipped_pct": 0.0,
+      "in_view": 139,
+      "judged": 137,
+      "shots": 142,
+      "to_rival": 2,
+      "to_rival_on_boundary": 2
+    },
+    "188630": {
+      "attacking_pct": 100.0,
+      "buzzer": 0,
+      "flipped_pct": 0.0,
+      "in_view": 130,
+      "judged": 126,
+      "shots": 133,
+      "to_rival": 4,
+      "to_rival_on_boundary": 4
+    },
+    "191313": {
+      "attacking_pct": 100.0,
+      "buzzer": 0,
+      "flipped_pct": 0.0,
+      "in_view": 138,
+      "judged": 137,
+      "shots": 141,
+      "to_rival": 1,
+      "to_rival_on_boundary": 1
+    }
+  }
+}

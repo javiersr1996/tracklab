@@ -433,6 +433,20 @@ models:
                 to: ref('dim_team')
                 field: team_id
 
+  - name: frames_attacking
+    description: >
+      The frames of a team possession, turned so the team with the ball attacks
+      towards +x: x_att_m = attack_sign * x_m. The only attack normalisation in
+      silver. A frame no possession claims is absent, never given a guessed sign.
+    columns:
+      - name: attack_sign
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [-1, 1]
+                quote: false
+
 seeds:
   - name: surface_spec
     description: >
