@@ -155,4 +155,9 @@ SELECT
 FROM keyed k
 JOIN {{ ref('dim_period') }} p ON p.match_id = k.match_id AND p.period = k.period
 JOIN {{ ref('dim_entity') }} e ON e.match_id = k.match_id AND e.entity_id = k.entity_id
-ORDER BY k.sport, k.native_match_id, k.period, k.frame_native, k.entity_id
+-- Sorted on integer keys only. Within a partition the sport is constant and the
+-- period rises with the frame, so this is the order of the naming convention
+-- minus the tie-break on entity_id inside a frame, which nothing reads. That
+-- tie-break is a VARCHAR sort key over 29 M rows, and with it the sort ran out of
+-- memory under a 6 GB limit (the full-build runner's) every time it was tried.
+ORDER BY k.native_match_id, k.frame_native

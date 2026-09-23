@@ -22,12 +22,20 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --locked
-      - uses: actions/cache@v4
+      # Restore and save apart: a plain actions/cache only saves when the whole job
+      # succeeds, and the first run failed after downloading everything.
+      - id: raw
+        uses: actions/cache/restore@v4
         with:
           path: pipeline/data/raw
           key: raw-${{ hashFiles('pipeline/manifest/sources.json') }}
       - run: uv run tracklab ingest opendata-football
       - run: uv run tracklab ingest opendata-basketball
+      - if: steps.raw.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: pipeline/data/raw
+          key: raw-${{ hashFiles('pipeline/manifest/sources.json') }}
       - run: uv run tracklab bronze football
       - run: uv run tracklab bronze basketball
       - run: uv run tracklab orientation

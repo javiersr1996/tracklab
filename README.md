@@ -1,5 +1,7 @@
 # Track Lab
 
+[![ci](https://github.com/javiersr1996/tracklab/actions/workflows/ci.yml/badge.svg)](https://github.com/javiersr1996/tracklab/actions/workflows/ci.yml)
+
 Track Lab ingests raw tracking and event data from professional football and basketball
 matches, verifies and conforms it through a bronze/silver pipeline built on DuckDB and dbt,
 and publishes it as an interactive match replay and stats site.
