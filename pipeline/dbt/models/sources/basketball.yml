@@ -8,7 +8,7 @@ sources:
       (`<table>/<match_id>.parquet`), except the season tables, which are a
       single `data.parquet`; `*.parquet` reads either shape.
     meta:
-      external_location: "{{ var('data_dir', 'data') }}/bronze/basketball/{name}/*.parquet"
+      external_location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/bronze/basketball/{name}/*.parquet"
     tables:
       - name: matches
         description: One row per match of the ACB season bundle; the only place with the score.

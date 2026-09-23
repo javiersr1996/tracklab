@@ -4,7 +4,7 @@ sources:
   - name: bronze_common
     description: Tables that are not one sport's, written by a probe rather than by an ingest.
     meta:
-      external_location: "{{ var('data_dir', 'data') }}/bronze/common/{name}/data.parquet"
+      external_location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/bronze/common/{name}/data.parquet"
     tables:
       - name: orientation
         description: >

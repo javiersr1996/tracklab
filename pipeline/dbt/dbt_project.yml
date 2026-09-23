@@ -15,9 +15,10 @@ require-dbt-version: [">=1.12.0", "<2.0.0"]
 # Where silver lands on disk. The naming convention of tasks/todo.md is
 # data/silver/<table>/data.parquet, one directory per table, so every model
 # names its own file: dbt-duckdb's default (<external_root>/<name>.parquet)
-# does not produce that layout. The root is TRACKLAB_SILVER_DIR and not a dbt
-# var because the plugin that creates those directories reads it too, and a
-# plugin cannot see dbt vars; CI and the fixtures of task 14 set the env var.
+# does not produce that layout. The root is the env var TRACKLAB_DATA_ROOT and
+# not a dbt var because the plugin that creates those directories reads it too,
+# and a plugin cannot see dbt vars. The CLI, the sources and the profile read the
+# same variable, so one switch moves the whole pipeline onto the fixtures.
 models:
   tracklab:
     silver:
@@ -25,22 +26,22 @@ models:
       +format: parquet
       +tags: ["silver"]
       dim_sport:
-        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_sport/data.parquet"
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/silver/dim_sport/data.parquet"
         +tags: ["dims"]
       dim_match:
-        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_match/data.parquet"
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/silver/dim_match/data.parquet"
         +tags: ["dims"]
       dim_period:
-        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_period/data.parquet"
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/silver/dim_period/data.parquet"
         +tags: ["dims"]
       dim_team:
-        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_team/data.parquet"
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/silver/dim_team/data.parquet"
         +tags: ["dims"]
       dim_team_period:
-        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_team_period/data.parquet"
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/silver/dim_team_period/data.parquet"
         +tags: ["dims"]
       dim_entity:
-        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/dim_entity/data.parquet"
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/silver/dim_entity/data.parquet"
         +tags: ["dims"]
       # `frames` is partitioned, so its location is the directory and DuckDB names
       # the file inside each partition. A silver match_id carries a colon
@@ -48,10 +49,10 @@ models:
       # percent-escaped, so the partition is the native id and the prefixed key
       # stays a column of the file.
       frames:
-        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/frames"
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/silver/frames"
         +tags: ["facts"]
       events:
-        +location: "{{ env_var('TRACKLAB_SILVER_DIR', 'data/silver') }}/events"
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/silver/events"
         +tags: ["facts"]
       # Views are computed on demand and write no file, so they need no location
       # and no directory of their own.

@@ -22,11 +22,13 @@ from tracklab.bronze.football.aggregates import build_aggregates as build_footba
 from tracklab.bronze.football.events import build_events as build_football_events
 from tracklab.bronze.football.meta import build_meta as build_football_meta
 from tracklab.bronze.football.tracking import build_tracking as build_football_tracking
+from tracklab.fixtures import run_fixtures
 from tracklab.formats.basketball import freeze_basketball
 from tracklab.formats.football_report import freeze_football
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
+from tracklab.paths import data_root
 from tracklab.silver.orientation import SPORTS, run_orientation
 from tracklab.silver.possessions import run_possessions
 from tracklab.silver.stats import run_stats
@@ -152,8 +154,15 @@ def _cmd_stats(args: argparse.Namespace) -> int:
     return run_stats(data_dir=args.data_dir, reports_dir=args.reports_dir)
 
 
+def _cmd_fixtures(args: argparse.Namespace) -> int:
+    return run_fixtures(data_dir=args.data_dir, out_dir=args.out_dir)
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="tracklab", description="Track Lab data pipeline.")
+    parser = argparse.ArgumentParser(
+        prog="tracklab",
+        description="Track Lab data pipeline. --data-dir defaults to $TRACKLAB_DATA_ROOT or data.",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     ingest = subparsers.add_parser("ingest", help="Download and verify a source's raw files.")
@@ -167,7 +176,7 @@ def build_parser() -> argparse.ArgumentParser:
     ingest.add_argument(
         "--data-dir",
         type=Path,
-        default=Path("data"),
+        default=data_root(),
         help="Data root; files land under <data-dir>/raw/<source_id>/ (default: data).",
     )
     ingest.add_argument(
@@ -208,7 +217,7 @@ def build_parser() -> argparse.ArgumentParser:
     freeze_schema.add_argument(
         "--data-dir",
         type=Path,
-        default=Path("data"),
+        default=data_root(),
         help="Data root holding raw/<source_id>/ (default: data).",
     )
     freeze_schema.add_argument(
@@ -253,7 +262,7 @@ def build_parser() -> argparse.ArgumentParser:
     bronze.add_argument(
         "--data-dir",
         type=Path,
-        default=Path("data"),
+        default=data_root(),
         help="Data root: reads raw/<source_id>/, writes bronze/<sport>/<table>/ (default: data).",
     )
     bronze.set_defaults(func=_cmd_bronze)
@@ -277,7 +286,7 @@ def build_parser() -> argparse.ArgumentParser:
     orientation.add_argument(
         "--data-dir",
         type=Path,
-        default=Path("data"),
+        default=data_root(),
         help="Data root: reads bronze/<sport>/, writes bronze/common/orientation/ (default: data).",
     )
     orientation.add_argument(
@@ -301,7 +310,7 @@ def build_parser() -> argparse.ArgumentParser:
     possessions.add_argument(
         "--data-dir",
         type=Path,
-        default=Path("data"),
+        default=data_root(),
         help="Data root; the football bronze tables are read from it (default: data).",
     )
     possessions.add_argument(
@@ -321,7 +330,7 @@ def build_parser() -> argparse.ArgumentParser:
     stats.add_argument(
         "--data-dir",
         type=Path,
-        default=Path("data"),
+        default=data_root(),
         help="Data root; the silver tables are read from <data-dir>/silver/ (default: data).",
     )
     stats.add_argument(
@@ -331,6 +340,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Where stats_silver.csv goes (default: reports).",
     )
     stats.set_defaults(func=_cmd_stats)
+
+    fixtures = subparsers.add_parser(
+        "fixtures", help="Cut one possession per sport out of bronze, for CI."
+    )
+    fixtures.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path("data"),
+        help="Where the full bronze is read from (default: data, never the data root).",
+    )
+    fixtures.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("tests/fixtures/data"),
+        help="Data root the cut lands in (default: tests/fixtures/data).",
+    )
+    fixtures.set_defaults(func=_cmd_fixtures)
 
     return parser
 

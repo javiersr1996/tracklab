@@ -1,5 +1,9 @@
 # Data (raw/bronze/silver/gold/publish) - never committed
 data/
+# ...except the bronze slice CI builds on (task 14); what dbt writes over it is not.
+!pipeline/tests/fixtures/data/
+pipeline/tests/fixtures/data/*
+!pipeline/tests/fixtures/data/bronze/
 
 # dbt
 target/

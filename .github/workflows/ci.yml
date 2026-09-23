@@ -1,0 +1,31 @@
+# Every push and pull request: lint, types, and the whole silver build with its
+# dbt tests, on the bronze slice versioned in pipeline/tests/fixtures (task 14).
+# The contract tests read pipeline/data, which CI does not have, so they skip
+# here and run in full-build.yml against the real bundles.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: pipeline
+    env:
+      TRACKLAB_DATA_ROOT: tests/fixtures/data
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy src
+      - run: uv run dbt build --project-dir dbt --profiles-dir dbt
+      - run: uv run pytest -q

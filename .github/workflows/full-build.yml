@@ -1,0 +1,41 @@
+# The real bundles end to end: download (verified against the manifest), bronze,
+# the orientation probe, silver, and every contract test. Weekly and by hand.
+# data/raw is cached by the manifest's hash, so a week with no manifest change
+# verifies 2.3 GB on disk instead of downloading it again.
+name: full-build
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - uses: actions/cache@v4
+        with:
+          path: pipeline/data/raw
+          key: raw-${{ hashFiles('pipeline/manifest/sources.json') }}
+      - run: uv run tracklab ingest opendata-football
+      - run: uv run tracklab ingest opendata-basketball
+      - run: uv run tracklab bronze football
+      - run: uv run tracklab bronze basketball
+      - run: uv run tracklab orientation
+      - run: uv run dbt build --project-dir dbt --profiles-dir dbt
+      - run: uv run pytest -q
+      - run: uv run tracklab stats
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports
+          path: pipeline/reports/

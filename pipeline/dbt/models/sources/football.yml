@@ -6,7 +6,7 @@ sources:
       The A-League bundle in Parquet, native names and native rows, as
       `tracklab bronze football` wrote it.
     meta:
-      external_location: "{{ var('data_dir', 'data') }}/bronze/football/{name}/*.parquet"
+      external_location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/bronze/football/{name}/*.parquet"
     tables:
       - name: match
         description: >
