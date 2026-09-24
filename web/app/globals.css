@@ -39,7 +39,29 @@ body {
   padding: 1rem;
 }
 
+.bulletin {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
 .replay-placeholder {
   aspect-ratio: 960 / 560;
   background: #1d2327;
+}
+
+.hook {
+  margin: 0;
+  max-width: 640px;
+}
+
+.hook canvas {
+  width: 100%;
+  height: auto;
+  background: #1d2327;
+}
+
+.hook figcaption {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
 }

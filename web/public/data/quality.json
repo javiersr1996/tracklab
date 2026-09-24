@@ -1,0 +1,4698 @@
+{
+  "schema_version": 1,
+  "checks": {
+    "clock": [
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 124792
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "speed_mismatch_pct",
+        "value": 0.1602,
+        "unit": "%",
+        "n": 455332
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "speed_ratio_median",
+        "value": 0.9984,
+        "unit": "ratio",
+        "n": 455332
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 147888
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "speed_mismatch_pct",
+        "value": 0.1587,
+        "unit": "%",
+        "n": 409490
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "speed_ratio_median",
+        "value": 0.9984,
+        "unit": "ratio",
+        "n": 409490
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 172253
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "speed_mismatch_pct",
+        "value": 0.1664,
+        "unit": "%",
+        "n": 444385
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "speed_ratio_median",
+        "value": 0.9983,
+        "unit": "ratio",
+        "n": 444385
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 158919
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "speed_mismatch_pct",
+        "value": 0.1551,
+        "unit": "%",
+        "n": 411630
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "speed_ratio_median",
+        "value": 0.9984,
+        "unit": "ratio",
+        "n": 411630
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 146866
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "speed_mismatch_pct",
+        "value": 0.1673,
+        "unit": "%",
+        "n": 432569
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "speed_ratio_median",
+        "value": 0.9983,
+        "unit": "ratio",
+        "n": 432569
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 162474
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "speed_mismatch_pct",
+        "value": 0.1545,
+        "unit": "%",
+        "n": 466350
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "speed_ratio_median",
+        "value": 0.9985,
+        "unit": "ratio",
+        "n": 466350
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 140852
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "speed_mismatch_pct",
+        "value": 0.1793,
+        "unit": "%",
+        "n": 411771
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "speed_ratio_median",
+        "value": 0.9982,
+        "unit": "ratio",
+        "n": 411771
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 154017
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "speed_mismatch_pct",
+        "value": 0.1629,
+        "unit": "%",
+        "n": 413465
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "speed_ratio_median",
+        "value": 0.9984,
+        "unit": "ratio",
+        "n": 413465
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 121789
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "speed_mismatch_pct",
+        "value": 0.161,
+        "unit": "%",
+        "n": 379079
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "speed_ratio_median",
+        "value": 0.9984,
+        "unit": "ratio",
+        "n": 379079
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 143041
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "speed_mismatch_pct",
+        "value": 0.1614,
+        "unit": "%",
+        "n": 396497
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "speed_ratio_median",
+        "value": 0.9984,
+        "unit": "ratio",
+        "n": 396497
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 60300
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 59060
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 60529
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 61300
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 59069
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 59249
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 58540
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 59089
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 57620
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 60279
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 59269
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 59100
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 58080
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 57570
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 58990
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 71850
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 70250
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 72100
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 71100
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "clock_step_exact_pct",
+        "value": 100.0,
+        "unit": "%",
+        "n": 71450
+      }
+    ],
+    "detection": [
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "ball_detected_pct",
+        "value": 0.0,
+        "unit": "%",
+        "n": 92188
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "player_detected_pct",
+        "value": 80.6796,
+        "unit": "%",
+        "n": 921880
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "ball_detected_pct",
+        "value": 0.0,
+        "unit": "%",
+        "n": 75655
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "player_detected_pct",
+        "value": 81.6752,
+        "unit": "%",
+        "n": 756550
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "ball_detected_pct",
+        "value": 0.0,
+        "unit": "%",
+        "n": 106176
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "player_detected_pct",
+        "value": 76.1745,
+        "unit": "%",
+        "n": 1061760
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "ball_detected_pct",
+        "value": 0.0,
+        "unit": "%",
+        "n": 72132
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "player_detected_pct",
+        "value": 82.7635,
+        "unit": "%",
+        "n": 721320
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "ball_detected_pct",
+        "value": 0.0,
+        "unit": "%",
+        "n": 77023
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "player_detected_pct",
+        "value": 82.6488,
+        "unit": "%",
+        "n": 770230
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "ball_detected_pct",
+        "value": 0.0,
+        "unit": "%",
+        "n": 89642
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "player_detected_pct",
+        "value": 80.3096,
+        "unit": "%",
+        "n": 896420
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "ball_detected_pct",
+        "value": 0.0,
+        "unit": "%",
+        "n": 83437
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "player_detected_pct",
+        "value": 78.8589,
+        "unit": "%",
+        "n": 834370
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "ball_detected_pct",
+        "value": 0.0,
+        "unit": "%",
+        "n": 77428
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "player_detected_pct",
+        "value": 81.5007,
+        "unit": "%",
+        "n": 774280
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "ball_detected_pct",
+        "value": 0.0,
+        "unit": "%",
+        "n": 73138
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "player_detected_pct",
+        "value": 80.6358,
+        "unit": "%",
+        "n": 731380
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "ball_detected_pct",
+        "value": 0.0,
+        "unit": "%",
+        "n": 82885
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "player_detected_pct",
+        "value": 79.2817,
+        "unit": "%",
+        "n": 828850
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "ball_detected_pct",
+        "value": 82.2733,
+        "unit": "%",
+        "n": 44244
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "player_detected_pct",
+        "value": 57.9432,
+        "unit": "%",
+        "n": 973368
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "ball_detected_pct",
+        "value": 82.2633,
+        "unit": "%",
+        "n": 43458
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "player_detected_pct",
+        "value": 59.2817,
+        "unit": "%",
+        "n": 956076
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "ball_detected_pct",
+        "value": 78.2331,
+        "unit": "%",
+        "n": 40681
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "player_detected_pct",
+        "value": 55.1879,
+        "unit": "%",
+        "n": 894982
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "ball_detected_pct",
+        "value": 80.5515,
+        "unit": "%",
+        "n": 47942
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "player_detected_pct",
+        "value": 57.8784,
+        "unit": "%",
+        "n": 1054724
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "ball_detected_pct",
+        "value": 85.3795,
+        "unit": "%",
+        "n": 44759
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "player_detected_pct",
+        "value": 61.4544,
+        "unit": "%",
+        "n": 984698
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "ball_detected_pct",
+        "value": 79.7914,
+        "unit": "%",
+        "n": 43912
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "player_detected_pct",
+        "value": 62.1138,
+        "unit": "%",
+        "n": 966064
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "ball_detected_pct",
+        "value": 81.4806,
+        "unit": "%",
+        "n": 42739
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "player_detected_pct",
+        "value": 57.0453,
+        "unit": "%",
+        "n": 940258
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "ball_detected_pct",
+        "value": 78.9744,
+        "unit": "%",
+        "n": 43076
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "player_detected_pct",
+        "value": 58.8357,
+        "unit": "%",
+        "n": 947672
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "ball_detected_pct",
+        "value": 79.7156,
+        "unit": "%",
+        "n": 43531
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "player_detected_pct",
+        "value": 65.799,
+        "unit": "%",
+        "n": 957682
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "ball_detected_pct",
+        "value": 76.1273,
+        "unit": "%",
+        "n": 43066
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "player_detected_pct",
+        "value": 55.3949,
+        "unit": "%",
+        "n": 947452
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "ball_detected_pct",
+        "value": 81.232,
+        "unit": "%",
+        "n": 44171
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "player_detected_pct",
+        "value": 62.9248,
+        "unit": "%",
+        "n": 971762
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "ball_detected_pct",
+        "value": 81.5388,
+        "unit": "%",
+        "n": 44347
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "player_detected_pct",
+        "value": 52.9902,
+        "unit": "%",
+        "n": 975634
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "ball_detected_pct",
+        "value": 78.1338,
+        "unit": "%",
+        "n": 44283
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "player_detected_pct",
+        "value": 53.9845,
+        "unit": "%",
+        "n": 974226
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "ball_detected_pct",
+        "value": 80.2341,
+        "unit": "%",
+        "n": 46297
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "player_detected_pct",
+        "value": 59.5802,
+        "unit": "%",
+        "n": 1018534
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "ball_detected_pct",
+        "value": 83.4955,
+        "unit": "%",
+        "n": 45521
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "player_detected_pct",
+        "value": 55.3672,
+        "unit": "%",
+        "n": 1001462
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "ball_detected_pct",
+        "value": 80.1692,
+        "unit": "%",
+        "n": 39015
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "player_detected_pct",
+        "value": 52.418,
+        "unit": "%",
+        "n": 858330
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "ball_detected_pct",
+        "value": 79.0385,
+        "unit": "%",
+        "n": 44992
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "player_detected_pct",
+        "value": 53.9503,
+        "unit": "%",
+        "n": 989824
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "ball_detected_pct",
+        "value": 75.4522,
+        "unit": "%",
+        "n": 48542
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "player_detected_pct",
+        "value": 52.5357,
+        "unit": "%",
+        "n": 1067924
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "ball_detected_pct",
+        "value": 80.9721,
+        "unit": "%",
+        "n": 43883
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "player_detected_pct",
+        "value": 49.0984,
+        "unit": "%",
+        "n": 965426
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "ball_detected_pct",
+        "value": 78.8907,
+        "unit": "%",
+        "n": 40404
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "player_detected_pct",
+        "value": 51.1555,
+        "unit": "%",
+        "n": 888888
+      }
+    ],
+    "entry_angle": [
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "angle_reported_median_deg",
+        "value": 32.245,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "angle_required_median_deg",
+        "value": 45.7423,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "gap_median_deg",
+        "value": 14.4382,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "pairs_reordered_pct",
+        "value": 26.8966,
+        "unit": "%",
+        "n": 435
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "shots",
+        "value": 30.0,
+        "unit": "count",
+        "n": 62
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "angle_reported_median_deg",
+        "value": 33.2657,
+        "unit": "deg",
+        "n": 26
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "angle_required_median_deg",
+        "value": 47.7544,
+        "unit": "deg",
+        "n": 26
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "gap_median_deg",
+        "value": 14.2601,
+        "unit": "deg",
+        "n": 26
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "pairs_reordered_pct",
+        "value": 32.6154,
+        "unit": "%",
+        "n": 325
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "shots",
+        "value": 26.0,
+        "unit": "count",
+        "n": 53
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "angle_reported_median_deg",
+        "value": 33.0771,
+        "unit": "deg",
+        "n": 31
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "angle_required_median_deg",
+        "value": 48.223,
+        "unit": "deg",
+        "n": 31
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "gap_median_deg",
+        "value": 14.4384,
+        "unit": "deg",
+        "n": 31
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "pairs_reordered_pct",
+        "value": 27.0968,
+        "unit": "%",
+        "n": 465
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "shots",
+        "value": 31.0,
+        "unit": "count",
+        "n": 53
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "angle_reported_median_deg",
+        "value": 33.0227,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "angle_required_median_deg",
+        "value": 46.5175,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "gap_median_deg",
+        "value": 15.3154,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "pairs_reordered_pct",
+        "value": 34.7126,
+        "unit": "%",
+        "n": 435
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "shots",
+        "value": 30.0,
+        "unit": "count",
+        "n": 59
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "angle_reported_median_deg",
+        "value": 38.8643,
+        "unit": "deg",
+        "n": 19
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "angle_required_median_deg",
+        "value": 50.263,
+        "unit": "deg",
+        "n": 19
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "gap_median_deg",
+        "value": 12.0523,
+        "unit": "deg",
+        "n": 19
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "pairs_reordered_pct",
+        "value": 10.5263,
+        "unit": "%",
+        "n": 171
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "shots",
+        "value": 19.0,
+        "unit": "count",
+        "n": 55
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "angle_reported_median_deg",
+        "value": 36.5434,
+        "unit": "deg",
+        "n": 37
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "angle_required_median_deg",
+        "value": 49.3388,
+        "unit": "deg",
+        "n": 37
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "gap_median_deg",
+        "value": 13.5757,
+        "unit": "deg",
+        "n": 37
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "pairs_reordered_pct",
+        "value": 26.2763,
+        "unit": "%",
+        "n": 666
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "shots",
+        "value": 37.0,
+        "unit": "count",
+        "n": 72
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "angle_reported_median_deg",
+        "value": 32.2196,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "angle_required_median_deg",
+        "value": 46.5911,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "gap_median_deg",
+        "value": 13.1762,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "pairs_reordered_pct",
+        "value": 20.2299,
+        "unit": "%",
+        "n": 435
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "shots",
+        "value": 30.0,
+        "unit": "count",
+        "n": 63
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "angle_reported_median_deg",
+        "value": 29.8293,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "angle_required_median_deg",
+        "value": 44.988,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "gap_median_deg",
+        "value": 16.3874,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "pairs_reordered_pct",
+        "value": 33.7931,
+        "unit": "%",
+        "n": 435
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "shots",
+        "value": 30.0,
+        "unit": "count",
+        "n": 60
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "angle_reported_median_deg",
+        "value": 32.629,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "angle_required_median_deg",
+        "value": 46.7658,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "gap_median_deg",
+        "value": 14.3847,
+        "unit": "deg",
+        "n": 30
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "pairs_reordered_pct",
+        "value": 25.5172,
+        "unit": "%",
+        "n": 435
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "shots",
+        "value": 30.0,
+        "unit": "count",
+        "n": 54
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "angle_reported_median_deg",
+        "value": 35.2579,
+        "unit": "deg",
+        "n": 41
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "angle_required_median_deg",
+        "value": 48.0734,
+        "unit": "deg",
+        "n": 41
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "gap_median_deg",
+        "value": 12.7221,
+        "unit": "deg",
+        "n": 41
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "pairs_reordered_pct",
+        "value": 25.2439,
+        "unit": "%",
+        "n": 820
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "shots",
+        "value": 41.0,
+        "unit": "count",
+        "n": 66
+      }
+    ],
+    "gravity": [
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "flights",
+        "value": 51.0,
+        "unit": "count",
+        "n": 139
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "g_median",
+        "value": 8.0837,
+        "unit": "m/s^2",
+        "n": 51
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "g_median_bias_pct",
+        "value": -17.5689,
+        "unit": "%",
+        "n": 51
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "g_q1",
+        "value": 7.6366,
+        "unit": "m/s^2",
+        "n": 51
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "g_q3",
+        "value": 8.4765,
+        "unit": "m/s^2",
+        "n": 51
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "is_calibration",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 139
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "flights",
+        "value": 59.0,
+        "unit": "count",
+        "n": 150
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "g_median",
+        "value": 8.0887,
+        "unit": "m/s^2",
+        "n": 59
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "g_median_bias_pct",
+        "value": -17.5185,
+        "unit": "%",
+        "n": 59
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "g_q1",
+        "value": 7.4076,
+        "unit": "m/s^2",
+        "n": 59
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "g_q3",
+        "value": 8.4052,
+        "unit": "m/s^2",
+        "n": 59
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "is_calibration",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 150
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "flights",
+        "value": 46.0,
+        "unit": "count",
+        "n": 148
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "g_median",
+        "value": 8.2151,
+        "unit": "m/s^2",
+        "n": 46
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "g_median_bias_pct",
+        "value": -16.2296,
+        "unit": "%",
+        "n": 46
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "g_q1",
+        "value": 7.7025,
+        "unit": "m/s^2",
+        "n": 46
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "g_q3",
+        "value": 8.4069,
+        "unit": "m/s^2",
+        "n": 46
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "is_calibration",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 148
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "flights",
+        "value": 48.0,
+        "unit": "count",
+        "n": 144
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "g_median",
+        "value": 8.2216,
+        "unit": "m/s^2",
+        "n": 48
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "g_median_bias_pct",
+        "value": -16.1626,
+        "unit": "%",
+        "n": 48
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "g_q1",
+        "value": 7.6148,
+        "unit": "m/s^2",
+        "n": 48
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "g_q3",
+        "value": 8.6887,
+        "unit": "m/s^2",
+        "n": 48
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "is_calibration",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 144
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "flights",
+        "value": 53.0,
+        "unit": "count",
+        "n": 159
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "g_median",
+        "value": 8.3626,
+        "unit": "m/s^2",
+        "n": 53
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "g_median_bias_pct",
+        "value": -14.7255,
+        "unit": "%",
+        "n": 53
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "g_q1",
+        "value": 7.5576,
+        "unit": "m/s^2",
+        "n": 53
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "g_q3",
+        "value": 8.8751,
+        "unit": "m/s^2",
+        "n": 53
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "is_calibration",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 159
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "flights",
+        "value": 68.0,
+        "unit": "count",
+        "n": 158
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "g_median",
+        "value": 8.0483,
+        "unit": "m/s^2",
+        "n": 68
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "g_median_bias_pct",
+        "value": -17.9297,
+        "unit": "%",
+        "n": 68
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "g_q1",
+        "value": 7.618,
+        "unit": "m/s^2",
+        "n": 68
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "g_q3",
+        "value": 8.4691,
+        "unit": "m/s^2",
+        "n": 68
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "is_calibration",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 158
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "flights",
+        "value": 64.0,
+        "unit": "count",
+        "n": 145
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "g_median",
+        "value": 7.9122,
+        "unit": "m/s^2",
+        "n": 64
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "g_median_bias_pct",
+        "value": -19.3178,
+        "unit": "%",
+        "n": 64
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "g_q1",
+        "value": 7.2394,
+        "unit": "m/s^2",
+        "n": 64
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "g_q3",
+        "value": 8.5487,
+        "unit": "m/s^2",
+        "n": 64
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "is_calibration",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 145
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "flights",
+        "value": 50.0,
+        "unit": "count",
+        "n": 142
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "g_median",
+        "value": 8.2493,
+        "unit": "m/s^2",
+        "n": 50
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "g_median_bias_pct",
+        "value": -15.8803,
+        "unit": "%",
+        "n": 50
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "g_q1",
+        "value": 7.7223,
+        "unit": "m/s^2",
+        "n": 50
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "g_q3",
+        "value": 8.8153,
+        "unit": "m/s^2",
+        "n": 50
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "is_calibration",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 142
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "flights",
+        "value": 44.0,
+        "unit": "count",
+        "n": 133
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "g_median",
+        "value": 8.2381,
+        "unit": "m/s^2",
+        "n": 44
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "g_median_bias_pct",
+        "value": -15.9945,
+        "unit": "%",
+        "n": 44
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "g_q1",
+        "value": 7.7869,
+        "unit": "m/s^2",
+        "n": 44
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "g_q3",
+        "value": 8.6278,
+        "unit": "m/s^2",
+        "n": 44
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "is_calibration",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 133
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "flights",
+        "value": 59.0,
+        "unit": "count",
+        "n": 141
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "g_median",
+        "value": 8.0644,
+        "unit": "m/s^2",
+        "n": 59
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "g_median_bias_pct",
+        "value": -17.7657,
+        "unit": "%",
+        "n": 59
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "g_q1",
+        "value": 7.5044,
+        "unit": "m/s^2",
+        "n": 59
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "g_q3",
+        "value": 8.5404,
+        "unit": "m/s^2",
+        "n": 59
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "is_calibration",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 141
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "flights",
+        "value": 118.0,
+        "unit": "count",
+        "n": 360
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "g_median",
+        "value": 7.978,
+        "unit": "m/s^2",
+        "n": 118
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "g_median_bias_pct",
+        "value": -18.6468,
+        "unit": "%",
+        "n": 118
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "g_q1",
+        "value": 6.6074,
+        "unit": "m/s^2",
+        "n": 118
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "g_q3",
+        "value": 9.4411,
+        "unit": "m/s^2",
+        "n": 118
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "flights",
+        "value": 95.0,
+        "unit": "count",
+        "n": 330
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "g_median",
+        "value": 8.1189,
+        "unit": "m/s^2",
+        "n": 95
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "g_median_bias_pct",
+        "value": -17.2105,
+        "unit": "%",
+        "n": 95
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "g_q1",
+        "value": 6.9965,
+        "unit": "m/s^2",
+        "n": 95
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "g_q3",
+        "value": 9.4765,
+        "unit": "m/s^2",
+        "n": 95
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "flights",
+        "value": 89.0,
+        "unit": "count",
+        "n": 366
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "g_median",
+        "value": 7.5744,
+        "unit": "m/s^2",
+        "n": 89
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "g_median_bias_pct",
+        "value": -22.7624,
+        "unit": "%",
+        "n": 89
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "g_q1",
+        "value": 6.3277,
+        "unit": "m/s^2",
+        "n": 89
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "g_q3",
+        "value": 9.6314,
+        "unit": "m/s^2",
+        "n": 89
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "flights",
+        "value": 95.0,
+        "unit": "count",
+        "n": 423
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "g_median",
+        "value": 7.984,
+        "unit": "m/s^2",
+        "n": 95
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "g_median_bias_pct",
+        "value": -18.5857,
+        "unit": "%",
+        "n": 95
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "g_q1",
+        "value": 6.8182,
+        "unit": "m/s^2",
+        "n": 95
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "g_q3",
+        "value": 9.2163,
+        "unit": "m/s^2",
+        "n": 95
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "flights",
+        "value": 83.0,
+        "unit": "count",
+        "n": 219
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "g_median",
+        "value": 7.7992,
+        "unit": "m/s^2",
+        "n": 83
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "g_median_bias_pct",
+        "value": -20.4703,
+        "unit": "%",
+        "n": 83
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "g_q1",
+        "value": 6.7742,
+        "unit": "m/s^2",
+        "n": 83
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "g_q3",
+        "value": 8.9411,
+        "unit": "m/s^2",
+        "n": 83
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "flights",
+        "value": 83.0,
+        "unit": "count",
+        "n": 319
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "g_median",
+        "value": 8.1069,
+        "unit": "m/s^2",
+        "n": 83
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "g_median_bias_pct",
+        "value": -17.3327,
+        "unit": "%",
+        "n": 83
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "g_q1",
+        "value": 6.6449,
+        "unit": "m/s^2",
+        "n": 83
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "g_q3",
+        "value": 9.5929,
+        "unit": "m/s^2",
+        "n": 83
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "flights",
+        "value": 117.0,
+        "unit": "count",
+        "n": 330
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "g_median",
+        "value": 8.3057,
+        "unit": "m/s^2",
+        "n": 117
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "g_median_bias_pct",
+        "value": -15.3055,
+        "unit": "%",
+        "n": 117
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "g_q1",
+        "value": 6.6094,
+        "unit": "m/s^2",
+        "n": 117
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "g_q3",
+        "value": 9.7502,
+        "unit": "m/s^2",
+        "n": 117
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "flights",
+        "value": 102.0,
+        "unit": "count",
+        "n": 325
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "g_median",
+        "value": 8.4885,
+        "unit": "m/s^2",
+        "n": 102
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "g_median_bias_pct",
+        "value": -13.4413,
+        "unit": "%",
+        "n": 102
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "g_q1",
+        "value": 6.9071,
+        "unit": "m/s^2",
+        "n": 102
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "g_q3",
+        "value": 9.9261,
+        "unit": "m/s^2",
+        "n": 102
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "flights",
+        "value": 76.0,
+        "unit": "count",
+        "n": 348
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "g_median",
+        "value": 8.6688,
+        "unit": "m/s^2",
+        "n": 76
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "g_median_bias_pct",
+        "value": -11.6025,
+        "unit": "%",
+        "n": 76
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "g_q1",
+        "value": 7.2965,
+        "unit": "m/s^2",
+        "n": 76
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "g_q3",
+        "value": 9.795,
+        "unit": "m/s^2",
+        "n": 76
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "flights",
+        "value": 150.0,
+        "unit": "count",
+        "n": 387
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "g_median",
+        "value": 8.2118,
+        "unit": "m/s^2",
+        "n": 150
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "g_median_bias_pct",
+        "value": -16.2631,
+        "unit": "%",
+        "n": 150
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "g_q1",
+        "value": 6.6449,
+        "unit": "m/s^2",
+        "n": 150
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "g_q3",
+        "value": 9.5167,
+        "unit": "m/s^2",
+        "n": 150
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "flights",
+        "value": 108.0,
+        "unit": "count",
+        "n": 362
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "g_median",
+        "value": 7.6683,
+        "unit": "m/s^2",
+        "n": 108
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "g_median_bias_pct",
+        "value": -21.8048,
+        "unit": "%",
+        "n": 108
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "g_q1",
+        "value": 6.4583,
+        "unit": "m/s^2",
+        "n": 108
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "g_q3",
+        "value": 9.0989,
+        "unit": "m/s^2",
+        "n": 108
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "flights",
+        "value": 92.0,
+        "unit": "count",
+        "n": 286
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "g_median",
+        "value": 7.2747,
+        "unit": "m/s^2",
+        "n": 92
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "g_median_bias_pct",
+        "value": -25.8184,
+        "unit": "%",
+        "n": 92
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "g_q1",
+        "value": 5.9625,
+        "unit": "m/s^2",
+        "n": 92
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "g_q3",
+        "value": 8.8729,
+        "unit": "m/s^2",
+        "n": 92
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "flights",
+        "value": 115.0,
+        "unit": "count",
+        "n": 322
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "g_median",
+        "value": 7.7732,
+        "unit": "m/s^2",
+        "n": 115
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "g_median_bias_pct",
+        "value": -20.7351,
+        "unit": "%",
+        "n": 115
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "g_q1",
+        "value": 5.9625,
+        "unit": "m/s^2",
+        "n": 115
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "g_q3",
+        "value": 9.0959,
+        "unit": "m/s^2",
+        "n": 115
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "flights",
+        "value": 125.0,
+        "unit": "count",
+        "n": 397
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "g_median",
+        "value": 7.8312,
+        "unit": "m/s^2",
+        "n": 125
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "g_median_bias_pct",
+        "value": -20.1443,
+        "unit": "%",
+        "n": 125
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "g_q1",
+        "value": 6.4056,
+        "unit": "m/s^2",
+        "n": 125
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "g_q3",
+        "value": 9.2338,
+        "unit": "m/s^2",
+        "n": 125
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "flights",
+        "value": 113.0,
+        "unit": "count",
+        "n": 338
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "g_median",
+        "value": 8.5544,
+        "unit": "m/s^2",
+        "n": 113
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "g_median_bias_pct",
+        "value": -12.7689,
+        "unit": "%",
+        "n": 113
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "g_q1",
+        "value": 6.1489,
+        "unit": "m/s^2",
+        "n": 113
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "g_q3",
+        "value": 10.3177,
+        "unit": "m/s^2",
+        "n": 113
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "flights",
+        "value": 130.0,
+        "unit": "count",
+        "n": 372
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "g_median",
+        "value": 7.9426,
+        "unit": "m/s^2",
+        "n": 130
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "g_median_bias_pct",
+        "value": -19.0085,
+        "unit": "%",
+        "n": 130
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "g_q1",
+        "value": 6.702,
+        "unit": "m/s^2",
+        "n": 130
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "g_q3",
+        "value": 9.2705,
+        "unit": "m/s^2",
+        "n": 130
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "flights",
+        "value": 135.0,
+        "unit": "count",
+        "n": 389
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "g_median",
+        "value": 8.4585,
+        "unit": "m/s^2",
+        "n": 135
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "g_median_bias_pct",
+        "value": -13.7469,
+        "unit": "%",
+        "n": 135
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "g_q1",
+        "value": 7.0435,
+        "unit": "m/s^2",
+        "n": 135
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "g_q3",
+        "value": 9.9825,
+        "unit": "m/s^2",
+        "n": 135
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "flights",
+        "value": 151.0,
+        "unit": "count",
+        "n": 414
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "g_median",
+        "value": 8.0769,
+        "unit": "m/s^2",
+        "n": 151
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "g_median_bias_pct",
+        "value": -17.6383,
+        "unit": "%",
+        "n": 151
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "g_q1",
+        "value": 6.7423,
+        "unit": "m/s^2",
+        "n": 151
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "g_q3",
+        "value": 9.3861,
+        "unit": "m/s^2",
+        "n": 151
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "flights",
+        "value": 141.0,
+        "unit": "count",
+        "n": 378
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "g_median",
+        "value": 8.2378,
+        "unit": "m/s^2",
+        "n": 141
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "g_median_bias_pct",
+        "value": -15.9982,
+        "unit": "%",
+        "n": 141
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "g_q1",
+        "value": 6.7303,
+        "unit": "m/s^2",
+        "n": 141
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "g_q3",
+        "value": 9.5475,
+        "unit": "m/s^2",
+        "n": 141
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "flights",
+        "value": 136.0,
+        "unit": "count",
+        "n": 398
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "g_median",
+        "value": 8.3077,
+        "unit": "m/s^2",
+        "n": 136
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "g_median_bias_pct",
+        "value": -15.2851,
+        "unit": "%",
+        "n": 136
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "g_q1",
+        "value": 6.7605,
+        "unit": "m/s^2",
+        "n": 136
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "g_q3",
+        "value": 9.5927,
+        "unit": "m/s^2",
+        "n": 136
+      }
+    ],
+    "noise": [
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "ball_d2_median_m",
+        "value": 0.006262,
+        "unit": "m",
+        "n": 70377
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "ball_player_d2_ratio",
+        "value": 4.0078,
+        "unit": "ratio",
+        "n": 70377
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "ball_pred_error_median_m",
+        "value": 0.452637,
+        "unit": "m",
+        "n": 92188
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "player_d2_median_m",
+        "value": 0.001562,
+        "unit": "m",
+        "n": 446632
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "player_pred_error_median_m",
+        "value": 0.242139,
+        "unit": "m",
+        "n": 743769
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "ball_d2_median_m",
+        "value": 0.006277,
+        "unit": "m",
+        "n": 60880
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "ball_player_d2_ratio",
+        "value": 4.0173,
+        "unit": "ratio",
+        "n": 60880
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "ball_pred_error_median_m",
+        "value": 0.460547,
+        "unit": "m",
+        "n": 75655
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "player_d2_median_m",
+        "value": 0.001563,
+        "unit": "m",
+        "n": 401767
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "player_pred_error_median_m",
+        "value": 0.253955,
+        "unit": "m",
+        "n": 617914
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "ball_d2_median_m",
+        "value": 0.0055,
+        "unit": "m",
+        "n": 77150
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "ball_player_d2_ratio",
+        "value": 3.8842,
+        "unit": "ratio",
+        "n": 77150
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "ball_pred_error_median_m",
+        "value": 0.453516,
+        "unit": "m",
+        "n": 106176
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "player_d2_median_m",
+        "value": 0.001416,
+        "unit": "m",
+        "n": 434150
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "player_pred_error_median_m",
+        "value": 0.256836,
+        "unit": "m",
+        "n": 808790
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "ball_d2_median_m",
+        "value": 0.006721,
+        "unit": "m",
+        "n": 59289
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "ball_player_d2_ratio",
+        "value": 4.3012,
+        "unit": "ratio",
+        "n": 59289
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "ball_pred_error_median_m",
+        "value": 0.450293,
+        "unit": "m",
+        "n": 72132
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "player_d2_median_m",
+        "value": 0.001563,
+        "unit": "m",
+        "n": 404250
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "player_pred_error_median_m",
+        "value": 0.254395,
+        "unit": "m",
+        "n": 596990
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "ball_d2_median_m",
+        "value": 0.008053,
+        "unit": "m",
+        "n": 62600
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "ball_player_d2_ratio",
+        "value": 4.9794,
+        "unit": "ratio",
+        "n": 62600
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "ball_pred_error_median_m",
+        "value": 0.47666,
+        "unit": "m",
+        "n": 77023
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "player_d2_median_m",
+        "value": 0.001617,
+        "unit": "m",
+        "n": 423735
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "player_pred_error_median_m",
+        "value": 0.257715,
+        "unit": "m",
+        "n": 636586
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "ball_d2_median_m",
+        "value": 0.005744,
+        "unit": "m",
+        "n": 71546
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "ball_player_d2_ratio",
+        "value": 3.6764,
+        "unit": "ratio",
+        "n": 71546
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "ball_pred_error_median_m",
+        "value": 0.453809,
+        "unit": "m",
+        "n": 89642
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "player_d2_median_m",
+        "value": 0.001563,
+        "unit": "m",
+        "n": 456613
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "player_pred_error_median_m",
+        "value": 0.251025,
+        "unit": "m",
+        "n": 719911
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "ball_d2_median_m",
+        "value": 0.005634,
+        "unit": "m",
+        "n": 65430
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "ball_player_d2_ratio",
+        "value": 3.6056,
+        "unit": "ratio",
+        "n": 65430
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "ball_pred_error_median_m",
+        "value": 0.457031,
+        "unit": "m",
+        "n": 83437
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "player_d2_median_m",
+        "value": 0.001563,
+        "unit": "m",
+        "n": 402655
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "player_pred_error_median_m",
+        "value": 0.253125,
+        "unit": "m",
+        "n": 657975
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "ball_d2_median_m",
+        "value": 0.005758,
+        "unit": "m",
+        "n": 62240
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "ball_player_d2_ratio",
+        "value": 3.685,
+        "unit": "ratio",
+        "n": 62240
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "ball_pred_error_median_m",
+        "value": 0.463965,
+        "unit": "m",
+        "n": 77428
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "player_d2_median_m",
+        "value": 0.001562,
+        "unit": "m",
+        "n": 404966
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "player_pred_error_median_m",
+        "value": 0.243652,
+        "unit": "m",
+        "n": 631044
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "ball_d2_median_m",
+        "value": 0.005744,
+        "unit": "m",
+        "n": 59972
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "ball_player_d2_ratio",
+        "value": 3.6764,
+        "unit": "ratio",
+        "n": 59972
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "ball_pred_error_median_m",
+        "value": 0.459131,
+        "unit": "m",
+        "n": 73138
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "player_d2_median_m",
+        "value": 0.001562,
+        "unit": "m",
+        "n": 371247
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "player_pred_error_median_m",
+        "value": 0.246704,
+        "unit": "m",
+        "n": 589754
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "ball_d2_median_m",
+        "value": 0.004701,
+        "unit": "m",
+        "n": 63179
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "ball_player_d2_ratio",
+        "value": 3.0088,
+        "unit": "ratio",
+        "n": 63179
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "ball_pred_error_median_m",
+        "value": 0.457227,
+        "unit": "m",
+        "n": 82885
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "player_d2_median_m",
+        "value": 0.001563,
+        "unit": "m",
+        "n": 388491
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "player_pred_error_median_m",
+        "value": 0.250586,
+        "unit": "m",
+        "n": 657126
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "ball_d2_median_m",
+        "value": 0.076158,
+        "unit": "m",
+        "n": 32572
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.3852,
+        "unit": "ratio",
+        "n": 32572
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 464087
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "ball_d2_median_m",
+        "value": 0.08,
+        "unit": "m",
+        "n": 31264
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.6569,
+        "unit": "ratio",
+        "n": 31264
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 454119
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "ball_d2_median_m",
+        "value": 0.08,
+        "unit": "m",
+        "n": 27426
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.6569,
+        "unit": "ratio",
+        "n": 27426
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 382759
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "ball_d2_median_m",
+        "value": 0.076158,
+        "unit": "m",
+        "n": 34260
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.3852,
+        "unit": "ratio",
+        "n": 34260
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 491709
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "ball_d2_median_m",
+        "value": 0.076158,
+        "unit": "m",
+        "n": 34183
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.3852,
+        "unit": "ratio",
+        "n": 34183
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 485101
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "ball_d2_median_m",
+        "value": 0.078102,
+        "unit": "m",
+        "n": 30815
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.5227,
+        "unit": "ratio",
+        "n": 30815
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 484564
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "ball_d2_median_m",
+        "value": 0.076158,
+        "unit": "m",
+        "n": 30475
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.3852,
+        "unit": "ratio",
+        "n": 30475
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 416807
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "ball_d2_median_m",
+        "value": 0.076158,
+        "unit": "m",
+        "n": 29341
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.3852,
+        "unit": "ratio",
+        "n": 29341
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 431541
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "ball_d2_median_m",
+        "value": 0.076158,
+        "unit": "m",
+        "n": 30393
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.3852,
+        "unit": "ratio",
+        "n": 30393
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 510986
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "ball_d2_median_m",
+        "value": 0.076158,
+        "unit": "m",
+        "n": 27934
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.3852,
+        "unit": "ratio",
+        "n": 27934
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 403698
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "ball_d2_median_m",
+        "value": 0.072801,
+        "unit": "m",
+        "n": 31949
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.1478,
+        "unit": "ratio",
+        "n": 31949
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 498567
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "ball_d2_median_m",
+        "value": 0.076158,
+        "unit": "m",
+        "n": 31609
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.3852,
+        "unit": "ratio",
+        "n": 31609
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 404445
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "ball_d2_median_m",
+        "value": 0.076158,
+        "unit": "m",
+        "n": 29615
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.3852,
+        "unit": "ratio",
+        "n": 29615
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 406906
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "ball_d2_median_m",
+        "value": 0.076158,
+        "unit": "m",
+        "n": 32734
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.3852,
+        "unit": "ratio",
+        "n": 32734
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 482990
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "ball_d2_median_m",
+        "value": 0.078102,
+        "unit": "m",
+        "n": 32301
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.5227,
+        "unit": "ratio",
+        "n": 32301
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 429540
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "ball_d2_median_m",
+        "value": 0.072801,
+        "unit": "m",
+        "n": 27651
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.1478,
+        "unit": "ratio",
+        "n": 27651
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 347982
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "ball_d2_median_m",
+        "value": 0.080623,
+        "unit": "m",
+        "n": 30870
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.7009,
+        "unit": "ratio",
+        "n": 30870
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 417914
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "ball_d2_median_m",
+        "value": 0.078102,
+        "unit": "m",
+        "n": 31068
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.5227,
+        "unit": "ratio",
+        "n": 31068
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 446930
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "ball_d2_median_m",
+        "value": 0.08,
+        "unit": "m",
+        "n": 31577
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.6569,
+        "unit": "ratio",
+        "n": 31577
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 377419
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "ball_d2_median_m",
+        "value": 0.072801,
+        "unit": "m",
+        "n": 28707
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "ball_player_d2_ratio",
+        "value": 5.1478,
+        "unit": "ratio",
+        "n": 28707
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "player_d2_median_m",
+        "value": 0.014142,
+        "unit": "m",
+        "n": 363063
+      }
+    ],
+    "partitions": [
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "frame_loss_pct",
+        "value": 1.3907,
+        "unit": "%",
+        "n": 126556
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114086",
+        "metric": "frame_loss_regime_high",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "frame_loss_pct",
+        "value": 2.1645,
+        "unit": "%",
+        "n": 151164
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114099",
+        "metric": "frame_loss_regime_high",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "frame_loss_pct",
+        "value": 3.2813,
+        "unit": "%",
+        "n": 178101
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114169",
+        "metric": "frame_loss_regime_high",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "frame_loss_pct",
+        "value": 1.6407,
+        "unit": "%",
+        "n": 161574
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114234",
+        "metric": "frame_loss_regime_high",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "frame_loss_pct",
+        "value": 1.7842,
+        "unit": "%",
+        "n": 149538
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:114243",
+        "metric": "frame_loss_regime_high",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "frame_loss_pct",
+        "value": 0.0135,
+        "unit": "%",
+        "n": 162501
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:178442",
+        "metric": "frame_loss_regime_high",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "frame_loss_pct",
+        "value": 0.0128,
+        "unit": "%",
+        "n": 140874
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:179612",
+        "metric": "frame_loss_regime_high",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "frame_loss_pct",
+        "value": 0.0603,
+        "unit": "%",
+        "n": 154114
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:184439",
+        "metric": "frame_loss_regime_high",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "frame_loss_pct",
+        "value": 0.0025,
+        "unit": "%",
+        "n": 121796
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:188630",
+        "metric": "frame_loss_regime_high",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "frame_loss_pct",
+        "value": 0.0077,
+        "unit": "%",
+        "n": 143056
+      },
+      {
+        "sport": "basketball",
+        "match_id": "bb:191313",
+        "metric": "frame_loss_regime_high",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "attack_median_m",
+        "value": 0.0,
+        "unit": "m",
+        "n": 956
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "event_coords_exact",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 956
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 60301
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1874553",
+        "metric": "players_last_modified",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "attack_median_m",
+        "value": 0.158,
+        "unit": "m",
+        "n": 987
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "event_coords_exact",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 987
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 59061
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1886347",
+        "metric": "players_last_modified",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "attack_median_m",
+        "value": 0.141,
+        "unit": "m",
+        "n": 891
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "event_coords_exact",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 891
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 60530
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1899585",
+        "metric": "players_last_modified",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "attack_median_m",
+        "value": 0.189,
+        "unit": "m",
+        "n": 1050
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "event_coords_exact",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1050
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 61301
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1925299",
+        "metric": "players_last_modified",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "attack_median_m",
+        "value": 0.0,
+        "unit": "m",
+        "n": 1139
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "event_coords_exact",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1139
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 59070
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1927964",
+        "metric": "players_last_modified",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "attack_median_m",
+        "value": 0.156,
+        "unit": "m",
+        "n": 970
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "event_coords_exact",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 970
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 59250
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1953632",
+        "metric": "players_last_modified",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "attack_median_m",
+        "value": 0.0,
+        "unit": "m",
+        "n": 945
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "event_coords_exact",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 945
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "layout_frames_outside_periods",
+        "value": 9.0,
+        "unit": "count",
+        "n": 58541
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1959846",
+        "metric": "players_last_modified",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "attack_median_m",
+        "value": 0.0,
+        "unit": "m",
+        "n": 915
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "event_coords_exact",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 915
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 59090
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1986691",
+        "metric": "players_last_modified",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "attack_median_m",
+        "value": 0.165,
+        "unit": "m",
+        "n": 996
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "event_coords_exact",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 996
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 57621
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996435",
+        "metric": "players_last_modified",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "attack_median_m",
+        "value": 0.0,
+        "unit": "m",
+        "n": 785
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "event_coords_exact",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 785
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 60280
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:1996436",
+        "metric": "players_last_modified",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "attack_median_m",
+        "value": 0.164,
+        "unit": "m",
+        "n": 977
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "event_coords_exact",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 977
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 59270
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006229",
+        "metric": "players_last_modified",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "attack_median_m",
+        "value": 0.0,
+        "unit": "m",
+        "n": 976
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "event_coords_exact",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 976
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "layout_frames_outside_periods",
+        "value": 29.0,
+        "unit": "count",
+        "n": 59101
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2006363",
+        "metric": "players_last_modified",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "attack_median_m",
+        "value": 0.0,
+        "unit": "m",
+        "n": 862
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "event_coords_exact",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 862
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 58081
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007448",
+        "metric": "players_last_modified",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "attack_median_m",
+        "value": 0.0,
+        "unit": "m",
+        "n": 959
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "event_coords_exact",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 959
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "layout_frames_outside_periods",
+        "value": 29.0,
+        "unit": "count",
+        "n": 57571
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2007721",
+        "metric": "players_last_modified",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "attack_median_m",
+        "value": 0.0,
+        "unit": "m",
+        "n": 935
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "event_coords_exact",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 935
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "layout_extra_footage",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "layout_frames_outside_periods",
+        "value": 19.0,
+        "unit": "count",
+        "n": 58991
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2010085",
+        "metric": "players_last_modified",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "attack_median_m",
+        "value": 0.134,
+        "unit": "m",
+        "n": 754
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "event_coords_exact",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 754
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "layout_extra_footage",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "layout_frames_outside_periods",
+        "value": 12559.0,
+        "unit": "count",
+        "n": 71851
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2011166",
+        "metric": "players_last_modified",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "attack_median_m",
+        "value": 0.235,
+        "unit": "m",
+        "n": 917
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "event_coords_exact",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 917
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "layout_extra_footage",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "layout_frames_outside_periods",
+        "value": 13459.0,
+        "unit": "count",
+        "n": 70251
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2013725",
+        "metric": "players_last_modified",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "attack_median_m",
+        "value": 0.194,
+        "unit": "m",
+        "n": 881
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "event_coords_exact",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 881
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "layout_extra_footage",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "layout_frames_outside_periods",
+        "value": 12199.0,
+        "unit": "count",
+        "n": 72101
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2015213",
+        "metric": "players_last_modified",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "attack_median_m",
+        "value": 0.0,
+        "unit": "m",
+        "n": 959
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "event_coords_exact",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 959
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "layout_extra_footage",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "layout_frames_outside_periods",
+        "value": 11059.0,
+        "unit": "count",
+        "n": 71101
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2016236",
+        "metric": "players_last_modified",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "attack_median_m",
+        "value": 0.253,
+        "unit": "m",
+        "n": 800
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "event_coords_exact",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 800
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "layout_extra_footage",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "layout_frames_outside_periods",
+        "value": 12999.0,
+        "unit": "count",
+        "n": 71451
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "partitions_agree",
+        "value": 1.0,
+        "unit": "flag",
+        "n": 1
+      },
+      {
+        "sport": "football",
+        "match_id": "fb:2017461",
+        "metric": "players_last_modified",
+        "value": 0.0,
+        "unit": "flag",
+        "n": 1
+      }
+    ]
+  },
+  "summary": {
+    "basketball_matches": 10,
+    "football_matches": 20,
+    "basketball_calibration_matches": 5,
+    "basketball_control_matches": 5,
+    "football_extra_footage_matches": 5,
+    "football_extra_footage_match_ids": [
+      "fb:2011166",
+      "fb:2013725",
+      "fb:2015213",
+      "fb:2016236",
+      "fb:2017461"
+    ],
+    "basketball_high_frame_loss_matches": 5,
+    "basketball_high_frame_loss_match_ids": [
+      "bb:114086",
+      "bb:114099",
+      "bb:114169",
+      "bb:114234",
+      "bb:114243"
+    ],
+    "football_partitions_agree_matches": 20,
+    "football_players_last_modified_matches": 10,
+    "ranges": {
+      "detection_ball_pct_basketball": "0.0",
+      "detection_player_pct_basketball": "76.2 to 82.8",
+      "detection_ball_pct_football": "75.5 to 85.4",
+      "detection_player_pct_football": "49.1 to 65.8",
+      "gravity_g_calibration": "8.08 to 8.36",
+      "gravity_bias_calibration": "14.7 to 17.6",
+      "gravity_g_control": "7.91 to 8.25",
+      "gravity_bias_control": "15.9 to 19.3",
+      "gravity_g_football": "7.27 to 8.67",
+      "gravity_bias_football": "11.6 to 25.8",
+      "entry_angle_gap": "12.1 to 16.4",
+      "entry_angle_reordered_pct": "10.5 to 34.7",
+      "noise_ratio_basketball": "3.0 to 5.0",
+      "noise_ratio_football": "5.1 to 5.7",
+      "noise_grid_pct_football": "100.0",
+      "clock_step_exact_basketball": "100.0",
+      "clock_step_exact_football": "100.0",
+      "clock_speed_mismatch": "0.15 to 0.18"
+    }
+  },
+  "hook": {
+    "match_id": "bb:114086",
+    "shot_id": "shot-114086-1-28",
+    "start_frame": 26867,
+    "g_data": 8.1451,
+    "g_real": 9.80665,
+    "median_calibration_g": 8.1451,
+    "t_s": [
+      -0.4,
+      -0.36,
+      -0.32,
+      -0.28,
+      -0.24,
+      -0.2,
+      -0.16,
+      -0.12,
+      -0.08,
+      -0.04,
+      0.0,
+      0.04,
+      0.08,
+      0.12,
+      0.16,
+      0.2,
+      0.24,
+      0.28,
+      0.32,
+      0.36,
+      0.4
+    ],
+    "z_data_m": [
+      3.8398,
+      3.9648,
+      4.0898,
+      4.1922,
+      4.2719,
+      4.3516,
+      4.4156,
+      4.4797,
+      4.5195,
+      4.5352,
+      4.5508,
+      4.5461,
+      4.5414,
+      4.5148,
+      4.4664,
+      4.418,
+      4.3398,
+      4.2617,
+      4.1723,
+      4.0715,
+      3.9707
+    ],
+    "z_real_m": [
+      3.7059,
+      3.8608,
+      4.0001,
+      4.1236,
+      4.2315,
+      4.3236,
+      4.4001,
+      4.4609,
+      4.506,
+      4.5354,
+      4.5491,
+      4.5471,
+      4.5295,
+      4.4961,
+      4.447,
+      4.3823,
+      4.3019,
+      4.2058,
+      4.0939,
+      3.9664,
+      3.8232
+    ]
+  }
+}
