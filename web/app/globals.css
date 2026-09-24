@@ -65,3 +65,84 @@ body {
   gap: 1rem;
   margin-top: 0.5rem;
 }
+
+.platform {
+  margin: 1.5rem 0;
+}
+
+.platform-layers {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .platform-layers {
+    grid-template-columns: 1fr;
+  }
+}
+
+.platform-layer {
+  min-width: 0;
+  border: 1px solid #3a4149;
+  border-radius: 4px;
+  padding: 0.75rem;
+  transition: border-color 0.2s;
+}
+
+.platform-layer[data-phase="active"] {
+  border-color: #e0883a;
+}
+
+.platform-layer h3 {
+  margin: 0 0 0.5rem;
+  text-transform: capitalize;
+}
+
+.platform-bar {
+  height: 4px;
+  background: #3a4149;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.platform-bar-fill {
+  height: 100%;
+  background: #e0883a;
+}
+
+.platform-counters {
+  margin: 0;
+}
+
+.platform-counters div {
+  margin-bottom: 0.4rem;
+}
+
+.platform-counters dt {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.platform-counters dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+
+.platform-bytes-human {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.platform-note {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin: 0.5rem 0 0;
+}
+
+.platform-footer {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pluralize } from "../lib/format";
+import { formatBytes, pluralize } from "../lib/format";
 
 describe("pluralize", () => {
   it("uses the singular form for a count of one", () => {
