@@ -11,6 +11,10 @@ from pathlib import Path
 
 from dagster import AssetKey
 
+import tracklab.bronze.basketball.meta
+import tracklab.bronze.basketball.tracking
+import tracklab.bronze.football.meta
+import tracklab.bronze.football.tracking
 from tracklab.dagster_defs import defs
 from tracklab.dagster_defs.assets_bronze import BRONZE_TABLES, bronze_key
 
@@ -42,3 +46,14 @@ def test_bronze_tables_are_listed_once_per_sport() -> None:
     for sport in ("basketball", "football"):
         tables = [t for (s, _), group in BRONZE_TABLES.items() if s == sport for t in group]
         assert len(tables) == len(set(tables)), sport
+
+
+def test_schema_in_code_tables_match_their_builder() -> None:
+    modules = {
+        ("basketball", "meta"): tracklab.bronze.basketball.meta,
+        ("basketball", "tracking"): tracklab.bronze.basketball.tracking,
+        ("football", "meta"): tracklab.bronze.football.meta,
+        ("football", "tracking"): tracklab.bronze.football.tracking,
+    }
+    for group, module in modules.items():
+        assert set(BRONZE_TABLES[group]) == set(module.TABLES), group

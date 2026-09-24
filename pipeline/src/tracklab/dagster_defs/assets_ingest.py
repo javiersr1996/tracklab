@@ -45,6 +45,11 @@ def _raw_asset(source: Source) -> AssetsDefinition:
         frozen = load_manifest(MANIFEST).source(source.source_id)
         receipt_root = data_root() / "raw" / source.source_id
         existing = _previous_source_path(receipt_root)
+        if existing is not None and not existing.is_dir():
+            raise Failure(
+                f"{receipt_root / RECEIPT_NAME} verifies in place at {existing}, which is gone; "
+                f"re-run `tracklab ingest {source.source_id}` with or without --from-existing"
+            )
         if existing is not None:
             receipt = ingest_local(frozen, existing, receipt_root, log=context.log.info)
         else:
