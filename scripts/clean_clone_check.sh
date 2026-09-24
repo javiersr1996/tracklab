@@ -41,6 +41,11 @@ start=$SECONDS
 echo "clean clone in $tmp"
 (cd "$tmp" && bash -euxo pipefail -c "$block")
 
+# Both receipts, printed and checked: a source is only verified if nothing failed.
+for receipt in "$tmp"/tracklab/pipeline/data/raw/*/_receipt.json; do
+  python -c 'import json,sys; r=json.load(open(sys.argv[1])); print(r["source_id"], "downloaded", r["downloaded"], "verified", r["verified"], "failed", r["failed"]); sys.exit(1 if r["failed"] else 0)' "$receipt"
+done
+
 # `git diff`, not `git status`: on Windows the writers emit CRLF, which status flags
 # and git normalizes away on commit (.gitattributes), so it is not a change.
 changes=$(git -C "$tmp/tracklab" diff --stat; git -C "$tmp/tracklab" ls-files --others --exclude-standard)
