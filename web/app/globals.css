@@ -32,3 +32,14 @@ body {
 .controls input[type="range"] {
   flex: 1;
 }
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.replay-placeholder {
+  aspect-ratio: 960 / 560;
+  background: #1d2327;
+}

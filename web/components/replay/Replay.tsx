@@ -25,9 +25,19 @@ declare global {
 
 const RATES: Rate[] = [0.5, 1, 2];
 
-export function Replay({ possession }: { possession: Possession }) {
+interface Props {
+  possession: Possession;
+  autoplay?: boolean;
+  onEnded?: () => void;
+}
+
+export function Replay({ possession, autoplay = false, onEnded }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const [engine] = useState(() => new ReplayEngine(possession));
+  const [engine] = useState(() => {
+    const e = new ReplayEngine(possession);
+    if (autoplay) e.play();
+    return e;
+  });
   const [normalized, setNormalized] = useState(false);
   const [, setVersion] = useState(0);
   const rerender = () => setVersion((v) => v + 1);
@@ -55,12 +65,13 @@ export function Replay({ possession }: { possession: Possession }) {
       }
       // Every frame while playing, and once more on the tick that ends it.
       if (engine.state === "playing" || engine.state !== shown) setVersion((v) => v + 1);
+      if (engine.state === "ended" && shown !== "ended") onEnded?.();
       shown = engine.state;
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [engine, possession, normalized]);
+  }, [engine, possession, normalized, onEnded]);
 
   const playing = engine.state === "playing";
   return (
