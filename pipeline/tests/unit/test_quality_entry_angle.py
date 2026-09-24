@@ -6,7 +6,9 @@ straight-line fit that stands in for "the angle the bundle's z reports" recovers
 that rate with zero residual), and the required angle is computed by hand with
 the same formula the module docstring states. A second match has too few ball
 frames after the shot starts for a `SEG_LEN`-frame window to exist at all: the
-match this task's `no_window` gate is built for.
+match this task's `no_window` gate is built for. A third has three made shots whose
+fall rate and release height are set so the two angles order one pair the same way
+and two pairs the other way. The ball is flagged undetected, as in the bundle.
 """
 
 from __future__ import annotations
@@ -36,17 +38,25 @@ V_FALL = 3.0  # m/s, the (unphysical, deliberately linear) fall rate near arriva
 T_FLIGHT = 1.0  # s; D = V_H * T_FLIGHT
 X0 = RIM_X - V_H * T_FLIGHT  # so the horizontal distance to the rim is exactly D
 
-Row = tuple[str, str, int, int, int, int, str, float, float, float]
+Row = tuple[str, str, int, int, int, int, str, float, float, float, bool]
+
+# (fall rate, release height) of the three shots of the multi-shot match. The reported
+# angle grows with the fall rate, the required one with the release height, so the
+# order is A < B < C by the first and C < A < B by the second: AB agree, AC and BC do not.
+SHOTS = {"A": (1.0, 2.0), "B": (2.0, 2.2), "C": (3.0, 1.8)}
+SHOT_GAP = 100  # frames between the multi-shot match's shot starts
 
 
-def _ball_series(native: int, n_frames: int) -> list[Row]:
-    """`n_frames` ball samples of the engineered flight, frames 0..n_frames-1.
-    `t=0` sits at frame 2 (`startFrame=0`, `SEARCH_OFFSET=2`)."""
+def _ball_series(
+    native: int, n_frames: int, v_fall: float = V_FALL, z0: float = Z0, start: int = 0
+) -> list[Row]:
+    """`n_frames` ball samples of the engineered flight, frames start..start+n_frames-1.
+    `t=0` sits at frame start + 2 (`startFrame=start`, `SEARCH_OFFSET=2`)."""
     rows: list[Row] = []
-    for f in range(n_frames):
-        t = (f - 2) * DT
-        x, y, z = X0 + V_H * t, 0.0, Z0 - V_FALL * t
-        rows.append(("basketball", f"bb:{native}", native, 1, f, f * 40, "ball", x, y, z))
+    for f in range(start, start + n_frames):
+        t = (f - start - 2) * DT
+        x, y, z = X0 + V_H * t, 0.0, z0 - v_fall * t
+        rows.append(("basketball", f"bb:{native}", native, 1, f, f * 40, "ball", x, y, z, False))
     return rows
 
 
@@ -60,7 +70,7 @@ def _write(data_dir: Path, ball_rows: list[Row], shots: list[tuple[object, ...]]
         """
         CREATE TABLE frames (sport VARCHAR, match_id VARCHAR, native_match_id BIGINT,
             period SMALLINT, frame_native BIGINT, t_ms BIGINT, entity_kind VARCHAR,
-            x_m DOUBLE, y_m DOUBLE, z_m DOUBLE)
+            x_m DOUBLE, y_m DOUBLE, z_m DOUBLE, is_detected BOOLEAN)
         """
     )
     con.execute(f"INSERT INTO frames VALUES {_values(ball_rows)}")
@@ -84,10 +94,10 @@ def _write(data_dir: Path, ball_rows: list[Row], shots: list[tuple[object, ...]]
         con.execute(f"COPY (SELECT * FROM shots WHERE match_id = {native}) TO '{path}'")
 
 
-def _expected_angles() -> tuple[float, float]:
+def _expected_angles(v_fall: float = V_FALL, z0: float = Z0) -> tuple[float, float]:
     """(reported, required) in degrees, by hand, from the module's own formula."""
-    ang_rep = math.degrees(math.atan2(V_FALL, V_H))
-    v_z0 = (ea.RIM_HEIGHT - Z0 + 0.5 * G * T_FLIGHT * T_FLIGHT) / T_FLIGHT
+    ang_rep = math.degrees(math.atan2(v_fall, V_H))
+    v_z0 = (ea.RIM_HEIGHT - z0 + 0.5 * G * T_FLIGHT * T_FLIGHT) / T_FLIGHT
     ang_req = math.degrees(math.atan2(abs(v_z0 - G * T_FLIGHT), V_H))
     return ang_rep, ang_req
 
@@ -101,7 +111,11 @@ def report(tmp_path_factory: pytest.TempPathFactory) -> dict[tuple[str, str], tu
         (999999, "shot-good", 0, 30, False, True, 20.0),
         (999998, "shot-short", 0, 30, False, True, 20.0),
     ]
-    _write(root / "data", good + short, shots)
+    multi: list[Row] = []
+    for k, (name, (v_fall, z0)) in enumerate(SHOTS.items()):
+        multi += _ball_series(999997, SHOT_GAP, v_fall, z0, start=k * SHOT_GAP)
+        shots.append((999997, f"shot-{name}", k * SHOT_GAP, k * SHOT_GAP + 30, False, True, 20.0))
+    _write(root / "data", good + short + multi, shots)
     reports = root / "reports"
     assert run_quality(["entry_angle"], data_dir=root / "data", reports_dir=reports) == 0
     with report_path(reports, "entry_angle").open(encoding="utf-8", newline="") as handle:
@@ -129,6 +143,17 @@ def test_the_engineered_flight_gives_the_hand_computed_angles(
     assert report[("bb:999999", "candidates")] == (1.0, 1)
     # A single shot has no pair to reorder against.
     assert ("bb:999999", "pairs_reordered_pct") not in report
+
+
+def test_two_of_three_shot_pairs_are_ordered_differently(
+    report: dict[tuple[str, str], tuple[float, int]],
+) -> None:
+    angles = {name: _expected_angles(v_fall, z0) for name, (v_fall, z0) in SHOTS.items()}
+    reps = sorted(angles, key=lambda name: angles[name][0])
+    reqs = sorted(angles, key=lambda name: angles[name][1])
+    assert (reps, reqs) == (["A", "B", "C"], ["C", "A", "B"])
+    assert report[("bb:999997", "shots")] == (3.0, 3)
+    assert report[("bb:999997", "pairs_reordered_pct")] == (pytest.approx(200 / 3, abs=1e-4), 3)
 
 
 def test_too_few_ball_frames_after_the_shot_is_excluded(

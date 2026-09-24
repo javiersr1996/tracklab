@@ -68,7 +68,7 @@ def entry_angle(data_dir: Path, reports_dir: Path) -> list[Result]:
         if sport != "basketball" or native not in shots:
             continue
         match_id = next(iter(by_frame.values()))[0]
-        samples = [sample for _, (_, _, sample) in sorted(by_frame.items())]
+        samples = [sample for _, (_, _, sample, _) in sorted(by_frame.items())]
         tally = _match(samples, shots[native])
         results += _results(match_id, native, tally)
     return results
