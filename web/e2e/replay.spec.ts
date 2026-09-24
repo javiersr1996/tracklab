@@ -5,6 +5,9 @@ import type { Possession } from "../lib/replay/types";
 // so the normalize switch has a sign to flip.
 const FILES = ["bb_possessions_possession-114243-3-79.json", "fb_possession_1899585_123.json"];
 
+// Production builds do not expose window.__replay (task 21): this suite runs locally and in CI.
+test.skip(!!process.env.BASE_URL, "window.__replay exists only in dev and test builds");
+
 const replay = (page: Page) => page.evaluate(() => window.__replay!);
 
 for (const file of FILES) {

@@ -1,6 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // Chromium only per task 18: no cross-browser matrix for the skeleton.
+// BASE_URL points the suite at a deployment (task 23) instead of a local `next start`.
+const BASE_URL = process.env.BASE_URL;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -8,11 +11,13 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: BASE_URL ?? "http://localhost:3000",
     trace: "on-first-retry",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: {
+  webServer: BASE_URL
+    ? undefined
+    : {
     command: "npm run build && npm run start",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,

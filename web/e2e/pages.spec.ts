@@ -1,5 +1,8 @@
 import { expect, type Request, test } from "@playwright/test";
 
+// Against a deployment (BASE_URL) there is no window.__replay: the checks read the page.
+const EXPOSED = !process.env.BASE_URL;
+
 interface Stats {
   tables: { table: string; sport: string; rows: number }[];
 }
@@ -13,9 +16,9 @@ test("the home page starts playing on its own, light, with the figures of stats.
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
 
   await page.goto("/");
-  await page.waitForFunction(() => window.__replay?.state === "playing", null, {
-    timeout: 2_000,
-  });
+  // Playing on its own: the button offers to pause.
+  await expect(page.getByRole("button", { name: "Pause" })).toBeVisible({ timeout: 2_000 });
+  if (EXPOSED) expect(await page.evaluate(() => window.__replay?.state)).toBe("playing");
 
   const stats = (await (await page.request.get("/data/stats.json")).json()) as Stats;
   for (const sport of ["basketball", "football"]) {
@@ -41,13 +44,20 @@ test("the home page starts playing on its own, light, with the figures of stats.
 
 test("the selector switches sport and restarts the renderer", async ({ page }) => {
   await page.goto("/replay?p=bb_possessions_possession-114243-3-79.json");
-  await page.waitForFunction(() => window.__replay?.sport === "basketball");
   await page.getByRole("button", { name: "Play" }).click();
-  await page.waitForFunction(() => (window.__replay?.frameIndex ?? 0) > 5);
+  await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+  const scrub = page.getByLabel("Scrub");
+  await expect.poll(async () => Number(await scrub.inputValue())).toBeGreaterThan(
+    Number(await scrub.getAttribute("min")),
+  );
 
   await page.getByLabel("Sport").selectOption("football");
-  await page.waitForFunction(() => window.__replay?.sport === "football");
-  const after = await page.evaluate(() => window.__replay!);
-  expect(after.frameIndex).toBe(0);
-  expect(after.state).toBe("idle");
+  await expect(page).toHaveURL(/p=fb_/);
+  // A new renderer: idle, at its first frame.
+  await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
+  expect(await scrub.inputValue()).toBe(await scrub.getAttribute("min"));
+  if (EXPOSED) {
+    const after = await page.evaluate(() => window.__replay!);
+    expect([after.sport, after.state, after.frameIndex]).toEqual(["football", "idle", 0]);
+  }
 });
