@@ -18,7 +18,7 @@ url="https://github.com/javiersr1996/tracklab.git"
 from_existing=""
 if [[ "${1:-}" == "--from-existing" ]]; then
   receipt="$repo/pipeline/data/raw/opendata-basketball/_receipt.json"
-  from_existing=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["source_path"])' "$receipt")
+  from_existing=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["source_path"].replace(chr(92), "/"))' "$receipt")
 fi
 
 block=$(sed -n '/<!-- clean-clone:begin -->/,/<!-- clean-clone:end -->/p' "$readme" | sed '/^<!--/d;/^```/d')
