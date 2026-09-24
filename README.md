@@ -32,11 +32,13 @@ Python 3.13, pinned in `.python-version`.
 
 ## Orchestration
 
-The pipeline is a Dagster graph of **57 assets** (`uv run dagster asset list -m
+The pipeline is a Dagster graph of **59 assets** (`uv run dagster asset list -m
 tracklab.dagster_defs`): `raw_<sport>` (2), `bronze_<sport>_<table>` (40, one step per
 `tracklab bronze --tables` group), `bronze_common_orientation` and the two
 `reports_orientation_<sport>` CSVs it writes, the dbt seeds (2) and the silver models (10),
-whose dbt tests run as asset checks. The job `build` runs all of them. From `pipeline/`:
+whose dbt tests run as asset checks, plus `publish_possessions` and `publish_stats`
+(task 17, group `publish`, not part of `group:silver`). The job `build` runs all of them.
+From `pipeline/`:
 
 ```
 uv run dbt parse --project-dir dbt --profiles-dir dbt          # dagster-dbt reads target/manifest.json

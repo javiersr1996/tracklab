@@ -17,6 +17,7 @@ tracklab = "tracklab.cli:main"
 
 [dependency-groups]
 dev = [
+    "jsonschema>=4.26.0",
     "mypy>=1.11",
     "pytest>=8.3",
     "ruff>=0.6",

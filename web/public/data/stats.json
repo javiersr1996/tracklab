@@ -1,0 +1,449 @@
+{
+  "schema_version": 1,
+  "tables": [
+    {
+      "table": "dim_entity",
+      "sport": "basketball",
+      "match_id": "",
+      "rows": 244
+    },
+    {
+      "table": "dim_entity",
+      "sport": "football",
+      "match_id": "",
+      "rows": 739
+    },
+    {
+      "table": "dim_match",
+      "sport": "basketball",
+      "match_id": "",
+      "rows": 10
+    },
+    {
+      "table": "dim_match",
+      "sport": "football",
+      "match_id": "",
+      "rows": 20
+    },
+    {
+      "table": "dim_period",
+      "sport": "basketball",
+      "match_id": "",
+      "rows": 41
+    },
+    {
+      "table": "dim_period",
+      "sport": "football",
+      "match_id": "",
+      "rows": 40
+    },
+    {
+      "table": "dim_sport",
+      "sport": "basketball",
+      "match_id": "",
+      "rows": 1
+    },
+    {
+      "table": "dim_sport",
+      "sport": "football",
+      "match_id": "",
+      "rows": 1
+    },
+    {
+      "table": "dim_team",
+      "sport": "basketball",
+      "match_id": "",
+      "rows": 17
+    },
+    {
+      "table": "dim_team",
+      "sport": "football",
+      "match_id": "",
+      "rows": 13
+    },
+    {
+      "table": "dim_team_period",
+      "sport": "basketball",
+      "match_id": "",
+      "rows": 82
+    },
+    {
+      "table": "dim_team_period",
+      "sport": "football",
+      "match_id": "",
+      "rows": 80
+    },
+    {
+      "table": "events",
+      "sport": "basketball",
+      "match_id": "bb:114086",
+      "rows": 6975
+    },
+    {
+      "table": "events",
+      "sport": "basketball",
+      "match_id": "bb:114099",
+      "rows": 7174
+    },
+    {
+      "table": "events",
+      "sport": "basketball",
+      "match_id": "bb:114169",
+      "rows": 7367
+    },
+    {
+      "table": "events",
+      "sport": "basketball",
+      "match_id": "bb:114234",
+      "rows": 7419
+    },
+    {
+      "table": "events",
+      "sport": "basketball",
+      "match_id": "bb:114243",
+      "rows": 7346
+    },
+    {
+      "table": "events",
+      "sport": "basketball",
+      "match_id": "bb:178442",
+      "rows": 7607
+    },
+    {
+      "table": "events",
+      "sport": "basketball",
+      "match_id": "bb:179612",
+      "rows": 7175
+    },
+    {
+      "table": "events",
+      "sport": "basketball",
+      "match_id": "bb:184439",
+      "rows": 7145
+    },
+    {
+      "table": "events",
+      "sport": "basketball",
+      "match_id": "bb:188630",
+      "rows": 6729
+    },
+    {
+      "table": "events",
+      "sport": "basketball",
+      "match_id": "bb:191313",
+      "rows": 7047
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:1874553",
+      "rows": 5530
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:1886347",
+      "rows": 5750
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:1899585",
+      "rows": 5227
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:1925299",
+      "rows": 5909
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:1927964",
+      "rows": 6263
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:1953632",
+      "rows": 5361
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:1959846",
+      "rows": 5319
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:1986691",
+      "rows": 5044
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:1996435",
+      "rows": 5818
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:1996436",
+      "rows": 4507
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:2006229",
+      "rows": 5589
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:2006363",
+      "rows": 5612
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:2007448",
+      "rows": 4897
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:2007721",
+      "rows": 5448
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:2010085",
+      "rows": 5228
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:2011166",
+      "rows": 4672
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:2013725",
+      "rows": 5431
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:2015213",
+      "rows": 5328
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:2016236",
+      "rows": 5466
+    },
+    {
+      "table": "events",
+      "sport": "football",
+      "match_id": "fb:2017461",
+      "rows": 4794
+    },
+    {
+      "table": "frames",
+      "sport": "basketball",
+      "match_id": "bb:114086",
+      "rows": 1014068
+    },
+    {
+      "table": "frames",
+      "sport": "basketball",
+      "match_id": "bb:114099",
+      "rows": 832205
+    },
+    {
+      "table": "frames",
+      "sport": "basketball",
+      "match_id": "bb:114169",
+      "rows": 1167936
+    },
+    {
+      "table": "frames",
+      "sport": "basketball",
+      "match_id": "bb:114234",
+      "rows": 793452
+    },
+    {
+      "table": "frames",
+      "sport": "basketball",
+      "match_id": "bb:114243",
+      "rows": 847253
+    },
+    {
+      "table": "frames",
+      "sport": "basketball",
+      "match_id": "bb:178442",
+      "rows": 986062
+    },
+    {
+      "table": "frames",
+      "sport": "basketball",
+      "match_id": "bb:179612",
+      "rows": 917807
+    },
+    {
+      "table": "frames",
+      "sport": "basketball",
+      "match_id": "bb:184439",
+      "rows": 851708
+    },
+    {
+      "table": "frames",
+      "sport": "basketball",
+      "match_id": "bb:188630",
+      "rows": 804518
+    },
+    {
+      "table": "frames",
+      "sport": "basketball",
+      "match_id": "bb:191313",
+      "rows": 911735
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:1874553",
+      "rows": 1017612
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:1886347",
+      "rows": 999534
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:1899585",
+      "rows": 935663
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:1925299",
+      "rows": 1102666
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:1927964",
+      "rows": 1029457
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:1953632",
+      "rows": 1009976
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:1959846",
+      "rows": 982997
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:1986691",
+      "rows": 990748
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:1996435",
+      "rows": 1001213
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:1996436",
+      "rows": 990518
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:2006229",
+      "rows": 1015933
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:2006363",
+      "rows": 1019981
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:2007448",
+      "rows": 1018509
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:2007721",
+      "rows": 1064831
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:2010085",
+      "rows": 1046983
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:2011166",
+      "rows": 897345
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:2013725",
+      "rows": 1034816
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:2015213",
+      "rows": 1116466
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:2016236",
+      "rows": 1009309
+    },
+    {
+      "table": "frames",
+      "sport": "football",
+      "match_id": "fb:2017461",
+      "rows": 929292
+    }
+  ],
+  "bytes": {
+    "raw": {
+      "football": 1919842163,
+      "basketball": 396340141,
+      "total": 2316182304
+    },
+    "published": {
+      "basketball": 549259,
+      "football": 587202,
+      "total": 1136461
+    }
+  }
+}

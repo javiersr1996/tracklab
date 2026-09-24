@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "possessions": [
+    {
+      "possession_id": "bb:possessions:possession-114086-1-36",
+      "sport": "basketball",
+      "match_id": "bb:114086",
+      "home": "Dreamland Gran Canaria",
+      "away": "Bitci Baskonia",
+      "duration_s": 13.1,
+      "sample_rate_hz": 25,
+      "file": "possessions/bb_possessions_possession-114086-1-36.json",
+      "bytes": 91458
+    },
+    {
+      "possession_id": "bb:possessions:possession-114099-1-41",
+      "sport": "basketball",
+      "match_id": "bb:114099",
+      "home": "Basquet Girona",
+      "away": "San Pablo Burgos",
+      "duration_s": 13.6,
+      "sample_rate_hz": 25,
+      "file": "possessions/bb_possessions_possession-114099-1-41.json",
+      "bytes": 99127
+    },
+    {
+      "possession_id": "bb:possessions:possession-114169-4-140",
+      "sport": "basketball",
+      "match_id": "bb:114169",
+      "home": "CB UCAM Murcia",
+      "away": "Club Joventut Badalona",
+      "duration_s": 10.6,
+      "sample_rate_hz": 25,
+      "file": "possessions/bb_possessions_possession-114169-4-140.json",
+      "bytes": 73652
+    },
+    {
+      "possession_id": "bb:possessions:possession-114243-3-79",
+      "sport": "basketball",
+      "match_id": "bb:114243",
+      "home": "BAXI Manresa",
+      "away": "Coviran Granada",
+      "duration_s": 11.0,
+      "sample_rate_hz": 25,
+      "file": "possessions/bb_possessions_possession-114243-3-79.json",
+      "bytes": 80241
+    },
+    {
+      "possession_id": "bb:possessions:possession-184439-2-38",
+      "sport": "basketball",
+      "match_id": "bb:184439",
+      "home": "Real Madrid",
+      "away": "Lenovo Tenerife",
+      "duration_s": 12.8,
+      "sample_rate_hz": 25,
+      "file": "possessions/bb_possessions_possession-184439-2-38.json",
+      "bytes": 89788
+    },
+    {
+      "possession_id": "bb:possessions:possession-191313-1-0",
+      "sport": "basketball",
+      "match_id": "bb:191313",
+      "home": "Leche Rio Breogan",
+      "away": "Casademont Zaragoza",
+      "duration_s": 18.5,
+      "sample_rate_hz": 25,
+      "file": "possessions/bb_possessions_possession-191313-1-0.json",
+      "bytes": 114993
+    },
+    {
+      "possession_id": "fb:possession:1874553:1",
+      "sport": "football",
+      "match_id": "fb:1874553",
+      "home": "Brisbane Roar FC",
+      "away": "Adelaide United Football Club",
+      "duration_s": 15.0,
+      "sample_rate_hz": 10,
+      "file": "possessions/fb_possession_1874553_1.json",
+      "bytes": 87914
+    },
+    {
+      "possession_id": "fb:possession:1886347:40",
+      "sport": "football",
+      "match_id": "fb:1886347",
+      "home": "Auckland FC",
+      "away": "Newcastle United Jets FC",
+      "duration_s": 12.0,
+      "sample_rate_hz": 10,
+      "file": "possessions/fb_possession_1886347_40.json",
+      "bytes": 73996
+    },
+    {
+      "possession_id": "fb:possession:1899585:123",
+      "sport": "football",
+      "match_id": "fb:1899585",
+      "home": "Auckland FC",
+      "away": "Wellington Phoenix FC",
+      "duration_s": 10.3,
+      "sample_rate_hz": 10,
+      "file": "possessions/fb_possession_1899585_123.json",
+      "bytes": 62747
+    },
+    {
+      "possession_id": "fb:possession:1925299:71",
+      "sport": "football",
+      "match_id": "fb:1925299",
+      "home": "Brisbane Roar FC",
+      "away": "Perth Glory Football Club",
+      "duration_s": 24.7,
+      "sample_rate_hz": 10,
+      "file": "possessions/fb_possession_1925299_71.json",
+      "bytes": 144419
+    },
+    {
+      "possession_id": "fb:possession:1927964:41",
+      "sport": "football",
+      "match_id": "fb:1927964",
+      "home": "Western Sydney Wanderers FC",
+      "away": "Wellington Phoenix FC",
+      "duration_s": 22.1,
+      "sample_rate_hz": 10,
+      "file": "possessions/fb_possession_1927964_41.json",
+      "bytes": 131673
+    },
+    {
+      "possession_id": "fb:possession:1953632:69",
+      "sport": "football",
+      "match_id": "fb:1953632",
+      "home": "Central Coast Mariners Football Club",
+      "away": "Melbourne City FC",
+      "duration_s": 14.4,
+      "sample_rate_hz": 10,
+      "file": "possessions/fb_possession_1953632_69.json",
+      "bytes": 86453
+    }
+  ]
+}

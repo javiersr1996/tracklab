@@ -29,6 +29,8 @@ from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.paths import data_root
+from tracklab.publish.possessions import run_publish_possessions
+from tracklab.publish.stats import run_publish_stats
 from tracklab.silver.orientation import SPORTS, run_orientation
 from tracklab.silver.possessions import run_possessions
 from tracklab.silver.stats import run_stats
@@ -146,8 +148,12 @@ def _cmd_possessions(args: argparse.Namespace) -> int:
     return run_possessions(data_dir=args.data_dir, reports_dir=args.reports_dir)
 
 
-def _cmd_publish(args: argparse.Namespace) -> int:
-    raise NotImplementedError("tracklab publish: not implemented yet")
+def _cmd_publish_possessions(args: argparse.Namespace) -> int:
+    return run_publish_possessions(data_dir=args.data_dir, out_dir=args.out_dir)
+
+
+def _cmd_publish_stats(args: argparse.Namespace) -> int:
+    return run_publish_stats(data_dir=args.data_dir, out_dir=args.out_dir)
 
 
 def _cmd_stats(args: argparse.Namespace) -> int:
@@ -322,7 +328,42 @@ def build_parser() -> argparse.ArgumentParser:
     possessions.set_defaults(func=_cmd_possessions)
 
     publish = subparsers.add_parser("publish", help="Write JSON for the web from silver.")
-    publish.set_defaults(func=_cmd_publish)
+    publish_sub = publish.add_subparsers(dest="publish_command", required=True)
+
+    publish_possessions = publish_sub.add_parser(
+        "possessions", help="Pick 6 curated possessions per sport and write their JSON."
+    )
+    publish_possessions.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver and the basketball events_chances bronze table are read "
+        "from it (default: data).",
+    )
+    publish_possessions.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where possessions/*.json and index.json go (default: ../web/public/data).",
+    )
+    publish_possessions.set_defaults(func=_cmd_publish_possessions)
+
+    publish_stats = publish_sub.add_parser(
+        "stats", help="Write stats.json: rows per table and sport, bronze/silver bytes."
+    )
+    publish_stats.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; bronze and silver are read from it (default: data).",
+    )
+    publish_stats.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where stats.json goes (default: ../web/public/data).",
+    )
+    publish_stats.set_defaults(func=_cmd_publish_stats)
 
     stats = subparsers.add_parser(
         "stats", help="Count what silver holds; write reports/stats_silver.csv."
