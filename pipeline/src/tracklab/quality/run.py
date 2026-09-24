@@ -5,13 +5,14 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
-from tracklab.quality import detection
+from tracklab.quality import detection, gravity
 from tracklab.quality.common import Result, write_results
 
 Check = Callable[[Path], list[Result]]
 
 CHECKS: dict[str, Check] = {
     detection.CHECK: detection.detection,
+    gravity.CHECK: gravity.gravity,
 }
 
 

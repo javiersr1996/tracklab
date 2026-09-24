@@ -12,9 +12,10 @@ from dagster import AssetExecutionContext, AssetsDefinition, Failure, asset
 from tracklab.paths import data_root
 from tracklab.quality.run import CHECKS, run_quality
 
-# The silver tables each check reads.
+# The silver (and bronze) tables each check reads.
 READS: dict[str, list[str]] = {
     "detection": ["silver_frames"],
+    "gravity": ["silver_frames", "bronze_basketball_events_shots"],
 }
 
 
