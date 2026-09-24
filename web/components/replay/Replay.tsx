@@ -1,0 +1,120 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { formatClock, type Rate, ReplayEngine } from "../../lib/replay/engine";
+import { drawFrame, viewed } from "../../lib/replay/render";
+import type { Possession } from "../../lib/replay/types";
+
+// Playwright reads the player's state from here; a production build leaves it out.
+const EXPOSE =
+  process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_EXPOSE_REPLAY === "1";
+
+declare global {
+  interface Window {
+    __replay?: {
+      state: string;
+      t: number;
+      frameIndex: number;
+      sport: string;
+      rate: number;
+      normalized: boolean;
+      entities: { i: number; x: number; y: number }[];
+    };
+  }
+}
+
+const RATES: Rate[] = [0.5, 1, 2];
+
+export function Replay({ possession }: { possession: Possession }) {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const [engine] = useState(() => new ReplayEngine(possession));
+  const [normalized, setNormalized] = useState(false);
+  const [, setVersion] = useState(0);
+  const rerender = () => setVersion((v) => v + 1);
+
+  useEffect(() => {
+    let raf = 0;
+    let last: number | undefined;
+    let shown = engine.state;
+    const loop = (now: number) => {
+      if (last !== undefined) engine.tick(now - last);
+      last = now;
+      const snapshot = viewed(engine.frameAt(engine.t), possession, normalized);
+      const ctx = canvas.current?.getContext("2d");
+      if (ctx) drawFrame(ctx, possession, snapshot);
+      if (EXPOSE) {
+        window.__replay = {
+          state: engine.state,
+          t: engine.t,
+          frameIndex: engine.indexAt(engine.t),
+          sport: possession.sport,
+          rate: engine.rate,
+          normalized,
+          entities: snapshot.entities.map(({ i, x, y }) => ({ i, x, y })),
+        };
+      }
+      // Every frame while playing, and once more on the tick that ends it.
+      if (engine.state === "playing" || engine.state !== shown) setVersion((v) => v + 1);
+      shown = engine.state;
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [engine, possession, normalized]);
+
+  const playing = engine.state === "playing";
+  return (
+    <figure className="replay">
+      <canvas ref={canvas} width={960} height={560} aria-label="Replay of the possession" />
+      <div className="controls">
+        <button
+          type="button"
+          onClick={() => {
+            if (playing) engine.pause();
+            else engine.play();
+            rerender();
+          }}
+        >
+          {playing ? "Pause" : "Play"}
+        </button>
+        <input
+          type="range"
+          aria-label="Scrub"
+          min={engine.t0}
+          max={engine.tEnd}
+          step={1}
+          value={Math.round(engine.t)}
+          onChange={(e) => {
+            engine.seek(Number(e.target.value));
+            rerender();
+          }}
+        />
+        <output aria-label="Clock">
+          {formatClock(engine.frameAt(engine.t).clock, possession.clock_kind)}
+        </output>
+        <select
+          aria-label="Speed"
+          value={engine.rate}
+          onChange={(e) => {
+            engine.setRate(Number(e.target.value) as Rate);
+            rerender();
+          }}
+        >
+          {RATES.map((r) => (
+            <option key={r} value={r}>
+              {r}x
+            </option>
+          ))}
+        </select>
+        <label>
+          <input
+            type="checkbox"
+            checked={normalized}
+            onChange={(e) => setNormalized(e.target.checked)}
+          />
+          normalize attack →
+        </label>
+      </div>
+    </figure>
+  );
+}

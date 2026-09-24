@@ -17,5 +17,7 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    // Builds with `window.__replay` exposed (task 21); a plain `next build` leaves it out.
+    env: { NEXT_PUBLIC_EXPOSE_REPLAY: "1" },
   },
 });

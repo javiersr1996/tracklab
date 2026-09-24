@@ -10,3 +10,25 @@ body {
   margin: 0;
   font-family: system-ui, sans-serif;
 }
+
+.replay {
+  margin: 0;
+  max-width: 960px;
+}
+
+.replay canvas {
+  width: 100%;
+  height: auto;
+  background: #1d2327;
+}
+
+.controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.controls input[type="range"] {
+  flex: 1;
+}

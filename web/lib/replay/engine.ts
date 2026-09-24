@@ -93,7 +93,7 @@ export class ReplayEngine {
   }
 
   // The last sample at or before `t` (binary search; frames are sorted by t).
-  private indexAt(t: number): number {
+  indexAt(t: number): number {
     let lo = 0;
     let hi = this.frames.length - 1;
     while (lo < hi) {
