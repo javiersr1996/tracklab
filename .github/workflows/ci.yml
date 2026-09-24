@@ -27,5 +27,8 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy src
-      - run: uv run dbt build --project-dir dbt --profiles-dir dbt
+      # silver through Dagster, so the asset graph (task 15) is built on every push.
+      # `*` would ingest and rebuild bronze over the fixture slice: silver is what hangs from it.
+      - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
+      - run: uv run dagster asset materialize -m tracklab.dagster_defs --select "group:silver"
       - run: uv run pytest -q

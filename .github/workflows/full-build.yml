@@ -36,10 +36,10 @@ jobs:
         with:
           path: pipeline/data/raw
           key: raw-${{ hashFiles('pipeline/manifest/sources.json') }}
-      - run: uv run tracklab bronze football
-      - run: uv run tracklab bronze basketball
-      - run: uv run tracklab orientation
-      - run: uv run dbt build --project-dir dbt --profiles-dir dbt
+      # Bronze, orientation and silver as one Dagster run over every asset (task 15);
+      # raw_* verifies the bytes the two steps above left, it downloads nothing.
+      - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
+      - run: uv run dagster asset materialize -m tracklab.dagster_defs --select "*"
       - run: uv run pytest -q
       - run: uv run tracklab stats
       - uses: actions/upload-artifact@v4

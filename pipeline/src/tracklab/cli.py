@@ -39,7 +39,7 @@ _DEFAULT_SCHEMAS_DIR = Path(__file__).resolve().parent / "bronze" / "schemas"
 # (sport, table group) -> builder. Each bronze task registers its group here; asking
 # for a group that is not registered fails before anything is built.
 _BronzeBuilder = Callable[[Source, Path, Path], object]
-_BRONZE_BUILDERS: dict[tuple[str, str], _BronzeBuilder] = {
+BRONZE_BUILDERS: dict[tuple[str, str], _BronzeBuilder] = {
     ("basketball", "tracking"): build_basketball_tracking,
     ("basketball", "events"): build_basketball_events,
     ("basketball", "meta"): build_basketball_meta,
@@ -116,17 +116,17 @@ def _cmd_bronze(args: argparse.Namespace) -> int:
         )
     source = sources[0]
     groups = [g for g in args.tables.split(",") if g] if args.tables else None
-    known = sorted(g for sport, g in _BRONZE_BUILDERS if sport == args.sport)
+    known = sorted(g for sport, g in BRONZE_BUILDERS if sport == args.sport)
     if groups is None:
         groups = known
-    unknown = [g for g in groups if (args.sport, g) not in _BRONZE_BUILDERS]
+    unknown = [g for g in groups if (args.sport, g) not in BRONZE_BUILDERS]
     if unknown:
         sys.exit(f"tracklab: no bronze builder for {args.sport} {unknown} (known: {known})")
     raw_root = raw_root_for(args.data_dir, source.source_id)
     started = time.perf_counter()
     for group in groups:
         print(f"bronze {args.sport} {group}: {raw_root}")
-        _BRONZE_BUILDERS[(args.sport, group)](source, raw_root, args.data_dir)
+        BRONZE_BUILDERS[(args.sport, group)](source, raw_root, args.data_dir)
     print(f"total seconds={time.perf_counter() - started:.1f}")
     return 0
 
