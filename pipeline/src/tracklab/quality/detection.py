@@ -17,7 +17,8 @@ from tracklab.silver.stats import table_glob
 CHECK = "detection"
 
 
-def detection(data_dir: Path) -> list[Result]:
+def detection(data_dir: Path, reports_dir: Path) -> list[Result]:
+    # `reports_dir` is unused: unlike `partitions`, this check reads only silver.
     rows = (
         duckdb.connect()
         .execute(

@@ -16,6 +16,17 @@ from tracklab.quality.run import CHECKS, run_quality
 READS: dict[str, list[str]] = {
     "detection": ["silver_frames"],
     "gravity": ["silver_frames", "bronze_basketball_events_shots"],
+    "entry_angle": ["silver_frames", "bronze_basketball_events_shots"],
+    "noise": ["silver_frames", "bronze_basketball_tracking_objects"],
+    "clock": [
+        "bronze_basketball_tracking_frames",
+        "bronze_basketball_tracking_objects",
+        "bronze_football_tracking_frames",
+    ],
+    # `football_format.csv` (task 4) is not itself a Dagster asset (`freeze-schema`
+    # is a standalone CLI command, never materialized as one): this check reads it
+    # as a static, already-versioned artefact, so it has no dep to declare here.
+    "partitions": ["bronze_basketball_tracking_frames", "reports_orientation_football"],
 }
 
 

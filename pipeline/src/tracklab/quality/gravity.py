@@ -79,7 +79,8 @@ BB_REASONS = ("blocked", "no_window", "rebound", "residual")
 FB_REASONS = ("window_leaves_flight", "residual")
 
 
-def gravity(data_dir: Path) -> list[Result]:
+def gravity(data_dir: Path, reports_dir: Path) -> list[Result]:
+    # `reports_dir` is unused: unlike `partitions`, this check reads only bronze/silver.
     balls = _ball_samples(data_dir)
     results: list[Result] = []
     for (native, match_id), shots in _shots(data_dir).items():
