@@ -41,7 +41,9 @@ start=$SECONDS
 echo "clean clone in $tmp"
 (cd "$tmp" && bash -euxo pipefail -c "$block")
 
-changes=$(git -C "$tmp/tracklab" status --porcelain)
+# `git diff`, not `git status`: on Windows the writers emit CRLF, which status flags
+# and git normalizes away on commit (.gitattributes), so it is not a change.
+changes=$(git -C "$tmp/tracklab" diff --stat; git -C "$tmp/tracklab" ls-files --others --exclude-standard)
 if [[ -n $changes ]]; then
   echo "the build changed committed files:" >&2
   echo "$changes" >&2
