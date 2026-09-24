@@ -100,3 +100,15 @@ def test_at_least_four_matches_per_sport() -> None:
     print({sport: sorted(matches) for sport, matches in by_sport.items()})
     assert counts == {"basketball": 6, "football": 6}
     assert all(len(matches) >= 4 for matches in by_sport.values())
+
+
+def test_frames_are_consecutive_at_the_native_rate() -> None:
+    """The replay engine interpolates between consecutive samples and never looks at
+    the time between them, so a hole in a published possession would be drawn as a
+    slide. The selection admits up to 10% missing frames; none may be a hole."""
+    for path in sorted(POSSESSIONS_DIR.glob("*.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        step = 1000 // payload["sample_rate_hz"]
+        times = [frame["t"] for frame in payload["frames"]]
+        gaps = {b - a for a, b in zip(times, times[1:], strict=False)}
+        assert gaps == {step}, f"{path.name}: steps {sorted(gaps)}, expected {step}"

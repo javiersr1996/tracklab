@@ -57,15 +57,15 @@
       "bytes": 89788
     },
     {
-      "possession_id": "bb:possessions:possession-191313-1-0",
+      "possession_id": "bb:possessions:possession-191313-2-69",
       "sport": "basketball",
       "match_id": "bb:191313",
       "home": "Leche Rio Breogan",
       "away": "Casademont Zaragoza",
-      "duration_s": 18.5,
+      "duration_s": 12.5,
       "sample_rate_hz": 25,
-      "file": "possessions/bb_possessions_possession-191313-1-0.json",
-      "bytes": 114993
+      "file": "possessions/bb_possessions_possession-191313-2-69.json",
+      "bytes": 89041
     },
     {
       "possession_id": "fb:possession:1874553:1",

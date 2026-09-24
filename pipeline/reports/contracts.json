@@ -71,11 +71,11 @@
     },
     "events": {
       "basketball": 71984,
-      "football": 107193
+      "football": 107204
     },
     "frame_possession": {
       "basketball": 815474,
-      "football": 665751
+      "football": 664529
     },
     "frames": {
       "basketball": 9126744,
@@ -83,7 +83,7 @@
     },
     "frames_attacking": {
       "basketball": 8970214,
-      "football": 15312273
+      "football": 15284167
     }
   },
   "shots_attacking_half": {

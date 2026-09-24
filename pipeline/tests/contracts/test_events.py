@@ -30,7 +30,7 @@ EVENT_TYPES = {
         "other": 57083,
     },
     "football": {
-        "possession": 3998,
+        "possession": 4009,  # 3,998 chains, 11 of them split at half time
         "player_possession": 2638,
         "pass": 16072,
         "other": 84485,
@@ -216,6 +216,29 @@ def test_events_start_inside_their_period_except_where_the_provider_says_otherwi
         print(f"{row[1]} {row[2]} {row[3]}: frame {row[4]} outside [{row[5]}, {row[6]}]")
     assert len(rows) == EVENTS_OUTSIDE_THEIR_PERIOD
     assert {str(row[0]) for row in rows} == {"basketball"}
+
+
+def test_football_possessions_end_inside_their_own_period(
+    con: duckdb.DuckDBPyConnection,
+) -> None:
+    """A derived possession is one period's: the chain rule opens a new one at the
+    break even when the provider does not flag it. 11 chains crossed half time
+    before that rule, carrying the first half's period and attacking side into the
+    second (final review of the plan, row V)."""
+    rows = _rows(
+        con,
+        """
+        SELECT e.match_id, e.event_id, e.period, e.frame_start, e.frame_end, p.frame_native_end
+        FROM events e
+        JOIN dim_period p ON p.match_id = e.match_id AND p.period = e.period
+        WHERE e.sport = 'football' AND e.event_type = 'possession'
+          AND e.frame_end > p.frame_native_end
+        ORDER BY 1, 2
+        """,
+    )
+    for row in rows:
+        print(f"{row[0]} {row[1]} period {row[2]}: frames {row[3]}-{row[4]}, period ends {row[5]}")
+    assert rows == []
 
 
 def test_frame_possession_gives_each_frame_one_possession(

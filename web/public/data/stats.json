@@ -137,13 +137,13 @@
       "table": "events",
       "sport": "football",
       "match_id": "fb:1874553",
-      "rows": 5530
+      "rows": 5531
     },
     {
       "table": "events",
       "sport": "football",
       "match_id": "fb:1886347",
-      "rows": 5750
+      "rows": 5751
     },
     {
       "table": "events",
@@ -161,19 +161,19 @@
       "table": "events",
       "sport": "football",
       "match_id": "fb:1927964",
-      "rows": 6263
+      "rows": 6264
     },
     {
       "table": "events",
       "sport": "football",
       "match_id": "fb:1953632",
-      "rows": 5361
+      "rows": 5362
     },
     {
       "table": "events",
       "sport": "football",
       "match_id": "fb:1959846",
-      "rows": 5319
+      "rows": 5320
     },
     {
       "table": "events",
@@ -185,7 +185,7 @@
       "table": "events",
       "sport": "football",
       "match_id": "fb:1996435",
-      "rows": 5818
+      "rows": 5819
     },
     {
       "table": "events",
@@ -209,7 +209,7 @@
       "table": "events",
       "sport": "football",
       "match_id": "fb:2007448",
-      "rows": 4897
+      "rows": 4898
     },
     {
       "table": "events",
@@ -227,19 +227,19 @@
       "table": "events",
       "sport": "football",
       "match_id": "fb:2011166",
-      "rows": 4672
+      "rows": 4673
     },
     {
       "table": "events",
       "sport": "football",
       "match_id": "fb:2013725",
-      "rows": 5431
+      "rows": 5432
     },
     {
       "table": "events",
       "sport": "football",
       "match_id": "fb:2015213",
-      "rows": 5328
+      "rows": 5329
     },
     {
       "table": "events",
@@ -251,7 +251,7 @@
       "table": "events",
       "sport": "football",
       "match_id": "fb:2017461",
-      "rows": 4794
+      "rows": 4795
     },
     {
       "table": "frames",
@@ -441,9 +441,9 @@
       "total": 2316182304
     },
     "published": {
-      "basketball": 549259,
+      "basketball": 523307,
       "football": 587202,
-      "total": 1136461
+      "total": 1110509
     }
   }
 }

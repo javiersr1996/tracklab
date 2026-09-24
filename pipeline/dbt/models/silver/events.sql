@@ -28,7 +28,8 @@
 -- provider itself attributes to a team, but 3,030 of them overlap their
 -- neighbour and they agree with the tracking on the team in 76.87% of the
 -- frames of the worst match. Following the provider's own
--- `first_player_possession_in_team_possession` flag gives 3,998, covering
+-- `first_player_possession_in_team_possession` flag gives 3,998 (4,009 once a
+-- new period opens one too, below), covering
 -- 85.82%, overlapping none and agreeing 79.78% in the worst match. The chain
 -- rule wins: it never overlaps, it agrees more, and it is the provider
 -- delimiting its own team possessions rather than this project inferring them
@@ -123,14 +124,19 @@ basketball AS (
 
 -- Football's team possession: open one on each player_possession the provider
 -- flags as the first of a team possession, close it on the row before the next.
+-- A new period opens one too: the provider does not flag the first touch after the
+-- break when the same team still has the ball, and a chain across the break would
+-- carry one period and one attacking side for both halves.
 football_touches AS (
     SELECT
         match_id, period, team_id, player_id, event_id,
         frame_start, frame_end, x_start, y_start, x_end, y_end, attacking_side, end_type,
-        first_player_possession_in_team_possession AS opens,
-        row_number() OVER (PARTITION BY match_id ORDER BY frame_start, event_id) AS rn
+        first_player_possession_in_team_possession
+            OR coalesce(period <> lag(period) OVER w, false) AS opens,
+        row_number() OVER w AS rn
     FROM {{ source('bronze_football', 'dynamic_events') }}
     WHERE event_type = 'player_possession'
+    WINDOW w AS (PARTITION BY match_id ORDER BY frame_start, event_id)
 ),
 
 football_chains AS (

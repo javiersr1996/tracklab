@@ -27,7 +27,7 @@ SkillCorner repos --ingest--> raw ------bronze------> Parquet ---dbt---> silver 
 
 The same query reads both sports: `SELECT * FROM frames WHERE sport = ?` returns 9,126,744 rows
 of basketball and 20,213,849 of football (`web/public/data/stats.json`). The provider bundles
-weigh 2,316,182,304 bytes as pinned (`bytes.raw.total`); the site ships 1,136,461 bytes of
+weigh 2,316,182,304 bytes as pinned (`bytes.raw.total`); the site ships 1,110,509 bytes of
 possessions (`bytes.published.total`).
 
 ## Layout
@@ -104,7 +104,7 @@ uv run tracklab ingest opendata-football    # download to data/raw/opendata-foot
 ```
 
 `ingest` is idempotent: files whose sha256 already matches are skipped, mismatches are deleted and
-downloaded again, and `data/raw/<source>/_receipt.json` records the outcome. Exit code 1 means at
+downloaded again, and `data/raw/<source>/_receipt.json` records the outcome. Exit code `1` means at
 least one file could not be verified. LFS files are fetched from `media.githubusercontent.com` by
 URL, so neither `git-lfs` nor a clone is needed. `GITHUB_TOKEN`, if set, is used for the API calls.
 `--from-existing <dir>` verifies a local clone in place instead; if a file fails only because a
@@ -117,4 +117,5 @@ The code is MIT ([`LICENSE`](LICENSE)). The data is SkillCorner's open data, pub
 MIT license in [SkillCorner/opendata](https://github.com/SkillCorner/opendata) (football) and
 [SkillCorner/opendata-basketball](https://github.com/SkillCorner/opendata-basketball)
 (basketball). Credit for the tracking and event data goes to SkillCorner; this repository
-redistributes none of it beyond the possessions the site replays.
+redistributes only what the site replays (`web/public/data/`) and the one-possession-per-sport
+slice CI builds on (`pipeline/tests/fixtures/data/bronze/`).

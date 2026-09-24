@@ -1,8 +1,10 @@
 """Every figure in the README prose is one a built artefact holds (task 24).
 
 A figure is a number outside code blocks, inline code and links; it must appear
-in `web/public/data/stats.json` or among the numbers of `pipeline/reports/`.
-Thousands separators are the README's own formatting and are dropped first.
+in `web/public/data/stats.json`, the file the README names as its only source.
+Any number of `pipeline/reports/` would be too loose: with every integer found
+there, a small invented figure would pass (final review, row V). Thousands
+separators are the README's own formatting and are dropped first.
 """
 
 from __future__ import annotations
@@ -12,8 +14,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-PIPELINE = Path(__file__).resolve().parents[2]
-REPO = PIPELINE.parent
+REPO = Path(__file__).resolve().parents[3]
 NUMBER = re.compile(r"(?<![\w.-])\d[\d,]*(?:\.\d+)?(?![\w-])")
 
 
@@ -38,11 +39,14 @@ def _numbers(value: Any) -> set[str]:
 
 
 def artefact_numbers() -> set[str]:
+    """The numbers of stats.json, plus each table's rows per sport summed over its
+    matches: the figure the site shows (`rowsOf` in web/lib/data.ts)."""
     stats = json.loads((REPO / "web" / "public" / "data" / "stats.json").read_text("utf-8"))
-    found = _numbers(stats)
-    for report in (PIPELINE / "reports").iterdir():
-        found |= set(re.findall(r"\d+(?:\.\d+)?", report.read_text("utf-8")))
-    return found
+    per_sport: dict[tuple[str, str], int] = {}
+    for row in stats["tables"]:
+        key = (row["table"], row["sport"])
+        per_sport[key] = per_sport.get(key, 0) + row["rows"]
+    return _numbers(stats) | {str(n) for n in per_sport.values()}
 
 
 def test_readme_figures_come_from_artefacts() -> None:
@@ -58,3 +62,4 @@ def test_a_typed_figure_is_caught() -> None:
         "12",
     ]
     assert "9126745" not in artefact_numbers()
+    assert "12" not in artefact_numbers()

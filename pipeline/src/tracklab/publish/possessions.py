@@ -179,7 +179,9 @@ summary AS (
         possession_id, match_id, frame_start, frame_end,
         count(*) FILTER (WHERE entity_kind = 'player') AS n_players,
         count(*) FILTER (WHERE entity_kind = 'ball') AS n_ball,
-        min(100.0 * n_detected / n_rows)
+        -- Over every frame of the possession, not the rows present: a frame that
+        -- is missing from `frames` is not a frame the player was detected in.
+        min(100.0 * n_detected / (frame_end - frame_start + 1))
             FILTER (WHERE entity_kind = 'player') AS min_player_coverage_pct,
         max(100.0 * n_rows / (frame_end - frame_start + 1))
             FILTER (WHERE entity_kind = 'ball') AS ball_coverage_pct
@@ -535,6 +537,9 @@ def run_publish_possessions(data_dir: Path, out_dir: Path) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     possessions_dir = out_dir / "possessions"
     possessions_dir.mkdir(parents=True, exist_ok=True)
+    # A previous selection's files would otherwise ship, and count in stats.json.
+    for stale in possessions_dir.glob("*.json"):
+        stale.unlink()
 
     index_entries: list[dict[str, Any]] = []
     total_bytes = 0
@@ -558,7 +563,10 @@ def run_publish_possessions(data_dir: Path, out_dir: Path) -> int:
                     "match_id": candidate.match_id,
                     "home": payload["match"]["home"],
                     "away": payload["match"]["away"],
-                    "duration_s": round(candidate.duration_s, 1),
+                    # What the replay plays: first to last published frame.
+                    "duration_s": round(
+                        (payload["frames"][-1]["t"] - payload["frames"][0]["t"]) / 1000, 1
+                    ),
                     "sample_rate_hz": payload["sample_rate_hz"],
                     "file": f"possessions/{filename}",
                     "bytes": size,
