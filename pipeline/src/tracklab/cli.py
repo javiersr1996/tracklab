@@ -31,6 +31,7 @@ from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.paths import data_root
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.stats import run_publish_stats
+from tracklab.quality.run import CHECKS, run_quality
 from tracklab.silver.orientation import SPORTS, run_orientation
 from tracklab.silver.possessions import run_possessions
 from tracklab.silver.stats import run_stats
@@ -158,6 +159,11 @@ def _cmd_publish_stats(args: argparse.Namespace) -> int:
 
 def _cmd_stats(args: argparse.Namespace) -> int:
     return run_stats(data_dir=args.data_dir, reports_dir=args.reports_dir)
+
+
+def _cmd_quality(args: argparse.Namespace) -> int:
+    checks = [args.check] if args.check else sorted(CHECKS)
+    return run_quality(checks, data_dir=args.data_dir, reports_dir=args.reports_dir)
 
 
 def _cmd_fixtures(args: argparse.Namespace) -> int:
@@ -381,6 +387,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Where stats_silver.csv goes (default: reports).",
     )
     stats.set_defaults(func=_cmd_stats)
+
+    quality = subparsers.add_parser(
+        "quality", help="Run the data quality checks; write reports/quality_<check>.csv."
+    )
+    quality.add_argument(
+        "check", nargs="?", choices=sorted(CHECKS), help="One check (default: all of them)."
+    )
+    quality.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver is read from <data-dir>/silver/ (default: data).",
+    )
+    quality.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where quality_<check>.csv go (default: reports).",
+    )
+    quality.set_defaults(func=_cmd_quality)
 
     fixtures = subparsers.add_parser(
         "fixtures", help="Cut one possession per sport out of bronze, for CI."

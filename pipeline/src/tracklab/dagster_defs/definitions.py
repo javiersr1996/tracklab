@@ -9,6 +9,7 @@ from tracklab.dagster_defs.assets_bronze import bronze_assets, orientation
 from tracklab.dagster_defs.assets_dbt import dbt_project, silver
 from tracklab.dagster_defs.assets_ingest import manifest_sources, raw_assets
 from tracklab.dagster_defs.assets_publish import publish_possessions, publish_stats
+from tracklab.dagster_defs.assets_quality import quality_assets
 
 # Every asset in one run, and the one command that works on Windows too: click expands
 # a bare `--select "*"` against the working directory there.
@@ -23,6 +24,7 @@ defs = Definitions(
         silver,
         publish_possessions,
         publish_stats,
+        *quality_assets,
     ],
     jobs=[build],
     resources={"dbt": DbtCliResource(project_dir=dbt_project)},
