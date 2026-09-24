@@ -57,3 +57,8 @@ def test_schema_in_code_tables_match_their_builder() -> None:
     }
     for group, module in modules.items():
         assert set(BRONZE_TABLES[group]) == set(module.TABLES), group
+
+
+def test_the_build_job_runs_every_asset() -> None:
+    job = defs.resolve_job_def("build")
+    assert set(job.asset_layer.executable_asset_keys) == _materializable()

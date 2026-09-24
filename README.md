@@ -36,18 +36,35 @@ The pipeline is a Dagster graph of **57 assets** (`uv run dagster asset list -m
 tracklab.dagster_defs`): `raw_<sport>` (2), `bronze_<sport>_<table>` (40, one step per
 `tracklab bronze --tables` group), `bronze_common_orientation` and the two
 `reports_orientation_<sport>` CSVs it writes, the dbt seeds (2) and the silver models (10),
-whose dbt tests run as asset checks. From `pipeline/`:
+whose dbt tests run as asset checks. The job `build` runs all of them. From `pipeline/`:
 
 ```
 uv run dbt parse --project-dir dbt --profiles-dir dbt          # dagster-dbt reads target/manifest.json
-uv run dagster asset materialize -m tracklab.dagster_defs --select "*"
+uv run dagster job execute -m tracklab.dagster_defs -j build
 TRACKLAB_DATA_ROOT=tests/fixtures/data uv run dagster asset materialize -m tracklab.dagster_defs --select "group:silver"
 uv run dagster dev -m tracklab.dagster_defs                     # the UI
 ```
 
-On the fixtures only silver is materialized: `*` would ingest the full bundles and rebuild bronze
-over the slice. On Windows, click expands a bare `*` against the working directory; select by group
-instead (`"group:ingest or group:bronze or group:silver"`).
+On the fixtures only silver is materialized: the whole graph would ingest the full bundles and
+rebuild bronze over the slice. Select with groups rather than a bare `*`, which click expands
+against the working directory on Windows.
+
+## Run from a clean clone
+
+Five commands, about 2.3 GB of download (both bundles, verified against the manifest), then
+bronze, the orientation probe, silver and every contract test.
+`scripts/clean_clone_check.sh` runs this block as written, in a temporary directory, and prints
+`CLEAN CLONE OK`.
+
+<!-- clean-clone:begin -->
+```sh
+git clone https://github.com/javiersr1996/tracklab.git && cd tracklab/pipeline
+uv sync --locked
+uv run dbt parse --project-dir dbt --profiles-dir dbt
+uv run dagster job execute -m tracklab.dagster_defs -j build
+uv run pytest -q
+```
+<!-- clean-clone:end -->
 
 ## Ingest
 

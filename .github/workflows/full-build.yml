@@ -39,7 +39,7 @@ jobs:
       # Bronze, orientation and silver as one Dagster run over every asset (task 15);
       # raw_* verifies the bytes the two steps above left, it downloads nothing.
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
-      - run: uv run dagster asset materialize -m tracklab.dagster_defs --select "*"
+      - run: uv run dagster job execute -m tracklab.dagster_defs -j build
       - run: uv run pytest -q
       - run: uv run tracklab stats
       - uses: actions/upload-artifact@v4
