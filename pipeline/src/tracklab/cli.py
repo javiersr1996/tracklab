@@ -30,6 +30,7 @@ from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.paths import data_root
+from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.quality import run_publish_quality
 from tracklab.publish.stats import run_publish_stats
@@ -153,6 +154,10 @@ def _cmd_possessions(args: argparse.Namespace) -> int:
 
 def _cmd_publish_possessions(args: argparse.Namespace) -> int:
     return run_publish_possessions(data_dir=args.data_dir, out_dir=args.out_dir)
+
+
+def _cmd_publish_lineage(args: argparse.Namespace) -> int:
+    return run_publish_lineage(args.out_dir, check=args.check)
 
 
 def _cmd_publish_stats(args: argparse.Namespace) -> int:
@@ -368,6 +373,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Where possessions/*.json and index.json go (default: ../web/public/data).",
     )
     publish_possessions.set_defaults(func=_cmd_publish_possessions)
+
+    publish_lineage = publish_sub.add_parser(
+        "lineage",
+        help="Write web/public/data/lineage.json: the Dagster asset graph, dbt tests included. "
+        "Needs `dbt parse` first.",
+    )
+    publish_lineage.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where lineage.json goes (default: ../web/public/data).",
+    )
+    publish_lineage.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare against the versioned file; write nothing.",
+    )
+    publish_lineage.set_defaults(func=_cmd_publish_lineage)
 
     publish_stats = publish_sub.add_parser(
         "stats", help="Write stats.json: rows per table and sport, bronze/silver bytes."

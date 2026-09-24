@@ -1,0 +1,1371 @@
+{
+  "schema_version": 1,
+  "groups": [
+    "ingest",
+    "bronze",
+    "silver",
+    "quality",
+    "publish"
+  ],
+  "nodes": [
+    {
+      "key": "bronze_basketball_aggregates_drives",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_aggregates",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_aggregates_picks",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_aggregates",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_aggregates_shots",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_aggregates",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_chance_players",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_chances",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_closeouts",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_dribbles",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_drives",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_fouls",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_free_throws",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_handoffs",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_isolations",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_matchups",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_off_ball_screens",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_passes",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_picks",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_possessions",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_posts",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_rebounds",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_shots",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_timeouts",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_touches",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_events_turnovers",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_events",
+      "sport": "basketball",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_basketball_game_players",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_meta",
+      "sport": "basketball",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_basketball_games",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_meta",
+      "sport": "basketball",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_basketball_matches",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_meta",
+      "sport": "basketball",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_basketball_player_id_aliases",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_meta",
+      "sport": "basketball",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_basketball_tracking_frames",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_tracking",
+      "sport": "basketball",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_basketball_tracking_objects",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_basketball_tracking",
+      "sport": "basketball",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_common_orientation",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "Task 9's probe: the sign of the attack per (match, period, team) and the court.",
+      "step": "orientation",
+      "sport": null,
+      "schema": "code"
+    },
+    {
+      "key": "bronze_football_aggregates_obr",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_aggregates",
+      "sport": "football",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_football_aggregates_passing",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_aggregates",
+      "sport": "football",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_football_aggregates_physical",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_aggregates",
+      "sport": "football",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_football_dynamic_events",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_events",
+      "sport": "football",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_football_match",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_meta",
+      "sport": "football",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_football_match_periods",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_meta",
+      "sport": "football",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_football_match_players",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_meta",
+      "sport": "football",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_football_matches",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_meta",
+      "sport": "football",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_football_phases_of_play",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_events",
+      "sport": "football",
+      "schema": "frozen"
+    },
+    {
+      "key": "bronze_football_tracking_frames",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_tracking",
+      "sport": "football",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_football_tracking_objects",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_tracking",
+      "sport": "football",
+      "schema": "code"
+    },
+    {
+      "key": "manifest_sources",
+      "group": "ingest",
+      "kind": "external",
+      "description": "manifest/sources.json: each source's repo, pinned commit, files and sha256.",
+      "step": null,
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "publish_possessions",
+      "group": "publish",
+      "kind": "asset",
+      "description": "6 curated possessions per sport, written to web/public/data/possessions/.",
+      "step": "publish_possessions",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "publish_quality",
+      "group": "publish",
+      "kind": "asset",
+      "description": "web/public/data/quality.json and docs/bulletin.md, from reports/quality_*.csv.",
+      "step": "publish_quality",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "publish_stats",
+      "group": "publish",
+      "kind": "asset",
+      "description": "web/public/data/stats.json: rows per table and sport, raw and published bytes.",
+      "step": "publish_stats",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "quality_clock",
+      "group": "quality",
+      "kind": "asset",
+      "description": "",
+      "step": "quality_clock",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "quality_detection",
+      "group": "quality",
+      "kind": "asset",
+      "description": "",
+      "step": "quality_detection",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "quality_entry_angle",
+      "group": "quality",
+      "kind": "asset",
+      "description": "",
+      "step": "quality_entry_angle",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "quality_gravity",
+      "group": "quality",
+      "kind": "asset",
+      "description": "",
+      "step": "quality_gravity",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "quality_noise",
+      "group": "quality",
+      "kind": "asset",
+      "description": "",
+      "step": "quality_noise",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "quality_partitions",
+      "group": "quality",
+      "kind": "asset",
+      "description": "",
+      "step": "quality_partitions",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "raw_basketball",
+      "group": "ingest",
+      "kind": "asset",
+      "description": "opendata-basketball, every manifest file with the right sha256.",
+      "step": "raw_basketball",
+      "sport": "basketball",
+      "schema": "none"
+    },
+    {
+      "key": "raw_football",
+      "group": "ingest",
+      "kind": "asset",
+      "description": "opendata-football, every manifest file with the right sha256.",
+      "step": "raw_football",
+      "sport": "football",
+      "schema": "none"
+    },
+    {
+      "key": "reports_orientation_basketball",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "Task 9's probe: the sign of the attack per (match, period, team) and the court.",
+      "step": "orientation",
+      "sport": "basketball",
+      "schema": "none"
+    },
+    {
+      "key": "reports_orientation_football",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "Task 9's probe: the sign of the attack per (match, period, team) and the court.",
+      "step": "orientation",
+      "sport": "football",
+      "schema": "none"
+    },
+    {
+      "key": "seed_event_type_map",
+      "group": "silver",
+      "kind": "asset",
+      "description": "The conformed vocabulary, one row per (sport, native family, subtype pattern). A row with a literal subtype wins over the `*` of its family, which is how a football player_possession that ended in a pass becomes a `pass` while the rest stay `player_possession`.\n",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 3,
+      "dbt_columns": [
+        "event_type",
+        "native_family",
+        "sport"
+      ]
+    },
+    {
+      "key": "seed_surface_spec",
+      "group": "silver",
+      "kind": "asset",
+      "description": "The surface specs a match can be played on, with their dimensions in metres. Two rows: the FIBA court task 9 measured, and the NBA court it rejected, kept so the rejection stays visible instead of disappearing into a WHERE clause. Football does not appear here because its pitch is declared per match by the provider.\n",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 4,
+      "dbt_columns": [
+        "length_m",
+        "surface_spec",
+        "width_m"
+      ]
+    },
+    {
+      "key": "silver_dim_entity",
+      "group": "silver",
+      "kind": "asset",
+      "description": "Everything that can hold a position in a match: both benches and the ball. Built from the roster, which covers every id the tracking uses in both sports and also the players who never left the bench.\n",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 8,
+      "dbt_columns": [
+        "entity_id",
+        "entity_kind",
+        "match_id",
+        "name",
+        "team_id"
+      ]
+    },
+    {
+      "key": "silver_dim_match",
+      "group": "silver",
+      "kind": "asset",
+      "description": "One row per match, 20 in total, with the surface, the periods and the pinned commit.",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 24,
+      "dbt_columns": [
+        "away_score",
+        "away_team_id",
+        "competition",
+        "home_score",
+        "home_team_id",
+        "kickoff_utc",
+        "match_id",
+        "n_periods",
+        "native_match_id",
+        "season",
+        "source_commit",
+        "sport",
+        "surface_length_m",
+        "surface_spec",
+        "surface_width_m",
+        "z_ball_status",
+        "z_player_status"
+      ]
+    },
+    {
+      "key": "silver_dim_period",
+      "group": "silver",
+      "kind": "asset",
+      "description": "One row per match and period. Football declares its boundaries in match.json; basketball's are read off the tracking, which is the only place its period changes.\n",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 10,
+      "dbt_columns": [
+        "frame_native_end",
+        "frame_native_start",
+        "match_id",
+        "period",
+        "regulation_s",
+        "t_ms_end",
+        "t_ms_start"
+      ]
+    },
+    {
+      "key": "silver_dim_sport",
+      "group": "silver",
+      "kind": "asset",
+      "description": "The two rows that turn `sport` into a column. Every constant of a bundle that silver needs lives here once: the unit and its factor to metres, the sample rate, the semantics of the official clock, how many players are on the surface and which frame the provider's events arrive in.\n",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 14,
+      "dbt_columns": [
+        "clock_kind",
+        "id_prefix",
+        "native_event_frame",
+        "players_on_surface",
+        "sample_rate_hz",
+        "sport",
+        "unit_to_m"
+      ]
+    },
+    {
+      "key": "silver_dim_team",
+      "group": "silver",
+      "kind": "asset",
+      "description": "One row per team, 30 in total (17 basketball, 13 football).",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 6,
+      "dbt_columns": [
+        "name",
+        "native_team_id",
+        "sport",
+        "team_id"
+      ]
+    },
+    {
+      "key": "silver_dim_team_period",
+      "group": "silver",
+      "kind": "asset",
+      "description": "Task 9 in silver keys: which way each team attacks in each period, and the evidence that fixed it. Two rows per (match, period), opposite signs, asserted by tests/assert_attack_signs_opposite.sql.\n",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 10,
+      "dbt_columns": [
+        "attack_sign",
+        "evidence",
+        "match_id",
+        "period",
+        "team_id"
+      ]
+    },
+    {
+      "key": "silver_events",
+      "group": "silver",
+      "kind": "asset",
+      "description": "Every event of both bundles in one shape: 20 native families in basketball, 4 plus the phases of play in football, and the football team possession this project derives. Coordinates are rotated to the venue frame, and a row whose rotation cannot be resolved carries none.\n",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 14,
+      "dbt_columns": [
+        "event_id",
+        "event_type",
+        "match_id",
+        "native_family",
+        "period",
+        "possession_id",
+        "sport",
+        "team_id"
+      ]
+    },
+    {
+      "key": "silver_frame_possession",
+      "group": "silver",
+      "kind": "asset",
+      "description": "Which team possession a frame belongs to. A view, because expanding the possessions to their frames would write tens of millions of rows that are one range join away from what silver already holds.\n",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 7,
+      "dbt_columns": [
+        "frame_native",
+        "match_id",
+        "possession_id",
+        "team_id"
+      ]
+    },
+    {
+      "key": "silver_frames",
+      "group": "silver",
+      "kind": "asset",
+      "description": "The physical record of both sports in one shape: one row per match, native frame and entity, in metres and in the venue frame. Built from the tracking and from nothing else. Partitioned on disk by sport and native match id, because a silver match_id carries a colon and that is not a directory name on Windows.\n",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 20,
+      "dbt_columns": [
+        "clock_s",
+        "entity_id",
+        "entity_kind",
+        "frame_native",
+        "is_detected",
+        "match_id",
+        "native_match_id",
+        "period",
+        "sport",
+        "t_ms",
+        "team_id",
+        "x_m",
+        "y_m",
+        "z_m"
+      ]
+    },
+    {
+      "key": "silver_frames_attacking",
+      "group": "silver",
+      "kind": "asset",
+      "description": "The frames of a team possession, turned so the team with the ball attacks towards +x: x_att_m = attack_sign * x_m. The only attack normalisation in silver. A frame no possession claims is absent, never given a guessed sign.\n",
+      "step": "silver",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 2,
+      "dbt_columns": [
+        "attack_sign"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "bronze_basketball_events_chance_players",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_chances",
+      "to": "publish_possessions"
+    },
+    {
+      "from": "bronze_basketball_events_chances",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_closeouts",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_dribbles",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_drives",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_fouls",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_free_throws",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_handoffs",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_isolations",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_matchups",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_off_ball_screens",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_passes",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_picks",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_possessions",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_basketball_events_possessions",
+      "to": "reports_orientation_basketball"
+    },
+    {
+      "from": "bronze_basketball_events_possessions",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_posts",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_rebounds",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_basketball_events_rebounds",
+      "to": "reports_orientation_basketball"
+    },
+    {
+      "from": "bronze_basketball_events_rebounds",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_shots",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_basketball_events_shots",
+      "to": "publish_quality"
+    },
+    {
+      "from": "bronze_basketball_events_shots",
+      "to": "quality_entry_angle"
+    },
+    {
+      "from": "bronze_basketball_events_shots",
+      "to": "quality_gravity"
+    },
+    {
+      "from": "bronze_basketball_events_shots",
+      "to": "reports_orientation_basketball"
+    },
+    {
+      "from": "bronze_basketball_events_shots",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_timeouts",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_touches",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_basketball_events_touches",
+      "to": "reports_orientation_basketball"
+    },
+    {
+      "from": "bronze_basketball_events_touches",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_events_turnovers",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_basketball_game_players",
+      "to": "silver_dim_entity"
+    },
+    {
+      "from": "bronze_basketball_games",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_basketball_games",
+      "to": "reports_orientation_basketball"
+    },
+    {
+      "from": "bronze_basketball_matches",
+      "to": "silver_dim_match"
+    },
+    {
+      "from": "bronze_basketball_matches",
+      "to": "silver_dim_team"
+    },
+    {
+      "from": "bronze_basketball_player_id_aliases",
+      "to": "silver_dim_entity"
+    },
+    {
+      "from": "bronze_basketball_tracking_frames",
+      "to": "quality_clock"
+    },
+    {
+      "from": "bronze_basketball_tracking_frames",
+      "to": "quality_partitions"
+    },
+    {
+      "from": "bronze_basketball_tracking_frames",
+      "to": "silver_dim_period"
+    },
+    {
+      "from": "bronze_basketball_tracking_frames",
+      "to": "silver_frames"
+    },
+    {
+      "from": "bronze_basketball_tracking_objects",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_basketball_tracking_objects",
+      "to": "quality_clock"
+    },
+    {
+      "from": "bronze_basketball_tracking_objects",
+      "to": "quality_noise"
+    },
+    {
+      "from": "bronze_basketball_tracking_objects",
+      "to": "reports_orientation_basketball"
+    },
+    {
+      "from": "bronze_basketball_tracking_objects",
+      "to": "silver_frames"
+    },
+    {
+      "from": "bronze_common_orientation",
+      "to": "silver_dim_team_period"
+    },
+    {
+      "from": "bronze_football_dynamic_events",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_football_dynamic_events",
+      "to": "reports_orientation_football"
+    },
+    {
+      "from": "bronze_football_dynamic_events",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_football_match",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_football_match",
+      "to": "reports_orientation_football"
+    },
+    {
+      "from": "bronze_football_match",
+      "to": "silver_dim_match"
+    },
+    {
+      "from": "bronze_football_match",
+      "to": "silver_dim_team"
+    },
+    {
+      "from": "bronze_football_match_periods",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_football_match_periods",
+      "to": "reports_orientation_football"
+    },
+    {
+      "from": "bronze_football_match_periods",
+      "to": "silver_dim_period"
+    },
+    {
+      "from": "bronze_football_match_players",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_football_match_players",
+      "to": "reports_orientation_football"
+    },
+    {
+      "from": "bronze_football_match_players",
+      "to": "silver_dim_entity"
+    },
+    {
+      "from": "bronze_football_phases_of_play",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_football_phases_of_play",
+      "to": "reports_orientation_football"
+    },
+    {
+      "from": "bronze_football_phases_of_play",
+      "to": "silver_events"
+    },
+    {
+      "from": "bronze_football_tracking_frames",
+      "to": "quality_clock"
+    },
+    {
+      "from": "bronze_football_tracking_frames",
+      "to": "silver_frames"
+    },
+    {
+      "from": "bronze_football_tracking_objects",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_football_tracking_objects",
+      "to": "reports_orientation_football"
+    },
+    {
+      "from": "bronze_football_tracking_objects",
+      "to": "silver_frames"
+    },
+    {
+      "from": "manifest_sources",
+      "to": "bronze_common_orientation"
+    },
+    {
+      "from": "manifest_sources",
+      "to": "publish_stats"
+    },
+    {
+      "from": "manifest_sources",
+      "to": "raw_basketball"
+    },
+    {
+      "from": "manifest_sources",
+      "to": "raw_football"
+    },
+    {
+      "from": "manifest_sources",
+      "to": "silver_dim_match"
+    },
+    {
+      "from": "publish_possessions",
+      "to": "publish_stats"
+    },
+    {
+      "from": "quality_clock",
+      "to": "publish_quality"
+    },
+    {
+      "from": "quality_detection",
+      "to": "publish_quality"
+    },
+    {
+      "from": "quality_entry_angle",
+      "to": "publish_quality"
+    },
+    {
+      "from": "quality_gravity",
+      "to": "publish_quality"
+    },
+    {
+      "from": "quality_noise",
+      "to": "publish_quality"
+    },
+    {
+      "from": "quality_partitions",
+      "to": "publish_quality"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_aggregates_drives"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_aggregates_picks"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_aggregates_shots"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_chance_players"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_chances"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_closeouts"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_dribbles"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_drives"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_fouls"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_free_throws"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_handoffs"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_isolations"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_matchups"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_off_ball_screens"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_passes"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_picks"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_possessions"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_posts"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_rebounds"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_shots"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_timeouts"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_touches"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_events_turnovers"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_game_players"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_games"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_matches"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_player_id_aliases"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_tracking_frames"
+    },
+    {
+      "from": "raw_basketball",
+      "to": "bronze_basketball_tracking_objects"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_aggregates_obr"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_aggregates_passing"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_aggregates_physical"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_dynamic_events"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_match"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_match_periods"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_match_players"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_matches"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_phases_of_play"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_tracking_frames"
+    },
+    {
+      "from": "raw_football",
+      "to": "bronze_football_tracking_objects"
+    },
+    {
+      "from": "reports_orientation_basketball",
+      "to": "silver_dim_match"
+    },
+    {
+      "from": "reports_orientation_football",
+      "to": "quality_partitions"
+    },
+    {
+      "from": "seed_event_type_map",
+      "to": "silver_events"
+    },
+    {
+      "from": "seed_surface_spec",
+      "to": "silver_dim_match"
+    },
+    {
+      "from": "silver_dim_entity",
+      "to": "publish_possessions"
+    },
+    {
+      "from": "silver_dim_entity",
+      "to": "publish_stats"
+    },
+    {
+      "from": "silver_dim_entity",
+      "to": "silver_frames"
+    },
+    {
+      "from": "silver_dim_match",
+      "to": "publish_possessions"
+    },
+    {
+      "from": "silver_dim_match",
+      "to": "publish_stats"
+    },
+    {
+      "from": "silver_dim_match",
+      "to": "silver_dim_entity"
+    },
+    {
+      "from": "silver_dim_period",
+      "to": "silver_dim_match"
+    },
+    {
+      "from": "silver_dim_period",
+      "to": "silver_frames"
+    },
+    {
+      "from": "silver_dim_sport",
+      "to": "publish_possessions"
+    },
+    {
+      "from": "silver_dim_sport",
+      "to": "publish_stats"
+    },
+    {
+      "from": "silver_dim_sport",
+      "to": "silver_dim_entity"
+    },
+    {
+      "from": "silver_dim_sport",
+      "to": "silver_dim_match"
+    },
+    {
+      "from": "silver_dim_sport",
+      "to": "silver_dim_period"
+    },
+    {
+      "from": "silver_dim_sport",
+      "to": "silver_dim_team"
+    },
+    {
+      "from": "silver_dim_sport",
+      "to": "silver_dim_team_period"
+    },
+    {
+      "from": "silver_dim_sport",
+      "to": "silver_events"
+    },
+    {
+      "from": "silver_dim_sport",
+      "to": "silver_frames"
+    },
+    {
+      "from": "silver_dim_team",
+      "to": "publish_possessions"
+    },
+    {
+      "from": "silver_dim_team",
+      "to": "publish_stats"
+    },
+    {
+      "from": "silver_dim_team_period",
+      "to": "publish_possessions"
+    },
+    {
+      "from": "silver_dim_team_period",
+      "to": "publish_stats"
+    },
+    {
+      "from": "silver_dim_team_period",
+      "to": "silver_frames_attacking"
+    },
+    {
+      "from": "silver_events",
+      "to": "publish_possessions"
+    },
+    {
+      "from": "silver_events",
+      "to": "publish_stats"
+    },
+    {
+      "from": "silver_events",
+      "to": "silver_frame_possession"
+    },
+    {
+      "from": "silver_frame_possession",
+      "to": "silver_frames_attacking"
+    },
+    {
+      "from": "silver_frames",
+      "to": "publish_possessions"
+    },
+    {
+      "from": "silver_frames",
+      "to": "publish_quality"
+    },
+    {
+      "from": "silver_frames",
+      "to": "publish_stats"
+    },
+    {
+      "from": "silver_frames",
+      "to": "quality_detection"
+    },
+    {
+      "from": "silver_frames",
+      "to": "quality_entry_angle"
+    },
+    {
+      "from": "silver_frames",
+      "to": "quality_gravity"
+    },
+    {
+      "from": "silver_frames",
+      "to": "quality_noise"
+    },
+    {
+      "from": "silver_frames",
+      "to": "silver_frame_possession"
+    },
+    {
+      "from": "silver_frames",
+      "to": "silver_frames_attacking"
+    }
+  ]
+}
