@@ -38,15 +38,25 @@ def _numbers(value: Any) -> set[str]:
     return set()
 
 
+DATA_DIR = REPO / "web" / "public" / "data"
+
+
 def artefact_numbers() -> set[str]:
     """The numbers of stats.json, plus each table's rows per sport summed over its
-    matches: the figure the site shows (`rowsOf` in web/lib/data.ts)."""
-    stats = json.loads((REPO / "web" / "public" / "data" / "stats.json").read_text("utf-8"))
+    matches (the figure the site shows, `rowsOf` in web/lib/data.ts), plus
+    every number platform.json and lineage.json carry (task 34: the measured
+    title and the graph's own counts)."""
+    stats = json.loads((DATA_DIR / "stats.json").read_text("utf-8"))
     per_sport: dict[tuple[str, str], int] = {}
     for row in stats["tables"]:
         key = (row["table"], row["sport"])
         per_sport[key] = per_sport.get(key, 0) + row["rows"]
-    return _numbers(stats) | {str(n) for n in per_sport.values()}
+    numbers = _numbers(stats) | {str(n) for n in per_sport.values()}
+    for name in ("platform.json", "lineage.json"):
+        path = DATA_DIR / name
+        if path.is_file():
+            numbers |= _numbers(json.loads(path.read_text("utf-8")))
+    return numbers
 
 
 def test_readme_figures_come_from_artefacts() -> None:

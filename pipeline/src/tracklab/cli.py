@@ -31,6 +31,7 @@ from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.paths import data_root
 from tracklab.publish.lineage import run_publish_lineage
+from tracklab.publish.platform import run_publish_platform
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.quality import run_publish_quality
 from tracklab.publish.stats import run_publish_stats
@@ -162,6 +163,15 @@ def _cmd_publish_lineage(args: argparse.Namespace) -> int:
 
 def _cmd_publish_stats(args: argparse.Namespace) -> int:
     return run_publish_stats(data_dir=args.data_dir, out_dir=args.out_dir)
+
+
+def _cmd_publish_platform(args: argparse.Namespace) -> int:
+    return run_publish_platform(
+        record_path=args.run,
+        record_dir=args.record_dir,
+        out_dir=args.out_dir,
+        check=args.check,
+    )
 
 
 def _cmd_publish_quality(args: argparse.Namespace) -> int:
@@ -408,6 +418,38 @@ def build_parser() -> argparse.ArgumentParser:
         help="Where stats.json goes (default: ../web/public/data).",
     )
     publish_stats.set_defaults(func=_cmd_publish_stats)
+
+    publish_platform = publish_sub.add_parser(
+        "platform",
+        help="Write web/public/data/platform.json: the measured title, layers, tables and "
+        "per-match numbers from the newest `tracklab build` record.",
+    )
+    publish_platform.add_argument(
+        "--run",
+        type=Path,
+        default=None,
+        help="A specific data/build/<utc>_<sha7>.json record (default: the newest one).",
+    )
+    publish_platform.add_argument(
+        "--record-dir",
+        type=Path,
+        default=RECORD_DIR,
+        help="Where to look for the newest record when --run is not given (default: data/build).",
+    )
+    publish_platform.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where platform.json goes, and where index.json/stats.json are read from "
+        "(default: ../web/public/data).",
+    )
+    publish_platform.add_argument(
+        "--check",
+        action="store_true",
+        help="Write nothing; compare rows per table and per match against the record and "
+        "stats.json, exit 1 if they differ.",
+    )
+    publish_platform.set_defaults(func=_cmd_publish_platform)
 
     publish_quality = publish_sub.add_parser(
         "quality",
