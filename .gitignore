@@ -4,6 +4,8 @@ data/
 !pipeline/tests/fixtures/data/
 pipeline/tests/fixtures/data/*
 !pipeline/tests/fixtures/data/bronze/
+# ...and the published JSON the web app ships (task 17): versioned, not raw data.
+!web/public/data/
 
 # dbt
 target/
@@ -23,6 +25,9 @@ __pycache__/
 # Node (web/)
 node_modules/
 .next/
+*.tsbuildinfo
+web/test-results/
+web/playwright-report/
 
 # OS
 .DS_Store
