@@ -22,7 +22,7 @@ from pathlib import Path
 from tracklab.ingest.fetch import RECEIPT_NAME, Log, Receipt
 from tracklab.ingest.lfs import MAX_POINTER_BYTES, parse_pointer
 from tracklab.ingest.manifest import FileEntry, Source, match_id_for, role_for
-from tracklab.ingest.verify import verify_file
+from tracklab.ingest.verify import only_line_endings_differ, verify_file
 
 
 def _git(repo_dir: Path, *args: str) -> bytes:
@@ -78,6 +78,12 @@ def ingest_local(
     for entry in source.files:
         if verify_file(existing_root / entry.path, entry.sha256):
             verified += 1
+        elif only_line_endings_differ(existing_root / entry.path, entry.sha256):
+            log(
+                f"failed: {entry.path} (right bytes, CRLF line endings: this checkout "
+                "converted them; set `git config core.autocrlf false` and check it out again)"
+            )
+            failed.append(entry.path)
         else:
             log(f"failed: {entry.path}")
             failed.append(entry.path)

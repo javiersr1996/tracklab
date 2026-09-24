@@ -2,18 +2,38 @@
 
 [![ci](https://github.com/javiersr1996/tracklab/actions/workflows/ci.yml/badge.svg)](https://github.com/javiersr1996/tracklab/actions/workflows/ci.yml)
 
-Track Lab ingests raw tracking and event data from professional football and basketball
-matches, verifies and conforms it through a bronze/silver pipeline built on DuckDB and dbt,
-and publishes it as an interactive match replay and stats site.
-It exists to demonstrate production-grade data engineering, typed schemas, contract tests,
-reproducible ingestion, applied to real sports data rather than toy datasets.
-The audience is hiring managers in professional sports evaluating data engineering skill
-firsthand.
+**Live: https://tracklab-sable.vercel.app**
+
+One schema, two sports, one renderer. Track Lab takes SkillCorner's open tracking and event data
+for basketball and football, verifies every provider file against a pinned manifest, conforms
+both sports into one silver schema with DuckDB and dbt, and publishes curated possessions that a
+single Canvas renderer replays in the browser.
+
+## Layers
+
+```
+SkillCorner repos --ingest--> raw ------bronze------> Parquet ---dbt---> silver ---publish---> JSON ---> web
+(pinned commit,               (sha256 per file,        (native names,     (one schema,        (possessions,     (Next.js,
+ manifest)                     receipt)                 typed)             both sports)        stats.json)       Canvas)
+```
+
+- **raw**: the provider's bytes, each file checked against the sha256 in
+  `pipeline/manifest/sources.json`.
+- **bronze**: one typed Parquet table per provider file family, native names and rows.
+- **silver**: the conformed schema, [`docs/schema.md`](docs/schema.md), with the six decisions
+  behind it and the evidence for each in [`docs/decisions.md`](docs/decisions.md).
+- **publish**: `web/public/data/`, the possessions the site replays and `stats.json`, the only
+  figures the site and this README quote.
+
+The same query reads both sports: `SELECT * FROM frames WHERE sport = ?` returns 9,126,744 rows
+of basketball and 20,213,849 of football (`web/public/data/stats.json`). The provider bundles
+weigh 2,316,182,304 bytes as pinned (`bytes.raw.total`); the site ships 1,136,461 bytes of
+possessions (`bytes.published.total`).
 
 ## Layout
 
-A monorepo with `pipeline/` (Python, DuckDB, dbt, Dagster) and `web/` (Next.js, not built yet).
-See `tasks/todo.md` for the full architecture and task breakdown.
+A monorepo with `pipeline/` (Python, DuckDB, dbt, Dagster) and `web/` (Next.js). See
+`tasks/todo.md` for the plan, task by task, with what each one measured.
 
 ## Development
 
@@ -28,17 +48,22 @@ uv run pytest -q
 uv run tracklab --help
 ```
 
-Python 3.13, pinned in `.python-version`.
+Python version pinned in `pipeline/.python-version`. From `web/`:
+
+```
+npm ci
+npm run lint && npm run typecheck && npm run test && npm run build
+npm run e2e                                              # Playwright against a local next start
+BASE_URL=https://tracklab-sable.vercel.app npx playwright test   # the same suite, against production
+```
 
 ## Orchestration
 
-The pipeline is a Dagster graph of **59 assets** (`uv run dagster asset list -m
-tracklab.dagster_defs`): `raw_<sport>` (2), `bronze_<sport>_<table>` (40, one step per
-`tracklab bronze --tables` group), `bronze_common_orientation` and the two
-`reports_orientation_<sport>` CSVs it writes, the dbt seeds (2) and the silver models (10),
-whose dbt tests run as asset checks, plus `publish_possessions` and `publish_stats`
-(task 17, group `publish`, not part of `group:silver`). The job `build` runs all of them.
-From `pipeline/`:
+The pipeline is a Dagster graph (`uv run dagster asset list -m tracklab.dagster_defs`):
+`raw_<sport>`, `bronze_<sport>_<table>` (one step per `tracklab bronze --tables` group),
+`bronze_common_orientation` and the `reports_orientation_<sport>` CSVs it writes, the dbt seeds
+and silver models, whose dbt tests run as asset checks, and `publish_possessions` and
+`publish_stats` (group `publish`). The job `build` runs all of them. From `pipeline/`:
 
 ```
 uv run dbt parse --project-dir dbt --profiles-dir dbt          # dagster-dbt reads target/manifest.json
@@ -53,8 +78,8 @@ against the working directory on Windows.
 
 ## Run from a clean clone
 
-Five commands, about 2.3 GB of download (both bundles, verified against the manifest), then
-bronze, the orientation probe, silver and every contract test.
+Five commands: download both bundles (verified against the manifest), then bronze, the
+orientation probe, silver, the published JSON and every contract test.
 `scripts/clean_clone_check.sh` runs this block as written, in a temporary directory, and prints
 `CLEAN CLONE OK`.
 
@@ -82,3 +107,14 @@ uv run tracklab ingest opendata-football    # download to data/raw/opendata-foot
 downloaded again, and `data/raw/<source>/_receipt.json` records the outcome. Exit code 1 means at
 least one file could not be verified. LFS files are fetched from `media.githubusercontent.com` by
 URL, so neither `git-lfs` nor a clone is needed. `GITHUB_TOKEN`, if set, is used for the API calls.
+`--from-existing <dir>` verifies a local clone in place instead; if a file fails only because a
+Windows checkout turned its line endings into CRLF, the message says so and names
+`core.autocrlf`.
+
+## Data and license
+
+The code is MIT ([`LICENSE`](LICENSE)). The data is SkillCorner's open data, published under the
+MIT license in [SkillCorner/opendata](https://github.com/SkillCorner/opendata) (football) and
+[SkillCorner/opendata-basketball](https://github.com/SkillCorner/opendata-basketball)
+(basketball). Credit for the tracking and event data goes to SkillCorner; this repository
+redistributes none of it beyond the possessions the site replays.

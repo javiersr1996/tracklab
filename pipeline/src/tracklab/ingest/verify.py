@@ -24,3 +24,12 @@ def sha256_file(path: Path) -> str:
 def verify_file(path: Path, sha256: str) -> bool:
     """True if ``path`` exists and hashes to ``sha256``."""
     return path.is_file() and sha256_file(path) == sha256
+
+
+def only_line_endings_differ(path: Path, sha256: str) -> bool:
+    """True if ``path`` hashes to ``sha256`` once its CRLF are turned back into LF:
+    what a Windows checkout with ``core.autocrlf=true`` does to a text file."""
+    if not path.is_file():
+        return False
+    data = path.read_bytes()
+    return b"\r\n" in data and hashlib.sha256(data.replace(b"\r\n", b"\n")).hexdigest() == sha256

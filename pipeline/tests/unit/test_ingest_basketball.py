@@ -216,6 +216,28 @@ def test_ingest_local_reports_a_mutated_file(basketball_clone: Path, tmp_path: P
     assert f"failed: {GAME_DATA}" in logs
 
 
+def test_ingest_local_names_autocrlf_when_only_line_endings_differ(
+    basketball_clone: Path, tmp_path: Path
+) -> None:
+    """Task 3's trap: a Windows checkout with core.autocrlf=true turns LF into CRLF,
+    and a bare "failed" sends someone to the wrong hole for an afternoon."""
+    target = basketball_clone / GAME_DATA
+    frozen = freeze_local(basketball_clone, unfrozen_source(), log=lambda _: None)
+    # Pin the file to an LF text, then leave it on disk the way autocrlf would.
+    lf = b'{"a": 1}\n{"b": 2}\n'
+    for entry in frozen.files:
+        if entry.path == GAME_DATA:
+            entry.sha256 = hashlib.sha256(lf).hexdigest()
+    target.write_bytes(lf.replace(b"\n", b"\r\n"))
+
+    logs: list[str] = []
+    receipt = ingest_local(frozen, basketball_clone, tmp_path / "raw", log=logs.append)
+
+    assert receipt.failed == [GAME_DATA]
+    (message,) = [line for line in logs if line.startswith(f"failed: {GAME_DATA}")]
+    assert "core.autocrlf" in message
+
+
 def test_ingest_local_refuses_unfrozen_source(tmp_path: Path) -> None:
     with pytest.raises(RuntimeError, match="not frozen"):
         ingest_local(unfrozen_source(), tmp_path, tmp_path)
