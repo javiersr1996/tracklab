@@ -3,6 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 // Chromium only per task 18: no cross-browser matrix for the skeleton.
 // BASE_URL points the suite at a deployment (task 23) instead of a local `next start`.
 const BASE_URL = process.env.BASE_URL;
+// Previews sit behind Vercel Authentication; this secret lets the suite through.
+const BYPASS = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -13,6 +15,9 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL ?? "http://localhost:3000",
     trace: "on-first-retry",
+    extraHTTPHeaders: BYPASS
+      ? { "x-vercel-protection-bypass": BYPASS, "x-vercel-set-bypass-cookie": "true" }
+      : undefined,
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: BASE_URL
