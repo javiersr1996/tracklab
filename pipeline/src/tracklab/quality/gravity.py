@@ -25,15 +25,21 @@ probe I's flight count and median g per game exactly (task 27).
 Football: the ball's flights are found in `frames`, a run of consecutive frames of one
 period with the ball above 1 m that starts and ends next to a tracked frame at or below
 1 m; the apex is the run's highest sample. The window is the apex +-6 frames (1.2 s at
-10 fps) and must lie inside the run; the same residual cut applies. Why +-6: with the
-truth kept only every 5 frames and interpolated in between (the treatment of task 26),
-`flight.knots_every` at 10 fps moves g by -2.60% to +8.23% across the five phases with
-+-4 frames, -12.59% to +7.23% with +-5 and -4.60% to +4.90% with +-6. Football reports
-the number only: its `z_ball_status` is `unverified`.
+10 fps) and must lie inside the run. Dropped, in this order: windows that leave the
+run; windows with a sample whose `is_detected` is false (an extrapolated position, not
+a measured one); windows holding the first or last frame of a player possession of
+silver `events` (a touch: the ball is not in free flight across it); and the same
+residual cut. Why +-6: with the truth kept only every 5 frames and interpolated in
+between (the treatment of task 26), `flight.knots_every` at 10 fps moves g by -2.60% to
++8.23% across the five phases with +-4 frames, -12.59% to +7.23% with +-5 and -4.60%
+to +4.90% with +-6. Football reports the number only: its `z_ball_status` is
+`unverified`. Basketball has no detection cut: its ball is never flagged detected
+(task 25), and its filters were frozen on the calibration games.
 """
 
 from __future__ import annotations
 
+import bisect
 import math
 import statistics
 from collections.abc import Iterator
@@ -64,6 +70,8 @@ FB_FLIGHT_Z = 1.0
 
 # (frame_native, t in seconds, x, y, z) of one ball sample.
 Sample = tuple[int, float, float, float, float]
+# A ball sample in its match: (match_id, period, sample, is_detected).
+Tracked = tuple[str, int, Sample, bool]
 
 
 @dataclass
@@ -76,12 +84,13 @@ class Tally:
 
 
 BB_REASONS = ("blocked", "no_window", "rebound", "residual")
-FB_REASONS = ("window_leaves_flight", "residual")
+FB_REASONS = ("window_leaves_flight", "undetected", "player_possession", "residual")
 
 
 def gravity(data_dir: Path, reports_dir: Path) -> list[Result]:
     # `reports_dir` is unused: unlike `partitions`, this check reads only bronze/silver.
     balls = _ball_samples(data_dir)
+    touches = _possession_bounds(data_dir)
     results: list[Result] = []
     for (native, match_id), shots in _shots(data_dir).items():
         tally = _basketball(balls.get(("basketball", native), {}), shots)
@@ -90,23 +99,25 @@ def gravity(data_dir: Path, reports_dir: Path) -> list[Result]:
         results.append(
             Result(CHECK, "basketball", match_id, "is_calibration", split, "flag", tally.candidates)
         )
-    for (sport, _), by_frame in sorted(balls.items()):
+    for (sport, native), by_frame in sorted(balls.items()):
         if sport == "football":
             match_id = next(iter(by_frame.values()))[0]
-            results += _results(sport, match_id, _football(by_frame), "flights_detected")
+            tally = _football(by_frame, touches.get(native, []))
+            results += _results(sport, match_id, tally, "flights_detected")
     return results
 
 
 # Reading.
 
 
-def _ball_samples(data_dir: Path) -> dict[tuple[str, int], dict[int, tuple[str, int, Sample]]]:
-    """(sport, native match id) -> frame -> (match_id, period, sample)."""
+def _ball_samples(data_dir: Path) -> dict[tuple[str, int], dict[int, Tracked]]:
+    """(sport, native match id) -> frame -> (match_id, period, sample, is_detected)."""
     rows = (
         duckdb.connect()
         .execute(
             """
-            SELECT sport, native_match_id, match_id, period, frame_native, t_ms, x_m, y_m, z_m
+            SELECT sport, native_match_id, match_id, period, frame_native, t_ms, x_m, y_m, z_m,
+                   coalesce(is_detected, false)
             FROM read_parquet(?)
             WHERE entity_kind = 'ball' AND z_m IS NOT NULL
             ORDER BY sport, native_match_id, frame_native
@@ -115,11 +126,37 @@ def _ball_samples(data_dir: Path) -> dict[tuple[str, int], dict[int, tuple[str, 
         )
         .fetchall()
     )
-    out: dict[tuple[str, int], dict[int, tuple[str, int, Sample]]] = {}
-    for sport, native, match_id, period, frame, t_ms, x, y, z in rows:
+    out: dict[tuple[str, int], dict[int, Tracked]] = {}
+    for sport, native, match_id, period, frame, t_ms, x, y, z, detected in rows:
         sample = (int(frame), int(t_ms) / 1000.0, float(x), float(y), float(z))
         by_frame = out.setdefault((str(sport), int(native)), {})
-        by_frame[int(frame)] = (str(match_id), int(period), sample)
+        by_frame[int(frame)] = (str(match_id), int(period), sample, bool(detected))
+    return out
+
+
+def _possession_bounds(data_dir: Path) -> dict[int, list[int]]:
+    """Football native match id -> sorted first and last frames of its player
+    possessions (silver `events`, every row of the native `player_possession` family)."""
+    rows = (
+        duckdb.connect()
+        .execute(
+            """
+            SELECT native_match_id, frame
+            FROM (
+                SELECT native_match_id, unnest([frame_start, frame_end]) AS frame
+                FROM read_parquet(?)
+                WHERE sport = 'football' AND native_family = 'player_possession'
+            )
+            WHERE frame IS NOT NULL
+            ORDER BY native_match_id, frame
+            """,
+            [table_glob(data_dir, "events")],
+        )
+        .fetchall()
+    )
+    out: dict[int, list[int]] = {}
+    for native, frame in rows:
+        out.setdefault(int(native), []).append(int(frame))
     return out
 
 
@@ -151,9 +188,7 @@ def _shots(data_dir: Path) -> dict[tuple[int, str], list[tuple[int, int | None, 
 # Basketball.
 
 
-def _basketball(
-    ball: dict[int, tuple[str, int, Sample]], shots: list[tuple[int, int | None, bool]]
-) -> Tally:
+def _basketball(ball: dict[int, Tracked], shots: list[tuple[int, int | None, bool]]) -> Tally:
     tally = Tally(dict.fromkeys(BB_REASONS, 0))
     for start, end, blocked in shots:
         tally.candidates += 1
@@ -171,9 +206,7 @@ def _basketball(
     return tally
 
 
-def _shot_window(
-    ball: dict[int, tuple[str, int, Sample]], start: int, end: int | None
-) -> list[Sample] | None:
+def _shot_window(ball: dict[int, Tracked], start: int, end: int | None) -> list[Sample] | None:
     """The apex +-BB_HALF frames of a shot, or None if any of them is not tracked inside
     the range searched for the apex (an apex at its edge may not be the flight's)."""
     last = end if end is not None else start + BB_END_IF_MISSING
@@ -196,7 +229,8 @@ def _rebounds(s: Sample) -> bool:
 # Football.
 
 
-def _football(ball: dict[int, tuple[str, int, Sample]]) -> Tally:
+def _football(ball: dict[int, Tracked], touches: list[int]) -> Tally:
+    """`touches`: the sorted first and last frames of the match's player possessions."""
     tally = Tally(dict.fromkeys(FB_REASONS, 0))
     for run in _flights(ball):
         tally.candidates += 1
@@ -204,17 +238,25 @@ def _football(ball: dict[int, tuple[str, int, Sample]]) -> Tally:
         if apex - FB_HALF < 0 or apex + FB_HALF >= len(run):
             tally.excluded["window_leaves_flight"] += 1
             continue
-        _fit_or_drop(tally, run[apex - FB_HALF : apex + FB_HALF + 1])
+        window = run[apex - FB_HALF : apex + FB_HALF + 1]
+        if not all(ball[s[0]][3] for s in window):
+            tally.excluded["undetected"] += 1
+            continue
+        first = bisect.bisect_left(touches, window[0][0])
+        if first < len(touches) and touches[first] <= window[-1][0]:
+            tally.excluded["player_possession"] += 1
+            continue
+        _fit_or_drop(tally, window)
     return tally
 
 
-def _flights(ball: dict[int, tuple[str, int, Sample]]) -> Iterator[list[Sample]]:
+def _flights(ball: dict[int, Tracked]) -> Iterator[list[Sample]]:
     """Runs of consecutive frames above FB_FLIGHT_Z, bounded on both sides by a tracked
     frame of the same period at or below it: the ball went up and came back down."""
     run: list[Sample] | None = None  # None until a take-off has been seen
     prev: tuple[int, int, float] | None = None  # (frame, period, z) of the last sample
     for frame in sorted(ball):
-        _, period, s = ball[frame]
+        _, period, s, _ = ball[frame]
         joined = prev is not None and prev[0] == frame - 1 and prev[1] == period
         if not joined:
             run = None  # a gap: whatever was in the air was not seen landing

@@ -10,20 +10,29 @@ gate at 25 fps (basketball) and 10 fps (football). A second difference needs at
 least 3 samples in a row; the probe's `MIN_RUN` (12 contiguous frames before a run
 is used at all) is a frame count, ported unchanged.
 
-Positions come from silver `frames` (metres); the ball is read unconditionally
-(basketball's ball is flagged detected in 0% of frames, task 25, so requiring
-`is_detected` would leave nothing to compare), players only where
-`is_detected` is true, matching the probe. Basketball also reports the median
-`predError` bronze declares (feet, converted here) for the ball and for detected
-players, the number the ratio is checked against; football's `tracking_objects`
-carries no error field (task 4), so that pair of metrics is simply absent there,
-the same way `quality.gravity` omits `is_calibration` for football.
+Positions come from silver `frames` (metres). Players are read only where
+`is_detected` is true, matching the probe, and so is football's ball. Basketball's
+ball is read unconditionally: it is flagged detected in 0% of frames (task 25), so
+requiring `is_detected` would leave nothing to compare. The ratio is left out when
+the players' median is 0. Basketball also reports the median `predError` bronze
+declares (feet, converted here) for the ball and for detected players, the number
+the ratio is checked against; football's `tracking_objects` carries no error field
+(task 4), so that pair of metrics is simply absent there, the same way
+`quality.gravity` omits `is_calibration` for football.
+
+The players' second difference can be bounded by how coordinates are stored rather
+than by how they move, so each match also reports, over its detected players, the
+share of x and y on a 1 cm grid, the share exactly representable in IEEE 754 half
+precision, and the share of second differences that are 0 or at most one step of the
+1 cm grid on each axis (`hypot(1 cm, 1 cm)`). Numbers only: whether a median is
+bounded by the grid is read from them.
 """
 
 from __future__ import annotations
 
 import math
 import statistics
+import struct
 from pathlib import Path
 
 import duckdb
@@ -35,6 +44,9 @@ CHECK = "noise"
 FT = 0.3048
 MIN_RUN = 12  # contiguous frames required before a run yields a second difference
 MOVING_MPS = 3.0 * FT  # ~3 ft/s, the probe's "this thing is actually moving" gate
+CM = 0.01
+CM_STEP = math.hypot(CM, CM)  # one grid step on each axis
+EPS = 1e-9  # m; below any grid step here, above double rounding of the coordinates
 
 Track = tuple[int, float, float, float]  # (frame_native, t_s, x_m, y_m)
 
@@ -48,18 +60,24 @@ def noise(data_dir: Path, reports_dir: Path) -> list[Result]:
     keys = sorted(set(balls) | set(players))
     for sport, match_id in keys:
         ball_d2 = _pooled_d2(balls.get((sport, match_id), {}))
-        player_d2 = _pooled_d2(players.get((sport, match_id), {}))
+        by_player = players.get((sport, match_id), {})
+        player_d2 = _pooled_d2(by_player)
         results += _results(sport, match_id, ball_d2, player_d2)
+        results += _resolution_results(sport, match_id, by_player, player_d2)
         if sport == "basketball":
             results += _pred_error_results(match_id, pred_errors.get(match_id, {}))
     return results
 
 
 def _tracks(data_dir: Path, kind: str) -> dict[tuple[str, str], dict[str, list[Track]]]:
-    """(sport, match_id) -> entity_id -> its samples, in frame order. Ball: every
-    sample with a horizontal position. Player: only where `is_detected`."""
+    """(sport, match_id) -> entity_id -> its samples, in frame order. Player and
+    football's ball: only where `is_detected`. Basketball's ball: every sample."""
     glob = (data_dir / "silver" / "frames" / "**" / "*.parquet").as_posix()
-    where = "entity_kind = 'ball'" if kind == "ball" else "entity_kind = 'player' AND is_detected"
+    where = (
+        "entity_kind = 'ball' AND (sport = 'basketball' OR is_detected)"
+        if kind == "ball"
+        else "entity_kind = 'player' AND is_detected"
+    )
     rows = (
         duckdb.connect()
         .execute(
@@ -175,12 +193,45 @@ def _results(
                 len(player_d2),
             )
         )
-    if ball_d2 and player_d2:
-        ratio = statistics.median(ball_d2) / statistics.median(player_d2)
+    player_median = statistics.median(player_d2) if player_d2 else 0.0
+    if ball_d2 and player_d2 and player_median > 0:
+        ratio = statistics.median(ball_d2) / player_median
         n = min(len(ball_d2), len(player_d2))
         out.append(
             Result(CHECK, sport, match_id, "ball_player_d2_ratio", round(ratio, 4), "ratio", n)
         )
+    return out
+
+
+def _half_precision(v: float) -> bool:
+    """Within EPS of a half-precision value: basketball's coordinates went through
+    feet and back, which leaves the last bit of a double off."""
+    return bool(abs(struct.unpack("<e", struct.pack("<e", v))[0] - v) < EPS)
+
+
+def _resolution_results(
+    sport: str, match_id: str, by_player: dict[str, list[Track]], player_d2: list[float]
+) -> list[Result]:
+    """How the detected players' coordinates are stored, and how many of their second
+    differences sit at the 1 cm grid's floor."""
+    coords = [v for samples in by_player.values() for s in samples for v in (s[2], s[3])]
+    out: list[Result] = []
+    if coords:
+        on_cm = sum(1 for v in coords if abs(v / CM - round(v / CM)) < EPS / CM)
+        half = sum(1 for v in coords if _half_precision(v))
+        for metric, k in (("cm_grid", on_cm), ("half_precision", half)):
+            pct = round(100 * k / len(coords), 4)
+            out.append(
+                Result(CHECK, sport, match_id, f"player_coord_{metric}_pct", pct, "%", len(coords))
+            )
+    if player_d2:
+        zero = sum(1 for d in player_d2 if d < EPS)
+        within = sum(1 for d in player_d2 if d <= CM_STEP + EPS)
+        for metric, k in (("zero", zero), ("within_cm_step", within)):
+            pct = round(100 * k / len(player_d2), 4)
+            out.append(
+                Result(CHECK, sport, match_id, f"player_d2_{metric}_pct", pct, "%", len(player_d2))
+            )
     return out
 
 
