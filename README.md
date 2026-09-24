@@ -76,6 +76,15 @@ On the fixtures only silver is materialized: the whole graph would ingest the fu
 rebuild bronze over the slice. Select with groups rather than a bare `*`, which click expands
 against the working directory on Windows.
 
+## Data quality
+
+`uv run tracklab quality` runs the checks of `pipeline/src/tracklab/quality/` on silver (and
+bronze where silver does not carry the field): detection flags, the ball's apparent gravity,
+the shot entry angle, horizontal noise against the declared error, the clock, and the format
+partitions no field declares. Each writes `pipeline/reports/quality_<check>.csv`, one row per
+sport, match and metric. The gravity estimator is validated on synthetic flights of known g
+in `pipeline/tests/unit/test_quality_flight.py` before it reads a real ball.
+
 ## Run from a clean clone
 
 Five commands: download both bundles (verified against the manifest), then bronze, the
