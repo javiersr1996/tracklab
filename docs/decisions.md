@@ -271,3 +271,54 @@ With `last_modified` (10 matches): 100% within 1 m, median 0 m, maximum 0 m. Wit
 162 rows (basketball 82, football 80): one per (sport, match, period, team), with the two teams of every (sport, match, period) carrying opposite signs (asserted by `tests/contracts/test_orientation.py`, and the singular dbt test of task 10). The `evidence` of a basketball row carries its possession count and its shot probe; that of a football row, its `home_team_side` entry and its phase count.
 
 <!-- tracklab:orientation:generated-above -->
+
+## The six decisions of the silver schema (task 16)
+
+Index of `tasks/todo.md`'s "Las seis decisiones" section. Each one names the model or script that applies it and the table or report that supports it, with repo-relative paths. Decision 2 lives entirely above, inside the generated block; this index only points to it.
+
+1. [Canonical unit: metres, no native duplicate in silver](#decision-1-canonical-unit-metres-no-native-duplicate-in-silver)
+2. Origin and orientation: venue frame, not attack frame. Covered above in [Orientation and court geometry (task 9)](#orientation-and-court-geometry-task-9), in particular [Decision 2 of the silver schema, as measured](#decision-2-of-the-silver-schema-as-measured) and the chosen [court geometry](#basketball-court-geometry-fiba-28-x-15-m-against-94-x-50-ft).
+3. [Sample rate: no resampling in silver](#decision-3-sample-rate-no-resampling-in-silver)
+4. [Ids: VARCHAR with a sport prefix](#decision-4-ids-varchar-with-a-sport-prefix)
+5. [Extension per sport: what can be joined is not copied](#decision-5-extension-per-sport-what-can-be-joined-is-not-copied)
+6. [z axis: NULL when not measured, uncorrected when it is](#decision-6-z-axis-null-when-not-measured-uncorrected-when-it-is)
+
+## Decision 1: canonical unit, metres, no native duplicate in silver
+
+Silver stores every position in metres and keeps no second column for the native unit. Basketball's foot-to-metre factor is exact by definition (1 ft = 0.3048 m), so nothing is lost: bronze keeps the native value as delivered, in feet, and a consumer that needs it joins back instead of silver paying for a duplicate column across 29.3 M rows of `frames`.
+
+Applied by `pipeline/dbt/models/silver/dim_sport.sql` (`unit_to_m = 0.3048` for basketball, `1.0` for football, next to `native_unit`) and `pipeline/dbt/models/silver/frames.sql`, which multiplies basketball's native `x`, `y`, `z` by `0.3048` inline and leaves football's tracking, already in metres, untouched.
+
+Sustained by `docs/schema.md` (`dim_sport.unit_to_m`, `dim_sport.native_unit`, read from `pipeline/dbt/target/catalog.json`); bronze keeping the native feet "as delivered" is measured in `docs/formats/basketball.md` (`x, y, z | DOUBLE NOT NULL | xyz[0..2], feet, as delivered`); and `pipeline/tests/contracts/test_frames.py::test_positions_sit_on_the_surface_when_the_provider_saw_them` plus `::test_the_two_sports_have_the_same_columns_and_types`, which would fail if either sport were left in its native unit (a wrong unit puts positions tens of metres outside the surface, which is exactly what the first test measures per match).
+
+## Decision 3: sample rate, no resampling in silver
+
+Silver keeps each sport's own frame rate; there is no downsampling, upsampling or interpolation anywhere in silver. `t_ms = frame_native * 1000 / sample_rate_hz` is exact in both sports, with zero exceptions. The official game clock is kept in its own semantics (`clock_s`) next to the video clock (`t_ms`) rather than merged into one column, because a clock that pauses and a clock that runs cannot be reconciled without misleading whoever reads it.
+
+Applied by `pipeline/dbt/models/silver/dim_sport.sql` (`sample_rate_hz`: 25 basketball, 10 football; `clock_kind`: `countdown` / `elapsed`), `pipeline/dbt/models/silver/frames.sql` (`t_ms`, `clock_s`) and `pipeline/dbt/models/silver/dim_period.sql` (`regulation_s`, the per-period frame boundaries).
+
+Sustained by the standing dbt test `pipeline/dbt/tests/assert_frames_t_ms_increases.sql` (t_ms strictly increasing per match, period and entity) and the pytest contract `pipeline/tests/contracts/test_frames.py::test_t_ms_is_the_frame_counter_at_the_sports_own_rate` (0 rows off the exact rate across all of `frames`), plus `::test_the_clock_keeps_each_sports_own_semantics`. The football inter-period frame gap the plan calls out (period 1 ending at frame 30240, period 2 starting at 30250) is measured per match in `pipeline/reports/football_format.csv`: match 1925299 has `periods = p1:10-30240;p2:30250-61300` and `frames_outside_periods = 19` (10 frames before kickoff plus a 9-frame gap between periods, frames 30241 to 30249), also documented in `docs/formats/football.md`. `frames.sql` only excludes rows whose `period` is null; it never renumbers `frame_native`, so the gap is preserved as-is rather than closed.
+
+## Decision 4: ids, VARCHAR with a sport prefix
+
+Every silver key is a `VARCHAR` carrying its sport's prefix (`bb:`, `fb:`), with the native id kept alongside for a join back to bronze, because SkillCorner does not guarantee its basketball and football id spaces never collide. Basketball's player aliases are recorded in `canonical_player_id` but never rewrite `entity_id`; applying an alias is gold's job.
+
+Applied by `pipeline/dbt/models/silver/dim_entity.sql` (`entity_id`, `native_entity_id`, `canonical_player_id`, the synthetic `<prefix>:ball` row) and the same prefixing in `pipeline/dbt/models/silver/dim_match.sql`, `dim_team.sql` and `frames.sql`.
+
+Sustained by `pipeline/tests/contracts/test_cross_sport.py::test_no_entity_id_belongs_to_two_sports` (0 collisions, filed as `entity_ids_in_two_sports: 0` in `pipeline/reports/contracts.json`) and the standing dbt test `pipeline/dbt/tests/assert_one_ball_per_match.sql` (exactly one `<prefix>:ball` row per match). `dim_entity.sql`'s own comment records that 9 of the 18 basketball alias rows point a duplicated player at another id and 3 of those land in the rosters of these 10 matches, none of them rewritten.
+
+## Decision 5: extension per sport, what can be joined is not copied
+
+Silver carries only the columns both sports fill with the same meaning. Anything sport-specific stays in bronze and comes back with a join on the native keys every silver row carries (`native_match_id`, `native_family`, `native_event_id`, ...), so a third sport adds tables and rows, never columns.
+
+Applied by `pipeline/dbt/models/silver/events.sql` (keeps `native_family` / `native_event_id` / `match_id` for the join back to bronze instead of copying sport-only fields such as football's EPV or basketball's shot quality) and `pipeline/dbt/models/silver/dim_team.sql`, which documents its one accepted exception, `short_name` (football only; basketball publishes no short name).
+
+Sustained by `pipeline/tests/contracts/test_cross_sport.py::test_no_column_is_filled_by_one_sport_only`, which allows exactly `{("dim_team", "short_name"): "football"}` and fails on a second one-sided column (filed in `pipeline/reports/contracts.json` as `filled_by_one_sport_only`), and `::test_the_facts_write_one_schema_for_both_sports` together with `pipeline/tests/contracts/test_frames.py::test_the_two_sports_have_the_same_columns_and_types`, which compare the columns each sport actually wrote to Parquet (`contracts.json` -> `fact_columns: {"events": 22, "frames": 14}`, identical in both sports).
+
+## Decision 6: z axis, NULL when not measured, uncorrected when it is
+
+`z_m` exists in `frames` with the same shape in both sports. It is `NULL` for every player row in both sports: basketball's z is a constant `0.0` filler, not a measurement, and football sends none. For the ball it is the provider's own value converted to metres and never corrected, with `dim_match.z_ball_status` naming what is known about it: `biased` in basketball (an apparent gravity that is too low; this repo does not rebuild that figure, the per-match z distribution below is what it measures) and `unverified` in football. Correcting it is a P3 hypothesis, not something silver decides.
+
+Applied by `pipeline/dbt/models/silver/frames.sql` (`z_m`: `NULL::DOUBLE` for every player row, the provider's converted value for the ball) and `pipeline/dbt/models/silver/dim_match.sql` (`z_ball_status`, `z_player_status`).
+
+Sustained by the standing dbt test `pipeline/dbt/tests/assert_frames_z_only_on_the_ball.sql` and the pytest contract `pipeline/tests/contracts/test_cross_sport.py::test_players_never_carry_a_z_and_the_ball_share_is_printed`, filed in `pipeline/reports/contracts.json` as `player_rows_with_z: {"basketball": 0, "football": 0}` and `ball_z_pct` at 100.0 for every one of the 30 matches. The basketball ball-z bias (median 3.48 to 3.63 ft, 4.5 to 7.7% negative across the 10 matches) is measured in `docs/formats/basketball.md`.
