@@ -15,15 +15,19 @@ from tracklab.publish.quality import (
     Flight,
     build_hook,
     build_summary,
+    flight_z_real,
     quality_rows,
+    render_bulletin,
     select_hook_flight,
 )
+from tracklab.quality.flight import G
 
 PIPELINE = Path(__file__).resolve().parents[2]
 REPO_ROOT = PIPELINE.parent
 DATA = PIPELINE / "data"
 REPORTS = PIPELINE / "reports"
 QUALITY_JSON = REPO_ROOT / "web" / "public" / "data" / "quality.json"
+BULLETIN_MD = REPO_ROOT / "docs" / "bulletin.md"
 
 pytestmark = pytest.mark.skipif(
     not REPORTS.is_dir() or not QUALITY_JSON.is_file(),
@@ -47,6 +51,57 @@ def test_summary_matches_too() -> None:
 @pytest.mark.skipif(not DATA.is_dir(), reason="pipeline/data missing")
 def test_hook_matches_the_real_calibration_flights() -> None:
     assert _payload()["hook"] == build_hook(DATA)
+
+
+@pytest.mark.skipif(not DATA.is_dir(), reason="pipeline/data missing")
+def test_bulletin_matches_render_bulletin_of_the_current_reports() -> None:
+    """`docs/bulletin.md` is not hand-edited: it is exactly what `render_bulletin`
+    produces from the current CSVs and hook, byte for byte."""
+    rendered = render_bulletin(build_summary(REPORTS), build_hook(DATA))
+    assert BULLETIN_MD.read_text(encoding="utf-8") == rendered
+
+
+# The hook's "real" trajectory (task 30/31): it must start from the same state
+# (position and velocity at t=0) as the flight's own fit, the one that gives
+# `g_data`, not from `z_m` at t=0 with an assumed-zero vertical velocity. The
+# two differ whenever the fit's own velocity at t=0 (`fit_b`) is not zero, which
+# is the normal case: a fit's vertex need not land exactly on the highest sample.
+
+
+def test_flight_z_real_starts_from_the_fits_own_state_at_t0() -> None:
+    flight = Flight(
+        match_id="bb:1",
+        shot_id="shot-1",
+        start_frame=100,
+        g=8.5,
+        t_s=[-0.4, -0.2, 0.0, 0.2, 0.4],
+        z_m=[3.86, 4.05, 4.12, 4.11, 3.92],
+        fit_c=4.118,
+        fit_b=0.147,  # the reported mismatch: the fit's vertex sits after t=0
+    )
+    z_real = flight_z_real(flight)
+    expected = [round(flight.fit_c + flight.fit_b * ti - 0.5 * G * ti * ti, 4) for ti in flight.t_s]
+    assert z_real == expected
+    # At t=0 the two trajectories must share the fit's own state: fit_c, not z_m[2].
+    assert z_real[2] == flight.fit_c
+
+
+def test_flight_z_real_regression_against_the_apex_sample_assumption() -> None:
+    """Regression for the previous version, which took z_m at t=0 and assumed a
+    zero vertical velocity there (`apex_z - 0.5 * G * t**2`). This fails against
+    that old formula whenever `fit_b` is non-zero, exactly the reported case."""
+    flight = Flight(
+        match_id="bb:1",
+        shot_id="shot-1",
+        start_frame=100,
+        g=8.5,
+        t_s=[-0.4, 0.0, 0.4],
+        z_m=[3.86, 4.12, 3.92],
+        fit_c=4.118,
+        fit_b=0.147,
+    )
+    old_apex_sample_assumption = [round(flight.z_m[1] - 0.5 * G * ti * ti, 4) for ti in flight.t_s]
+    assert flight_z_real(flight) != old_apex_sample_assumption
 
 
 # `select_hook_flight` on fabricated flights: the rule itself, not the reader.

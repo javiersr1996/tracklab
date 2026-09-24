@@ -1,17 +1,14 @@
 import { HookAnimation } from "../../components/quality/Hook";
 import { cellKey, HOOK, matchRows, TABLE_METRICS } from "../../lib/quality";
 
-const REPO = "https://github.com/javiersr1996/tracklab";
-
 export default function QualityPage() {
   const rows = matchRows();
   return (
     <main className="page">
       <h1>Data quality</h1>
       <p>
-        A calibration kit for anyone building on the two bundles: six checks, one figure per
-        match, read from the same reports as{" "}
-        <a href={`${REPO}/blob/main/docs/bulletin.md`}>the bulletin</a>.
+        A calibration kit for anyone building on the two bundles: five checks, one figure per
+        match, read from the same reports as <a href="/bulletin">the bulletin</a>.
       </p>
       <HookAnimation hook={HOOK} />
       <table>

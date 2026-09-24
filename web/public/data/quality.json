@@ -1772,7 +1772,7 @@
         "sport": "football",
         "match_id": "fb:1874553",
         "metric": "flights",
-        "value": 170.0,
+        "value": 118.0,
         "unit": "count",
         "n": 360
       },
@@ -1780,39 +1780,39 @@
         "sport": "football",
         "match_id": "fb:1874553",
         "metric": "g_median",
-        "value": 7.523,
+        "value": 7.978,
         "unit": "m/s^2",
-        "n": 170
+        "n": 118
       },
       {
         "sport": "football",
         "match_id": "fb:1874553",
         "metric": "g_median_bias_pct",
-        "value": -23.287,
+        "value": -18.6468,
         "unit": "%",
-        "n": 170
+        "n": 118
       },
       {
         "sport": "football",
         "match_id": "fb:1874553",
         "metric": "g_q1",
-        "value": 5.6029,
+        "value": 6.6074,
         "unit": "m/s^2",
-        "n": 170
+        "n": 118
       },
       {
         "sport": "football",
         "match_id": "fb:1874553",
         "metric": "g_q3",
-        "value": 9.1908,
+        "value": 9.4411,
         "unit": "m/s^2",
-        "n": 170
+        "n": 118
       },
       {
         "sport": "football",
         "match_id": "fb:1886347",
         "metric": "flights",
-        "value": 138.0,
+        "value": 95.0,
         "unit": "count",
         "n": 330
       },
@@ -1820,39 +1820,39 @@
         "sport": "football",
         "match_id": "fb:1886347",
         "metric": "g_median",
-        "value": 7.6903,
+        "value": 8.1189,
         "unit": "m/s^2",
-        "n": 138
+        "n": 95
       },
       {
         "sport": "football",
         "match_id": "fb:1886347",
         "metric": "g_median_bias_pct",
-        "value": -21.5807,
+        "value": -17.2105,
         "unit": "%",
-        "n": 138
+        "n": 95
       },
       {
         "sport": "football",
         "match_id": "fb:1886347",
         "metric": "g_q1",
-        "value": 5.9426,
+        "value": 6.9965,
         "unit": "m/s^2",
-        "n": 138
+        "n": 95
       },
       {
         "sport": "football",
         "match_id": "fb:1886347",
         "metric": "g_q3",
-        "value": 9.3482,
+        "value": 9.4765,
         "unit": "m/s^2",
-        "n": 138
+        "n": 95
       },
       {
         "sport": "football",
         "match_id": "fb:1899585",
         "metric": "flights",
-        "value": 168.0,
+        "value": 89.0,
         "unit": "count",
         "n": 366
       },
@@ -1860,39 +1860,39 @@
         "sport": "football",
         "match_id": "fb:1899585",
         "metric": "g_median",
-        "value": 7.498,
+        "value": 7.5744,
         "unit": "m/s^2",
-        "n": 168
+        "n": 89
       },
       {
         "sport": "football",
         "match_id": "fb:1899585",
         "metric": "g_median_bias_pct",
-        "value": -23.5417,
+        "value": -22.7624,
         "unit": "%",
-        "n": 168
+        "n": 89
       },
       {
         "sport": "football",
         "match_id": "fb:1899585",
         "metric": "g_q1",
-        "value": 5.4343,
+        "value": 6.3277,
         "unit": "m/s^2",
-        "n": 168
+        "n": 89
       },
       {
         "sport": "football",
         "match_id": "fb:1899585",
         "metric": "g_q3",
-        "value": 9.3202,
+        "value": 9.6314,
         "unit": "m/s^2",
-        "n": 168
+        "n": 89
       },
       {
         "sport": "football",
         "match_id": "fb:1925299",
         "metric": "flights",
-        "value": 178.0,
+        "value": 95.0,
         "unit": "count",
         "n": 423
       },
@@ -1900,39 +1900,39 @@
         "sport": "football",
         "match_id": "fb:1925299",
         "metric": "g_median",
-        "value": 7.2587,
+        "value": 7.984,
         "unit": "m/s^2",
-        "n": 178
+        "n": 95
       },
       {
         "sport": "football",
         "match_id": "fb:1925299",
         "metric": "g_median_bias_pct",
-        "value": -25.9814,
+        "value": -18.5857,
         "unit": "%",
-        "n": 178
+        "n": 95
       },
       {
         "sport": "football",
         "match_id": "fb:1925299",
         "metric": "g_q1",
-        "value": 4.8312,
+        "value": 6.8182,
         "unit": "m/s^2",
-        "n": 178
+        "n": 95
       },
       {
         "sport": "football",
         "match_id": "fb:1925299",
         "metric": "g_q3",
-        "value": 9.0954,
+        "value": 9.2163,
         "unit": "m/s^2",
-        "n": 178
+        "n": 95
       },
       {
         "sport": "football",
         "match_id": "fb:1927964",
         "metric": "flights",
-        "value": 104.0,
+        "value": 83.0,
         "unit": "count",
         "n": 219
       },
@@ -1940,39 +1940,39 @@
         "sport": "football",
         "match_id": "fb:1927964",
         "metric": "g_median",
-        "value": 7.7333,
+        "value": 7.7992,
         "unit": "m/s^2",
-        "n": 104
+        "n": 83
       },
       {
         "sport": "football",
         "match_id": "fb:1927964",
         "metric": "g_median_bias_pct",
-        "value": -21.1426,
+        "value": -20.4703,
         "unit": "%",
-        "n": 104
+        "n": 83
       },
       {
         "sport": "football",
         "match_id": "fb:1927964",
         "metric": "g_q1",
-        "value": 6.1274,
+        "value": 6.7742,
         "unit": "m/s^2",
-        "n": 104
+        "n": 83
       },
       {
         "sport": "football",
         "match_id": "fb:1927964",
         "metric": "g_q3",
-        "value": 8.9198,
+        "value": 8.9411,
         "unit": "m/s^2",
-        "n": 104
+        "n": 83
       },
       {
         "sport": "football",
         "match_id": "fb:1953632",
         "metric": "flights",
-        "value": 134.0,
+        "value": 83.0,
         "unit": "count",
         "n": 319
       },
@@ -1980,39 +1980,39 @@
         "sport": "football",
         "match_id": "fb:1953632",
         "metric": "g_median",
-        "value": 8.0894,
+        "value": 8.1069,
         "unit": "m/s^2",
-        "n": 134
+        "n": 83
       },
       {
         "sport": "football",
         "match_id": "fb:1953632",
         "metric": "g_median_bias_pct",
-        "value": -17.511,
+        "value": -17.3327,
         "unit": "%",
-        "n": 134
+        "n": 83
       },
       {
         "sport": "football",
         "match_id": "fb:1953632",
         "metric": "g_q1",
-        "value": 6.3796,
+        "value": 6.6449,
         "unit": "m/s^2",
-        "n": 134
+        "n": 83
       },
       {
         "sport": "football",
         "match_id": "fb:1953632",
         "metric": "g_q3",
-        "value": 10.1019,
+        "value": 9.5929,
         "unit": "m/s^2",
-        "n": 134
+        "n": 83
       },
       {
         "sport": "football",
         "match_id": "fb:1959846",
         "metric": "flights",
-        "value": 155.0,
+        "value": 117.0,
         "unit": "count",
         "n": 330
       },
@@ -2020,39 +2020,39 @@
         "sport": "football",
         "match_id": "fb:1959846",
         "metric": "g_median",
-        "value": 7.8991,
+        "value": 8.3057,
         "unit": "m/s^2",
-        "n": 155
+        "n": 117
       },
       {
         "sport": "football",
         "match_id": "fb:1959846",
         "metric": "g_median_bias_pct",
-        "value": -19.4516,
+        "value": -15.3055,
         "unit": "%",
-        "n": 155
+        "n": 117
       },
       {
         "sport": "football",
         "match_id": "fb:1959846",
         "metric": "g_q1",
-        "value": 6.3916,
+        "value": 6.6094,
         "unit": "m/s^2",
-        "n": 155
+        "n": 117
       },
       {
         "sport": "football",
         "match_id": "fb:1959846",
         "metric": "g_q3",
-        "value": 9.5954,
+        "value": 9.7502,
         "unit": "m/s^2",
-        "n": 155
+        "n": 117
       },
       {
         "sport": "football",
         "match_id": "fb:1986691",
         "metric": "flights",
-        "value": 166.0,
+        "value": 102.0,
         "unit": "count",
         "n": 325
       },
@@ -2060,39 +2060,39 @@
         "sport": "football",
         "match_id": "fb:1986691",
         "metric": "g_median",
-        "value": 7.8756,
+        "value": 8.4885,
         "unit": "m/s^2",
-        "n": 166
+        "n": 102
       },
       {
         "sport": "football",
         "match_id": "fb:1986691",
         "metric": "g_median_bias_pct",
-        "value": -19.691,
+        "value": -13.4413,
         "unit": "%",
-        "n": 166
+        "n": 102
       },
       {
         "sport": "football",
         "match_id": "fb:1986691",
         "metric": "g_q1",
-        "value": 5.6059,
+        "value": 6.9071,
         "unit": "m/s^2",
-        "n": 166
+        "n": 102
       },
       {
         "sport": "football",
         "match_id": "fb:1986691",
         "metric": "g_q3",
-        "value": 9.8034,
+        "value": 9.9261,
         "unit": "m/s^2",
-        "n": 166
+        "n": 102
       },
       {
         "sport": "football",
         "match_id": "fb:1996435",
         "metric": "flights",
-        "value": 160.0,
+        "value": 76.0,
         "unit": "count",
         "n": 348
       },
@@ -2100,39 +2100,39 @@
         "sport": "football",
         "match_id": "fb:1996435",
         "metric": "g_median",
-        "value": 7.5445,
+        "value": 8.6688,
         "unit": "m/s^2",
-        "n": 160
+        "n": 76
       },
       {
         "sport": "football",
         "match_id": "fb:1996435",
         "metric": "g_median_bias_pct",
-        "value": -23.068,
+        "value": -11.6025,
         "unit": "%",
-        "n": 160
+        "n": 76
       },
       {
         "sport": "football",
         "match_id": "fb:1996435",
         "metric": "g_q1",
-        "value": 5.0205,
+        "value": 7.2965,
         "unit": "m/s^2",
-        "n": 160
+        "n": 76
       },
       {
         "sport": "football",
         "match_id": "fb:1996435",
         "metric": "g_q3",
-        "value": 9.2378,
+        "value": 9.795,
         "unit": "m/s^2",
-        "n": 160
+        "n": 76
       },
       {
         "sport": "football",
         "match_id": "fb:1996436",
         "metric": "flights",
-        "value": 200.0,
+        "value": 150.0,
         "unit": "count",
         "n": 387
       },
@@ -2140,39 +2140,39 @@
         "sport": "football",
         "match_id": "fb:1996436",
         "metric": "g_median",
-        "value": 7.7268,
+        "value": 8.2118,
         "unit": "m/s^2",
-        "n": 200
+        "n": 150
       },
       {
         "sport": "football",
         "match_id": "fb:1996436",
         "metric": "g_median_bias_pct",
-        "value": -21.2088,
+        "value": -16.2631,
         "unit": "%",
-        "n": 200
+        "n": 150
       },
       {
         "sport": "football",
         "match_id": "fb:1996436",
         "metric": "g_q1",
-        "value": 5.8494,
+        "value": 6.6449,
         "unit": "m/s^2",
-        "n": 200
+        "n": 150
       },
       {
         "sport": "football",
         "match_id": "fb:1996436",
         "metric": "g_q3",
-        "value": 9.3064,
+        "value": 9.5167,
         "unit": "m/s^2",
-        "n": 200
+        "n": 150
       },
       {
         "sport": "football",
         "match_id": "fb:2006229",
         "metric": "flights",
-        "value": 157.0,
+        "value": 108.0,
         "unit": "count",
         "n": 362
       },
@@ -2180,39 +2180,39 @@
         "sport": "football",
         "match_id": "fb:2006229",
         "metric": "g_median",
-        "value": 7.4755,
+        "value": 7.6683,
         "unit": "m/s^2",
-        "n": 157
+        "n": 108
       },
       {
         "sport": "football",
         "match_id": "fb:2006229",
         "metric": "g_median_bias_pct",
-        "value": -23.7709,
+        "value": -21.8048,
         "unit": "%",
-        "n": 157
+        "n": 108
       },
       {
         "sport": "football",
         "match_id": "fb:2006229",
         "metric": "g_q1",
-        "value": 5.9131,
+        "value": 6.4583,
         "unit": "m/s^2",
-        "n": 157
+        "n": 108
       },
       {
         "sport": "football",
         "match_id": "fb:2006229",
         "metric": "g_q3",
-        "value": 8.992,
+        "value": 9.0989,
         "unit": "m/s^2",
-        "n": 157
+        "n": 108
       },
       {
         "sport": "football",
         "match_id": "fb:2006363",
         "metric": "flights",
-        "value": 124.0,
+        "value": 92.0,
         "unit": "count",
         "n": 286
       },
@@ -2220,39 +2220,39 @@
         "sport": "football",
         "match_id": "fb:2006363",
         "metric": "g_median",
-        "value": 7.041,
+        "value": 7.2747,
         "unit": "m/s^2",
-        "n": 124
+        "n": 92
       },
       {
         "sport": "football",
         "match_id": "fb:2006363",
         "metric": "g_median_bias_pct",
-        "value": -28.2022,
+        "value": -25.8184,
         "unit": "%",
-        "n": 124
+        "n": 92
       },
       {
         "sport": "football",
         "match_id": "fb:2006363",
         "metric": "g_q1",
-        "value": 5.7098,
+        "value": 5.9625,
         "unit": "m/s^2",
-        "n": 124
+        "n": 92
       },
       {
         "sport": "football",
         "match_id": "fb:2006363",
         "metric": "g_q3",
-        "value": 8.8589,
+        "value": 8.8729,
         "unit": "m/s^2",
-        "n": 124
+        "n": 92
       },
       {
         "sport": "football",
         "match_id": "fb:2007448",
         "metric": "flights",
-        "value": 158.0,
+        "value": 115.0,
         "unit": "count",
         "n": 322
       },
@@ -2260,39 +2260,39 @@
         "sport": "football",
         "match_id": "fb:2007448",
         "metric": "g_median",
-        "value": 7.2348,
+        "value": 7.7732,
         "unit": "m/s^2",
-        "n": 158
+        "n": 115
       },
       {
         "sport": "football",
         "match_id": "fb:2007448",
         "metric": "g_median_bias_pct",
-        "value": -26.2259,
+        "value": -20.7351,
         "unit": "%",
-        "n": 158
+        "n": 115
       },
       {
         "sport": "football",
         "match_id": "fb:2007448",
         "metric": "g_q1",
-        "value": 5.5467,
+        "value": 5.9625,
         "unit": "m/s^2",
-        "n": 158
+        "n": 115
       },
       {
         "sport": "football",
         "match_id": "fb:2007448",
         "metric": "g_q3",
-        "value": 8.8941,
+        "value": 9.0959,
         "unit": "m/s^2",
-        "n": 158
+        "n": 115
       },
       {
         "sport": "football",
         "match_id": "fb:2007721",
         "metric": "flights",
-        "value": 184.0,
+        "value": 125.0,
         "unit": "count",
         "n": 397
       },
@@ -2300,39 +2300,39 @@
         "sport": "football",
         "match_id": "fb:2007721",
         "metric": "g_median",
-        "value": 7.4925,
+        "value": 7.8312,
         "unit": "m/s^2",
-        "n": 184
+        "n": 125
       },
       {
         "sport": "football",
         "match_id": "fb:2007721",
         "metric": "g_median_bias_pct",
-        "value": -23.5977,
+        "value": -20.1443,
         "unit": "%",
-        "n": 184
+        "n": 125
       },
       {
         "sport": "football",
         "match_id": "fb:2007721",
         "metric": "g_q1",
-        "value": 5.7158,
+        "value": 6.4056,
         "unit": "m/s^2",
-        "n": 184
+        "n": 125
       },
       {
         "sport": "football",
         "match_id": "fb:2007721",
         "metric": "g_q3",
-        "value": 9.2695,
+        "value": 9.2338,
         "unit": "m/s^2",
-        "n": 184
+        "n": 125
       },
       {
         "sport": "football",
         "match_id": "fb:2010085",
         "metric": "flights",
-        "value": 155.0,
+        "value": 113.0,
         "unit": "count",
         "n": 338
       },
@@ -2340,39 +2340,39 @@
         "sport": "football",
         "match_id": "fb:2010085",
         "metric": "g_median",
-        "value": 8.1409,
+        "value": 8.5544,
         "unit": "m/s^2",
-        "n": 155
+        "n": 113
       },
       {
         "sport": "football",
         "match_id": "fb:2010085",
         "metric": "g_median_bias_pct",
-        "value": -16.9863,
+        "value": -12.7689,
         "unit": "%",
-        "n": 155
+        "n": 113
       },
       {
         "sport": "football",
         "match_id": "fb:2010085",
         "metric": "g_q1",
-        "value": 5.5045,
+        "value": 6.1489,
         "unit": "m/s^2",
-        "n": 155
+        "n": 113
       },
       {
         "sport": "football",
         "match_id": "fb:2010085",
         "metric": "g_q3",
-        "value": 10.1993,
+        "value": 10.3177,
         "unit": "m/s^2",
-        "n": 155
+        "n": 113
       },
       {
         "sport": "football",
         "match_id": "fb:2011166",
         "metric": "flights",
-        "value": 177.0,
+        "value": 130.0,
         "unit": "count",
         "n": 372
       },
@@ -2380,39 +2380,39 @@
         "sport": "football",
         "match_id": "fb:2011166",
         "metric": "g_median",
-        "value": 7.6264,
+        "value": 7.9426,
         "unit": "m/s^2",
-        "n": 177
+        "n": 130
       },
       {
         "sport": "football",
         "match_id": "fb:2011166",
         "metric": "g_median_bias_pct",
-        "value": -22.2326,
+        "value": -19.0085,
         "unit": "%",
-        "n": 177
+        "n": 130
       },
       {
         "sport": "football",
         "match_id": "fb:2011166",
         "metric": "g_q1",
-        "value": 6.4036,
+        "value": 6.702,
         "unit": "m/s^2",
-        "n": 177
+        "n": 130
       },
       {
         "sport": "football",
         "match_id": "fb:2011166",
         "metric": "g_q3",
-        "value": 9.2138,
+        "value": 9.2705,
         "unit": "m/s^2",
-        "n": 177
+        "n": 130
       },
       {
         "sport": "football",
         "match_id": "fb:2013725",
         "metric": "flights",
-        "value": 186.0,
+        "value": 135.0,
         "unit": "count",
         "n": 389
       },
@@ -2420,39 +2420,39 @@
         "sport": "football",
         "match_id": "fb:2013725",
         "metric": "g_median",
-        "value": 7.8716,
+        "value": 8.4585,
         "unit": "m/s^2",
-        "n": 186
+        "n": 135
       },
       {
         "sport": "football",
         "match_id": "fb:2013725",
         "metric": "g_median_bias_pct",
-        "value": -19.7317,
+        "value": -13.7469,
         "unit": "%",
-        "n": 186
+        "n": 135
       },
       {
         "sport": "football",
         "match_id": "fb:2013725",
         "metric": "g_q1",
-        "value": 5.5869,
+        "value": 7.0435,
         "unit": "m/s^2",
-        "n": 186
+        "n": 135
       },
       {
         "sport": "football",
         "match_id": "fb:2013725",
         "metric": "g_q3",
-        "value": 9.5912,
+        "value": 9.9825,
         "unit": "m/s^2",
-        "n": 186
+        "n": 135
       },
       {
         "sport": "football",
         "match_id": "fb:2015213",
         "metric": "flights",
-        "value": 211.0,
+        "value": 151.0,
         "unit": "count",
         "n": 414
       },
@@ -2460,39 +2460,39 @@
         "sport": "football",
         "match_id": "fb:2015213",
         "metric": "g_median",
-        "value": 7.6833,
+        "value": 8.0769,
         "unit": "m/s^2",
-        "n": 211
+        "n": 151
       },
       {
         "sport": "football",
         "match_id": "fb:2015213",
         "metric": "g_median_bias_pct",
-        "value": -21.652,
+        "value": -17.6383,
         "unit": "%",
-        "n": 211
+        "n": 151
       },
       {
         "sport": "football",
         "match_id": "fb:2015213",
         "metric": "g_q1",
-        "value": 6.037,
+        "value": 6.7423,
         "unit": "m/s^2",
-        "n": 211
+        "n": 151
       },
       {
         "sport": "football",
         "match_id": "fb:2015213",
         "metric": "g_q3",
-        "value": 9.3417,
+        "value": 9.3861,
         "unit": "m/s^2",
-        "n": 211
+        "n": 151
       },
       {
         "sport": "football",
         "match_id": "fb:2016236",
         "metric": "flights",
-        "value": 189.0,
+        "value": 141.0,
         "unit": "count",
         "n": 378
       },
@@ -2500,39 +2500,39 @@
         "sport": "football",
         "match_id": "fb:2016236",
         "metric": "g_median",
-        "value": 7.955,
+        "value": 8.2378,
         "unit": "m/s^2",
-        "n": 189
+        "n": 141
       },
       {
         "sport": "football",
         "match_id": "fb:2016236",
         "metric": "g_median_bias_pct",
-        "value": -18.8811,
+        "value": -15.9982,
         "unit": "%",
-        "n": 189
+        "n": 141
       },
       {
         "sport": "football",
         "match_id": "fb:2016236",
         "metric": "g_q1",
-        "value": 6.3357,
+        "value": 6.7303,
         "unit": "m/s^2",
-        "n": 189
+        "n": 141
       },
       {
         "sport": "football",
         "match_id": "fb:2016236",
         "metric": "g_q3",
-        "value": 9.5385,
+        "value": 9.5475,
         "unit": "m/s^2",
-        "n": 189
+        "n": 141
       },
       {
         "sport": "football",
         "match_id": "fb:2017461",
         "metric": "flights",
-        "value": 181.0,
+        "value": 136.0,
         "unit": "count",
         "n": 398
       },
@@ -2540,33 +2540,33 @@
         "sport": "football",
         "match_id": "fb:2017461",
         "metric": "g_median",
-        "value": 7.9431,
+        "value": 8.3077,
         "unit": "m/s^2",
-        "n": 181
+        "n": 136
       },
       {
         "sport": "football",
         "match_id": "fb:2017461",
         "metric": "g_median_bias_pct",
-        "value": -19.0034,
+        "value": -15.2851,
         "unit": "%",
-        "n": 181
+        "n": 136
       },
       {
         "sport": "football",
         "match_id": "fb:2017461",
         "metric": "g_q1",
-        "value": 6.1938,
+        "value": 6.7605,
         "unit": "m/s^2",
-        "n": 181
+        "n": 136
       },
       {
         "sport": "football",
         "match_id": "fb:2017461",
         "metric": "g_q3",
-        "value": 9.4056,
+        "value": 9.5927,
         "unit": "m/s^2",
-        "n": 181
+        "n": 136
       }
     ],
     "noise": [
@@ -2974,17 +2974,17 @@
         "sport": "football",
         "match_id": "fb:1874553",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.076158,
         "unit": "m",
-        "n": 38334
+        "n": 32572
       },
       {
         "sport": "football",
         "match_id": "fb:1874553",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.3852,
         "unit": "ratio",
-        "n": 38334
+        "n": 32572
       },
       {
         "sport": "football",
@@ -2998,17 +2998,17 @@
         "sport": "football",
         "match_id": "fb:1886347",
         "metric": "ball_d2_median_m",
-        "value": 0.072801,
+        "value": 0.08,
         "unit": "m",
-        "n": 36307
+        "n": 31264
       },
       {
         "sport": "football",
         "match_id": "fb:1886347",
         "metric": "ball_player_d2_ratio",
-        "value": 5.1478,
+        "value": 5.6569,
         "unit": "ratio",
-        "n": 36307
+        "n": 31264
       },
       {
         "sport": "football",
@@ -3022,17 +3022,17 @@
         "sport": "football",
         "match_id": "fb:1899585",
         "metric": "ball_d2_median_m",
-        "value": 0.072801,
+        "value": 0.08,
         "unit": "m",
-        "n": 33696
+        "n": 27426
       },
       {
         "sport": "football",
         "match_id": "fb:1899585",
         "metric": "ball_player_d2_ratio",
-        "value": 5.1478,
+        "value": 5.6569,
         "unit": "ratio",
-        "n": 33696
+        "n": 27426
       },
       {
         "sport": "football",
@@ -3046,17 +3046,17 @@
         "sport": "football",
         "match_id": "fb:1925299",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.076158,
         "unit": "m",
-        "n": 41433
+        "n": 34260
       },
       {
         "sport": "football",
         "match_id": "fb:1925299",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.3852,
         "unit": "ratio",
-        "n": 41433
+        "n": 34260
       },
       {
         "sport": "football",
@@ -3070,17 +3070,17 @@
         "sport": "football",
         "match_id": "fb:1927964",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.076158,
         "unit": "m",
-        "n": 38536
+        "n": 34183
       },
       {
         "sport": "football",
         "match_id": "fb:1927964",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.3852,
         "unit": "ratio",
-        "n": 38536
+        "n": 34183
       },
       {
         "sport": "football",
@@ -3094,17 +3094,17 @@
         "sport": "football",
         "match_id": "fb:1953632",
         "metric": "ball_d2_median_m",
-        "value": 0.072111,
+        "value": 0.078102,
         "unit": "m",
-        "n": 37315
+        "n": 30815
       },
       {
         "sport": "football",
         "match_id": "fb:1953632",
         "metric": "ball_player_d2_ratio",
-        "value": 5.099,
+        "value": 5.5227,
         "unit": "ratio",
-        "n": 37315
+        "n": 30815
       },
       {
         "sport": "football",
@@ -3118,17 +3118,17 @@
         "sport": "football",
         "match_id": "fb:1959846",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.076158,
         "unit": "m",
-        "n": 35945
+        "n": 30475
       },
       {
         "sport": "football",
         "match_id": "fb:1959846",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.3852,
         "unit": "ratio",
-        "n": 35945
+        "n": 30475
       },
       {
         "sport": "football",
@@ -3142,17 +3142,17 @@
         "sport": "football",
         "match_id": "fb:1986691",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.076158,
         "unit": "m",
-        "n": 35319
+        "n": 29341
       },
       {
         "sport": "football",
         "match_id": "fb:1986691",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.3852,
         "unit": "ratio",
-        "n": 35319
+        "n": 29341
       },
       {
         "sport": "football",
@@ -3166,17 +3166,17 @@
         "sport": "football",
         "match_id": "fb:1996435",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.076158,
         "unit": "m",
-        "n": 37149
+        "n": 30393
       },
       {
         "sport": "football",
         "match_id": "fb:1996435",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.3852,
         "unit": "ratio",
-        "n": 37149
+        "n": 30393
       },
       {
         "sport": "football",
@@ -3190,17 +3190,17 @@
         "sport": "football",
         "match_id": "fb:1996436",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.076158,
         "unit": "m",
-        "n": 34099
+        "n": 27934
       },
       {
         "sport": "football",
         "match_id": "fb:1996436",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.3852,
         "unit": "ratio",
-        "n": 34099
+        "n": 27934
       },
       {
         "sport": "football",
@@ -3214,17 +3214,17 @@
         "sport": "football",
         "match_id": "fb:2006229",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.072801,
         "unit": "m",
-        "n": 37600
+        "n": 31949
       },
       {
         "sport": "football",
         "match_id": "fb:2006229",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.1478,
         "unit": "ratio",
-        "n": 37600
+        "n": 31949
       },
       {
         "sport": "football",
@@ -3238,17 +3238,17 @@
         "sport": "football",
         "match_id": "fb:2006363",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.076158,
         "unit": "m",
-        "n": 37275
+        "n": 31609
       },
       {
         "sport": "football",
         "match_id": "fb:2006363",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.3852,
         "unit": "ratio",
-        "n": 37275
+        "n": 31609
       },
       {
         "sport": "football",
@@ -3262,17 +3262,17 @@
         "sport": "football",
         "match_id": "fb:2007448",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.076158,
         "unit": "m",
-        "n": 35911
+        "n": 29615
       },
       {
         "sport": "football",
         "match_id": "fb:2007448",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.3852,
         "unit": "ratio",
-        "n": 35911
+        "n": 29615
       },
       {
         "sport": "football",
@@ -3286,17 +3286,17 @@
         "sport": "football",
         "match_id": "fb:2007721",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.076158,
         "unit": "m",
-        "n": 38764
+        "n": 32734
       },
       {
         "sport": "football",
         "match_id": "fb:2007721",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.3852,
         "unit": "ratio",
-        "n": 38764
+        "n": 32734
       },
       {
         "sport": "football",
@@ -3310,17 +3310,17 @@
         "sport": "football",
         "match_id": "fb:2010085",
         "metric": "ball_d2_median_m",
-        "value": 0.072801,
+        "value": 0.078102,
         "unit": "m",
-        "n": 37440
+        "n": 32301
       },
       {
         "sport": "football",
         "match_id": "fb:2010085",
         "metric": "ball_player_d2_ratio",
-        "value": 5.1478,
+        "value": 5.5227,
         "unit": "ratio",
-        "n": 37440
+        "n": 32301
       },
       {
         "sport": "football",
@@ -3334,17 +3334,17 @@
         "sport": "football",
         "match_id": "fb:2011166",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.072801,
         "unit": "m",
-        "n": 32604
+        "n": 27651
       },
       {
         "sport": "football",
         "match_id": "fb:2011166",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.1478,
         "unit": "ratio",
-        "n": 32604
+        "n": 27651
       },
       {
         "sport": "football",
@@ -3358,17 +3358,17 @@
         "sport": "football",
         "match_id": "fb:2013725",
         "metric": "ball_d2_median_m",
-        "value": 0.072801,
+        "value": 0.080623,
         "unit": "m",
-        "n": 37050
+        "n": 30870
       },
       {
         "sport": "football",
         "match_id": "fb:2013725",
         "metric": "ball_player_d2_ratio",
-        "value": 5.1478,
+        "value": 5.7009,
         "unit": "ratio",
-        "n": 37050
+        "n": 30870
       },
       {
         "sport": "football",
@@ -3382,17 +3382,17 @@
         "sport": "football",
         "match_id": "fb:2015213",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.078102,
         "unit": "m",
-        "n": 39307
+        "n": 31068
       },
       {
         "sport": "football",
         "match_id": "fb:2015213",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.5227,
         "unit": "ratio",
-        "n": 39307
+        "n": 31068
       },
       {
         "sport": "football",
@@ -3406,17 +3406,17 @@
         "sport": "football",
         "match_id": "fb:2016236",
         "metric": "ball_d2_median_m",
-        "value": 0.072111,
+        "value": 0.08,
         "unit": "m",
-        "n": 37653
+        "n": 31577
       },
       {
         "sport": "football",
         "match_id": "fb:2016236",
         "metric": "ball_player_d2_ratio",
-        "value": 5.099,
+        "value": 5.6569,
         "unit": "ratio",
-        "n": 37653
+        "n": 31577
       },
       {
         "sport": "football",
@@ -3430,17 +3430,17 @@
         "sport": "football",
         "match_id": "fb:2017461",
         "metric": "ball_d2_median_m",
-        "value": 0.070711,
+        "value": 0.072801,
         "unit": "m",
-        "n": 34367
+        "n": 28707
       },
       {
         "sport": "football",
         "match_id": "fb:2017461",
         "metric": "ball_player_d2_ratio",
-        "value": 5.0,
+        "value": 5.1478,
         "unit": "ratio",
-        "n": 34367
+        "n": 28707
       },
       {
         "sport": "football",
@@ -4606,12 +4606,13 @@
       "gravity_bias_calibration": "14.7 to 17.6",
       "gravity_g_control": "7.91 to 8.25",
       "gravity_bias_control": "15.9 to 19.3",
-      "gravity_g_football": "7.04 to 8.14",
-      "gravity_bias_football": "17.0 to 28.2",
+      "gravity_g_football": "7.27 to 8.67",
+      "gravity_bias_football": "11.6 to 25.8",
       "entry_angle_gap": "12.1 to 16.4",
       "entry_angle_reordered_pct": "10.5 to 34.7",
       "noise_ratio_basketball": "3.0 to 5.0",
-      "noise_ratio_football": "5.0 to 5.1",
+      "noise_ratio_football": "5.1 to 5.7",
+      "noise_grid_pct_football": "100.0",
       "clock_step_exact_basketball": "100.0",
       "clock_step_exact_football": "100.0",
       "clock_speed_mismatch": "0.15 to 0.18"
@@ -4671,27 +4672,27 @@
       3.9707
     ],
     "z_real_m": [
-      3.7663,
-      3.9153,
-      4.0487,
-      4.1664,
-      4.2684,
-      4.3547,
-      4.4253,
-      4.4802,
-      4.5194,
-      4.543,
-      4.5508,
-      4.543,
-      4.5194,
-      4.4802,
-      4.4253,
-      4.3547,
-      4.2684,
-      4.1664,
-      4.0487,
-      3.9153,
-      3.7663
+      3.7059,
+      3.8608,
+      4.0001,
+      4.1236,
+      4.2315,
+      4.3236,
+      4.4001,
+      4.4609,
+      4.506,
+      4.5354,
+      4.5491,
+      4.5471,
+      4.5295,
+      4.4961,
+      4.447,
+      4.3823,
+      4.3019,
+      4.2058,
+      4.0939,
+      3.9664,
+      3.8232
     ]
   }
 }

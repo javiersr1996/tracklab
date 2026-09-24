@@ -7,7 +7,8 @@ the bulletin's prose needs and that no single CSV cell already is; the `hook`
 section is the one part that goes back to bronze and silver, reusing
 `tracklab.quality.gravity`'s flight-finding helpers to pick one real basketball
 shot and pair its samples with the trajectory 9.80665 m/s^2 would draw from the
-same apex state (same height, zero vertical velocity).
+same position and velocity the flight's own fit has at t=0 (its vertex need not
+land exactly on the highest sample).
 """
 
 from __future__ import annotations
@@ -219,6 +220,9 @@ def build_summary(reports_dir: Path) -> dict[str, Any]:
                 _filtered(noise, "ball_player_d2_ratio", "basketball")
             ),
             "noise_ratio_football": _range(_filtered(noise, "ball_player_d2_ratio", "football")),
+            "noise_grid_pct_football": _range(
+                _filtered(noise, "player_coord_cm_grid_pct", "football")
+            ),
             "clock_step_exact_basketball": _range(
                 _filtered(clock, "clock_step_exact_pct", "basketball")
             ),
@@ -241,7 +245,12 @@ def build_summary(reports_dir: Path) -> dict[str, Any]:
 @dataclass(frozen=True)
 class Flight:
     """One accepted calibration flight: its shot, its fitted g and its own
-    apex-windowed samples (`t` relative to the apex, `z` as measured)."""
+    apex-windowed samples (`t` relative to the highest sample, `z` as measured).
+    `fit_c` and `fit_b` are that same fit's position and velocity at t=0 (the
+    highest sample), in the samples' own time origin: the fit's vertex need not
+    fall exactly on that sample, so a replay of this flight at a different
+    gravity has to start from this state, not from `z_m` at t=0 with zero
+    vertical velocity. Default to 0.0: only the hook's own fit needs them."""
 
     match_id: str
     shot_id: str
@@ -249,6 +258,8 @@ class Flight:
     g: float
     t_s: list[float]
     z_m: list[float]
+    fit_c: float = 0.0
+    fit_b: float = 0.0
 
 
 def _calibration_shots(data_dir: Path) -> list[tuple[int, str, str, int, int | None, bool]]:
@@ -299,20 +310,23 @@ def calibration_flights(data_dir: Path) -> list[Flight]:
             continue
         t = [s[1] for s in window]
         z = [s[4] for s in window]
-        c, b, a = fit_quadratic(t, z)
-        residuals = [zi - (c + b * ti + a * ti * ti) for ti, zi in zip(t, z, strict=True)]
+        apex_t = t[BB_HALF]
+        t_rel = [ti - apex_t for ti in t]
+        c, b, a = fit_quadratic(t_rel, z)
+        residuals = [zi - (c + b * ti + a * ti * ti) for ti, zi in zip(t_rel, z, strict=True)]
         rms = math.sqrt(statistics.fmean(r * r for r in residuals))
         if rms >= MAX_RMS:
             continue
-        apex_t = t[BB_HALF]
         flights.append(
             Flight(
                 match_id=match_id,
                 shot_id=shot_id,
                 start_frame=start,
-                g=apparent_g(t, z),
-                t_s=[round(ti - apex_t, 4) for ti in t],
+                g=apparent_g(t_rel, z),
+                t_s=[round(ti, 4) for ti in t_rel],
                 z_m=[round(zi, 4) for zi in z],
+                fit_c=round(c, 4),
+                fit_b=round(b, 4),
             )
         )
     return flights
@@ -328,10 +342,16 @@ def select_hook_flight(flights: Sequence[Flight]) -> tuple[Flight, float]:
     return best, median
 
 
+def flight_z_real(flight: Flight) -> list[float]:
+    """The same flight at standard gravity, starting from the exact position and
+    velocity the flight's own fit (the one that gives `g_data`) has at t=0: not
+    from `z_m` at t=0 with an assumed zero vertical velocity, which is only
+    correct if the fit's vertex happens to land on that sample."""
+    return [round(flight.fit_c + flight.fit_b * ti - 0.5 * G * ti * ti, 4) for ti in flight.t_s]
+
+
 def build_hook(data_dir: Path) -> dict[str, Any]:
     flight, median = select_hook_flight(calibration_flights(data_dir))
-    apex_z = flight.z_m[BB_HALF]
-    z_real = [round(apex_z - 0.5 * G * ti * ti, 4) for ti in flight.t_s]
     return {
         "match_id": flight.match_id,
         "shot_id": flight.shot_id,
@@ -341,7 +361,7 @@ def build_hook(data_dir: Path) -> dict[str, Any]:
         "median_calibration_g": round(median, 4),
         "t_s": flight.t_s,
         "z_data_m": flight.z_m,
-        "z_real_m": z_real,
+        "z_real_m": flight_z_real(flight),
     }
 
 
@@ -371,25 +391,26 @@ def render_bulletin(summary: dict[str, Any], hook: dict[str, Any]) -> str:
         f"{r['detection_ball_pct_football']}%. Football player: "
         f"{r['detection_player_pct_football']}%.",
         "",
-        "For a consumer: basketball ball position is never provider-confirmed, so a "
-        "pipeline that filters on `is_detected` for the ball keeps nothing in "
-        "basketball. Football detection is partial in both entity kinds and should be "
-        "read per match, not assumed constant.",
+        "For a consumer: `is_detected` is false for the basketball ball in all "
+        f"matches ({r['detection_ball_pct_basketball']}%), so a pipeline that filters "
+        "on it for the ball keeps nothing in basketball. Football detection is "
+        "partial in both entity kinds and should be read per match, not assumed "
+        "constant.",
         "",
         "## Gravity",
         "",
         "What it measures: the apparent gravity a ball's own vertical curve implies "
         "during free flight. Method: a parabola fit over the samples around each "
         "flight's apex (basketball: shots, +-10 frames around it; football: flights "
-        "found in tracking, +-6 frames around it), g = -2 times the fit's quadratic "
-        "term.",
+        "found in tracking, windows fully detected and clear of a player touch, "
+        "+-6 frames around it), g = -2 times the fit's quadratic term.",
         "",
         f"Basketball calibration ({summary['basketball_calibration_matches']} matches): "
         f"median g of {r['gravity_g_calibration']} m/s², "
         f"{r['gravity_bias_calibration']}% below the standard 9.80665 m/s². "
-        f"Basketball control ({summary['basketball_control_matches']} matches, "
-        "thresholds never looked at before scoring them): "
-        f"{r['gravity_g_control']} m/s², {r['gravity_bias_control']}% below "
+        f"Basketball control ({summary['basketball_control_matches']} matches, scored "
+        "with thresholds fixed on the calibration matches before this control group "
+        f"was measured): {r['gravity_g_control']} m/s², {r['gravity_bias_control']}% below "
         "standard, confirming the calibration split rather than a filter tuned to it. "
         "Football: the number only, no verdict (its `z_ball_status` is `unverified`): "
         f"{r['gravity_g_football']} m/s², {r['gravity_bias_football']}% away from "
@@ -403,11 +424,12 @@ def render_bulletin(summary: dict[str, Any], hook: dict[str, Any]) -> str:
         "## Entry angle",
         "",
         "What it measures: a made shot's arrival angle at the rim from the bundle's "
-        "own z curvature, against the angle the flight's horizontal speed and true "
-        "gravity require geometrically (no z involved). Method: horizontal speed from "
-        "the first samples after release, flight time from speed and distance to the "
-        "rim, required vertical speed from projectile motion, both angles compared at "
-        "the same arrival frame.",
+        "own z curvature, against the angle true gravity requires given that same "
+        "flight's horizontal speed and the bundle's own release height. Method: "
+        "horizontal speed from the first samples after release, flight time from "
+        "speed and distance to the rim (the only step of the two that does not use "
+        "z), required vertical speed from projectile motion using the bundle's own "
+        "release height, both angles compared at the same arrival frame.",
         "",
         f"Gap (required minus reported), median per match: {r['entry_angle_gap']} "
         f"degrees. Share of shot pairs the two angles order differently: "
@@ -422,15 +444,18 @@ def render_bulletin(summary: dict[str, Any], hook: dict[str, Any]) -> str:
         "",
         "What it measures: frame-to-frame jitter of the ball's horizontal position "
         "against a detected player's, while both are moving. Method: the second "
-        "difference of x, y (a discrete acceleration), pooled per sport, ball versus "
+        "difference of x, y (a discrete acceleration), pooled per match, ball versus "
         "detected players, and their ratio.",
         "",
         f"Ball-to-player jitter ratio: basketball {r['noise_ratio_basketball']}×, "
-        f"football {r['noise_ratio_football']}×.",
+        f"football {r['noise_ratio_football']}×. Football's ratio is bounded by how "
+        f"its coordinates are stored, not by ball motion: {r['noise_grid_pct_football']}% "
+        "of detected players' x, y sit exactly on a 1 cm grid.",
         "",
         "For a consumer: smoothing tuned on player tracks (window size, cutoff "
-        "frequency) will under-smooth the ball by roughly that factor if applied "
-        "unchanged.",
+        "frequency) will under-smooth the basketball ball by roughly that factor if "
+        "applied unchanged; the football ratio should not be used the same way, "
+        "since it is capped by coordinate quantization rather than measuring motion.",
         "",
         "## Clock",
         "",
@@ -445,9 +470,11 @@ def render_bulletin(summary: dict[str, Any], hook: dict[str, Any]) -> str:
         f"field, so its number is contiguity, not a cross-check). Basketball declared "
         f"speed against measured: {r['clock_speed_mismatch']}% median mismatch.",
         "",
-        "For a consumer: the clock itself is exact in both sports; only the declared "
-        "speed field carries the small mismatch above, so prefer a finite difference "
-        "over the declared field where the two disagree.",
+        "For a consumer: the clock step above is a real cross-check in basketball "
+        "(against `wallClock`) and a contiguity count in football, where no "
+        "independent field exists to check against. The declared `speed` field and "
+        "a finite difference of positions differ by the median mismatch above; this "
+        "bulletin makes no claim about which of the two is correct.",
         "",
         "## Partitions",
         "",
@@ -478,14 +505,18 @@ def render_bulletin(summary: dict[str, Any], hook: dict[str, Any]) -> str:
         "flight, the one whose fitted g sits closest to the calibration's own median. "
         f"Its g is {hook['g_data']:.2f} m/s² against a calibration median of "
         f"{hook['median_calibration_g']:.2f} m/s²; the page falls a second ball from "
-        f"the same apex height and zero vertical velocity at {hook['g_real']} m/s², "
-        "the standard value, so the two are visibly not the same flight.",
+        "the same position and velocity the data's own fit has at that instant, but "
+        f"at {hook['g_real']} m/s², the standard value, so the two are visibly not "
+        "the same flight.",
         "",
         "## On the body pose bundle's own z axis",
         "",
-        "Body pose is not part of this bulletin (P6 in the project plan), but its "
-        "dataset card states its own z caveat plainly, which is worth citing here "
-        "since it is the same axis this bulletin measures on tracking:",
+        "Body pose is not part of this bulletin (P6 in the project plan), and its z "
+        "is a different quantity from the one measured above (a joint's position "
+        "relative to the player's own centroid, not a ball or player position on "
+        "tracking). Its dataset card documents that axis as a known weak point in "
+        "that other product; cited here as honest context, not as support for this "
+        "bulletin's own gravity bias:",
         "",
         f"> {SKILLCORNER_BODYPOSE_Z_CAVEAT}",
         "",

@@ -5,8 +5,9 @@ import type { Hook } from "../../lib/quality";
 
 // Side view of one real basketball shot: height (z) against time, the ball
 // falling at the g its own data implies next to the same flight at standard
-// gravity, from the same apex height and zero vertical velocity. Starts on
-// its own and loops at the flight's own duration (task 30's gancho).
+// gravity, from the same position and velocity the data's own fit has at
+// t=0. Starts on its own and loops at the flight's own duration (task 30's
+// gancho).
 const WIDTH = 640;
 const HEIGHT = 320;
 const PAD = 36;

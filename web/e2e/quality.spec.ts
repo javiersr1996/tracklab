@@ -45,13 +45,20 @@ test("the hook animation starts on its own and the table matches quality.json", 
     const metric = await cell.getAttribute("data-metric");
     const matchId = await cell.getAttribute("data-match");
     const text = (await cell.textContent())?.trim();
-    if (!text) continue; // a check that does not apply to this match (e.g. entry_angle, football)
 
     const expected = quality.checks[check ?? ""]?.find(
       (r) => r.match_id === matchId && r.metric === metric,
     );
-    expect(expected, `${check} ${metric} ${matchId} missing from quality.json`).toBeTruthy();
-    expect(Number(text)).toBeCloseTo(expected!.value, 6);
+    if (!expected) {
+      // A check that does not apply to this match (e.g. entry_angle, football):
+      // quality.json has no such row, so the cell must stay blank.
+      const label = `${check} ${metric} ${matchId} has a value but not in quality.json`;
+      expect(text, label).toBeFalsy();
+      continue;
+    }
+    const label = `${check} ${metric} ${matchId} is blank but quality.json has a value`;
+    expect(text, label).toBeTruthy();
+    expect(Number(text)).toBeCloseTo(expected.value, 6);
     compared++;
   }
   console.log(`/quality: ${compared} table cells checked against quality.json`);

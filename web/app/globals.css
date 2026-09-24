@@ -39,6 +39,11 @@ body {
   padding: 1rem;
 }
 
+.bulletin {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
 .replay-placeholder {
   aspect-ratio: 960 / 560;
   background: #1d2327;
