@@ -30,6 +30,7 @@ from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.paths import data_root
 from tracklab.publish.possessions import run_publish_possessions
+from tracklab.publish.quality import run_publish_quality
 from tracklab.publish.stats import run_publish_stats
 from tracklab.quality.run import CHECKS, run_quality
 from tracklab.silver.orientation import SPORTS, run_orientation
@@ -155,6 +156,15 @@ def _cmd_publish_possessions(args: argparse.Namespace) -> int:
 
 def _cmd_publish_stats(args: argparse.Namespace) -> int:
     return run_publish_stats(data_dir=args.data_dir, out_dir=args.out_dir)
+
+
+def _cmd_publish_quality(args: argparse.Namespace) -> int:
+    return run_publish_quality(
+        data_dir=args.data_dir,
+        reports_dir=args.reports_dir,
+        out_dir=args.out_dir,
+        docs_dir=args.docs_dir,
+    )
 
 
 def _cmd_stats(args: argparse.Namespace) -> int:
@@ -370,6 +380,36 @@ def build_parser() -> argparse.ArgumentParser:
         help="Where stats.json goes (default: ../web/public/data).",
     )
     publish_stats.set_defaults(func=_cmd_publish_stats)
+
+    publish_quality = publish_sub.add_parser(
+        "quality",
+        help="Write quality.json and docs/bulletin.md from reports/quality_*.csv.",
+    )
+    publish_quality.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; the hook shot reads bronze and silver from it (default: data).",
+    )
+    publish_quality.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where quality_<check>.csv are read from (default: reports).",
+    )
+    publish_quality.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where quality.json goes (default: ../web/public/data).",
+    )
+    publish_quality.add_argument(
+        "--docs-dir",
+        type=Path,
+        default=Path("../docs"),
+        help="Where bulletin.md goes (default: ../docs, the repo's docs from pipeline/).",
+    )
+    publish_quality.set_defaults(func=_cmd_publish_quality)
 
     stats = subparsers.add_parser(
         "stats", help="Count what silver holds; write reports/stats_silver.csv."
