@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { formatBytes } from "../../lib/format";
 import { counterKey, layerDurations, type PlatformLayer } from "../../lib/platform";
 
@@ -25,23 +25,42 @@ function valueAt(final: number, t: number): number {
   return Math.round(final * t);
 }
 
+// `prefers-reduced-motion` read through `useSyncExternalStore` instead of a
+// `useEffect` + `setState`: the value is available during render itself (SSR
+// gets `false` from `getServerSnapshot`, the client's real value replaces it
+// before paint), so the reduced-motion display below is derived, never set,
+// and the animation effect only has to decide whether to start.
+function subscribeReducedMotion(onChange: () => void): () => void {
+  const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+function getReducedMotionSnapshot(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function getReducedMotionServerSnapshot(): boolean {
+  return false;
+}
+
+function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotionSnapshot,
+    getReducedMotionServerSnapshot,
+  );
+}
+
 export function Flow({ layers }: { layers: PlatformLayer[] }) {
+  const reduceMotion = usePrefersReducedMotion();
   const [motionState, setMotionState] = useState<MotionState>("idle");
   const [cycle, setCycle] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const [t, setT] = useState(0);
-  const layersRef = useRef(layers);
-  layersRef.current = layers;
 
   useEffect(() => {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduceMotion) {
-      setMotionState("done");
-      setActiveIndex(layers.length - 1);
-      setT(1);
-      setCycle(1);
-      return;
-    }
+    if (reduceMotion) return;
 
     let raf = 0;
     let holdTimer: ReturnType<typeof setTimeout> | undefined;
@@ -95,18 +114,29 @@ export function Flow({ layers }: { layers: PlatformLayer[] }) {
       cancelAnimationFrame(raf);
       if (holdTimer) clearTimeout(holdTimer);
     };
-  }, [layers]);
+  }, [reduceMotion, layers]);
 
-  const activeLayerName = layers[Math.min(activeIndex, layers.length - 1)].layer;
+  // Reduced motion never runs the effect above, so it is never state to set:
+  // the figure just renders as if the cycle had already finished.
+  const effectiveState: MotionState = reduceMotion ? "done" : motionState;
+  const effectiveIndex = reduceMotion ? layers.length - 1 : activeIndex;
+  const effectiveCycle = reduceMotion ? 1 : cycle;
+
+  const activeLayerName = layers[Math.min(effectiveIndex, layers.length - 1)].layer;
 
   return (
-    <figure className="platform" data-state={motionState} data-layer={activeLayerName} data-cycle={cycle}>
+    <figure
+      className="platform"
+      data-state={effectiveState}
+      data-layer={activeLayerName}
+      data-cycle={effectiveCycle}
+    >
       <div className="platform-layers">
         {layers.map((layer, index) => {
           const phase =
-            motionState === "done" || index < activeIndex
+            effectiveState === "done" || index < effectiveIndex
               ? "finished"
-              : motionState === "playing" && index === activeIndex
+              : effectiveState === "playing" && index === effectiveIndex
                 ? "active"
                 : "pending";
           const localT = phase === "finished" ? 1 : phase === "active" ? t : 0;
