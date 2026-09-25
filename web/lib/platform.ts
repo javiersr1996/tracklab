@@ -31,11 +31,60 @@ export interface PlatformRun {
   versions: Record<string, string>;
 }
 
+export interface PlatformStep {
+  step_key: string;
+  assets: string[];
+  group: string;
+  status: string;
+  duration_ms: number;
+  // Per-model dbt "Execution Duration" (task 32), keyed by asset key; only
+  // the `silver` step has entries, one per dbt model or seed it ran.
+  dbt_seconds: Record<string, number>;
+}
+
+export interface PlatformTable {
+  layer: LayerName;
+  sport: string | null;
+  table: string;
+  files: number;
+  rows: number;
+  bytes: number;
+}
+
+export interface PlatformMatch {
+  sport: string;
+  match_id: number;
+  raw_bytes: number;
+  raw_bytes_read: number;
+  bronze_tracking_rows: number;
+  silver_frames_rows: number;
+  silver_events_rows: number;
+  published_possessions: number;
+  published_bytes: number;
+}
+
+export interface PlatformSeasonFileItem {
+  sport: string;
+  role: string;
+  path: string;
+  bytes: number;
+}
+
+export interface PlatformSeasonFiles {
+  files: number;
+  bytes: number;
+  items: PlatformSeasonFileItem[];
+}
+
 export interface PlatformData {
   schema_version: number;
   title: string;
   run: PlatformRun;
   layers: PlatformLayer[];
+  steps: PlatformStep[];
+  tables: PlatformTable[];
+  matches: PlatformMatch[];
+  season_files: PlatformSeasonFiles;
 }
 
 export const PLATFORM = platformJson as PlatformData;
@@ -66,6 +115,50 @@ export interface LineageData {
 }
 
 export const LINEAGE = lineageJson as LineageData;
+
+export interface SilverModelRow {
+  key: string;
+  dbt_columns: string[];
+  dbt_tests: number;
+  rows: number | null;
+  bytes: number | null;
+  dbt_seconds: number | null;
+}
+
+// The per-silver-model table (task 36): the 12 dbt-owned nodes of the
+// `silver` lineage group (10 models, 2 seeds; task 33). `dbt_tests` and
+// `dbt_columns` come from `lineage.json`; `dbt_seconds` from the `silver`
+// step's own per-asset dbt timing. `rows`/`bytes` come from `platform.json`'s
+// `tables[]`, matched by stripping the `silver_`/`seed_` prefix from the
+// lineage key -- but only two of dbt's ten silver models (`frame_possession`,
+// `frames_attacking`) are views with no Parquet file of their own, and
+// neither seed writes one either, so those four rows get `null`, never an
+// invented 0.
+export function silverModelRows(
+  lineage: LineageData = LINEAGE,
+  platform: PlatformData = PLATFORM,
+): SilverModelRow[] {
+  const silverStep = platform.steps.find((s) => s.step_key === "silver");
+  const dbtSeconds = silverStep?.dbt_seconds ?? {};
+  const tableByName = new Map(
+    platform.tables.filter((t) => t.layer === "silver").map((t) => [t.table, t]),
+  );
+  return lineage.nodes
+    .filter((n) => n.group === "silver" && n.schema === "dbt")
+    .map((n) => {
+      const tableName = n.key.replace(/^(silver_|seed_)/, "");
+      const table = tableByName.get(tableName);
+      return {
+        key: n.key,
+        dbt_columns: n.dbt_columns ?? [],
+        dbt_tests: n.dbt_tests ?? 0,
+        rows: table?.rows ?? null,
+        bytes: table?.bytes ?? null,
+        dbt_seconds: dbtSeconds[n.key] ?? null,
+      };
+    })
+    .sort((a, b) => a.key.localeCompare(b.key));
+}
 
 // The four fields the flow animates per layer; `rows` is skipped where the
 // record has none (raw and publish count files, not table rows).
