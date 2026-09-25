@@ -94,7 +94,7 @@ class TableMeasure:
 
 
 Execute = Callable[
-    ["Sequence[AssetKey] | None"], tuple[dict[str, StepPlan], "Sequence[DagsterEvent]"]
+    ["Sequence[AssetKey] | None", Path], tuple[dict[str, StepPlan], "Sequence[DagsterEvent]"]
 ]
 
 
@@ -454,7 +454,7 @@ def run_build(
     sha = git_sha()
     started = datetime.now(UTC)
     clock = time.perf_counter()
-    plan, events = execute(keys)
+    plan, events = execute(keys, record_dir)
     wall_seconds = round(time.perf_counter() - clock, 3)
     finished = datetime.now(UTC)
 

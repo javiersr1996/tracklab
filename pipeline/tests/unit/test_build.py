@@ -57,8 +57,10 @@ def _failure(step_key: str) -> DagsterEvent:
 
 def _fake_execute(
     events: Sequence[DagsterEvent],
-) -> Callable[[Sequence[AssetKey] | None], tuple[dict[str, StepPlan], Sequence[DagsterEvent]]]:
-    return lambda keys: (PLAN, events)
+) -> Callable[
+    [Sequence[AssetKey] | None, Path], tuple[dict[str, StepPlan], Sequence[DagsterEvent]]
+]:
+    return lambda keys, record_dir: (PLAN, events)
 
 
 def _only_record(record_dir: Path) -> dict[str, object]:
