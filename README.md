@@ -76,6 +76,20 @@ On the fixtures only silver is materialized: the whole graph would ingest the fu
 rebuild bronze over the slice. Select with groups rather than a bare `*`, which click expands
 against the working directory on Windows.
 
+## Platform
+
+The pipeline as a product: [`/platform`](https://tracklab-sable.vercel.app/platform) draws the
+Dagster asset graph and animates the five layers with the numbers the latest `tracklab build`
+actually produced. Its H1 is the title `uv run tracklab publish platform` prints, from
+`web/public/data/platform.json`:
+
+```
+title: 2.3 GB in, 1.2 MB out
+```
+
+`uv run dagster asset list -m tracklab.dagster_defs` lists `66` assets, the graph
+`web/public/data/lineage.json` exports for the page.
+
 ## Data quality
 
 `uv run tracklab quality` runs the checks of `pipeline/src/tracklab/quality/` on silver (and
@@ -97,7 +111,7 @@ orientation probe, silver, the published JSON and every contract test.
 git clone https://github.com/javiersr1996/tracklab.git && cd tracklab/pipeline
 uv sync --locked
 uv run dbt parse --project-dir dbt --profiles-dir dbt
-uv run dagster job execute -m tracklab.dagster_defs -j build
+uv run tracklab build
 uv run pytest -q
 ```
 <!-- clean-clone:end -->
