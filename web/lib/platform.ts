@@ -88,7 +88,6 @@ export interface PlatformData {
 }
 
 export const PLATFORM = platformJson as PlatformData;
-export const LAYERS = PLATFORM.layers;
 
 export interface LineageNode {
   key: string;
