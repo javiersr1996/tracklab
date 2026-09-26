@@ -2,10 +2,10 @@
   "schema_version": 1,
   "title": "2.3 GB in, 1.2 MB out",
   "run": {
-    "git_sha": "052928ed847b0ebc663d1779d7d99df38aac0851",
-    "started_utc": "2026-09-24T17:18:14+00:00",
-    "finished_utc": "2026-09-24T17:26:47+00:00",
-    "wall_seconds": 512.747,
+    "git_sha": "e0961e8875bd24c34623f5b50278edef87e49d8a",
+    "started_utc": "2026-09-26T16:33:35+00:00",
+    "finished_utc": "2026-09-26T16:41:39+00:00",
+    "wall_seconds": 484.529,
     "host": {
       "system": "Windows",
       "cpus": 22,
@@ -25,8 +25,8 @@
       "files": 120,
       "rows": null,
       "bytes": 2316182304,
-      "seconds": 6.8,
-      "seconds_sum": 9.0,
+      "seconds": 6.0,
+      "seconds_sum": 7.0,
       "bytes_pinned": 2316182304,
       "bytes_read": 3736408087,
       "downloaded": 0,
@@ -37,33 +37,33 @@
       "files": 390,
       "rows": 31358054,
       "bytes": 445275560,
-      "seconds": 144.5,
-      "seconds_sum": 371.7
+      "seconds": 145.3,
+      "seconds_sum": 363.4
     },
     {
       "layer": "silver",
       "files": 66,
       "rows": 29521069,
-      "bytes": 251118846,
-      "seconds": 150.8,
-      "seconds_sum": 150.8
+      "bytes": 251125051,
+      "seconds": 141.7,
+      "seconds_sum": 141.7
     },
     {
       "layer": "quality",
       "files": 6,
       "rows": 910,
       "bytes": 57648,
-      "seconds": 119.2,
-      "seconds_sum": 199.7
+      "seconds": 116.6,
+      "seconds_sum": 192.6
     },
     {
       "layer": "publish",
       "files": 15,
       "rows": null,
       "bytes": 1230786,
-      "seconds": 8.1,
-      "seconds_sum": 15.3,
-      "note": "measured by `tracklab build` before `tracklab publish lineage` or `tracklab publish platform` wrote lineage.json or platform.json, so neither is counted here (decision 1: a live rescan of this directory would make the title depend on this file's own size)"
+      "seconds": 7.6,
+      "seconds_sum": 14.1,
+      "note": "measured by `tracklab build`, without lineage.json and platform.json: both are written from the build record, so counting them would make the title depend on its own previous value (decision 1)"
     }
   ],
   "steps": [
@@ -74,7 +74,7 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 2137.2393000638112,
+      "duration_ms": 980.6351000443101,
       "dbt_seconds": {}
     },
     {
@@ -84,7 +84,7 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 6845.907800015993,
+      "duration_ms": 5971.933200024068,
       "dbt_seconds": {}
     },
     {
@@ -96,7 +96,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 5830.792800057679,
+      "duration_ms": 6030.494600068778,
       "dbt_seconds": {}
     },
     {
@@ -125,7 +125,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 36164.77799997665,
+      "duration_ms": 34678.54300001636,
       "dbt_seconds": {}
     },
     {
@@ -138,7 +138,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 1998.3995000366122,
+      "duration_ms": 2984.333600034006,
       "dbt_seconds": {}
     },
     {
@@ -149,7 +149,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 144492.4651000183,
+      "duration_ms": 145258.51239997428,
       "dbt_seconds": {}
     },
     {
@@ -161,7 +161,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 3693.3802000712603,
+      "duration_ms": 3904.342200024985,
       "dbt_seconds": {}
     },
     {
@@ -172,7 +172,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 40391.051599988714,
+      "duration_ms": 37643.38360005058,
       "dbt_seconds": {}
     },
     {
@@ -185,7 +185,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 5290.378000005148,
+      "duration_ms": 4835.493399994448,
       "dbt_seconds": {}
     },
     {
@@ -196,7 +196,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 124042.10380010772,
+      "duration_ms": 118152.53660001326,
       "dbt_seconds": {}
     },
     {
@@ -208,7 +208,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 9756.804600008763,
+      "duration_ms": 9919.910800061189,
       "dbt_seconds": {}
     },
     {
@@ -218,7 +218,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 34919.38219999429,
+      "duration_ms": 37179.49379992206,
       "dbt_seconds": {}
     },
     {
@@ -228,7 +228,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 485.7245999155566,
+      "duration_ms": 632.8552999766544,
       "dbt_seconds": {}
     },
     {
@@ -249,20 +249,20 @@
       ],
       "group": "silver",
       "status": "success",
-      "duration_ms": 150849.07469991595,
+      "duration_ms": 141721.95969999302,
       "dbt_seconds": {
-        "seed_event_type_map": 0.227846,
-        "seed_surface_spec": 0.225889,
-        "silver_dim_entity": 0.372086,
-        "silver_dim_match": 0.616817,
-        "silver_dim_period": 0.533783,
-        "silver_dim_sport": 0.374112,
-        "silver_dim_team": 0.561041,
-        "silver_dim_team_period": 0.425917,
-        "silver_events": 7.308475,
-        "silver_frame_possession": 0.112809,
-        "silver_frames": 69.038727,
-        "silver_frames_attacking": 0.122059
+        "seed_event_type_map": 0.334651,
+        "seed_surface_spec": 0.331714,
+        "silver_dim_entity": 0.618482,
+        "silver_dim_match": 0.454662,
+        "silver_dim_period": 0.828687,
+        "silver_dim_sport": 0.569807,
+        "silver_dim_team": 0.807315,
+        "silver_dim_team_period": 0.724951,
+        "silver_events": 7.282,
+        "silver_frame_possession": 0.12384,
+        "silver_frames": 57.061429,
+        "silver_frames_attacking": 0.090434
       }
     },
     {
@@ -272,7 +272,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 8071.335999993607,
+      "duration_ms": 7649.74139991682,
       "dbt_seconds": {}
     },
     {
@@ -282,7 +282,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 2262.583800009452,
+      "duration_ms": 2101.7253999598324,
       "dbt_seconds": {}
     },
     {
@@ -292,7 +292,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 20970.16450006049,
+      "duration_ms": 18050.182499922812,
       "dbt_seconds": {}
     },
     {
@@ -302,7 +302,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 21876.543099991977,
+      "duration_ms": 18105.70259997621,
       "dbt_seconds": {}
     },
     {
@@ -312,7 +312,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 119209.17909999844,
+      "duration_ms": 116569.85890003853,
       "dbt_seconds": {}
     },
     {
@@ -322,7 +322,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 758.5276999743655,
+      "duration_ms": 707.1647000266239,
       "dbt_seconds": {}
     },
     {
@@ -332,7 +332,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 6503.897399990819,
+      "duration_ms": 5756.717600044794,
       "dbt_seconds": {}
     }
   ],
@@ -671,7 +671,7 @@
       "table": "dim_entity",
       "files": 1,
       "rows": 983,
-      "bytes": 25551
+      "bytes": 25660
     },
     {
       "layer": "silver",
@@ -679,7 +679,7 @@
       "table": "dim_match",
       "files": 1,
       "rows": 30,
-      "bytes": 4688
+      "bytes": 4708
     },
     {
       "layer": "silver",
@@ -687,7 +687,7 @@
       "table": "dim_period",
       "files": 1,
       "rows": 81,
-      "bytes": 3151
+      "bytes": 3180
     },
     {
       "layer": "silver",
@@ -703,7 +703,7 @@
       "table": "dim_team",
       "files": 1,
       "rows": 30,
-      "bytes": 1944
+      "bytes": 1951
     },
     {
       "layer": "silver",
@@ -727,7 +727,7 @@
       "table": "frames",
       "files": 30,
       "rows": 29340593,
-      "bytes": 244094129
+      "bytes": 244100169
     }
   ],
   "matches": [
@@ -1065,66 +1065,77 @@
   "season_files": {
     "files": 10,
     "bytes": 4097461,
+    "bytes_read": 12255757,
     "items": [
       {
         "sport": "basketball",
         "role": "aggregate",
         "path": "data/aggregates/acb_drivesaggregates_20252026.csv",
-        "bytes": 162072
+        "bytes": 162072,
+        "bytes_read": 162072
       },
       {
         "sport": "basketball",
         "role": "aggregate",
         "path": "data/aggregates/acb_picksaggregates_20252026.csv",
-        "bytes": 839870
+        "bytes": 839870,
+        "bytes_read": 839870
       },
       {
         "sport": "basketball",
         "role": "aggregate",
         "path": "data/aggregates/acb_shotsaggregates_20252026.csv",
-        "bytes": 601318
+        "bytes": 601318,
+        "bytes_read": 601318
       },
       {
         "sport": "basketball",
         "role": "matches",
         "path": "data/matches.json",
-        "bytes": 4324
+        "bytes": 4324,
+        "bytes_read": 4324
       },
       {
         "sport": "basketball",
         "role": "player_aliases",
         "path": "data/player_id_aliases.csv",
-        "bytes": 1062
+        "bytes": 1062,
+        "bytes_read": 1062
       },
       {
         "sport": "football",
         "role": "aggregate",
         "path": "data/aggregates/aus1league_obraggregates_20242025.csv",
-        "bytes": 263921
+        "bytes": 263921,
+        "bytes_read": 263921
       },
       {
         "sport": "football",
         "role": "aggregate",
         "path": "data/aggregates/aus1league_passingaggregates_20242025.csv",
-        "bytes": 124039
+        "bytes": 124039,
+        "bytes_read": 124039
       },
       {
         "sport": "football",
         "role": "aggregate",
         "path": "data/aggregates/aus1league_physicalaggregates_20242025.csv",
-        "bytes": 167312
+        "bytes": 167312,
+        "bytes_read": 167312
       },
       {
         "sport": "football",
         "role": "bodypose_sample",
         "path": "data/bodypose/sample_1925299_phase406.jsonl.gz",
-        "bytes": 1926895
+        "bytes": 1926895,
+        "bytes_read": 10085191
       },
       {
         "sport": "football",
         "role": "matches",
         "path": "data/matches.json",
-        "bytes": 6648
+        "bytes": 6648,
+        "bytes_read": 6648
       }
     ]
   }
