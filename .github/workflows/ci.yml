@@ -30,11 +30,11 @@ jobs:
       # silver through `tracklab build` (task 32), so the same recorded run that CI checks
       # against `lineage.json` also builds the asset graph (task 15) on every push.
       # `*` would ingest and rebuild bronze over the fixture slice: silver is what hangs from it.
-      # --record-dir under the fixtures tree: the default (pipeline/data/build) would create
-      # pipeline/data/, which flips the contract tests' "no real bundle" skip (tests/publish/)
-      # and fails them against the fixture-only rows (found by reproducing this job locally).
+      # The record goes to $TRACKLAB_DATA_ROOT/build: a record under pipeline/data/ would flip
+      # the contract tests' "no real bundle" skip (tests/publish/) and fail them against the
+      # fixture-only rows (found by reproducing this job locally).
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
-      - run: uv run tracklab build --select "group:silver" --record-dir tests/fixtures/data/build
+      - run: uv run tracklab build --select "group:silver"
       - run: uv run tracklab publish lineage --check
       - run: uv run pytest -q
 

@@ -163,8 +163,6 @@ export function silverModelRows(
 // record has none (raw and publish count files, not table rows).
 export type CounterField = "files" | "rows" | "bytes" | "seconds";
 
-export const COUNTER_FIELDS: CounterField[] = ["files", "rows", "bytes", "seconds"];
-
 export function counterKey(layer: LayerName, field: CounterField): string {
   return `${layer}.${field}`;
 }

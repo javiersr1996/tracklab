@@ -253,6 +253,29 @@ def test_raw_bytes_plus_season_files_reconciles_to_bytes_pinned() -> None:
     assert reconciled == record["disk"]["raw"]["bytes_pinned"]
 
 
+def test_raw_bytes_read_plus_season_files_reconciles_to_the_raw_bytes_read() -> None:
+    record = _record()
+    matches = matches_from_record(record, {"possessions": []})
+    season = season_files_from_record(record)
+    assert season["bytes_read"] == 120
+    reconciled = sum(m["raw_bytes_read"] for m in matches) + season["bytes_read"]
+    assert reconciled == record["disk"]["raw"]["bytes_read"]
+
+
+def test_a_record_whose_disk_measure_failed_is_refused(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    record = {**_record(), "disk": {"error": "ArrowInvalid: truncated"}}
+    path = tmp_path / "20260924T170000Z_abc1234.json"
+    path.write_text(json.dumps(record), encoding="utf-8")
+
+    code = run_publish_platform(record_path=path, record_dir=tmp_path, out_dir=tmp_path / "out")
+
+    assert code == 1
+    assert "ArrowInvalid: truncated" in capsys.readouterr().out
+    assert not (tmp_path / "out").exists()
+
+
 def test_a_season_bronze_and_silver_table_never_shows_up_in_any_match() -> None:
     """`bronze.matches` (`data.parquet`, no per-match filename) and
     `silver.dim_match` (`data.parquet`, no `native_match_id=` partition) are

@@ -1,7 +1,7 @@
 """`tracklab publish platform`: `web/public/data/platform.json`, the manifest
 `/platform` (task 35) draws its layers, tables and per-match numbers from
 (task 34). Nothing here is measured a second time: every figure comes from
-the newest `tracklab build` record under `data/build/` (or `--run PATH`) --
+the newest `tracklab build` record under `<data root>/build/` (or `--run PATH`) --
 the same JSON task 32 writes, rows from Parquet footers and bytes from
 `stat` -- plus `web/public/data/index.json`, the six curated possessions'
 own index (task 17), for `matches[].published_*`.
@@ -13,17 +13,19 @@ Two decisions, not forced.
    reading of "bytes out" -- rescan `web/public/data` right now -- cannot
    work: `platform.json` itself lives in that directory, so its size would
    depend on the title string, which depends on its size. `layers[].publish`
-   uses `disk.publish` from the build record instead, a measurement
-   `tracklab build` already took *before* `tracklab publish lineage` or this
-   command ever wrote `lineage.json` or `platform.json` -- so both are
-   excluded structurally, by when the measurement happened, not by a filename
-   filter that could rot. The `note` on that layer says so, so a reader of
-   the JSON does not have to already know it.
+   uses `disk.publish` from the build record instead, and `tracklab build`
+   leaves `lineage.json` and this file out of that measurement by name
+   (`build.FROM_RECORD`): both are written from a record, so counting them
+   would make each title depend on the previous run's. Excluding them by
+   when the measurement happened held only for the first record; every
+   later one found them on disk. The `note` on that layer says so, so a
+   reader of the JSON does not have to already know it.
 2. **Files with no match.** `season_files` holds every raw manifest entry
    whose `match_id` is `None` (season aggregates, `matches.json`, the
    basketball player-alias table, the football body-pose sample):
    `sum(matches[].raw_bytes) + season_files.bytes == layers.raw.bytes_pinned`
-   is the reconciliation a test proves. `bronze/common/orientation` and the
+   is the reconciliation a test proves, and the same holds for
+   `bytes_read` against `layers.raw.bytes_read`. `bronze/common/orientation` and the
    season-only bronze tables (`matches`, `player_id_aliases`,
    `aggregates_*`) are never attributed to a match for the same reason, but
    structurally rather than by a second exclusion list: `matches[]` only
@@ -156,10 +158,9 @@ def layers_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
             entry["verified"] = raw["verified"]
         if layer == "publish":
             entry["note"] = (
-                "measured by `tracklab build` before `tracklab publish lineage` or "
-                "`tracklab publish platform` wrote lineage.json or platform.json, so "
-                "neither is counted here (decision 1: a live rescan of this directory "
-                "would make the title depend on this file's own size)"
+                "measured by `tracklab build`, without lineage.json and platform.json: "
+                "both are written from the build record, so counting them would make "
+                "the title depend on its own previous value (decision 1)"
             )
         layers.append(entry)
     return layers
@@ -190,13 +191,24 @@ def tables_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
 
 def season_files_from_record(record: dict[str, Any]) -> dict[str, Any]:
     items = [
-        {"sport": source["sport"], "role": f["role"], "path": f["path"], "bytes": f["bytes"]}
+        {
+            "sport": source["sport"],
+            "role": f["role"],
+            "path": f["path"],
+            "bytes": f["bytes"],
+            "bytes_read": f["bytes_read"] or 0,
+        }
         for source in record["disk"]["raw"]["sources"]
         for f in source["manifest"]
         if f["match_id"] is None
     ]
     items.sort(key=lambda i: (i["sport"], i["path"]))
-    return {"files": len(items), "bytes": sum(i["bytes"] for i in items), "items": items}
+    return {
+        "files": len(items),
+        "bytes": sum(i["bytes"] for i in items),
+        "bytes_read": sum(i["bytes_read"] for i in items),
+        "items": items,
+    }
 
 
 # --- matches: raw bytes from the manifest, bronze from the filename, silver from the
@@ -413,6 +425,11 @@ def run_publish_platform(
 ) -> int:
     path = record_path or latest_record(record_dir)
     record = load_json(path)
+    if "error" in record["disk"]:
+        print(
+            f"publish platform: record {path.name} has no disk measure: {record['disk']['error']}"
+        )
+        return 1
     index_path = out_dir / INDEX_JSON
     index_payload = load_json(index_path) if index_path.is_file() else {"possessions": []}
     payload = platform_from_record(record, index_payload)

@@ -29,3 +29,13 @@ def test_fmt_scales_through_every_unit() -> None:
     assert fmt(500_000) == "500.0 KB"
     assert fmt(500_000_000) == "500.0 MB"
     assert fmt(500_000_000_000) == "500.0 GB"
+
+
+def test_fmt_picks_the_unit_after_rounding() -> None:
+    assert fmt(999_949) == "999.9 KB"
+    assert fmt(999_950) == "1.0 MB"
+    assert fmt(999_950_000) == "1.0 GB"
+
+
+def test_fmt_rounds_an_exact_tie_up_like_javascript() -> None:
+    assert fmt(1250) == "1.3 KB"

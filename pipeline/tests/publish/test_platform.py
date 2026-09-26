@@ -15,13 +15,13 @@ from typing import Any
 
 import pytest
 
-from tracklab.build import RECORD_DIR
 from tracklab.publish.format import fmt
 from tracklab.publish.platform import latest_record, run_publish_platform
 
 PIPELINE = Path(__file__).resolve().parents[2]
 REPO_ROOT = PIPELINE.parent
 DATA = PIPELINE / "data"
+RECORD_DIR = DATA / "build"
 PLATFORM_JSON = REPO_ROOT / "web" / "public" / "data" / "platform.json"
 STATS_JSON = REPO_ROOT / "web" / "public" / "data" / "stats.json"
 MAX_BYTES = 60_000
@@ -62,6 +62,16 @@ def test_raw_bytes_over_matches_plus_season_files_is_bytes_pinned() -> None:
     raw_layer = next(layer for layer in payload["layers"] if layer["layer"] == "raw")
     print(f"matches+season_files={total} bytes_pinned={raw_layer['bytes_pinned']}")
     assert total == raw_layer["bytes_pinned"]
+
+
+def test_raw_bytes_read_over_matches_plus_season_files_is_the_layers() -> None:
+    payload = _payload()
+    total = (
+        sum(m["raw_bytes_read"] for m in payload["matches"]) + payload["season_files"]["bytes_read"]
+    )
+    raw_layer = next(layer for layer in payload["layers"] if layer["layer"] == "raw")
+    print(f"matches+season_files read={total} layer bytes_read={raw_layer['bytes_read']}")
+    assert total == raw_layer["bytes_read"]
 
 
 def test_thirty_matches_each_with_a_sport_and_a_match_id() -> None:

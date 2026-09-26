@@ -2,8 +2,11 @@
 
 What the record must get right and the real run cannot show on purpose: a step
 that writes three assets is charged its duration once, a failed step is written
-down and the command exits 1, rows come from the Parquet footers, a `.gz` is
-counted decompressed, and the receipt's `source_path` never reaches the record.
+down and the command exits 1, a step the failure abandoned is written down too,
+rows come from the Parquet footers, a `.gz` is counted decompressed, the
+receipt's `source_path` never reaches the record, the files written from a
+record are not counted in the next one, and a measurement that raises still
+leaves a record.
 Running the real job is the command's own acceptance in tasks/todo.md.
 """
 
@@ -22,9 +25,10 @@ from dagster._core.events import StepMaterializationData
 from dagster._core.execution.plan.objects import StepFailureData, StepSuccessData
 
 from tracklab.build import (
-    RECORD_DIR,
     StepPlan,
     bytes_read,
+    default_record_dir,
+    measure_publish,
     measure_table,
     run_build,
     steps_from_events,
@@ -56,11 +60,14 @@ def _failure(step_key: str) -> DagsterEvent:
 
 
 def _fake_execute(
-    events: Sequence[DagsterEvent],
+    events: Sequence[DagsterEvent], plan: dict[str, StepPlan] = PLAN
 ) -> Callable[
     [Sequence[AssetKey] | None, Path], tuple[dict[str, StepPlan], Sequence[DagsterEvent]]
 ]:
-    return lambda keys, record_dir: (PLAN, events)
+    return lambda keys, record_dir: (plan, events)
+
+
+RAW_ONLY = {"raw_x": PLAN["raw_x"]}
 
 
 def _only_record(record_dir: Path) -> dict[str, object]:
@@ -78,7 +85,7 @@ def test_a_step_of_three_assets_is_charged_its_duration_once() -> None:
         _success("bronze_x", 1500.0),
     ]
 
-    (step,) = steps_from_events(events, PLAN)
+    (step,) = steps_from_events(events, {"bronze_x": PLAN["bronze_x"]})
 
     assert step.assets == ["bronze_x_a", "bronze_x_b", "bronze_x_c"]
     assert step.group == "bronze"
@@ -94,7 +101,7 @@ def test_dbt_seconds_ride_on_the_materialization_metadata() -> None:
         _success("silver", 116200.0),
     ]
 
-    (step,) = steps_from_events(events, PLAN)
+    (step,) = steps_from_events(events, {"silver": PLAN["silver"]})
 
     assert step.duration_ms == 116200.0
     assert step.dbt_seconds == {"silver_events": 4.25, "silver_frames": 67.9}
@@ -107,7 +114,8 @@ def test_a_failed_step_is_written_down_and_the_command_exits_1(
         _success("raw_x", 100.0),
         _event("STEP_START", "bronze_x"),
         _failure("bronze_x"),
-        _event("STEP_SKIPPED", "silver"),
+        # No event for "silver": the multiprocess executor abandons a step whose
+        # upstream failed without emitting STEP_SKIPPED.
     ]
 
     code = run_build(
@@ -126,7 +134,7 @@ def test_a_failed_step_is_written_down_and_the_command_exits_1(
     assert [(s["step_key"], s["status"], s["duration_ms"]) for s in steps] == [
         ("raw_x", "success", 100.0),
         ("bronze_x", "failure", None),
-        ("silver", "skipped", None),
+        ("silver", "not_run", None),
     ]
     out = capsys.readouterr().out
     assert "bronze_x  failure" in out
@@ -189,7 +197,7 @@ def test_the_record_reads_the_receipt_but_never_writes_source_path(
         None,
         tmp_path / "build",
         data,
-        execute=_fake_execute([_success("raw_x", 1.0)]),
+        execute=_fake_execute([_success("raw_x", 1.0)], RAW_ONLY),
         reports_dir=tmp_path / "reports",
         web_data_dir=tmp_path / "web",
     )
@@ -204,13 +212,55 @@ def test_the_record_reads_the_receipt_but_never_writes_source_path(
     assert raw["files"] == 120 and raw["files_read"] == 0
 
 
+def test_publish_leaves_out_the_files_written_from_a_record(tmp_path: Path) -> None:
+    for name, size in (("stats.json", 10), ("lineage.json", 200), ("platform.json", 300)):
+        (tmp_path / name).write_bytes(b"x" * size)
+    (tmp_path / "possessions").mkdir()
+    (tmp_path / "possessions" / "platform.json").write_bytes(b"x" * 7)
+
+    publish = measure_publish(tmp_path)
+
+    assert [f["path"] for f in publish["json"]] == ["stats.json"]
+    assert (publish["files"], publish["bytes"]) == (1, 10)
+
+
+def test_a_truncated_parquet_still_leaves_a_record_and_exits_1(tmp_path: Path) -> None:
+    table = tmp_path / "data" / "silver" / "frames"
+    table.mkdir(parents=True)
+    pq.write_table(pa.table({"x": [1, 2, 3]}), table / "a.parquet")
+    (table / "a.parquet").write_bytes((table / "a.parquet").read_bytes()[:20])
+
+    code = run_build(
+        None,
+        tmp_path / "build",
+        tmp_path / "data",
+        execute=_fake_execute([_success("raw_x", 1.0)], RAW_ONLY),
+        reports_dir=tmp_path / "reports",
+        web_data_dir=tmp_path / "web",
+    )
+
+    assert code == 1
+    record = _only_record(tmp_path / "build")
+    steps = record["steps"]
+    assert isinstance(steps, list) and steps[0]["status"] == "success"
+    disk = record["disk"]
+    assert isinstance(disk, dict) and list(disk) == ["error"]
+
+
+def test_the_record_dir_follows_the_data_root(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TRACKLAB_DATA_ROOT", "tests/fixtures/data")
+    assert default_record_dir() == Path("tests/fixtures/data/build")
+    monkeypatch.delenv("TRACKLAB_DATA_ROOT")
+    assert default_record_dir() == Path("data/build")
+
+
 @pytest.mark.skipif(
-    not any(RECORD_DIR.glob("*.json")), reason="no record under data/build; run `tracklab build`"
+    not any(default_record_dir().glob("*.json")), reason="no build record; run `tracklab build`"
 )
 def test_the_newest_real_record_names_no_machine(
     assert_no_local_traces: Callable[[object], None],
 ) -> None:
-    newest = sorted(RECORD_DIR.glob("*.json"))[-1]
+    newest = sorted(default_record_dir().glob("*.json"))[-1]
     record = json.loads(newest.read_text(encoding="utf-8"))
     print(f"{newest.name}: {len(record['steps'])} steps, wall {record['wall_seconds']} s")
     assert_no_local_traces(record)

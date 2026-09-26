@@ -22,7 +22,7 @@ from tracklab.bronze.football.aggregates import build_aggregates as build_footba
 from tracklab.bronze.football.events import build_events as build_football_events
 from tracklab.bronze.football.meta import build_meta as build_football_meta
 from tracklab.bronze.football.tracking import build_tracking as build_football_tracking
-from tracklab.build import RECORD_DIR, run_build
+from tracklab.build import default_record_dir, run_build
 from tracklab.fixtures import run_fixtures
 from tracklab.formats.basketball import freeze_basketball
 from tracklab.formats.football_report import freeze_football
@@ -428,13 +428,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--run",
         type=Path,
         default=None,
-        help="A specific data/build/<utc>_<sha7>.json record (default: the newest one).",
+        help="A specific build/<utc>_<sha7>.json record (default: the newest one).",
     )
     publish_platform.add_argument(
         "--record-dir",
         type=Path,
-        default=RECORD_DIR,
-        help="Where to look for the newest record when --run is not given (default: data/build).",
+        default=default_record_dir(),
+        help="Where to look for the newest record when --run is not given "
+        "(default: $TRACKLAB_DATA_ROOT/build, else data/build).",
     )
     publish_platform.add_argument(
         "--out-dir",
@@ -548,8 +549,9 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument(
         "--record-dir",
         type=Path,
-        default=RECORD_DIR,
-        help="Where <utc>_<sha7>.json goes (default: data/build, ignored by git).",
+        default=default_record_dir(),
+        help="Where <utc>_<sha7>.json goes "
+        "(default: $TRACKLAB_DATA_ROOT/build, else data/build; ignored by git).",
     )
     build.set_defaults(func=_cmd_build)
 

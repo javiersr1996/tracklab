@@ -73,3 +73,16 @@ def test_a_typed_figure_is_caught() -> None:
     ]
     assert "9126745" not in artefact_numbers()
     assert "12" not in artefact_numbers()
+
+
+def test_readme_title_and_asset_count_are_the_artefacts() -> None:
+    """The two figures the README quotes inside code, where the test above cannot
+    see them: the title `tracklab publish platform` prints and the asset count."""
+    readme = (REPO / "README.md").read_text("utf-8")
+    platform = json.loads((DATA_DIR / "platform.json").read_text("utf-8"))
+    lineage = json.loads((DATA_DIR / "lineage.json").read_text("utf-8"))
+    title = re.search(r"^title: (.+)$", readme, flags=re.M)
+    assets = re.search(r"lists `(\d+)` assets", readme)
+    assert title and assets, "the README no longer quotes the title or the asset count"
+    assert title.group(1) == platform["title"]
+    assert int(assets.group(1)) == sum(1 for n in lineage["nodes"] if n["kind"] == "asset")

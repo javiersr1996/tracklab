@@ -7,14 +7,15 @@ export function pluralize(count: number, singular: string, plural = `${singular}
 // Mirrors `pipeline/src/tracklab/publish/format.py::fmt` (task 34) case for
 // case, so the title `tracklab publish platform` prints and this function's
 // own output never diverge: base 10 (1000), one decimal past bytes,
-// B/KB/MB/GB/TB.
+// B/KB/MB/GB/TB. The unit is chosen on the rounded value, so 999950 is
+// "1.0 MB", never "1000.0 KB".
 const BYTE_UNITS = ["B", "KB", "MB", "GB", "TB"] as const;
 
 export function formatBytes(n: number): string {
   if (n < 1000) return `${n} B`;
   let value = n;
   let unit = 0;
-  while (value >= 1000 && unit < BYTE_UNITS.length - 1) {
+  while (Number(value.toFixed(1)) >= 1000 && unit < BYTE_UNITS.length - 1) {
     value /= 1000;
     unit += 1;
   }

@@ -128,7 +128,9 @@ export function Flow({ layers }: { layers: PlatformLayer[] }) {
     <figure
       className="platform"
       data-state={effectiveState}
-      data-layer={activeLayerName}
+      // No layer while idle: nothing is playing yet, and a "raw" here would read
+      // as the first step of a sequence that has not started.
+      data-layer={effectiveState === "idle" ? undefined : activeLayerName}
       data-cycle={effectiveCycle}
     >
       <div className="platform-layers">

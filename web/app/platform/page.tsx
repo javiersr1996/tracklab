@@ -1,5 +1,6 @@
 import { Flow } from "../../components/platform/Flow";
 import { Lineage } from "../../components/platform/Lineage";
+import { pluralize } from "../../lib/format";
 import { LINEAGE, PLATFORM, silverModelRows } from "../../lib/platform";
 
 const REPO = "https://github.com/javiersr1996/tracklab";
@@ -28,6 +29,7 @@ export default function PlatformPage() {
   const { run, matches, season_files: seasonFiles } = PLATFORM;
   const modelRows = silverModelRows();
   const seedCount = modelRows.filter((r) => r.key.startsWith("seed_")).length;
+  const viewCount = modelRows.filter((r) => r.rows === null && !r.key.startsWith("seed_")).length;
 
   return (
     <main className="page">
@@ -42,7 +44,7 @@ export default function PlatformPage() {
       <footer className="platform-footer">
         <p>
           Run {run.git_sha} on {run.started_utc.slice(0, 10)}, {run.host.system},{" "}
-          {run.host.cpus} CPUs, {run.host.ram_gb} GB RAM, wall clock {run.wall_seconds}s: one run
+          {run.host.cpus} CPUs, {run.host.ram_gb} GiB RAM, wall clock {run.wall_seconds}s: one run
           on one machine; steps ran in parallel, so per-step seconds do not add up to the wall
           clock.
         </p>
@@ -51,14 +53,14 @@ export default function PlatformPage() {
       <h2>Lineage</h2>
       <p>
         The Dagster asset graph (<a href="/data/lineage.json">lineage.json</a>), {LINEAGE.nodes.length}{" "}
-        nodes and {LINEAGE.edges.length} edges, exported once per push and checked byte for byte in
-        CI. Hover or click a node to trace its upstream and downstream dependencies.
+        nodes and {LINEAGE.edges.length} edges, exported by <code>tracklab publish lineage</code>{" "}
+        and checked byte for byte against the graph on every CI run. Hover or click a node to trace its upstream and downstream dependencies.
       </p>
       <Lineage lineage={LINEAGE} />
 
       <h2>Bytes and rows, per match</h2>
       <p>
-        The 30 matches behind every figure above, read from{" "}
+        The {matches.length} matches behind every figure above, read from{" "}
         <a href="/data/platform.json">platform.json</a>&apos;s own <code>matches[]</code>; the
         season-level files (aggregates, <code>matches.json</code>, player aliases, the body-pose
         sample) are not attributed to any one match and are totalled separately below.
@@ -99,8 +101,9 @@ export default function PlatformPage() {
         <a href="/data/lineage.json">lineage.json</a>&apos;s own read of{" "}
         <code>dbt/target/manifest.json</code>, rows and bytes from{" "}
         <a href="/data/platform.json">platform.json</a>&apos;s <code>tables[]</code> where the
-        model writes an actual Parquet file (two views and both seeds don&apos;t, so those cells
-        stay blank rather than showing an invented 0). Column types and names are documented in{" "}
+        model writes an actual Parquet file ({pluralize(viewCount, "view")} and{" "}
+        {pluralize(seedCount, "seed")} don&apos;t, so those cells stay blank rather than showing an
+        invented 0). Column types and names are documented in{" "}
         <a href={`${REPO}/blob/main/docs/schema.md`}>docs/schema.md</a> (private repository).
       </p>
       <div className="table-scroll">

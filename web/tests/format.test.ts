@@ -33,4 +33,14 @@ describe("formatBytes", () => {
   it("switches unit at the 1000 boundary", () => {
     expect(formatBytes(1000)).toBe("1.0 KB");
   });
+
+  it("picks the unit after rounding", () => {
+    expect(formatBytes(999_949)).toBe("999.9 KB");
+    expect(formatBytes(999_950)).toBe("1.0 MB");
+    expect(formatBytes(999_950_000)).toBe("1.0 GB");
+  });
+
+  it("rounds an exact tie up, like Python's fmt", () => {
+    expect(formatBytes(1250)).toBe("1.3 KB");
+  });
 });

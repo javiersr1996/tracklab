@@ -9,16 +9,22 @@ installed Dagster refuses that with a multiprocess executor (the child
 processes need storage they can open), so the instance is `local_temp` under
 the record directory instead, gone when the command exits.
 
-The record (`data/build/<utc>_<sha7>.json`, ignored by git) holds what only the
+The record (`<data root>/build/<utc>_<sha7>.json`, ignored by git) holds what only the
 run itself can know: the duration of each step from `StepSuccessData`, the
 seconds per dbt model from dagster-dbt's `Execution Duration`, and a measure
 of the disk after the run (raw, bronze, silver, quality, publish). Steps run in
-parallel, so their durations are reported per step and never summed. Row
+parallel, so their durations are reported per step and never summed. A step
+the plan holds but no event names (downstream of a failure, the multiprocess
+executor abandons it without a `STEP_SKIPPED`) is recorded as `not_run`. Row
 counts come from the Parquet footers (`num_rows`), never from a scan. Nothing
 in the record names this machine: no host name, no path outside the data
 root, and the receipt's `source_path` is read to find the raw bytes but never
 written. `tracklab publish platform` (task 34) turns a record into
-`platform.json`; this command writes nothing under `web/`.
+`platform.json`; this command writes nothing under `web/`, and it measures
+`web/public/data` without `lineage.json` and `platform.json`, the two files
+written from the record itself (a record that counted them would make the
+next title depend on the previous one). A measurement that fails (a truncated
+Parquet) is written into the record as `disk.error` and the command exits 1.
 """
 
 from __future__ import annotations
@@ -42,17 +48,26 @@ import pyarrow.parquet as pq
 
 from tracklab.ingest.fetch import RECEIPT_NAME
 from tracklab.ingest.manifest import load_manifest
+from tracklab.paths import data_root
+from tracklab.publish.lineage import LINEAGE_JSON
+from tracklab.publish.platform import PLATFORM_JSON
 
 if TYPE_CHECKING:
     from dagster import AssetKey, DagsterEvent, JobDefinition
 
-RECORD_DIR = Path("data/build")
 MANIFEST = Path("manifest/sources.json")
 REPORTS_DIR = Path("reports")
 WEB_DATA_DIR = Path("../web/public/data")
 DBT_MANIFEST = Path("dbt/target/manifest.json")
 DBT_DURATION_KEY = "Execution Duration"
 SCHEMA_VERSION = 1
+# Written from a build record, so never part of one (see the module docstring).
+FROM_RECORD = frozenset({LINEAGE_JSON, PLATFORM_JSON})
+
+
+def default_record_dir() -> Path:
+    """`build/` under the data root: follows `TRACKLAB_DATA_ROOT` like raw and silver."""
+    return data_root() / "build"
 
 
 @dataclass(frozen=True)
@@ -68,7 +83,7 @@ class StepRecord:
     step_key: str
     assets: list[str]
     group: str | None
-    status: str  # success, failure or skipped
+    status: str  # success, failure, skipped or not_run
     duration_ms: float | None  # StepSuccessData; None unless the step succeeded
     dbt_seconds: dict[str, float]  # per model, dagster-dbt's "Execution Duration"
 
@@ -131,7 +146,7 @@ def plan_from_job(job: JobDefinition) -> dict[str, StepPlan]:
 
 
 def execute_build(
-    keys: Sequence[AssetKey] | None, record_dir: Path = RECORD_DIR
+    keys: Sequence[AssetKey] | None, record_dir: Path
 ) -> tuple[dict[str, StepPlan], Sequence[DagsterEvent]]:
     from dagster import DagsterInstance, execute_job, reconstructable
 
@@ -152,7 +167,8 @@ def execute_build(
 def steps_from_events(
     events: Iterable[DagsterEvent], plan: Mapping[str, StepPlan]
 ) -> list[StepRecord]:
-    """One record per step that ran, in the order the steps were first seen. The
+    """One record per step that ran, in the order the steps were first seen, then
+    every planned step no event named, as `not_run`. The
     duration is the step's own (`StepSuccessData`), counted once however many
     assets the step wrote; dbt's per-model seconds ride on the materializations."""
     order: list[str] = []
@@ -192,6 +208,9 @@ def steps_from_events(
                 dbt_seconds=dict(sorted(dbt_seconds.get(key, {}).items())),
             )
         )
+    for key, step in plan.items():
+        if key not in status:
+            records.append(StepRecord(key, list(step.assets), step.group, "not_run", None, {}))
     return records
 
 
@@ -334,6 +353,7 @@ def measure_publish(web_data_dir: Path) -> dict[str, Any]:
     files = [
         {"path": path.relative_to(web_data_dir).as_posix(), "bytes": path.stat().st_size}
         for path in sorted(web_data_dir.rglob("*.json"))
+        if path.name not in FROM_RECORD
     ]
     return {"files": len(files), "bytes": sum(f["bytes"] for f in files), "json": files}
 
@@ -459,6 +479,13 @@ def run_build(
     finished = datetime.now(UTC)
 
     steps = steps_from_events(events, plan)
+    # Whatever the measurement raises, the run still gets its record: the steps
+    # above are the part only this run knows.
+    try:
+        disk: dict[str, Any] = measure_disk(data_dir, manifest_path, reports_dir, web_data_dir)
+    except Exception as exc:  # noqa: BLE001
+        disk = {"error": f"{type(exc).__name__}: {exc}"}
+        print(f"build: measuring the disk failed: {disk['error']}")
     payload = {
         "schema_version": SCHEMA_VERSION,
         "git_sha": sha,
@@ -469,7 +496,7 @@ def run_build(
         "host": host_info(),
         "versions": versions(),
         "steps": [asdict(step) for step in steps],
-        "disk": measure_disk(data_dir, manifest_path, reports_dir, web_data_dir),
+        "disk": disk,
     }
     path = record_path(record_dir, started, sha)
     write_record(payload, path)
@@ -482,4 +509,5 @@ def run_build(
         f"assets={sum(len(s.assets) for s in steps if s.status == 'success')}"
     )
     print(f"record: {path} ({path.stat().st_size} bytes)")
-    return 0 if steps and all(step.status == "success" for step in steps) else 1
+    succeeded = steps and all(step.status == "success" for step in steps)
+    return 0 if succeeded and "error" not in disk else 1
