@@ -655,6 +655,7 @@ def test_cli_rewrites_only_its_section_of_the_doc(bundle: dict[str, Path]) -> No
 
     assert run_cli(bundle) == 0
     assert doc_path.read_text(encoding="utf-8") == doc, "a rerun changes nothing"
+    assert b"\r\n" not in doc_path.read_bytes(), "LF like the versioned doc, on Windows too"
 
 
 def test_cli_single_sport_keeps_the_other_sports_rows(bundle: dict[str, Path]) -> None:
