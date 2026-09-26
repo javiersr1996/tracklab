@@ -245,6 +245,7 @@ def test_a_truncated_parquet_still_leaves_a_record_and_exits_1(tmp_path: Path) -
     assert isinstance(steps, list) and steps[0]["status"] == "success"
     disk = record["disk"]
     assert isinstance(disk, dict) and list(disk) == ["error"]
+    assert disk["error"] == "ArrowInvalid", "the type only: a message can carry a local path"
 
 
 def test_the_record_dir_follows_the_data_root(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -21,10 +21,12 @@ in the record names this machine: no host name, no path outside the data
 root, and the receipt's `source_path` is read to find the raw bytes but never
 written. `tracklab publish platform` (task 34) turns a record into
 `platform.json`; this command writes nothing under `web/`, and it measures
-`web/public/data` without `lineage.json` and `platform.json`, the two files
-written from the record itself (a record that counted them would make the
-next title depend on the previous one). A measurement that fails (a truncated
-Parquet) is written into the record as `disk.error` and the command exits 1.
+`web/public/data` without `lineage.json` and `platform.json`: the job does not
+write them, they describe the platform (its graph, its measure) rather than
+the data it publishes, and `platform.json` counted would make the next title
+depend on the previous one. A measurement that fails (a truncated Parquet) is
+written into the record as `disk.error`, the exception's type only (its message
+can carry a local path), and the command exits 1.
 """
 
 from __future__ import annotations
@@ -61,8 +63,8 @@ WEB_DATA_DIR = Path("../web/public/data")
 DBT_MANIFEST = Path("dbt/target/manifest.json")
 DBT_DURATION_KEY = "Execution Duration"
 SCHEMA_VERSION = 1
-# Written from a build record, so never part of one (see the module docstring).
-FROM_RECORD = frozenset({LINEAGE_JSON, PLATFORM_JSON})
+# Not written by the job: they describe the platform, not its data (module docstring).
+ABOUT_PLATFORM = frozenset({LINEAGE_JSON, PLATFORM_JSON})
 
 
 def default_record_dir() -> Path:
@@ -353,7 +355,7 @@ def measure_publish(web_data_dir: Path) -> dict[str, Any]:
     files = [
         {"path": path.relative_to(web_data_dir).as_posix(), "bytes": path.stat().st_size}
         for path in sorted(web_data_dir.rglob("*.json"))
-        if path.name not in FROM_RECORD
+        if path.name not in ABOUT_PLATFORM
     ]
     return {"files": len(files), "bytes": sum(f["bytes"] for f in files), "json": files}
 
@@ -484,8 +486,8 @@ def run_build(
     try:
         disk: dict[str, Any] = measure_disk(data_dir, manifest_path, reports_dir, web_data_dir)
     except Exception as exc:  # noqa: BLE001
-        disk = {"error": f"{type(exc).__name__}: {exc}"}
-        print(f"build: measuring the disk failed: {disk['error']}")
+        disk = {"error": type(exc).__name__}
+        print(f"build: measuring the disk failed: {type(exc).__name__}: {exc}")
     payload = {
         "schema_version": SCHEMA_VERSION,
         "git_sha": sha,

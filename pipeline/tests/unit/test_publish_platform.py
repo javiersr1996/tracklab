@@ -265,14 +265,14 @@ def test_raw_bytes_read_plus_season_files_reconciles_to_the_raw_bytes_read() -> 
 def test_a_record_whose_disk_measure_failed_is_refused(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    record = {**_record(), "disk": {"error": "ArrowInvalid: truncated"}}
+    record = {**_record(), "disk": {"error": "ArrowInvalid"}}
     path = tmp_path / "20260924T170000Z_abc1234.json"
     path.write_text(json.dumps(record), encoding="utf-8")
 
     code = run_publish_platform(record_path=path, record_dir=tmp_path, out_dir=tmp_path / "out")
 
     assert code == 1
-    assert "ArrowInvalid: truncated" in capsys.readouterr().out
+    assert "ArrowInvalid" in capsys.readouterr().out
     assert not (tmp_path / "out").exists()
 
 

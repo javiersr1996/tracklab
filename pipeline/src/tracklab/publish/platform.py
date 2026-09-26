@@ -15,10 +15,11 @@ Two decisions, not forced.
    depend on the title string, which depends on its size. `layers[].publish`
    uses `disk.publish` from the build record instead, and `tracklab build`
    leaves `lineage.json` and this file out of that measurement by name
-   (`build.FROM_RECORD`): both are written from a record, so counting them
-   would make each title depend on the previous run's. Excluding them by
-   when the measurement happened held only for the first record; every
-   later one found them on disk. The `note` on that layer says so, so a
+   (`build.ABOUT_PLATFORM`): the `build` job writes neither, they describe
+   the platform (its graph, its measure) rather than the data it publishes,
+   and this file counted would make each title depend on the previous run's.
+   Excluding them by when the measurement happened held only for the first
+   record; every later one found them on disk. The `note` on that layer says so, so a
    reader of the JSON does not have to already know it.
 2. **Files with no match.** `season_files` holds every raw manifest entry
    whose `match_id` is `None` (season aggregates, `matches.json`, the
@@ -159,8 +160,9 @@ def layers_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
         if layer == "publish":
             entry["note"] = (
                 "measured by `tracklab build`, without lineage.json and platform.json: "
-                "both are written from the build record, so counting them would make "
-                "the title depend on its own previous value (decision 1)"
+                "the build job writes neither, they describe the platform rather than "
+                "the data it publishes, and counting platform.json would make the title "
+                "depend on its own previous value (decision 1)"
             )
         layers.append(entry)
     return layers

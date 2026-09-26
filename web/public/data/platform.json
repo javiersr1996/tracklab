@@ -63,7 +63,7 @@
       "bytes": 1230786,
       "seconds": 7.6,
       "seconds_sum": 14.1,
-      "note": "measured by `tracklab build`, without lineage.json and platform.json: both are written from the build record, so counting them would make the title depend on its own previous value (decision 1)"
+      "note": "measured by `tracklab build`, without lineage.json and platform.json: the build job writes neither, they describe the platform rather than the data it publishes, and counting platform.json would make the title depend on its own previous value (decision 1)"
     }
   ],
   "steps": [
