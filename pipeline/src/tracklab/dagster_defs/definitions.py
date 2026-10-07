@@ -14,11 +14,7 @@ from tracklab.dagster_defs.assets_quality import quality_assets
 # Every asset in one run, and the one command that works on Windows too: click expands
 # a bare `--select "*"` against the working directory there.
 _one_at_a_time = [{"key": k, "value": v, "limit": 1} for k, v in DUCKDB_TAG.items()]
-build = define_asset_job(
-    "build",
-    selection=AssetSelection.all(),
-    executor_def=multiprocess_executor.configured({"tag_concurrency_limits": _one_at_a_time}),
-)
+build = define_asset_job("build", selection=AssetSelection.all())
 
 defs = Definitions(
     assets=[
@@ -34,5 +30,8 @@ defs = Definitions(
         publish_quality,
     ],
     jobs=[build],
+    # On the `Definitions`, not on `build`: the implicit job behind `dagster asset
+    # materialize` and `dagster dev` inherits it, and DuckDB takes one writer at a time.
+    executor=multiprocess_executor.configured({"tag_concurrency_limits": _one_at_a_time}),
     resources={"dbt": DbtCliResource(project_dir=dbt_project)},
 )

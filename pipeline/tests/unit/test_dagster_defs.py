@@ -62,3 +62,16 @@ def test_schema_in_code_tables_match_their_builder() -> None:
 def test_the_build_job_runs_every_asset() -> None:
     job = defs.resolve_job_def("build")
     assert set(job.asset_layer.executable_asset_keys) == _materializable()
+
+
+def test_every_job_runs_the_dbt_steps_one_at_a_time() -> None:
+    """The implicit job (`dagster asset materialize`, `dagster dev`) shares DuckDB too."""
+    jobs = {
+        "implicit": defs.resolve_implicit_global_asset_job_def(),
+        "build": defs.resolve_job_def("build"),
+    }
+    for name, job in jobs.items():
+        resolved = job.executor_def.config_schema.resolve_config({})  # type: ignore[attr-defined]
+        assert resolved.success, name
+        limits = resolved.value["config"]["tag_concurrency_limits"]
+        assert limits == [{"key": "tracklab/duckdb", "value": "dbt", "limit": 1}], name
