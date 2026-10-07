@@ -35,6 +35,7 @@ from tracklab.publish.platform import run_publish_platform
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.quality import run_publish_quality
 from tracklab.publish.stats import run_publish_stats
+from tracklab.publish.warehouse import run_publish_warehouse
 from tracklab.quality.run import CHECKS, run_quality
 from tracklab.silver.orientation import SPORTS, run_orientation
 from tracklab.silver.possessions import run_possessions
@@ -172,6 +173,10 @@ def _cmd_publish_platform(args: argparse.Namespace) -> int:
         out_dir=args.out_dir,
         check=args.check,
     )
+
+
+def _cmd_publish_warehouse(args: argparse.Namespace) -> int:
+    return run_publish_warehouse(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
 
 
 def _cmd_publish_quality(args: argparse.Namespace) -> int:
@@ -451,6 +456,31 @@ def build_parser() -> argparse.ArgumentParser:
         "stats.json, exit 1 if they differ.",
     )
     publish_platform.set_defaults(func=_cmd_publish_platform)
+
+    publish_warehouse = publish_sub.add_parser(
+        "warehouse",
+        help="Write web/public/data/warehouse/*.parquet and warehouse.json: the gold tables "
+        "the browser queries, byte-reproducible.",
+    )
+    publish_warehouse.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; gold is read from it (default: data).",
+    )
+    publish_warehouse.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where warehouse.json and warehouse/ go (default: ../web/public/data).",
+    )
+    publish_warehouse.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare rows and sha256 against the files on disk "
+        "and warehouse.json; write nothing.",
+    )
+    publish_warehouse.set_defaults(func=_cmd_publish_warehouse)
 
     publish_quality = publish_sub.add_parser(
         "quality",
