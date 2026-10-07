@@ -34,6 +34,12 @@ from tracklab.publish.warehouse import (
 PIPELINE = Path(__file__).resolve().parents[2]
 WEB_DATA = PIPELINE.parent / "web" / "public" / "data"
 
+# dbt makes `gold/<model>/` empty on any run, so only the seven Parquet files say it was built.
+gold_built = pytest.mark.skipif(
+    not all((data_root() / "gold" / m / "data.parquet").is_file() for _, m, _ in TABLES),
+    reason="needs a gold build; run dbt build --select gold",
+)
+
 
 def _write_gold(root: Path) -> Path:
     """Seven gold tables: the grain columns plus one metric, rows in scrambled order."""
@@ -269,10 +275,7 @@ def test_committed_row_groups_equal_the_footers_read_by_duckdb() -> None:
 
 
 @committed
-@pytest.mark.skipif(
-    not (data_root() / "gold").is_dir(),
-    reason="needs a gold build; run dbt build --select gold",
-)
+@gold_built
 def test_rows_in_the_manifest_equal_the_gold_rows_counted_by_duckdb() -> None:
     manifest = json.loads(warehouse_path(WEB_DATA).read_text(encoding="utf-8"))
     con = duckdb.connect()
@@ -286,10 +289,7 @@ def test_rows_in_the_manifest_equal_the_gold_rows_counted_by_duckdb() -> None:
 
 
 @committed
-@pytest.mark.skipif(
-    not (data_root() / "gold").is_dir(),
-    reason="needs a gold build; run dbt build --select gold",
-)
+@gold_built
 def test_gold_rebuilt_from_scratch_regenerates_the_committed_bytes() -> None:
     """What the clean clone runs after `tracklab build`: the files in git are what gold gives."""
     assert run_publish_warehouse(data_root(), WEB_DATA, check=True) == 0
