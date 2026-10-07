@@ -68,11 +68,11 @@ and silver models and the season-aggregate gold models (group `gold`), whose dbt
 ```
 uv run dbt parse --project-dir dbt --profiles-dir dbt          # dagster-dbt reads target/manifest.json
 uv run dagster job execute -m tracklab.dagster_defs -j build
-TRACKLAB_DATA_ROOT=tests/fixtures/data uv run dagster asset materialize -m tracklab.dagster_defs --select "group:silver"
+TRACKLAB_DATA_ROOT=tests/fixtures/data uv run dagster asset materialize -m tracklab.dagster_defs --select "group:silver or group:gold"
 uv run dagster dev -m tracklab.dagster_defs                     # the UI
 ```
 
-On the fixtures only silver is materialized: the whole graph would ingest the full bundles and
+On the fixtures only silver and gold are materialized: the whole graph would ingest the full bundles and
 rebuild bronze over the slice. Select with groups rather than a bare `*`, which click expands
 against the working directory on Windows.
 

@@ -184,3 +184,14 @@ def test_dim_metric_does_not_call_a_speed_a_time_or_a_percentage_a_count(
         ).fetchall()
     }
     assert {key: kinds[key] for key in NOT_COUNTS} == NOT_COUNTS
+
+
+def test_bronze_has_no_numeric_type_the_unpivot_would_skip(con: duckdb.DuckDBPyConnection) -> None:
+    """Model and `_numeric_columns` both take BIGINT and DOUBLE; a third type would vanish."""
+    types = {
+        t
+        for s, f in WIDE
+        for _, t, *_ in con.execute(f"DESCRIBE SELECT * FROM {_bronze(s, f)}").fetchall()
+    }
+    print(f"\nbronze column types: {sorted(types)}")
+    assert types <= {"VARCHAR", "BIGINT", "DOUBLE", "DATE"}

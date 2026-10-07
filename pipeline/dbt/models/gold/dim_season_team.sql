@@ -1,6 +1,6 @@
 -- One row per team and sport across the six aggregates. Named `dim_season_team`
 -- and not `dim_team` because silver already has a `dim_team` (a different grain:
--- the teams of the 20 sample matches, with the sport's prefix on the id), and dbt
+-- the teams of the 30 sample matches, 10 + 20, with the sport's prefix on the id), and dbt
 -- model names are global. The basketball `total` row of a traded player is not a
 -- team: it has a null `team_id` and is left out here.
 

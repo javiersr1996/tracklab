@@ -1,4 +1,4 @@
-# Every push and pull request: lint, types, and the whole silver build with its
+# Every push and pull request: lint, types, and the whole silver and gold build with their
 # dbt tests, on the bronze slice versioned in pipeline/tests/fixtures (task 14).
 # The contract tests read pipeline/data, which CI does not have, so they skip
 # here and run in full-build.yml against the real bundles.
@@ -29,7 +29,7 @@ jobs:
       - run: uv run mypy src
       # silver through `tracklab build` (task 32), so the same recorded run that CI checks
       # against `lineage.json` also builds the asset graph (task 15) on every push.
-      # `*` would ingest and rebuild bronze over the fixture slice: silver is what hangs from it.
+      # `*` would ingest and rebuild bronze over the fixture slice: silver and gold are what hang from it.
       # The record goes to $TRACKLAB_DATA_ROOT/build: a record under pipeline/data/ would flip
       # the contract tests' "no real bundle" skip (tests/publish/) and fail them against the
       # fixture-only rows (found by reproducing this job locally).

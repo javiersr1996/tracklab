@@ -95,6 +95,30 @@ def test_the_footer_says_it_was_written_by_the_pinned_pyarrow(
         assert entry["file"] == f"{entry['table']}.{entry['sha256'][:8]}.parquet"
 
 
+def test_an_interrupted_delete_leaves_the_new_manifest_pointing_at_files_that_exist(
+    gold_root: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run_publish_warehouse(gold_root, tmp_path)
+    old = warehouse_path(tmp_path).read_bytes()
+    path = (gold_root / "gold" / "agg_fb_obr" / "data.parquet").as_posix()
+    duckdb.connect().execute(
+        f"COPY (SELECT * FROM '{path}' WHERE player_id <> 0) TO '{path}.new' (FORMAT parquet)"
+    )
+    Path(f"{path}.new").replace(path)
+
+    def interrupted(self: Path, *args: object, **kwargs: object) -> None:
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(Path, "unlink", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        run_publish_warehouse(gold_root, tmp_path)
+    monkeypatch.undo()
+
+    manifest = json.loads(warehouse_path(tmp_path).read_text(encoding="utf-8"))
+    assert warehouse_path(tmp_path).read_bytes() != old
+    assert all((warehouse_dir(tmp_path) / t["file"]).is_file() for t in manifest["tables"])
+
+
 def test_check_passes_then_fails_after_one_byte_changes(gold_root: Path, tmp_path: Path) -> None:
     run_publish_warehouse(gold_root, tmp_path)
     assert run_publish_warehouse(gold_root, tmp_path, check=True) == 0

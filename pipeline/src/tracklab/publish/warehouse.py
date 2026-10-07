@@ -230,10 +230,14 @@ def run_publish_warehouse(data_dir: Path, out_dir: Path, *, check: bool = False)
     directory.mkdir(parents=True, exist_ok=True)
     for b in built:
         (directory / b.entry["file"]).write_bytes(b.data)
-    for path in stale_files(directory, {b.entry["file"] for b in built}):
-        path.unlink()
-        print(f"publish warehouse: removed {path.name}")
+    # The new manifest goes in before the old files go out: an interruption in between
+    # leaves stale files (which `--check` names), never a manifest pointing at deleted ones.
     path = warehouse_path(out_dir)
-    path.write_text(render(built), encoding="utf-8", newline="\n")
+    pending = path.with_name(path.name + ".tmp")
+    pending.write_text(render(built), encoding="utf-8", newline="\n")
+    pending.replace(path)
     print(f"publish warehouse: {path} ({path.stat().st_size} bytes)")
+    for stale in stale_files(directory, {b.entry["file"] for b in built}):
+        stale.unlink()
+        print(f"publish warehouse: removed {stale.name}")
     return 0
