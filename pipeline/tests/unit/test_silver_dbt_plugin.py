@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from tracklab.silver.dbt_plugin import Plugin, ensure_model_dirs
 
 
@@ -69,18 +71,28 @@ def test_no_models_creates_nothing(tmp_path: Path) -> None:
     assert not (tmp_path / "silver").exists()
 
 
-def test_plugin_reads_its_profile_config(tmp_path: Path) -> None:
+def test_plugin_reads_its_profile_config(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """What profiles.yml passes is what gets created, so a fixture run of task 14
-    can point the same plugin at a throwaway root."""
+    can point the same plugin at a throwaway root. The gold defaults are relative to
+    the cwd, so a test that leaves them out would write `data/gold` into the repo."""
+    monkeypatch.chdir(tmp_path)
+    _models(tmp_path / "dbt" / "models" / "gold", ["agg_bb_shots.sql"])  # the default tree
     models = _models(tmp_path / "models", ["dim_sport.sql"])
     silver = tmp_path / "elsewhere"
 
     Plugin(
         name="tracklab",
-        plugin_config={"silver_dir": str(silver), "models_dir": str(models)},
+        plugin_config={
+            "silver_dir": str(silver),
+            "models_dir": str(models),
+            "gold_dir": str(tmp_path / "gold"),
+            "gold_models_dir": str(tmp_path / "dbt" / "models" / "gold"),
+        },
     )
 
     assert (silver / "dim_sport").is_dir()
+    assert (tmp_path / "gold" / "agg_bb_shots").is_dir()
+    assert not (tmp_path / "data").exists()
 
 
 def test_plugin_creates_the_gold_directories_too(tmp_path: Path) -> None:
