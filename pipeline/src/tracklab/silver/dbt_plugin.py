@@ -34,6 +34,8 @@ from dbt.adapters.duckdb.plugins import BasePlugin
 
 DEFAULT_SILVER_DIR = "data/silver"
 DEFAULT_MODELS_DIR = "dbt/models/silver"
+DEFAULT_GOLD_DIR = "data/gold"
+DEFAULT_GOLD_MODELS_DIR = "dbt/models/gold"
 
 
 def ensure_model_dirs(silver_dir: Path, models_dir: Path) -> list[Path]:
@@ -52,3 +54,7 @@ class Plugin(BasePlugin):
         silver_dir = Path(str(plugin_config.get("silver_dir", DEFAULT_SILVER_DIR)))
         models_dir = Path(str(plugin_config.get("models_dir", DEFAULT_MODELS_DIR)))
         ensure_model_dirs(silver_dir, models_dir)
+        # Gold is external too (task 40) and has the same gap, with its own tree.
+        gold_dir = Path(str(plugin_config.get("gold_dir", DEFAULT_GOLD_DIR)))
+        gold_models_dir = Path(str(plugin_config.get("gold_models_dir", DEFAULT_GOLD_MODELS_DIR)))
+        ensure_model_dirs(gold_dir, gold_models_dir)

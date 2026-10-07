@@ -17,3 +17,5 @@ tracklab:
           config:
             silver_dir: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/silver"
             models_dir: "{{ env_var('TRACKLAB_SILVER_MODELS', 'dbt/models/silver') }}"
+            gold_dir: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold"
+            gold_models_dir: "{{ env_var('TRACKLAB_GOLD_MODELS', 'dbt/models/gold') }}"

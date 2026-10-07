@@ -81,3 +81,23 @@ def test_plugin_reads_its_profile_config(tmp_path: Path) -> None:
     )
 
     assert (silver / "dim_sport").is_dir()
+
+
+def test_plugin_creates_the_gold_directories_too(tmp_path: Path) -> None:
+    """Gold is external like silver (task 40), so a clean clone dies the same way
+    on its first model unless the plugin also makes `<gold_dir>/<model>/`."""
+    silver_models = _models(tmp_path / "silver_models", ["dim_sport.sql"])
+    gold_models = _models(tmp_path / "gold_models", ["agg_bb_shots.sql", "dim_player.sql"])
+    gold = tmp_path / "data" / "gold"
+
+    Plugin(
+        name="tracklab",
+        plugin_config={
+            "silver_dir": str(tmp_path / "data" / "silver"),
+            "models_dir": str(silver_models),
+            "gold_dir": str(gold),
+            "gold_models_dir": str(gold_models),
+        },
+    )
+
+    assert sorted(p.name for p in gold.iterdir()) == ["agg_bb_shots", "dim_player"]
