@@ -2,9 +2,10 @@
 and a delete of old-hash files that cannot touch anything else.
 
 The writer tests run on a small synthetic gold written into `tmp_path`, so they hold on any
-data root. The tests of the committed files and of `warehouse.json` use the real files; the
-comparison against gold is skipped on the CI fixtures, whose rows are not the ones the
-committed Parquet were built from.
+data root. The tests of the committed files and of `warehouse.json` use the real files. The
+comparison against gold also runs on the CI fixtures: they carry the six aggregates whole,
+which is all gold reads, so the committed bytes must come out of them too (and out of the
+Linux runner, which is the one proof that pyarrow writes the same bytes there).
 """
 
 from __future__ import annotations
@@ -245,8 +246,8 @@ def test_committed_row_groups_equal_the_footers_read_by_duckdb() -> None:
 
 @committed
 @pytest.mark.skipif(
-    "fixtures" in data_root().parts or not (data_root() / "gold").is_dir(),
-    reason="needs the real gold build the committed files were made from",
+    not (data_root() / "gold").is_dir(),
+    reason="needs a gold build; run dbt build --select gold",
 )
 def test_rows_in_the_manifest_equal_the_gold_rows_counted_by_duckdb() -> None:
     manifest = json.loads(warehouse_path(WEB_DATA).read_text(encoding="utf-8"))
@@ -262,8 +263,8 @@ def test_rows_in_the_manifest_equal_the_gold_rows_counted_by_duckdb() -> None:
 
 @committed
 @pytest.mark.skipif(
-    "fixtures" in data_root().parts or not (data_root() / "gold").is_dir(),
-    reason="needs the real gold build the committed files were made from",
+    not (data_root() / "gold").is_dir(),
+    reason="needs a gold build; run dbt build --select gold",
 )
 def test_gold_rebuilt_from_scratch_regenerates_the_committed_bytes() -> None:
     """What the clean clone runs after `tracklab build`: the files in git are what gold gives."""
