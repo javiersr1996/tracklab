@@ -58,3 +58,12 @@ sources:
         description: >
           One player holding the ball. Conformed as `player_possession`.
       - name: events_turnovers
+      - name: aggregates_drives
+        description: >
+          Season table, one row per player and team of ACB 2025-2026; traded players also carry a `team_name = 'total'` row with a null `team_id`.
+      - name: aggregates_picks
+        description: >
+          Season table, one row per player and team of ACB 2025-2026; traded players also carry a `team_name = 'total'` row with a null `team_id`.
+      - name: aggregates_shots
+        description: >
+          Season table, one row per player and team of ACB 2025-2026; traded players also carry a `team_name = 'total'` row with a null `team_id`.
