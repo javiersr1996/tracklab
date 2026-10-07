@@ -258,3 +258,13 @@ def test_rows_in_the_manifest_equal_the_gold_rows_counted_by_duckdb() -> None:
         rows = next(t["rows"] for t in manifest["tables"] if t["table"] == table)
         print(f"{table}: manifest {rows}, gold {counted[0]}")
         assert rows == counted[0]
+
+
+@committed
+@pytest.mark.skipif(
+    "fixtures" in data_root().parts or not (data_root() / "gold").is_dir(),
+    reason="needs the real gold build the committed files were made from",
+)
+def test_gold_rebuilt_from_scratch_regenerates_the_committed_bytes() -> None:
+    """What the clean clone runs after `tracklab build`: the files in git are what gold gives."""
+    assert run_publish_warehouse(data_root(), WEB_DATA, check=True) == 0
