@@ -157,3 +157,30 @@ def test_dim_metric_kinds_cover_every_metric(con: duckdb.DuckDBPyConnection) -> 
     cols = sum(len(_numeric_columns(con, s, f)) for s, f in WIDE)
     print(f"\ndim_metric kinds: {kinds} (numeric columns in bronze: {cols})")
     assert sum(n for _, n in kinds) == cols
+
+
+# Read off bronze (min-max in the comment): none of these can be added up, so none is a `count`.
+NOT_COUNTS = {
+    ("physical", "psv99"): "speed",  # 24.3 to 32.3, km/h
+    ("physical", "psv99_top5"): "speed",
+    ("physical", "timetohsr_top3"): "time",  # 0.57 to 1.02, seconds
+    ("physical", "timetosprint_top3"): "time",
+    ("physical", "total_metersperminute_full_all"): "speed",  # 96.13 to 140.61, m/min
+    ("physical", "total_metersperminute_full_tip"): "speed",
+    ("physical", "total_metersperminute_full_otip"): "speed",
+    ("passing", "pass_avgxpass_attempted"): "percentage",  # 58.14 to 96.4
+    ("passing", "pass_avgxpass_torun_attempted"): "percentage",
+    ("physical", "hsr_count_full_all"): "count",  # the 30 real means per match stay counts
+}
+
+
+def test_dim_metric_does_not_call_a_speed_a_time_or_a_percentage_a_count(
+    con: duckdb.DuckDBPyConnection,
+) -> None:
+    kinds = {
+        (f, m): k
+        for f, m, k in con.execute(
+            f"SELECT family, metric, kind FROM {_gold('dim_metric')}"
+        ).fetchall()
+    }
+    assert {key: kinds[key] for key in NOT_COUNTS} == NOT_COUNTS
