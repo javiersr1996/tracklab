@@ -3,7 +3,9 @@
 -- literal suffix `_p30tip` (per 30 minutes of the team in possession), then a
 -- token `psv99` (peak speed, km/h) or `metersperminute` (m/min), both `speed`; a
 -- name starting `timeto` (seconds), `time`; a token `avgxpass` (a 0-100 average
--- of pass quality), `percentage`; then a token `pct` or `percentage`, `rate`,
+-- of pass quality), `percentage`; then a token `pct` or `percentage`, which is
+-- `percentage` (0-100) in football and `fraction` (0-1, `uncontested_efg_percentage`
+-- reaches 1.5) in basketball; then `rate`,
 -- `ppp` or `per` (points per shot, drive or pick), `distance` or `avgdistance`,
 -- `minutes`; anything else is a `count` (per match, so some are averages). The
 -- list was written after counting the real names and their min-max in bronze:
@@ -21,7 +23,8 @@ SELECT
         WHEN starts_with(metric, 'timeto') THEN 'time'
         WHEN list_contains(string_split(metric, '_'), 'avgxpass') THEN 'percentage'
         WHEN list_contains(string_split(metric, '_'), 'pct')
-            OR list_contains(string_split(metric, '_'), 'percentage') THEN 'percentage'
+            OR list_contains(string_split(metric, '_'), 'percentage')
+            THEN CASE WHEN sport = 'football' THEN 'percentage' ELSE 'fraction' END
         WHEN list_contains(string_split(metric, '_'), 'rate') THEN 'rate'
         WHEN list_contains(string_split(metric, '_'), 'ppp')
             OR list_contains(string_split(metric, '_'), 'per') THEN 'per_unit'

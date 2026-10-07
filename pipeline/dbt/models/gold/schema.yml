@@ -159,13 +159,14 @@ models:
         data_tests: [not_null]
       - name: kind
         description: >
-          Counted on the real names: count 642, per_30_tip 122, percentage 246, rate 137,
-          per_unit 51, distance 28, minutes 9, speed 5, time 2 (1,242 metrics).
+          Counted on the real names: count 642, per_30_tip 122, fraction 241 (0 to 1,
+          basketball), percentage 5 (0 to 100, football), rate 137, per_unit 51,
+          distance 28, minutes 9, speed 5, time 2 (1,242 metrics).
         data_tests:
           - not_null
           - accepted_values:
               arguments:
-                values: ["count", "per_30_tip", "percentage", "rate", "per_unit", "distance", "minutes", "speed", "time"]
+                values: ["count", "per_30_tip", "fraction", "percentage", "rate", "per_unit", "distance", "minutes", "speed", "time"]
 
   - name: fact_player_season_metric
     description: >

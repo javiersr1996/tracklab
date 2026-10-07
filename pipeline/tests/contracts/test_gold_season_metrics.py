@@ -170,7 +170,7 @@ NOT_COUNTS = {
     ("physical", "total_metersperminute_full_otip"): "speed",
     ("passing", "pass_avgxpass_attempted"): "percentage",  # 58.14 to 96.4
     ("passing", "pass_avgxpass_torun_attempted"): "percentage",
-    ("physical", "hsr_count_full_all"): "count",  # the 30 real means per match stay counts
+    ("physical", "hsr_count_full_all"): "count",  # 27 means per match, 3 season totals: all counts
 }
 
 
@@ -184,6 +184,27 @@ def test_dim_metric_does_not_call_a_speed_a_time_or_a_percentage_a_count(
         ).fetchall()
     }
     assert {key: kinds[key] for key in NOT_COUNTS} == NOT_COUNTS
+
+
+def test_percentage_is_0_to_100_and_fraction_is_0_to_1(con: duckdb.DuckDBPyConnection) -> None:
+    """The two scales never share a kind: football passes are 0-100, basketball shares 0-1."""
+    rows = con.execute(
+        f"SELECT d.kind, d.sport, min(f.value), max(f.value) "
+        f"FROM {_gold('dim_metric')} d JOIN {_gold('fact_player_season_metric')} f "
+        "USING (sport, family, metric) WHERE d.kind IN ('percentage', 'fraction') "
+        "GROUP BY ALL ORDER BY ALL"
+    ).fetchall()
+    print(f"\nscales: {rows}")
+    # `uncontested_efg_percentage` reaches 1.5: a fraction can pass 1, but never 2.
+    limits = {"fraction": ("basketball", 0.0, 2.0), "percentage": ("football", 1.5, 100.0)}
+    for kind, sport, low, high in rows:
+        want_sport, floor, ceiling = limits[kind]
+        assert sport == want_sport
+        assert low >= 0
+        assert high <= ceiling
+        if kind == "percentage":
+            assert high > floor  # a 0-1 scale would not reach this
+    assert {r[0] for r in rows} <= set(limits)
 
 
 def test_bronze_has_no_numeric_type_the_unpivot_would_skip(con: duckdb.DuckDBPyConnection) -> None:
