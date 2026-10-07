@@ -62,7 +62,7 @@ BASE_URL=https://tracklab-sable.vercel.app npx playwright test   # the same suit
 The pipeline is a Dagster graph (`uv run dagster asset list -m tracklab.dagster_defs`):
 `raw_<sport>`, `bronze_<sport>_<table>` (one step per `tracklab bronze --tables` group),
 `bronze_common_orientation` and the `reports_orientation_<sport>` CSVs it writes, the dbt seeds
-and silver models, whose dbt tests run as asset checks, and `publish_possessions` and
+and silver models and the season-aggregate gold models (group `gold`), whose dbt tests run as asset checks, and `publish_possessions` and
 `publish_stats` (group `publish`). The job `build` runs all of them. From `pipeline/`:
 
 ```
@@ -87,7 +87,7 @@ actually produced. Its H1 is the title `uv run tracklab publish platform` prints
 title: 2.3 GB in, 1.2 MB out
 ```
 
-`uv run dagster asset list -m tracklab.dagster_defs` lists `66` assets, the graph
+`uv run dagster asset list -m tracklab.dagster_defs` lists `76` assets, the graph
 `web/public/data/lineage.json` exports for the page.
 
 ## Data quality

@@ -34,7 +34,7 @@ jobs:
       # the contract tests' "no real bundle" skip (tests/publish/) and fail them against the
       # fixture-only rows (found by reproducing this job locally).
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
-      - run: uv run tracklab build --select "group:silver"
+      - run: uv run tracklab build --select "group:silver or group:gold"
       - run: uv run tracklab publish lineage --check
       - run: uv run pytest -q
 

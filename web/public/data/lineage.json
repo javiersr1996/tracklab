@@ -4,6 +4,7 @@
     "ingest",
     "bronze",
     "silver",
+    "gold",
     "quality",
     "publish"
   ],
@@ -378,6 +379,162 @@
       "schema": "code"
     },
     {
+      "key": "gold_agg_bb_drives",
+      "group": "gold",
+      "kind": "asset",
+      "description": "Basketball season aggregate `aggregates_drives` as bronze wrote it, without `source_file` and `source_row`, plus `is_season_total`. Grain: one row per (player_id, team_id); traded players also carry a `team_name = 'total'` row with a null `team_id` (`is_season_total`).\n",
+      "step": "gold",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 3,
+      "dbt_columns": [
+        "is_season_total",
+        "player_id",
+        "team_id"
+      ]
+    },
+    {
+      "key": "gold_agg_bb_picks",
+      "group": "gold",
+      "kind": "asset",
+      "description": "Basketball season aggregate `aggregates_picks` as bronze wrote it, without `source_file` and `source_row`, plus `is_season_total`. Grain: one row per (player_id, team_id); traded players also carry a `team_name = 'total'` row with a null `team_id` (`is_season_total`).\n",
+      "step": "gold",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 3,
+      "dbt_columns": [
+        "is_season_total",
+        "player_id",
+        "team_id"
+      ]
+    },
+    {
+      "key": "gold_agg_bb_shots",
+      "group": "gold",
+      "kind": "asset",
+      "description": "Basketball season aggregate `aggregates_shots` as bronze wrote it, without `source_file` and `source_row`, plus `is_season_total`. Grain: one row per (player_id, team_id); traded players also carry a `team_name = 'total'` row with a null `team_id` (`is_season_total`).\n",
+      "step": "gold",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 3,
+      "dbt_columns": [
+        "is_season_total",
+        "player_id",
+        "team_id"
+      ]
+    },
+    {
+      "key": "gold_agg_fb_obr",
+      "group": "gold",
+      "kind": "asset",
+      "description": "Football season aggregate `aggregates_obr` as bronze wrote it, without `source_file` and `source_row`, plus `is_season_total`. Grain: one row per (player_id, team_id, position_group); the (player, team) pair repeats once per `position_group`, so the key has three columns.\n",
+      "step": "gold",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 5,
+      "dbt_columns": [
+        "is_season_total",
+        "player_id",
+        "position_group",
+        "team_id"
+      ]
+    },
+    {
+      "key": "gold_agg_fb_passing",
+      "group": "gold",
+      "kind": "asset",
+      "description": "Football season aggregate `aggregates_passing` as bronze wrote it, without `source_file` and `source_row`, plus `is_season_total`. Grain: one row per (player_id, team_id, position_group); the (player, team) pair repeats once per `position_group`, so the key has three columns.\n",
+      "step": "gold",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 5,
+      "dbt_columns": [
+        "is_season_total",
+        "player_id",
+        "position_group",
+        "team_id"
+      ]
+    },
+    {
+      "key": "gold_agg_fb_physical",
+      "group": "gold",
+      "kind": "asset",
+      "description": "Football season aggregate `aggregates_physical` as bronze wrote it, without `source_file` and `source_row`, plus `is_season_total`. Grain: one row per (player_id, team_id, position_group); the (player, team) pair repeats once per `position_group`, so the key has three columns.\n",
+      "step": "gold",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 5,
+      "dbt_columns": [
+        "is_season_total",
+        "player_id",
+        "position_group",
+        "team_id"
+      ]
+    },
+    {
+      "key": "gold_dim_metric",
+      "group": "gold",
+      "kind": "asset",
+      "description": "One row per (sport, family, metric) with at least one non-null value; `kind` is read off the name.",
+      "step": "gold",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 8,
+      "dbt_columns": [
+        "family",
+        "kind",
+        "metric",
+        "sport"
+      ]
+    },
+    {
+      "key": "gold_dim_player",
+      "group": "gold",
+      "kind": "asset",
+      "description": "One row per player and sport across the six aggregates, with the provider's own id.",
+      "step": "gold",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 5,
+      "dbt_columns": [
+        "player_id",
+        "player_name",
+        "sport"
+      ]
+    },
+    {
+      "key": "gold_dim_season_team",
+      "group": "gold",
+      "kind": "asset",
+      "description": "One row per team and sport in the six aggregates. Not called `dim_team` because silver already has one; the season-total row of a traded player is not a team.\n",
+      "step": "gold",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 5,
+      "dbt_columns": [
+        "sport",
+        "team_id",
+        "team_name"
+      ]
+    },
+    {
+      "key": "gold_fact_player_season_metric",
+      "group": "gold",
+      "kind": "asset",
+      "description": "One row per non-null numeric cell of the six aggregates. Rows with `is_season_total` are the provider's totals of traded players: filter them out before summing.\n",
+      "step": "gold",
+      "sport": null,
+      "schema": "dbt",
+      "dbt_tests": 7,
+      "dbt_columns": [
+        "family",
+        "metric",
+        "player_id",
+        "sport",
+        "value"
+      ]
+    },
+    {
       "key": "manifest_sources",
       "group": "ingest",
       "kind": "external",
@@ -728,6 +885,18 @@
   ],
   "edges": [
     {
+      "from": "bronze_basketball_aggregates_drives",
+      "to": "gold_agg_bb_drives"
+    },
+    {
+      "from": "bronze_basketball_aggregates_picks",
+      "to": "gold_agg_bb_picks"
+    },
+    {
+      "from": "bronze_basketball_aggregates_shots",
+      "to": "gold_agg_bb_shots"
+    },
+    {
       "from": "bronze_basketball_events_chance_players",
       "to": "silver_events"
     },
@@ -920,6 +1089,18 @@
       "to": "silver_dim_team_period"
     },
     {
+      "from": "bronze_football_aggregates_obr",
+      "to": "gold_agg_fb_obr"
+    },
+    {
+      "from": "bronze_football_aggregates_passing",
+      "to": "gold_agg_fb_passing"
+    },
+    {
+      "from": "bronze_football_aggregates_physical",
+      "to": "gold_agg_fb_physical"
+    },
+    {
       "from": "bronze_football_dynamic_events",
       "to": "bronze_common_orientation"
     },
@@ -1002,6 +1183,82 @@
     {
       "from": "bronze_football_tracking_objects",
       "to": "silver_frames"
+    },
+    {
+      "from": "gold_agg_bb_drives",
+      "to": "gold_dim_player"
+    },
+    {
+      "from": "gold_agg_bb_drives",
+      "to": "gold_dim_season_team"
+    },
+    {
+      "from": "gold_agg_bb_drives",
+      "to": "gold_fact_player_season_metric"
+    },
+    {
+      "from": "gold_agg_bb_picks",
+      "to": "gold_dim_player"
+    },
+    {
+      "from": "gold_agg_bb_picks",
+      "to": "gold_dim_season_team"
+    },
+    {
+      "from": "gold_agg_bb_picks",
+      "to": "gold_fact_player_season_metric"
+    },
+    {
+      "from": "gold_agg_bb_shots",
+      "to": "gold_dim_player"
+    },
+    {
+      "from": "gold_agg_bb_shots",
+      "to": "gold_dim_season_team"
+    },
+    {
+      "from": "gold_agg_bb_shots",
+      "to": "gold_fact_player_season_metric"
+    },
+    {
+      "from": "gold_agg_fb_obr",
+      "to": "gold_dim_player"
+    },
+    {
+      "from": "gold_agg_fb_obr",
+      "to": "gold_dim_season_team"
+    },
+    {
+      "from": "gold_agg_fb_obr",
+      "to": "gold_fact_player_season_metric"
+    },
+    {
+      "from": "gold_agg_fb_passing",
+      "to": "gold_dim_player"
+    },
+    {
+      "from": "gold_agg_fb_passing",
+      "to": "gold_dim_season_team"
+    },
+    {
+      "from": "gold_agg_fb_passing",
+      "to": "gold_fact_player_season_metric"
+    },
+    {
+      "from": "gold_agg_fb_physical",
+      "to": "gold_dim_player"
+    },
+    {
+      "from": "gold_agg_fb_physical",
+      "to": "gold_dim_season_team"
+    },
+    {
+      "from": "gold_agg_fb_physical",
+      "to": "gold_fact_player_season_metric"
+    },
+    {
+      "from": "gold_fact_player_season_metric",
+      "to": "gold_dim_metric"
     },
     {
       "from": "manifest_sources",
