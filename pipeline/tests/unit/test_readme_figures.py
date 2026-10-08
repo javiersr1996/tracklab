@@ -50,26 +50,40 @@ def _artefact(name: str) -> Any:
     return json.loads((DATA_DIR / name).read_text("utf-8"))
 
 
-def artefact_numbers() -> set[str]:
-    """The numbers of stats.json, plus each table's rows per sport summed over its matches (the
-    figure the site shows, `rowsOf` in web/lib/data.ts). Nothing else: the prose names stats.json
-    as its source and quotes four of these, and every other file let in here admits all its
-    numbers to the prose (task 46 had added platform, lineage and the three warehouse files: 727
-    numbers admitted instead of 391, review V of P4, M2). The figures in code are read field by
-    field in `code_problems`."""
+def _frames(stats: Any, sport: str) -> int:
+    return sum(r["rows"] for r in stats["tables"] if r["table"] == "frames" and r["sport"] == sport)
+
+
+def prose_expected() -> list[str]:
+    """The sentences of the prose that carry a figure, each with the number read from the field it
+    stands for: `frames` per sport (the figure the site shows, `rowsOf` in web/lib/data.ts, so
+    summed over the matches) and the bytes of stats.json. A figure that is in stats.json under
+    another field is wrong (review V of P4, B10: the two `frames` figures swapped passed)."""
     stats = _artefact("stats.json")
-    per_sport: dict[tuple[str, str], int] = {}
-    for row in stats["tables"]:
-        key = (row["table"], row["sport"])
-        per_sport[key] = per_sport.get(key, 0) + row["rows"]
-    return _numbers(stats) | {str(n) for n in per_sport.values()}
+    basketball, football = _frames(stats, "basketball"), _frames(stats, "football")
+    raw, published = stats["bytes"]["raw"]["total"], stats["bytes"]["published"]["total"]
+    return [
+        f"returns {basketball:,} rows of basketball and {football:,} of football",
+        f"weigh {raw:,} bytes as pinned (`bytes.raw.total`)",
+        f"the site ships {published:,} bytes of possessions (`bytes.published.total`)",
+    ]
+
+
+def prose_problems(readme: str) -> list[str]:
+    """`prose_expected` missing from the README, and any other figure in its prose."""
+    flat = " ".join(readme.split())
+    expected = prose_expected()
+    allowed = {n.replace(",", "") for n in NUMBER.findall(" ".join(expected))}
+    return [f"not in the README: {e!r}" for e in expected if e not in flat] + [
+        f"in the prose, from no field: {f}" for f in readme_figures(readme) if f not in allowed
+    ]
 
 
 def test_readme_figures_come_from_artefacts() -> None:
-    figures = readme_figures(README.read_text("utf-8"))
-    print(f"README figures: {figures}")
-    assert figures, "the README quotes no figure at all: the regex is broken"
-    assert [f for f in figures if f not in artefact_numbers()] == []
+    readme = README.read_text("utf-8")
+    print(f"README figures: {readme_figures(readme)}")
+    assert readme_figures(readme), "the README quotes no figure at all: the regex is broken"
+    assert prose_problems(readme) == []
 
 
 def test_a_typed_figure_is_caught() -> None:
@@ -77,17 +91,34 @@ def test_a_typed_figure_is_caught() -> None:
         "9126745",
         "12",
     ]
-    assert "9126745" not in artefact_numbers()
-    assert "12" not in artefact_numbers()
+    flat = " ".join(README.read_text("utf-8").split())
+    assert prose_problems(flat.replace("9,126,744", "9,126,745")) != []
 
 
-# Numbers in code that are not measurements: the second load's contract (`inserted=0 updated=0
-# deleted=0`) and the exit code of `ingest`.
-NOT_FIGURES = frozenset({"0", "1"})
+def test_a_figure_of_another_field_is_caught() -> None:
+    """The real README with the figures swapped for others that stats.json does hold: the two
+    `frames` figures, and the published bytes of football in place of the total."""
+    stats = _artefact("stats.json")
+    flat = " ".join(README.read_text("utf-8").split())
+    basketball, football = (f"{_frames(stats, sport):,}" for sport in ("basketball", "football"))
+    published = f"{stats['bytes']['published']['total']:,}"
+    swapped = flat.replace(basketball, "@").replace(football, basketball).replace("@", football)
+    other_bytes = flat.replace(published, f"{stats['bytes']['published']['football']:,}")
+    for text in (swapped, other_bytes):
+        assert text != flat, "the mutation changed nothing: the README moved on, update this test"
+        assert prose_problems(text) != []
+
+
+# The only numbers in code that are not measurements: the second load's contract and the exit code
+# of `ingest`. Exact phrases, so a stray `0` or `1` elsewhere in code is a problem (review V of P4,
+# B10).
+NOT_FIGURES = ("`inserted=0 updated=0 deleted=0`", "Exit code `1`")
 
 
 def code_figures(text: str) -> list[str]:
     """The numbers `readme_figures` leaves out: those in code blocks and in inline code."""
+    for phrase in NOT_FIGURES:
+        text = text.replace(phrase, "")
     blocks = re.findall(r"```.*?```", text, flags=re.S)
     inline = re.findall(r"`[^`]*`", re.sub(r"```.*?```", "", text, flags=re.S))
     return [m.group().replace(",", "") for s in blocks + inline for m in NUMBER.finditer(s)]
@@ -123,10 +154,12 @@ def code_problems(readme: str) -> list[str]:
     where = _artefact("warehouse_pg.json")["source"]["where_id"]
     if ("a local Postgres in Docker" in flat) != (where == "local"):
         problems.append(f"where the Postgres numbers come from: {where}")
-    allowed = set(NUMBER.findall(" ".join(expected))) | NOT_FIGURES
-    return problems + [
-        f"in code, from no artefact: {n}" for n in code_figures(readme) if n not in allowed
-    ]
+    # The sentences out first: a number elsewhere in code is no figure of theirs, even when it
+    # equals one (`76` ms or `2.3` s passed while the allowed set held every number of the five).
+    rest = flat
+    for sentence in expected:
+        rest = rest.replace(sentence, "")
+    return problems + [f"in code, from no artefact: {n}" for n in code_figures(rest)]
 
 
 def test_readme_figures_in_code_are_the_artefacts() -> None:
@@ -152,7 +185,10 @@ def test_a_changed_figure_in_code_is_caught() -> None:
     ]
     mutated.append(flat.replace("a local Postgres in Docker", "Neon"))
     mutated.append(flat.replace("## Warehouse ", "## Warehouse It answers in `250` ms. "))
-    assert len(mutated) == 11
+    # A number that equals one of the figures, or a 0 or a 1, in a place that is none of theirs.
+    for stray in ("76", "2.3", "0", "1"):
+        mutated.append(flat.replace("## Warehouse ", f"## Warehouse It answers in `{stray}` s. "))
+    assert len(mutated) == 15
     for text in mutated:
         assert text != flat, "the mutation changed nothing: the README moved on, update this test"
         assert code_problems(text) != []
