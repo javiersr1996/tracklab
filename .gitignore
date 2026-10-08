@@ -28,6 +28,8 @@ node_modules/
 *.tsbuildinfo
 web/test-results/
 web/playwright-report/
+# The DuckDB-WASM engine and parquet extension, written by web/scripts/copy-engine.mjs.
+web/public/duckdb/
 
 # OS
 .DS_Store
