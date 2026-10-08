@@ -359,28 +359,41 @@ def measure_quality(reports_dir: Path) -> dict[str, Any]:
     }
 
 
-def measure_publish(web_data_dir: Path) -> dict[str, Any]:
-    """What the browser downloads from `web/public/data`: the JSON to watch and the Parquet
-    to query (task 41; decision 10, option C). `lineage.json` and `platform.json` are left out
-    by name at any depth, the Parquet are not."""
+def serves_query(name: str) -> bool:
+    """The one rule of the split behind "out" (decision 10, option C, by use): a published file
+    that only `/warehouse` uses is "to query", the Parquet and the `warehouse*.json` that
+    describe them, their example answers and the Postgres snapshot; anything else is "to watch"."""
+    return name.endswith(".parquet") or (name.startswith("warehouse") and name.endswith(".json"))
 
-    def listing(pattern: str) -> list[dict[str, Any]]:
+
+def measure_publish(web_data_dir: Path) -> dict[str, Any]:
+    """What `web/public/data` publishes, split by use (task 41; decision 10, option C): what the
+    site watches and what `/warehouse` queries (`serves_query`). `lineage.json` and
+    `platform.json` are left out by name at any depth, the Parquet are not."""
+    paths = sorted(
+        path
+        for pattern in ("*.json", "*.parquet")
+        for path in web_data_dir.rglob(pattern)
+        if path.name not in ABOUT_PLATFORM
+    )
+
+    def listing(to_query: bool) -> list[dict[str, Any]]:
         return [
             {"path": path.relative_to(web_data_dir).as_posix(), "bytes": path.stat().st_size}
-            for path in sorted(web_data_dir.rglob(pattern))
-            if path.name not in ABOUT_PLATFORM
+            for path in paths
+            if serves_query(path.name) == to_query
         ]
 
-    json_files, parquet_files = listing("*.json"), listing("*.parquet")
-    json_bytes = sum(f["bytes"] for f in json_files)
-    parquet_bytes = sum(f["bytes"] for f in parquet_files)
+    watch, query = listing(False), listing(True)
+    watch_bytes = sum(f["bytes"] for f in watch)
+    query_bytes = sum(f["bytes"] for f in query)
     return {
-        "files": len(json_files) + len(parquet_files),
-        "bytes": json_bytes + parquet_bytes,
-        "json_bytes": json_bytes,
-        "parquet_bytes": parquet_bytes,
-        "json": json_files,
-        "parquet": parquet_files,
+        "files": len(paths),
+        "bytes": watch_bytes + query_bytes,
+        "watch_bytes": watch_bytes,
+        "query_bytes": query_bytes,
+        "watch": watch,
+        "query": query,
     }
 
 

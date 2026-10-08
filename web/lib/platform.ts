@@ -18,12 +18,12 @@ export interface PlatformLayer {
   bytes_read?: number;
   downloaded?: number;
   verified?: number;
-  // publish only: the JSON the page watches and the Parquet it queries, which add up to
-  // `bytes` (task 46, decision 10), and why "out" is not a live rescan (task 34, decision 1)
-  json_files?: number;
-  json_bytes?: number;
-  parquet_files?: number;
-  parquet_bytes?: number;
+  // publish only: what the site watches and what /warehouse queries, split by use, which add up
+  // to `bytes` (task 46, decision 10), and why "out" is not a live rescan (task 34, decision 1)
+  watch_files?: number;
+  watch_bytes?: number;
+  query_files?: number;
+  query_bytes?: number;
   note?: string;
 }
 

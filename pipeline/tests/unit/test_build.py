@@ -32,6 +32,7 @@ from tracklab.build import (
     measure_publish,
     measure_table,
     run_build,
+    serves_query,
     steps_from_events,
 )
 
@@ -221,28 +222,58 @@ def test_publish_leaves_out_the_files_written_from_a_record(tmp_path: Path) -> N
 
     publish = measure_publish(tmp_path)
 
-    assert [f["path"] for f in publish["json"]] == ["stats.json"]
+    assert [f["path"] for f in publish["watch"]] == ["stats.json"]
     assert (publish["files"], publish["bytes"]) == (1, 10)
 
 
 def test_publish_counts_the_parquet_the_browser_queries(tmp_path: Path) -> None:
-    """Decision 10, option C: "out" is the JSON to watch plus the Parquet to query. Without
-    the `*.parquet` pass the 4,000 bytes below are not counted and this fails."""
+    """Decision 10, option C: "out" is what the site watches plus what /warehouse queries.
+    Without the `*.parquet` pass the 4,000 bytes below are not counted and this fails."""
     (tmp_path / "stats.json").write_bytes(b"x" * 10)
     (tmp_path / "platform.json").write_bytes(b"x" * 300)
     (tmp_path / "warehouse").mkdir()
     (tmp_path / "warehouse" / "fact.abcd1234.parquet").write_bytes(b"x" * 3000)
     (tmp_path / "warehouse" / "bb_picks.ef567890.parquet").write_bytes(b"x" * 1000)
-    (tmp_path / "warehouse.json").write_bytes(b"x" * 20)
 
     publish = measure_publish(tmp_path)
 
-    assert [f["path"] for f in publish["parquet"]] == [
+    assert [f["path"] for f in publish["query"]] == [
         "warehouse/bb_picks.ef567890.parquet",
         "warehouse/fact.abcd1234.parquet",
     ]
-    assert (publish["json_bytes"], publish["parquet_bytes"]) == (30, 4000)
-    assert (publish["files"], publish["bytes"]) == (4, 4030)
+    assert (publish["watch_bytes"], publish["query_bytes"]) == (10, 4000)
+    assert (publish["files"], publish["bytes"]) == (3, 4010)
+
+
+def test_the_warehouse_json_is_to_query_not_to_watch(tmp_path: Path) -> None:
+    """The split is by use, not by format (review V of P4, A1): the JSON that only /warehouse
+    reads count with the Parquet. Split by extension, the three below land in "to watch"."""
+    (tmp_path / "stats.json").write_bytes(b"x" * 10)
+    (tmp_path / "possessions").mkdir()
+    (tmp_path / "possessions" / "bb_possession_1.json").write_bytes(b"x" * 5)
+    (tmp_path / "warehouse").mkdir()
+    (tmp_path / "warehouse" / "fact.abcd1234.parquet").write_bytes(b"x" * 3000)
+    for name, size in (
+        ("warehouse.json", 20),
+        ("warehouse_examples.json", 40),
+        ("warehouse_pg.json", 80),
+    ):
+        (tmp_path / name).write_bytes(b"x" * size)
+
+    publish = measure_publish(tmp_path)
+
+    assert [f["path"] for f in publish["watch"]] == [
+        "possessions/bb_possession_1.json",
+        "stats.json",
+    ]
+    assert [f["path"] for f in publish["query"]] == [
+        "warehouse/fact.abcd1234.parquet",
+        "warehouse.json",
+        "warehouse_examples.json",
+        "warehouse_pg.json",
+    ]
+    assert (publish["watch_bytes"], publish["query_bytes"]) == (15, 3140)
+    assert serves_query("warehouse_anything.json") and not serves_query("stats.json")
 
 
 def test_the_disk_measure_has_a_gold_layer(tmp_path: Path) -> None:

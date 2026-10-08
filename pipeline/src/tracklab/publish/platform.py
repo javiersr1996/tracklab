@@ -163,12 +163,14 @@ def layers_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
             entry["downloaded"] = raw["downloaded"]
             entry["verified"] = raw["verified"]
         if layer == "publish":
-            entry["json_files"] = len(publish["json"])
-            entry["json_bytes"] = publish["json_bytes"]
-            entry["parquet_files"] = len(publish["parquet"])
-            entry["parquet_bytes"] = publish["parquet_bytes"]
+            entry["watch_files"] = len(publish["watch"])
+            entry["watch_bytes"] = publish["watch_bytes"]
+            entry["query_files"] = len(publish["query"])
+            entry["query_bytes"] = publish["query_bytes"]
             entry["note"] = (
-                "the JSON the browser watches plus the Parquet it queries, as `tracklab build` "
+                "split by use: to watch, the possessions and the JSON the other pages are built "
+                "from; to query, what only /warehouse uses, the Parquet and the warehouse*.json "
+                "that describe them; as `tracklab build` "
                 "measured them, without lineage.json and platform.json (counting platform.json "
                 "would make the title depend on its own previous value, decision 1); the query "
                 "engine is not data and is not counted"
@@ -343,10 +345,10 @@ def title_from_record(record: dict[str, Any]) -> str:
 
 
 def subtitle_from_record(record: dict[str, Any]) -> str:
-    """The split behind "out" (decision 10, option C): the JSON the page watches and the
-    Parquet it queries, from the same measure as the title."""
+    """The split behind "out" (decision 10, option C), by use (`build.serves_query`): what the
+    site watches and what `/warehouse` queries, from the same measure as the title."""
     publish = record["disk"]["publish"]
-    return f"{fmt(publish['json_bytes'])} to watch, {fmt(publish['parquet_bytes'])} to query"
+    return f"{fmt(publish['watch_bytes'])} to watch, {fmt(publish['query_bytes'])} to query"
 
 
 def run_block(record: dict[str, Any]) -> dict[str, Any]:

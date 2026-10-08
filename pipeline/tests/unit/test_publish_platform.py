@@ -186,15 +186,16 @@ def _record() -> dict[str, Any]:
             "publish": {
                 "files": 4,
                 "bytes": 3300,
-                "json_bytes": 300,
-                "parquet_bytes": 3000,
-                "json": [
+                "watch_bytes": 300,
+                "query_bytes": 3000,
+                "watch": [
                     {"path": "stats.json", "bytes": 150},
                     {"path": "index.json", "bytes": 150},
                 ],
-                "parquet": [
-                    {"path": "warehouse/fact.abcd1234.parquet", "bytes": 2000},
+                "query": [
+                    {"path": "warehouse/fact.abcd1234.parquet", "bytes": 1800},
                     {"path": "warehouse/bb_picks.ef567890.parquet", "bytes": 1000},
+                    {"path": "warehouse.json", "bytes": 200},
                 ],
             },
         },
@@ -218,12 +219,12 @@ def test_title_uses_bytes_pinned_and_the_records_own_publish_snapshot() -> None:
     assert title_from_record(_record()) == "1.9 KB in, 3.3 KB out"
 
 
-def test_subtitle_splits_out_into_the_json_to_watch_and_the_parquet_to_query() -> None:
+def test_subtitle_splits_out_into_what_the_site_watches_and_what_warehouse_queries() -> None:
     record = _record()
     assert subtitle_from_record(record) == "300 B to watch, 3.0 KB to query"
     assert platform_from_record(record, _index())["subtitle"] == subtitle_from_record(record)
     publish = record["disk"]["publish"]
-    assert publish["json_bytes"] + publish["parquet_bytes"] == publish["bytes"]
+    assert publish["watch_bytes"] + publish["query_bytes"] == publish["bytes"]
 
 
 def test_gold_is_a_layer_between_silver_and_quality_with_its_tables_and_seconds() -> None:
@@ -243,7 +244,8 @@ def test_publish_layer_carries_a_note_explaining_why_it_is_not_a_live_rescan() -
     layers = layers_from_record(_record())
     publish_layer = next(entry for entry in layers if entry["layer"] == "publish")
     assert publish_layer["bytes"] == 3300
-    assert (publish_layer["json_bytes"], publish_layer["parquet_bytes"]) == (300, 3000)
+    assert (publish_layer["watch_bytes"], publish_layer["query_bytes"]) == (300, 3000)
+    assert (publish_layer["watch_files"], publish_layer["query_files"]) == (2, 3)
     assert "lineage.json" in publish_layer["note"] and "platform.json" in publish_layer["note"]
 
 

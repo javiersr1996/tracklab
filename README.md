@@ -85,12 +85,14 @@ The pipeline as a product: [`/platform`](https://tracklab-sable.vercel.app/platf
 Dagster asset graph and animates the layers, raw to publish, with the numbers the latest
 `tracklab build` actually produced. Its H1 and the line under it are the title and subtitle
 `uv run tracklab publish platform` prints, from `web/public/data/platform.json`. "Out" counts what
-the browser downloads from `web/public/data`: the JSON it watches and the Parquet it queries
-(`lineage.json` and `platform.json` excluded, as they describe the platform rather than its data).
+`web/public/data` publishes, split by use: to watch, the possessions and the JSON the other pages
+are built from; to query, what only `/warehouse` uses, the Parquet and the `warehouse*.json` that
+describe them (`lineage.json` and `platform.json` excluded, as they describe the platform rather
+than its data).
 
 ```
 title: 2.3 GB in, 3.3 MB out
-subtitle: 1.3 MB to watch, 2.0 MB to query
+subtitle: 1.2 MB to watch, 2.1 MB to query
 ```
 
 `uv run dagster asset list -m tracklab.dagster_defs` lists `76` assets, the graph
