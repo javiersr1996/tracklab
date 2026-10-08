@@ -31,6 +31,7 @@ export function Console() {
       className="warehouse"
       data-engine={s.engine}
       data-query={s.query}
+      data-explaining={s.explaining}
       data-run={s.runs}
       data-example={example}
       data-bytes-engine={s.engineBytes ?? undefined}
@@ -75,7 +76,7 @@ export function Console() {
         <button type="button" disabled={s.query === "running"} onClick={() => run(sql)}>
           Run
         </button>
-        {s.query === "running" ? (
+        {s.query === "running" || s.explaining ? (
           <>
             {" "}
             <button type="button" onClick={() => cancel()}>
@@ -110,7 +111,7 @@ export function Console() {
       <p>
         {s.engineBytes === null
           ? "Not loaded: nothing of the engine is downloaded until a query runs."
-          : `${formatBytes(s.engineBytes)} of engine (the worker, the WebAssembly and the Parquet extension, at their encoded size), fetched before the first query of this visit from the network or from this browser's cache, and not counted in any query below.`}
+          : `${formatBytes(s.engineBytes)} of engine (the worker, the WebAssembly and the Parquet extension, at their encoded size), fetched when this engine started (the first query of this visit, or the first after a Cancel) from the network or from this browser's cache, and not counted in any query below.`}
         {s.versions ? ` duckdb-wasm ${s.versions.package}, DuckDB ${s.versions.duckdb}.` : ""}
       </p>
 

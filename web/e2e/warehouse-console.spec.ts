@@ -258,6 +258,38 @@ test("Cancel stops a query that runs on, and the next query starts a new engine"
   const next = await runSql(page, "SELECT 42 AS x");
   expect(next).toMatchObject({ query: "done", engine: "ready" });
   expect((await resultTable(page)).rows).toEqual([["42"]]);
+  // The new engine was started by this query, not by the first of the visit.
+  await expect(figure(page)).toContainText("fetched when this engine started");
+});
+
+// EXPLAIN ANALYZE runs the result's query again (N6 of the second pass: nothing on the page said
+// so, and Cancel did not exist for it). While it runs the figure says so and Cancel stops it.
+test("EXPLAIN ANALYZE shows that it runs and Cancel stops it", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto("/warehouse");
+  const attrs = await runSql(page, "SELECT count(*) AS n FROM range(300000000) t(i) WHERE i % 7 = 3");
+  expect(attrs.query, attrs.error).toBe("done");
+  await page.locator("button[data-explain]").click();
+  await expect(figure(page)).toHaveAttribute("data-explaining", "true");
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(figure(page)).toHaveAttribute("data-explaining", "false");
+  await expect(figure(page)).toHaveAttribute("data-error", /^Cancelled/);
+  await expect(figure(page)).toHaveAttribute("data-query", "done");
+  await expect.poll(() => page.workers().length, { timeout: 10_000 }).toBe(0);
+  await expect(page.locator("pre[data-plan]")).toHaveCount(0);
+});
+
+// N2: a query can fail after the engine has read the file, while its rows are written (arrow
+// throws on a TIMESTAMP that does not fit in 2^53 ms). The file is still held.
+test("a query that fails while its rows are written still marks the file as read", async ({ page }) => {
+  test.setTimeout(180_000);
+  const good = "SELECT player_name, team_name, psv99, player_birthdate FROM fb_physical WHERE NOT is_season_total";
+  await page.goto("/warehouse");
+  const bad = await runSql(page, "SELECT player_name, TIMESTAMP 'infinity' AS t FROM fb_physical LIMIT 1");
+  expect(bad.query).toBe("error");
+  const after = await runSql(page, good);
+  expect(after.query, after.error).toBe("done");
+  await expect(page.locator('li[data-table="fb_physical"]')).toHaveAttribute("data-warm", "true");
 });
 
 // 320 is narrower than the brief asks for: the long column names overflowed there first.

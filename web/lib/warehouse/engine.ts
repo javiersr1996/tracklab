@@ -79,6 +79,8 @@ export interface WarehouseSnapshot {
   error: string | null;
   // `EXPLAIN ANALYZE` of the last result's query, once asked for (`explain()`).
   plan: string | null;
+  // `explain()` is running: the engine is busy and Cancel can stop it, as it stops a query.
+  explaining: boolean;
 }
 
 const INITIAL: WarehouseSnapshot = {
@@ -90,6 +92,7 @@ const INITIAL: WarehouseSnapshot = {
   result: null,
   error: null,
   plan: null,
+  explaining: false,
 };
 
 let snapshot = INITIAL;
@@ -306,23 +309,25 @@ async function measure(e: Engine, sql: string, tables: string[]): Promise<QueryR
   const table = await execute(e, sql, tables);
   const ms = performance.now() - started;
   const { reads } = await e.report();
+  // What the query read is the engine's from here on, whatever happens to its rows after.
+  const summary = readsByFile(reads, e.files);
+  const held = new Set(summary.files.filter((f) => e.touched.has(f.file)).map((f) => f.file));
+  for (const f of summary.files) e.touched.add(f.file);
   const { fields } = table.schema;
   const columns = fields.map((field) => field.name);
   const vectors = fields.map((_, i) => table.getChildAt(i)!);
   const kept = Math.min(table.numRows, ROW_LIMIT);
   const rows = Array.from({ length: kept }, (_, r) => vectors.map((v) => columnCell(v, r)));
-  const summary = readsByFile(reads, e.files);
   const files: FileDetail[] = [];
   for (const f of summary.files) {
     const registered = e.files.find((r) => r.file === f.file)!;
     const groups = await rowGroupSpans(e, f.file);
     files.push({
       ...f,
-      warm: e.touched.has(f.file),
+      warm: held.has(f.file),
       rowGroups: { read: rowGroupsRead(groups, reads, registered.url), total: groups.length },
     });
   }
-  for (const f of files) e.touched.add(f.file);
   const { bytes, distinctBytes, requests } = summary;
   return { sql, columns, rows, rowCount: table.numRows, ms, bytes, distinctBytes, requests, files };
 }
@@ -366,11 +371,18 @@ async function rowGroupSpans(e: Engine, file: string): Promise<RowGroupSpan[]> {
 // from what it already holds.
 export async function explain(): Promise<void> {
   const sql = snapshot.result?.sql;
-  if (!sql || !engine || snapshot.query === "running") return;
+  if (!sql || !engine || snapshot.query === "running" || snapshot.explaining) return;
   // The plan belongs to the result on screen: a query started meanwhile replaces both.
   const gen = generation;
   const runs = snapshot.runs;
   const current = () => gen === generation && runs === snapshot.runs;
+  update({ explaining: true });
+  // The plan is written only while its result is on screen; the flag drops while this engine is
+  // still the one running it.
+  const finish = (plan: string) => {
+    if (gen !== generation) return;
+    update(current() ? { plan, explaining: false } : { explaining: false });
+  };
   try {
     const e = await engine;
     const table = await e.serial(async () => {
@@ -379,12 +391,10 @@ export async function explain(): Promise<void> {
       await e.report();
       return plan;
     });
-    if (!current()) return;
     const last = table.numRows - 1;
-    update({ plan: String(table.getChildAt(table.numCols - 1)!.get(last)) });
+    finish(String(table.getChildAt(table.numCols - 1)!.get(last)));
   } catch (error) {
-    if (!current()) return;
-    update({ plan: `EXPLAIN ANALYZE failed: ${message(error)}` });
+    finish(`EXPLAIN ANALYZE failed: ${message(error)}`);
   }
 }
 
@@ -392,12 +402,13 @@ export async function explain(): Promise<void> {
 // message until it ends, so the way out is to end the worker: the next query starts a new engine
 // (its files from the browser's cache, nothing of the data held).
 export function cancel(): void {
-  if (snapshot.query !== "running") return;
+  if (snapshot.query !== "running" && !snapshot.explaining) return;
   generation += 1;
   stop();
   update({
     engine: "idle",
-    query: "error",
+    query: snapshot.query === "running" ? "error" : snapshot.query,
+    explaining: false,
     engineBytes: null,
     versions: null,
     error: "Cancelled: the engine was stopped, and the next query starts a new one.",
