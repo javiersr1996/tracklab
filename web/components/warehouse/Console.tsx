@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatBytes } from "../../lib/format";
-import { dispose, explain, run, useWarehouse } from "../../lib/warehouse/engine";
+import { cancel, dispose, explain, run, useWarehouse } from "../../lib/warehouse/engine";
 import { EXAMPLES } from "../../lib/warehouse/examples";
 import { WAREHOUSE } from "../../lib/warehouse/registry";
 
@@ -75,6 +75,14 @@ export function Console() {
         <button type="button" disabled={s.query === "running"} onClick={() => run(sql)}>
           Run
         </button>
+        {s.query === "running" ? (
+          <>
+            {" "}
+            <button type="button" onClick={() => cancel()}>
+              Cancel
+            </button>
+          </>
+        ) : null}
       </p>
       <div className="warehouse-buttons" role="group" aria-label="List the columns of a table">
         <span>Columns of</span>

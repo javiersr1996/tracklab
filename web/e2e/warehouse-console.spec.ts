@@ -218,6 +218,27 @@ test("EXPLAIN ANALYZE and an example clicked together do not share the example's
   await expect(page.locator("pre[data-plan]")).toHaveCount(0);
 });
 
+// A query that would run for hours (B3 of the review of 38, 42 and 43: still running at 45 s,
+// with Run and the examples disabled). Cancel ends the engine's worker and the next query starts
+// a new engine.
+test("Cancel stops a query that runs on, and the next query starts a new engine", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto("/warehouse");
+  expect((await runSql(page, "SELECT 1 AS x")).query).toBe("done");
+  await page.getByLabel("SQL").fill("SELECT count(*) FROM range(1000000000000)");
+  await page.getByRole("button", { name: "Run", exact: true }).click();
+  await expect(figure(page)).toHaveAttribute("data-query", "running");
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(figure(page)).toHaveAttribute("data-query", "error");
+  await expect(figure(page)).toHaveAttribute("data-error", /^Cancelled/);
+  await expect(figure(page)).toHaveAttribute("data-engine", "idle");
+  await expect.poll(() => page.workers().length, { timeout: 10_000 }).toBe(0);
+
+  const next = await runSql(page, "SELECT 42 AS x");
+  expect(next).toMatchObject({ query: "done", engine: "ready" });
+  expect((await resultTable(page)).rows).toEqual([["42"]]);
+});
+
 // 320 is narrower than the brief asks for: the long column names overflowed there first.
 for (const width of [320, 390, 1440]) {
   test(`/warehouse at ${width} px: under 400,000 bytes without the engine, no sideways scroll, text of 16 px or more`, async ({

@@ -388,6 +388,22 @@ export async function explain(): Promise<void> {
   }
 }
 
+// Stops the query that is running. DuckDB-WASM runs a query inside its worker and reads no
+// message until it ends, so the way out is to end the worker: the next query starts a new engine
+// (its files from the browser's cache, nothing of the data held).
+export function cancel(): void {
+  if (snapshot.query !== "running") return;
+  generation += 1;
+  stop();
+  update({
+    engine: "idle",
+    query: "error",
+    engineBytes: null,
+    versions: null,
+    error: "Cancelled: the engine was stopped, and the next query starts a new one.",
+  });
+}
+
 // Terminates the worker and forgets the engine: the page calls it when it unmounts.
 export function dispose(): void {
   generation += 1;
