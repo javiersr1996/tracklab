@@ -41,11 +41,12 @@ async function runSql(page: Page, sql: string) {
   return finished(page, before);
 }
 
-// Cells of the result table as text: header names, then rows.
+// Cells of the result table as text: header names, then rows. The Parquet one only: the Postgres
+// panel of task 45 has a table of its own, inside a section.
 async function resultTable(page: Page) {
-  const header = await page.locator("figure.warehouse thead th").allTextContents();
+  const header = await page.locator("figure.warehouse > .table-scroll thead th").allTextContents();
   const rows = await page
-    .locator("figure.warehouse tbody tr")
+    .locator("figure.warehouse > .table-scroll tbody tr")
     .evaluateAll((trs) => trs.map((tr) => Array.from(tr.querySelectorAll("td"), (td) => td.textContent ?? "")));
   return { header, rows };
 }

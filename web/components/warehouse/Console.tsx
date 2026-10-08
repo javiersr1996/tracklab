@@ -1,29 +1,56 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatBytes } from "../../lib/format";
 import { cancel, dispose, explain, run, useWarehouse } from "../../lib/warehouse/engine";
 import { EXAMPLES } from "../../lib/warehouse/examples";
+import { askPostgres } from "../../lib/warehouse/pg-client";
+import type { PgSnapshotSummary } from "../../lib/warehouse/pg-types";
 import { WAREHOUSE } from "../../lib/warehouse/registry";
+import { type PgState, PostgresPanel } from "./PostgresPanel";
 
 // The console of /warehouse (task 43) around the engine of task 42. `figure.warehouse` carries
 // what the e2e reads: `data-engine`, `data-query`, `data-run` (calls to `run`, to tell one
 // result from the last), `data-example` (the example whose SQL was run, empty once the text is
 // edited), the byte and request counts, one `li[data-file]` per Parquet file the query touched.
+// `data-backend` (task 45) is the Postgres half of the example that was run: `idle` (no example),
+// `running`, then `live`, `snapshot` or `absent` (see PostgresPanel).
 // Nothing of the engine is fetched until a query is run, by "Run", an example or a column list.
 // Every value from the engine is shown as text: React escapes it, and nothing here sets HTML.
 
 const SHOWN_ROWS = 20;
 
-export function Console() {
+export function Console({ pg }: { pg: PgSnapshotSummary }) {
   const s = useWarehouse();
   const [sql, setSql] = useState(EXAMPLES.find((e) => e.id === "fact")!.sql);
   const [example, setExample] = useState("");
-  // The worker lives as long as the page that started it.
-  useEffect(() => dispose, []);
+  const [asked, setAsked] = useState<PgState | null>(null);
+  const asking = useRef<AbortController | null>(null);
+  // The worker lives as long as the page that started it, and so does a question to Postgres.
+  useEffect(
+    () => () => {
+      asking.current?.abort();
+      dispose();
+    },
+    [],
+  );
+
+  // One question at a time: a newer example cancels the older one, whose answer is dropped.
+  function askBackend(id: string) {
+    asking.current?.abort();
+    const controller = new AbortController();
+    asking.current = controller;
+    setAsked({ id, backend: "running" });
+    askPostgres(id, controller.signal).then(
+      (answer) => setAsked({ id, ...answer }),
+      () => {},
+    );
+  }
 
   const r = s.result;
   const current = EXAMPLES.find((e) => e.id === example);
+  const forExample = current && asked?.id === current.id ? asked : null;
+  const snapshotOf = pg.examples.find((e) => e.id === current?.id);
   const noRead = r !== null && r.requests === 0;
   const listing = r !== null && r.rowCount === 0;
   return (
@@ -34,6 +61,7 @@ export function Console() {
       data-explaining={s.explaining}
       data-run={s.runs}
       data-example={example}
+      data-backend={forExample?.backend ?? "idle"}
       data-bytes-engine={s.engineBytes ?? undefined}
       data-bytes-query={r?.bytes}
       data-bytes-distinct={r?.distinctBytes}
@@ -55,6 +83,7 @@ export function Console() {
               setSql(e.sql);
               setExample(e.id);
               run(e.sql);
+              askBackend(e.id);
             }}
           >
             {e.label}
@@ -220,6 +249,14 @@ export function Console() {
           )}
         </>
       )}
+      {forExample && snapshotOf ? (
+        <PostgresPanel
+          pg={forExample}
+          summary={pg}
+          example={snapshotOf}
+          parquet={r !== null && r.sql === current?.sql ? r : null}
+        />
+      ) : null}
     </figure>
   );
 }

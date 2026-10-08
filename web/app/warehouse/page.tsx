@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Console } from "../../components/warehouse/Console";
 import { rowsOf } from "../../lib/data";
 import { EXAMPLES_FILE } from "../../lib/warehouse/examples";
+import { summary } from "../../lib/warehouse/pg";
 import { WAREHOUSE } from "../../lib/warehouse/registry";
 import { formatBytes } from "../../lib/format";
 
@@ -26,10 +27,12 @@ export default function WarehousePage() {
         SQL over the season aggregates of both bundles, run by DuckDB in this browser on Parquet
         files that are read by HTTP range. Nothing of the engine is downloaded until you run a
         query, and the panel under the editor counts the engine&apos;s bytes and the data&apos;s
-        separately.
+        separately. Each example also asks a Postgres holding the same data in a dimensional model,
+        through this site&apos;s own route, which runs only those five queries: if that Postgres
+        answers in time its rows are shown live, and if not, the snapshot taken when it was loaded.
       </p>
 
-      <Console />
+      <Console pg={summary()} />
 
       <h2>What the data holds, and what it does not</h2>
       <ul>
