@@ -5,6 +5,10 @@ in `web/public/data/stats.json`, the file the README names as its only source.
 Any number of `pipeline/reports/` would be too loose: with every integer found
 there, a small invented figure would pass (final review, row V). Thousands
 separators are the README's own formatting and are dropped first.
+
+A figure inside code is checked against the one field it stands for
+(`code_problems`), and a number in code that stands for none fails (review V
+of P4, M2: the Warehouse section quoted four, and no test read them).
 """
 
 from __future__ import annotations
@@ -39,71 +43,116 @@ def _numbers(value: Any) -> set[str]:
 
 
 DATA_DIR = REPO / "web" / "public" / "data"
+README = REPO / "README.md"
+
+
+def _artefact(name: str) -> Any:
+    return json.loads((DATA_DIR / name).read_text("utf-8"))
 
 
 def artefact_numbers() -> set[str]:
-    """The numbers of stats.json, plus each table's rows per sport summed over its
-    matches (the figure the site shows, `rowsOf` in web/lib/data.ts), plus
-    every number platform.json, lineage.json and the three warehouse files carry
-    (task 34: the measured title and the graph's own counts; task 46: the
-    Warehouse section)."""
-    stats = json.loads((DATA_DIR / "stats.json").read_text("utf-8"))
+    """The numbers of stats.json, plus each table's rows per sport summed over its matches (the
+    figure the site shows, `rowsOf` in web/lib/data.ts). Nothing else: the prose names stats.json
+    as its source and quotes four of these, and every other file let in here admits all its
+    numbers to the prose (task 46 had added platform, lineage and the three warehouse files: 727
+    numbers admitted instead of 391, review V of P4, M2). The figures in code are read field by
+    field in `code_problems`."""
+    stats = _artefact("stats.json")
     per_sport: dict[tuple[str, str], int] = {}
     for row in stats["tables"]:
         key = (row["table"], row["sport"])
         per_sport[key] = per_sport.get(key, 0) + row["rows"]
-    numbers = _numbers(stats) | {str(n) for n in per_sport.values()}
-    for name in (
-        "platform.json",
-        "lineage.json",
-        "warehouse.json",
-        "warehouse_examples.json",
-        "warehouse_pg.json",
-    ):
-        path = DATA_DIR / name
-        if path.is_file():
-            numbers |= _numbers(json.loads(path.read_text("utf-8")))
-    return numbers
+    return _numbers(stats) | {str(n) for n in per_sport.values()}
 
 
 def test_readme_figures_come_from_artefacts() -> None:
-    figures = readme_figures((REPO / "README.md").read_text("utf-8"))
+    figures = readme_figures(README.read_text("utf-8"))
     print(f"README figures: {figures}")
     assert figures, "the README quotes no figure at all: the regex is broken"
     assert [f for f in figures if f not in artefact_numbers()] == []
 
 
 def test_a_typed_figure_is_caught() -> None:
-    assert readme_figures("rows: 9,126,745 in `frames` and 7654321 in ```x 99```") == [
+    assert readme_figures("rows: 9,126,745 in `frames` and 12 in ```x 99```") == [
         "9126745",
-        "7654321",
+        "12",
     ]
     assert "9126745" not in artefact_numbers()
-    assert "7654321" not in artefact_numbers()
+    assert "12" not in artefact_numbers()
 
 
-def _readme_title_and_subtitle(readme: str) -> tuple[str | None, str | None]:
-    title = re.search(r"^title: (.+)$", readme, flags=re.M)
-    subtitle = re.search(r"^subtitle: (.+)$", readme, flags=re.M)
-    return (title.group(1) if title else None, subtitle.group(1) if subtitle else None)
+# Numbers in code that are not measurements: the second load's contract (`inserted=0 updated=0
+# deleted=0`) and the exit code of `ingest`.
+NOT_FIGURES = frozenset({"0", "1"})
 
 
-def test_readme_title_and_asset_count_are_the_artefacts() -> None:
-    """The figures the README quotes inside code, where the test above cannot see
-    them: the title and subtitle `tracklab publish platform` prints and the asset count."""
-    readme = (REPO / "README.md").read_text("utf-8")
-    platform = json.loads((DATA_DIR / "platform.json").read_text("utf-8"))
-    lineage = json.loads((DATA_DIR / "lineage.json").read_text("utf-8"))
-    assets = re.search(r"lists `(\d+)` assets", readme)
-    assert assets, "the README no longer quotes the asset count"
-    assert _readme_title_and_subtitle(readme) == (platform["title"], platform["subtitle"])
-    assert int(assets.group(1)) == sum(1 for n in lineage["nodes"] if n["kind"] == "asset")
+def code_figures(text: str) -> list[str]:
+    """The numbers `readme_figures` leaves out: those in code blocks and in inline code."""
+    blocks = re.findall(r"```.*?```", text, flags=re.S)
+    inline = re.findall(r"`[^`]*`", re.sub(r"```.*?```", "", text, flags=re.S))
+    return [m.group().replace(",", "") for s in blocks + inline for m in NUMBER.finditer(s)]
 
 
-def test_a_typed_subtitle_is_caught() -> None:
-    """A subtitle typed with a different figure must not equal the artefact's."""
-    platform = json.loads((DATA_DIR / "platform.json").read_text("utf-8"))
-    typed = "subtitle: 9.9 MB to watch, 0.1 MB to query"
-    readme = "title: " + platform["title"] + chr(10) + typed + chr(10)
-    assert _readme_title_and_subtitle(readme) != (platform["title"], platform["subtitle"])
-    assert _readme_title_and_subtitle("no lines") == (None, None)
+def code_expected() -> list[str]:
+    """What the README must say in code, read from the field each figure stands for: the title
+    and subtitle `tracklab publish platform` prints (platform.json), the asset count
+    (lineage.json), the long fact's rows and row group size (warehouse.json), and the Postgres
+    database's bytes and fact rows (warehouse_pg.json)."""
+    platform, lineage = _artefact("platform.json"), _artefact("lineage.json")
+    warehouse, pg = _artefact("warehouse.json"), _artefact("warehouse_pg.json")
+    fact = next(t for t in warehouse["tables"] if t["table"] == "fact")
+    group = max(g["rows"] for g in fact["row_groups"])
+    pg_fact = next(t for t in pg["tables"] if t["table"] == "fact_player_season_metric")
+    assets = sum(1 for n in lineage["nodes"] if n["kind"] == "asset")
+    return [
+        f"title: {platform['title']}",
+        f"subtitle: {platform['subtitle']}",
+        f"lists `{assets}` assets",
+        f"has `{fact['rows']}` rows in row groups of `{group}` ordered by metric",
+        f"`{pg['database_bytes']}` bytes for the whole database, `{pg_fact['rows']}` rows in the "
+        "fact table",
+    ]
+
+
+def code_problems(readme: str) -> list[str]:
+    """`code_expected` missing from the README, the Postgres numbers said to come from Docker
+    when warehouse_pg.json says otherwise (or the reverse), and any other number in code."""
+    flat = " ".join(readme.split())
+    expected = code_expected()
+    problems = [f"not in the README: {e!r}" for e in expected if e not in flat]
+    where = _artefact("warehouse_pg.json")["source"]["where_id"]
+    if ("a local Postgres in Docker" in flat) != (where == "local"):
+        problems.append(f"where the Postgres numbers come from: {where}")
+    allowed = set(NUMBER.findall(" ".join(expected))) | NOT_FIGURES
+    return problems + [
+        f"in code, from no artefact: {n}" for n in code_figures(readme) if n not in allowed
+    ]
+
+
+def test_readme_figures_in_code_are_the_artefacts() -> None:
+    """The figures inside code, where `test_readme_figures_come_from_artefacts` cannot see them."""
+    readme = README.read_text("utf-8")
+    print(f"README figures in code: {code_figures(readme)}")
+    assert code_problems(readme) == []
+
+
+def _another(number: str) -> str:
+    return number[:-1] + str((int(number[-1]) + 1) % 10)
+
+
+def test_a_changed_figure_in_code_is_caught() -> None:
+    """The real README with each figure in code changed, one at a time, plus a sentence that
+    moves the Postgres numbers to Neon and a new figure in code: each must be a problem (the
+    typed subtitle of task 46 only tested the helper, review V of P4, B8)."""
+    flat = " ".join(README.read_text("utf-8").split())
+    mutated = [
+        flat.replace(sentence, sentence[: m.start()] + _another(m.group()) + sentence[m.end() :])
+        for sentence in code_expected()
+        for m in NUMBER.finditer(sentence)
+    ]
+    mutated.append(flat.replace("a local Postgres in Docker", "Neon"))
+    mutated.append(flat.replace("## Warehouse ", "## Warehouse It answers in `250` ms. "))
+    assert len(mutated) == 11
+    for text in mutated:
+        assert text != flat, "the mutation changed nothing: the README moved on, update this test"
+        assert code_problems(text) != []

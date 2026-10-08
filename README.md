@@ -109,7 +109,7 @@ groups of `50000` ordered by metric, so a query for one metric skips the others.
 
 [`/warehouse`](web/app/warehouse) runs SQL over those files in the visitor's browser with DuckDB-WASM,
 loaded only when a query is run, and shows next to each result the bytes the engine and the data
-cost, counted by the engine itself. Five example queries have their answers in
+cost, counted by the engine itself. The example queries have their answers in
 `web/public/data/warehouse_examples.json`, and the page says what each percentile is a percentile
 of (people, not rows).
 
