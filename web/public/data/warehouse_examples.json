@@ -93,7 +93,7 @@
           "decimals": null
         },
         {
-          "name": "matches_in_group",
+          "name": "player_matches_in_group",
           "decimals": null
         }
       ],
@@ -317,11 +317,11 @@
           "decimals": 1
         },
         {
-          "name": "players_in_pool",
+          "name": "player_ids_in_pool",
           "decimals": null
         },
         {
-          "name": "games_in_pool",
+          "name": "player_games_in_pool",
           "decimals": null
         }
       ],
@@ -346,6 +346,8 @@
     "basketball_percentile": {
       "pool_rows_naive": 248,
       "pool_rows_merged": 247,
+      "people_in_pool_twice": 2,
+      "rows_added_by_folding": 1,
       "percentile_naive": 50.607287449392715,
       "percentile_merged": 50.81300813008131
     }

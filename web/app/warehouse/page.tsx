@@ -37,8 +37,9 @@ export default function WarehousePage() {
           the 327 games of the Liga ACB 2025-2026 (regular season and playoffs);{" "}
           <a href={FOOTBALL_README}>the football one</a> says its are the A-League 2024-2025
           season, filtered for performances above 60 minutes. Profiles and percentiles are read
-          from these, and each percentile in the examples is printed with its denominator
-          (players, matches or games).
+          from these, and each percentile in the examples is printed with its pool: the players
+          in it and the matches or games they played between them, a sum that counts a match once
+          per player in it, not a count of matches.
         </li>
         <li>
           Does not hold: rankings from the tracking. The bundles carry {rowsOf("dim_match", "basketball")}{" "}
@@ -66,9 +67,12 @@ export default function WarehousePage() {
           {aliases.bb_shots_alias_rows_in_a_team_with_their_canonical_id} of them the old and the
           new id both appear on the same team in <code>bb_shots</code>, so one person is two rows.
           Of the examples only the basketball percentile ranks players: its pool has{" "}
-          {shooting.pool_rows_naive} rows, {shooting.pool_rows_merged} with the alias rows folded
-          into their canonical ids, and {params.basketball_player} sits at the{" "}
-          {fixed(shooting.percentile_naive)}th percentile in the first and the{" "}
+          {shooting.pool_rows_naive} rows, and {shooting.people_in_pool_twice} people are in it
+          twice, under an old and a new id. With the alias rows folded into their canonical ids
+          (summing the games of the two ids, which lifts {shooting.rows_added_by_folding} more
+          past the {params.min_games}-game minimum) it has {shooting.pool_rows_merged} rows.{" "}
+          {params.basketball_player} sits at the{" "}
+          {fixed(shooting.percentile_naive)}th percentile in the first pool and the{" "}
           {fixed(shooting.percentile_merged)}th in the second. The player profile
           {aliases.profile_player_has_an_alias ? " has" : " has no"} an alias; team totals are
           sums by team and do not depend on the id. Football has no alias file.

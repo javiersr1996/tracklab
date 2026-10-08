@@ -19,6 +19,10 @@ export interface ExpectedExample {
 export interface BasketballPercentileAliases {
   pool_rows_naive: number;
   pool_rows_merged: number;
+  // An alias row and its canonical row on the same team, both in the pool: one person twice.
+  people_in_pool_twice: number;
+  // Rows of the folded pool that the naive one does not have: two ids, each under the minimum.
+  rows_added_by_folding: number;
   percentile_naive: number;
   percentile_merged: number;
 }
@@ -67,17 +71,17 @@ WHERE player_name = '${params.profile_player}' AND NOT is_season_total`,
   {
     id: "percentile",
     label: "Percentile in position",
-    about: `Top speed (${params.football_metric}) of a football player against the others in his position group with at least ${params.min_matches} matches, with that group's players and matches.`,
+    about: `Top speed (${params.football_metric}) of a football player against the others in his position group with at least ${params.min_matches} matches, with the players in that group and the matches they played between them (a match counts once per player in it).`,
     sql: `WITH pool AS (
   SELECT player_name, team_name, position_group, ${params.football_metric},
          percent_rank() OVER (PARTITION BY position_group ORDER BY ${params.football_metric}) AS pct,
-         count(*) OVER (PARTITION BY position_group) AS players_in_group,
-         sum(count_match) OVER (PARTITION BY position_group)::INTEGER AS matches_in_group
+         count(DISTINCT player_id) OVER (PARTITION BY position_group) AS players_in_group,
+         sum(count_match) OVER (PARTITION BY position_group)::INTEGER AS player_matches_in_group
   FROM fb_physical
   WHERE ${params.football_metric} IS NOT NULL AND count_match >= ${params.min_matches}
 )
 SELECT player_name, team_name, position_group, ${params.football_metric},
-       round(pct * 100, 1) AS percentile, players_in_group, matches_in_group
+       round(pct * 100, 1) AS percentile, players_in_group, player_matches_in_group
 FROM pool
 WHERE player_name = '${params.football_player}'`,
   },
@@ -101,14 +105,14 @@ ORDER BY points DESC, team_name`,
   SELECT player_name, team_name, games_played, three_attempts,
          three_attempts * 1.0 / games_played AS threes_per_game,
          percent_rank() OVER (ORDER BY three_attempts * 1.0 / games_played) AS pct,
-         count(*) OVER () AS players_in_pool,
-         sum(games_played) OVER ()::INTEGER AS games_in_pool
+         count(DISTINCT player_id) OVER () AS player_ids_in_pool,
+         sum(games_played) OVER ()::INTEGER AS player_games_in_pool
   FROM bb_shots
   WHERE NOT is_season_total AND games_played >= ${params.min_games}
 )
 SELECT player_name, team_name, games_played, three_attempts,
        round(threes_per_game, 2) AS threes_per_game, round(pct * 100, 1) AS percentile,
-       players_in_pool, games_in_pool
+       player_ids_in_pool, player_games_in_pool
 FROM pool
 WHERE player_name = '${params.basketball_player}'`,
   },

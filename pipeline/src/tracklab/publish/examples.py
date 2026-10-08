@@ -23,7 +23,7 @@ import duckdb
 
 EXAMPLES_JSON = "warehouse_examples.json"
 
-# The people the example queries look at; the SQL in `web/components/warehouse/examples.ts`
+# The people the example queries look at; the SQL in `web/lib/warehouse/examples.ts`
 # names the same ones. Each name is checked to be unique in its table.
 PROFILE_PLAYER = "Timothe Luwawu-Cabarrot"
 FOOTBALL_PLAYER = "Jay Barnett"
@@ -88,6 +88,7 @@ def _shooting_pool(
             key,
             {
                 "player_id": pid,
+                "team_id": r["team_id"],
                 "player_name": r["player_name"],
                 "team_name": r["team_name"],
                 "games": 0,
@@ -148,7 +149,9 @@ def build(data_dir: Path) -> dict[str, Any]:
         ],
     )
 
-    # 2. Percentile of top speed inside the player's position, with its denominator.
+    # 2. Percentile of top speed inside the player's position, with its pool: the players in it
+    # and the matches they played between them (a sum over players: one match counts once per
+    # player who played it, so it is not a count of matches).
     pool = [
         r for r in physical if r[FOOTBALL_METRIC] is not None and r["count_match"] >= MIN_MATCHES
     ]
@@ -164,7 +167,7 @@ def build(data_dir: Path) -> dict[str, Any]:
             (FOOTBALL_METRIC, 2),
             ("percentile", 1),
             ("players_in_group", None),
-            ("matches_in_group", None),
+            ("player_matches_in_group", None),
         ],
         [
             [
@@ -173,7 +176,7 @@ def build(data_dir: Path) -> dict[str, Any]:
                 me["position_group"],
                 me[FOOTBALL_METRIC],
                 100 * percent_rank([r[FOOTBALL_METRIC] for r in group], me[FOOTBALL_METRIC]),
-                len(group),
+                len({r["player_id"] for r in group}),
                 sum(r["count_match"] for r in group),
             ]
         ],
@@ -214,7 +217,8 @@ def build(data_dir: Path) -> dict[str, Any]:
         [[quantile(values, 0.5), quantile(values, 0.9), len(values)]],
     )
 
-    # 5. Percentile of three-point attempts per game among basketball players with enough games.
+    # 5. Percentile of three-point attempts per game among basketball players with enough games,
+    # with the player ids in the pool and the games they played between them (a sum, as above).
     def shooting(pool_rows: list[dict[str, Any]]) -> dict[str, Any]:
         rates = [r["threes"] / r["games"] for r in pool_rows]
         mine = [r for r in pool_rows if r["player_name"] == BASKETBALL_PLAYER]
@@ -229,15 +233,22 @@ def build(data_dir: Path) -> dict[str, Any]:
                 r["threes"],
                 r["threes"] / r["games"],
                 100 * percent_rank(rates, r["threes"] / r["games"]),
-                len(pool_rows),
+                len({x["player_id"] for x in pool_rows}),
                 sum(x["games"] for x in pool_rows),
             ],
             "pool_rows": len(pool_rows),
             "percentile": 100 * percent_rank(rates, r["threes"] / r["games"]),
         }
 
-    naive = shooting(_shooting_pool(shots, None))
-    merged = shooting(_shooting_pool(shots, merge))
+    naive_pool = _shooting_pool(shots, None)
+    merged_pool = _shooting_pool(shots, merge)
+    naive = shooting(naive_pool)
+    merged = shooting(merged_pool)
+    # The pool as people: an alias row and its canonical row on the same team are one person
+    # counted twice. Folding them sums their games, which can also lift into the pool a person
+    # whose two ids each had fewer than MIN_GAMES (rows the naive pool does not have at all).
+    naive_people = {(merge.get(r["player_id"], r["player_id"]), r["team_id"]) for r in naive_pool}
+    merged_keys = {(r["player_id"], r["team_id"]) for r in merged_pool}
     basketball = _example(
         "basketball_percentile",
         "bb_shots",
@@ -248,8 +259,8 @@ def build(data_dir: Path) -> dict[str, Any]:
             ("three_attempts", None),
             ("threes_per_game", 2),
             ("percentile", 1),
-            ("players_in_pool", None),
-            ("games_in_pool", None),
+            ("player_ids_in_pool", None),
+            ("player_games_in_pool", None),
         ],
         [naive["row"]],
     )
@@ -271,6 +282,8 @@ def build(data_dir: Path) -> dict[str, Any]:
         "basketball_percentile": {
             "pool_rows_naive": naive["pool_rows"],
             "pool_rows_merged": merged["pool_rows"],
+            "people_in_pool_twice": len(naive_pool) - len(naive_people),
+            "rows_added_by_folding": len(merged_keys - naive_people),
             "percentile_naive": naive["percentile"],
             "percentile_merged": merged["percentile"],
         },
