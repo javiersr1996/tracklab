@@ -84,6 +84,12 @@ describe("checkSql rejects", () => {
     expect(reason("SELECT 1; SELECT 2")).toMatch(/One statement at a time/);
   });
 
+  it("ends a line comment at a lone carriage return, as DuckDB does", () => {
+    // DuckDB 1.5.5 runs `SELECT 1 AS a --\r; SELECT 2 AS b` as two statements and returns 2.
+    expect(reason("SELECT 1 AS a --\r; INSTALL httpfs")).toMatch(/One statement at a time/);
+    expect(reason("SELECT 1 AS a --\r\nFROM fact")).toBeNull();
+  });
+
   it("rejects any URL, quoted as a string, a dollar string or an identifier", () => {
     for (const sql of [
       "SELECT * FROM read_csv('https://example.com/x.csv')",

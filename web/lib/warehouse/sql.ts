@@ -85,8 +85,9 @@ export function tokenize(sql: string): Token[] {
     if (/\s/.test(c)) {
       i += 1;
     } else if (sql.startsWith("--", i)) {
-      const end = sql.indexOf("\n", i);
-      i = end === -1 ? sql.length : end + 1;
+      // Ends at `\r` as well as `\n`, as in DuckDB.
+      const end = sql.slice(i).search(/[\r\n]/);
+      i = end === -1 ? sql.length : i + end + 1;
     } else if (sql.startsWith("/*", i)) {
       const end = sql.indexOf("*/", i + 2);
       if (end === -1) throw new SqlSyntaxError("Unterminated comment.");
