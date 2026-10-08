@@ -285,6 +285,12 @@ body {
   overflow-x: auto;
 }
 
+/* Column names are long identifiers with no place to break. */
+.warehouse-page p,
+.warehouse-page li {
+  overflow-wrap: anywhere;
+}
+
 .warehouse-page code,
 .warehouse pre {
   font-family: ui-monospace, monospace;

@@ -148,7 +148,8 @@ test("results are text: a value that looks like HTML is not parsed", async ({ pa
   expect(await page.evaluate(() => (window as unknown as { __pwned?: number }).__pwned)).toBeUndefined();
 });
 
-for (const width of [390, 1440]) {
+// 320 is narrower than the brief asks for: the long column names overflowed there first.
+for (const width of [320, 390, 1440]) {
   test(`/warehouse at ${width} px: under 400,000 bytes without the engine, no sideways scroll, text of 16 px or more`, async ({
     page,
   }) => {
