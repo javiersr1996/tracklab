@@ -146,10 +146,11 @@ def test_a_held_advisory_lock_stops_the_loader_with_a_clear_error(
     with psycopg.connect(pg_dsn, autocommit=True) as holder:
         holder.execute("SELECT pg_advisory_lock(%s)", [LOCK_KEY])
         with connect(pg_dsn) as conn:
-            started = time.monotonic()
             with pytest.raises(LoadError, match="advisory lock 44 is still held after 0.5 s"):
                 load(conn, tmp_gold)
             conn.rollback()
+            # Timed on `migrate` alone: `load` stages the gold rows before it asks for the lock.
+            started = time.monotonic()
             with pytest.raises(LoadError, match="advisory lock 44 is still held"):
                 migrate(conn)
             assert time.monotonic() - started < 5
