@@ -45,7 +45,7 @@ live("the route against Postgres, as the read-only role", () => {
   });
 
   it("answers unavailable, not an error status, when the server is not there", async () => {
-    vi.stubEnv("DATABASE_URL", "postgresql://warehouse_reader:x@127.0.0.1:1/postgres");
+    vi.stubEnv("DATABASE_URL", "postgresql://127.0.0.1:1/postgres");
     const res = await GET(new Request("http://localhost/api/warehouse/pg?id=teams"));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ status: "unavailable" });
