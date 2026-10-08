@@ -4,7 +4,7 @@
 import platformJson from "../public/data/platform.json";
 import lineageJson from "../public/data/lineage.json";
 
-export type LayerName = "raw" | "bronze" | "silver" | "quality" | "publish";
+export type LayerName = "raw" | "bronze" | "silver" | "gold" | "quality" | "publish";
 
 export interface PlatformLayer {
   layer: LayerName;
@@ -18,7 +18,12 @@ export interface PlatformLayer {
   bytes_read?: number;
   downloaded?: number;
   verified?: number;
-  // publish only: why "out" is not a live rescan of web/public/data (task 34, decision 1)
+  // publish only: the JSON the page watches and the Parquet it queries, which add up to
+  // `bytes` (task 46, decision 10), and why "out" is not a live rescan (task 34, decision 1)
+  json_files?: number;
+  json_bytes?: number;
+  parquet_files?: number;
+  parquet_bytes?: number;
   note?: string;
 }
 
@@ -79,6 +84,7 @@ export interface PlatformSeasonFiles {
 export interface PlatformData {
   schema_version: number;
   title: string;
+  subtitle: string;
   run: PlatformRun;
   layers: PlatformLayer[];
   steps: PlatformStep[];
@@ -87,7 +93,8 @@ export interface PlatformData {
   season_files: PlatformSeasonFiles;
 }
 
-export const PLATFORM = platformJson as PlatformData;
+// Via unknown: the JSON's inferred `steps` type is a union of the steps' own `dbt_seconds` keys.
+export const PLATFORM = platformJson as unknown as PlatformData;
 
 export interface LineageNode {
   key: string;

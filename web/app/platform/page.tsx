@@ -34,8 +34,12 @@ export default function PlatformPage() {
   return (
     <main className="page">
       <h1>{PLATFORM.title}</h1>
+      <p className="platform-subtitle" data-subtitle>
+        {PLATFORM.subtitle}
+      </p>
       <p>
-        One pipeline run, five layers: raw, bronze, silver, quality, publish. Each layer&apos;s
+        One pipeline run, {PLATFORM.layers.length} layers: raw, bronze, silver, gold, quality,
+        publish. Each layer&apos;s
         counters are the figures <code>tracklab build</code> and <code>tracklab publish
         platform</code> measured on this run, read from{" "}
         <a href="/data/platform.json">platform.json</a>, never typed by hand.
