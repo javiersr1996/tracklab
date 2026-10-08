@@ -10,7 +10,8 @@
 // (STATEMENT_TIMEOUT_MS, the 2 s of decision 7), the connection timeout, and a deadline over
 // connect and query together, after which the connection is closed. The role's defaults (read
 // only, 2 s, task 44) are not relied on: any role can change its own (review V of P4, M1). `SET
-// LOCAL` lives inside the transaction, so it holds through a pooler in transaction mode.
+// LOCAL` lives inside the transaction, so it holds through a pooler in transaction mode. The
+// transaction is rolled back before the connection closes, and the session's role is checked.
 import { Client, types } from "pg";
 import type { PgCell } from "./pg-types";
 
@@ -18,7 +19,15 @@ export const STATEMENT_TIMEOUT_MS = 2000;
 export const CONNECT_MS = 2000;
 export const DEADLINE_MS = 3000;
 
+// the role the route expects its connection to log in as (pipeline/sql/001). Any other role, an
+// owner that someone pasted by mistake included, gets no query (review V of P4, S4).
+export const READER_ROLE = "warehouse_reader";
+
 export class PgTimeout extends Error {}
+// Its message stays generic on purpose: the role found is not for a log or a response.
+export class WrongRole extends Error {
+  name = "WrongRole";
+}
 
 // bigint and numeric arrive as text by default; these answers (counts, rounded values) fit a double.
 const NUMBER_OIDS = new Set([20, 1700]);
@@ -52,18 +61,32 @@ export async function runExample(
   const deadline = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new PgTimeout("deadline")), deadlineMs);
   });
+  let timedOut = false;
   try {
     return await Promise.race([work(client, sql), deadline]);
+  } catch (e) {
+    timedOut = e instanceof PgTimeout;
+    throw e;
   } finally {
     clearTimeout(timer);
-    client.end().catch(() => {});
+    // Always end the transaction before the connection goes (review V of P4, S5): if the
+    // Terminate never arrives, or a pooler keeps the server connection, nothing stays open and
+    // holding locks. After the deadline a query may still be running on the connection, so a
+    // ROLLBACK would only queue behind it: it is closed as it was and the server's own
+    // statement_timeout ends the statement.
+    if (!timedOut) await client.query("ROLLBACK").catch(() => {});
+    await client.end().catch(() => {});
   }
 }
 
 async function work(client: Client, sql: string): Promise<PgRun> {
   await client.connect();
-  // One round trip for both. No COMMIT: the transaction ends when `runExample` closes the connection.
-  await client.query(`BEGIN READ ONLY; SET LOCAL statement_timeout = ${STATEMENT_TIMEOUT_MS}`);
+  // One round trip for the three. The transaction never commits: `runExample` rolls it back.
+  const [, , who] = (await client.query({
+    text: `BEGIN READ ONLY; SET LOCAL statement_timeout = ${STATEMENT_TIMEOUT_MS}; SELECT current_user AS u`,
+    rowMode: "array",
+  })) as unknown as { rows: string[][] }[];
+  if (who?.rows[0]?.[0] !== READER_ROLE) throw new WrongRole("not the read-only role");
   const started = performance.now();
   const res = await client.query({ text: sql, rowMode: "array" });
   return { columns: res.fields.map((f) => f.name), rows: res.rows as PgCell[][], ms: performance.now() - started };

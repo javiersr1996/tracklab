@@ -103,6 +103,8 @@ jobs:
     env:
       PGPASSWORD: ci-${{ github.run_id }}
       TRACKLAB_TEST_WEB_PG_URL: postgresql://warehouse_reader@localhost:5432/postgres
+      # The owner's login, for the test that checks no lock outlives a request (review V of P4, S5).
+      TRACKLAB_TEST_WEB_PG_ADMIN_URL: postgresql://postgres@localhost:5432/postgres
       TRACKLAB_REQUIRE_PG: "1"
     steps:
       - uses: actions/checkout@v4

@@ -122,6 +122,43 @@ live("the route against Postgres, as the read-only role", () => {
     });
   });
 
+  // Review V of P4, S5: whatever happens to the statement, the transaction ends before the
+  // connection is closed. `end` is made a no-op here, as if the Terminate never arrived (a frozen
+  // function, a pooler that keeps the server connection). Without the ROLLBACK a statement that
+  // finished leaves its session `idle in transaction` with its AccessShareLock, so the owner's
+  // ALTER TABLE cannot get through; one cut by the timeout leaves it `idle in transaction (aborted)`.
+  it.each([
+    ["a statement that finished", "SELECT count(*) FROM warehouse.dim_team", null],
+    ["a statement cut by the timeout", "SELECT count(*), pg_sleep(3) FROM warehouse.dim_team", "57014"],
+  ])("leaves no open transaction or lock behind after %s", async (_name, query, code) => {
+    const owner = process.env.TRACKLAB_TEST_WEB_PG_ADMIN_URL;
+    if (!owner) throw new Error("TRACKLAB_TEST_WEB_PG_ADMIN_URL is the owner's connection string");
+    const leaked: Client[] = [];
+    const end = vi.spyOn(Client.prototype, "end").mockImplementation(function (this: Client) {
+      leaked.push(this);
+      return Promise.resolve();
+    });
+    const admin = new Client({ connectionString: owner });
+    await admin.connect();
+    try {
+      const error = await runExample(url!, query).then(
+        () => null,
+        (e) => e,
+      );
+      expect(error?.code ?? null).toBe(code);
+      const open = await admin.query(
+        "SELECT state FROM pg_stat_activity WHERE usename = 'warehouse_reader' AND state LIKE 'idle in transaction%'",
+      );
+      expect(open.rows).toEqual([]);
+      await admin.query("SET lock_timeout = '1s'");
+      await admin.query('ALTER TABLE warehouse.dim_team ALTER COLUMN team_name SET DATA TYPE text COLLATE "C"');
+    } finally {
+      end.mockRestore();
+      await Promise.all(leaked.map((c) => c.end().catch(() => {})));
+      await admin.end();
+    }
+  });
+
   it("cannot write, even in a transaction opened read-write", async () => {
     const client = new Client({ connectionString: url });
     await client.connect();

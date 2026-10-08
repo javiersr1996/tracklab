@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Task 45: the route takes the id of an example and nothing else. The driver is mocked so the
 // test can count the connections the route opens: a request it refuses must open none.
-const connections = vi.hoisted(() => ({ opened: 0, sent: [] as string[], fail: null as Error | null }));
+const connections = vi.hoisted(() => ({
+  opened: 0,
+  sent: [] as string[],
+  fail: null as Error | null,
+  role: "warehouse_reader",
+}));
 vi.mock("pg", () => {
   class Client {
     constructor() {
@@ -13,6 +18,8 @@ vi.mock("pg", () => {
     async query(query: string | { text: string }) {
       connections.sent.push(typeof query === "string" ? query : query.text);
       if (connections.fail) throw connections.fail;
+      // The header is three statements: pg answers a list of results, the last one is the role.
+      if (connections.sent.at(-1)?.startsWith("BEGIN")) return [{}, {}, { rows: [[connections.role]] }];
       return { fields: [{ name: "x" }], rows: [[1]] };
     }
     async end() {}
@@ -31,6 +38,7 @@ beforeEach(() => {
   connections.opened = 0;
   connections.sent = [];
   connections.fail = null;
+  connections.role = "warehouse_reader";
   vi.stubEnv("DATABASE_URL", "postgresql://reader@db.invalid/db");
 });
 afterEach(() => {
@@ -76,9 +84,27 @@ describe("an example id", () => {
     await ask("?id=profile");
     // Not the role's defaults, which the role can change on itself (review V of P4, M1).
     expect(connections.sent).toEqual([
-      `BEGIN READ ONLY; SET LOCAL statement_timeout = ${STATEMENT_TIMEOUT_MS}`,
+      `BEGIN READ ONLY; SET LOCAL statement_timeout = ${STATEMENT_TIMEOUT_MS}; SELECT current_user AS u`,
       sqlOf("profile"),
+      "ROLLBACK",
     ]);
+  });
+
+  it("rolls back after an error too", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    connections.fail = new Error("boom");
+    await ask("?id=profile");
+    expect(connections.sent.at(-1)).toBe("ROLLBACK");
+  });
+
+  // Review V of P4, S4: another role (the owner's URL pasted into Vercel) gets no query.
+  it("does not query as another role, and does not name it", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    connections.role = "neondb_owner";
+    const res = await ask("?id=profile");
+    expect(await res.json()).toEqual({ status: "unavailable" });
+    expect(connections.sent).not.toContain(sqlOf("profile"));
+    expect(JSON.stringify(log.mock.calls)).not.toContain("neondb_owner");
   });
 
   it("logs the code of an error, never its message", async () => {
