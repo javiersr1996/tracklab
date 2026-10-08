@@ -108,3 +108,61 @@ def test_the_percentile_denominators_count_what_their_names_say() -> None:
     assert figures["people_in_pool_twice"] == twice[0]
     folded = figures["pool_rows_naive"] - twice[0] + figures["rows_added_by_folding"]
     assert figures["pool_rows_merged"] == folded
+
+
+def _write(con: duckdb.DuckDBPyConnection, path: Path, query: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    con.execute(f"COPY ({query}) TO '{path.as_posix()}' (FORMAT parquet)")
+
+
+def test_the_denominators_count_people_not_rows_when_a_player_has_two_team_rows(
+    tmp_path: Path,
+) -> None:
+    """Second pass on 38, 42 and 43 (N3): on today's gold rows and ids coincide, so `len(rows)`
+    in place of the distinct ids passed every test. Here a traded player has a row per team (same
+    id), in the football group and in the basketball pool: 4 rows, 3 people."""
+    gold = tmp_path / "gold"
+    con = duckdb.connect()
+    _write(
+        con,
+        gold / "agg_bb_shots" / "data.parquet",
+        f"""SELECT * FROM (VALUES
+              (1, 10, 'Timothe Luwawu-Cabarrot', 'A', FALSE, 20, 40, 100, 50, 20, 120),
+              (2, 10, '{examples.BASKETBALL_PLAYER}', 'A', FALSE, 20, 40, 100, 50, 20, 120),
+              (3, 10, 'Traded', 'A', FALSE, 15, 10, 50, 20, 4, 50),
+              (3, 11, 'Traded', 'B', FALSE, 12, 6, 30, 10, 2, 30)
+            ) t(player_id, team_id, player_name, team_name, is_season_total, games_played,
+                three_attempts, attempts, mades, three_mades, total_points)""",
+    )
+    _write(
+        con,
+        gold / "agg_fb_physical" / "data.parquet",
+        f"""SELECT * FROM (VALUES
+              (1, '{examples.FOOTBALL_PLAYER}', 'A', 'G', 30.0::DOUBLE, 10),
+              (2, 'Other', 'A', 'G', 28.0::DOUBLE, 6),
+              (2, 'Other', 'B', 'G', 29.0::DOUBLE, 7)
+            ) t(player_id, player_name, team_name, position_group, {examples.FOOTBALL_METRIC},
+                count_match)""",
+    )
+    _write(
+        con,
+        gold / "fact_player_season_metric" / "data.parquet",
+        f"""SELECT * FROM (VALUES
+              ('football', 'physical', '{examples.FOOTBALL_METRIC}', FALSE, 30.0::DOUBLE))
+            t(sport, family, metric, is_season_total, value)""",
+    )
+    _write(
+        con,
+        tmp_path / "bronze" / "basketball" / "player_id_aliases" / "a.parquet",
+        "SELECT 7 AS player_id, 8 AS canonical_player_id",
+    )
+
+    payload = examples.build(tmp_path)
+    row = {
+        e["id"]: dict(zip([c["name"] for c in e["columns"]], e["rows"][0], strict=True))
+        for e in payload["examples"]
+    }
+    assert row["percentile"]["players_in_group"] == 2  # 3 rows
+    assert row["percentile"]["player_matches_in_group"] == 23
+    assert row["basketball_percentile"]["player_ids_in_pool"] == 3  # 4 rows
+    assert row["basketball_percentile"]["player_games_in_pool"] == 67
