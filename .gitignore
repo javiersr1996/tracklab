@@ -28,6 +28,8 @@ node_modules/
 *.tsbuildinfo
 web/test-results/
 web/playwright-report/
+# Task 38 probe: the engine copied by web/scripts/probe-copy-engine.mjs.
+web/public/duckdb/
 
 # OS
 .DS_Store
