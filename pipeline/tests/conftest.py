@@ -1,6 +1,7 @@
 """Shared by every test under tests/: nothing a build record or a published JSON
 carries may name this machine (tasks 32 and 34). That is `source_path` (the
-receipt's outside clone), the host name, the home directory and any drive path.
+receipt's outside clone), the host name, the home directory and any drive path,
+and, since task 44, a database connection string (URI or key=value form).
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from pathlib import Path
 import pytest
 
 _DRIVE = re.compile(r"\b[A-Za-z]:[\\/]")
+_DSN = re.compile(r"postgres(?:ql)?://|\b(?:host|hostaddr|password|user|dbname)\s*=", re.IGNORECASE)
 
 
 def _strings(value: object) -> list[str]:
@@ -33,7 +35,11 @@ def local_traces(payload: object) -> list[str]:
         for f in ("source_path", platform.node(), str(home), home.as_posix(), "/home/", "/Users/")
         if f
     ]
-    return [s for s in _strings(payload) if any(f in s for f in forbidden) or _DRIVE.search(s)]
+    return [
+        s
+        for s in _strings(payload)
+        if any(f in s for f in forbidden) or _DRIVE.search(s) or _DSN.search(s)
+    ]
 
 
 @pytest.fixture
