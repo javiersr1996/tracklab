@@ -74,10 +74,11 @@ def test_the_percentile_denominators_count_what_their_names_say() -> None:
     aliases = (data_root() / "bronze" / "basketball" / "player_id_aliases" / "*.parquet").as_posix()
     con = duckdb.connect()
 
+    metric, min_matches = examples.FOOTBALL_METRIC, examples.MIN_MATCHES
     football = con.execute(
         f"""WITH pool AS (
               SELECT * FROM read_parquet('{physical}')
-              WHERE {examples.FOOTBALL_METRIC} IS NOT NULL AND count_match >= {examples.MIN_MATCHES})
+              WHERE {metric} IS NOT NULL AND count_match >= {min_matches})
             SELECT count(DISTINCT player_id), sum(count_match) FROM pool
             WHERE position_group = (SELECT position_group FROM pool WHERE player_name = ?)""",
         [examples.FOOTBALL_PLAYER],
@@ -105,6 +106,5 @@ def test_the_percentile_denominators_count_what_their_names_say() -> None:
     figures = payload["aliases"]["basketball_percentile"]
     assert twice is not None
     assert figures["people_in_pool_twice"] == twice[0]
-    assert figures["pool_rows_merged"] == (
-        figures["pool_rows_naive"] - figures["people_in_pool_twice"] + figures["rows_added_by_folding"]
-    )
+    folded = figures["pool_rows_naive"] - twice[0] + figures["rows_added_by_folding"]
+    assert figures["pool_rows_merged"] == folded
