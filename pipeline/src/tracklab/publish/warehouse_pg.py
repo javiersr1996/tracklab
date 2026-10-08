@@ -50,9 +50,10 @@ WHERE = {
 
 
 def render_examples(
-    conn: Connection, examples: dict[str, Any], examples_dir: Path = EXAMPLES_DIR
+    conn: Connection | None, examples: dict[str, Any], examples_dir: Path = EXAMPLES_DIR
 ) -> dict[str, str]:
-    """The SQL of each example id, with the parameters of `warehouse_examples.json` as literals."""
+    """The SQL of each example id, with the parameters of `warehouse_examples.json` as literals
+    (without a connection, as the tests render it to compare with the published JSON)."""
     ids = [e["id"] for e in examples["examples"]]
     files = {p.stem: p for p in examples_dir.glob("*.sql")}
     if sorted(files) != sorted(ids):
@@ -116,7 +117,8 @@ def _gold_count(data_dir: Path, table: Table) -> int:
 
 
 def table_sizes(conn: Connection, data_dir: Path) -> list[dict[str, Any]]:
-    """Rows and bytes of each table; refuses if Postgres does not hold what gold holds."""
+    """Rows and bytes of each table; refuses if a table's row count is not gold's (a count, not
+    a comparison of values: the loader's fingerprints do that)."""
     out = []
     for t in TABLES:
         name = f"{SCHEMA}.{t.name}"
