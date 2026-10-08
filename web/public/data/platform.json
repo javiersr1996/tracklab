@@ -3,10 +3,10 @@
   "title": "2.3 GB in, 3.3 MB out",
   "subtitle": "1.2 MB to watch, 2.1 MB to query",
   "run": {
-    "git_sha": "d63ad2ddfb60a88c334b31910975f356d2988540",
-    "started_utc": "2026-10-08T14:48:31+00:00",
-    "finished_utc": "2026-10-08T14:58:07+00:00",
-    "wall_seconds": 576.93,
+    "git_sha": "83bdf4e618a503a8d345d0fd507efb8a71471d31",
+    "started_utc": "2026-10-08T16:27:05+00:00",
+    "finished_utc": "2026-10-08T16:39:46+00:00",
+    "wall_seconds": 761.069,
     "host": {
       "system": "Windows",
       "cpus": 22,
@@ -26,8 +26,8 @@
       "files": 120,
       "rows": null,
       "bytes": 2316182304,
-      "seconds": 7.2,
-      "seconds_sum": 10.4,
+      "seconds": 7.1,
+      "seconds_sum": 9.1,
       "bytes_pinned": 2316182304,
       "bytes_read": 3736408087,
       "downloaded": 0,
@@ -38,40 +38,40 @@
       "files": 390,
       "rows": 31358054,
       "bytes": 445275560,
-      "seconds": 160.6,
-      "seconds_sum": 376.7
+      "seconds": 173.5,
+      "seconds_sum": 456.2
     },
     {
       "layer": "silver",
       "files": 66,
       "rows": 29521069,
-      "bytes": 251118361,
-      "seconds": 166.4,
-      "seconds_sum": 166.4
+      "bytes": 251119914,
+      "seconds": 197.9,
+      "seconds_sum": 197.9
     },
     {
       "layer": "gold",
       "files": 10,
       "rows": 371009,
-      "bytes": 1954622,
-      "seconds": 44.1,
-      "seconds_sum": 44.1
+      "bytes": 1954751,
+      "seconds": 50.3,
+      "seconds_sum": 50.3
     },
     {
       "layer": "quality",
       "files": 6,
       "rows": 910,
       "bytes": 57648,
-      "seconds": 154.9,
-      "seconds_sum": 235.3
+      "seconds": 263.5,
+      "seconds_sum": 383.2
     },
     {
       "layer": "publish",
       "files": 25,
       "rows": null,
       "bytes": 3284887,
-      "seconds": 7.6,
-      "seconds_sum": 14.5,
+      "seconds": 16.1,
+      "seconds_sum": 32.9,
       "watch_files": 15,
       "watch_bytes": 1230786,
       "query_files": 10,
@@ -87,7 +87,7 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 3163.3043999318033,
+      "duration_ms": 2077.036299975589,
       "dbt_seconds": {}
     },
     {
@@ -97,7 +97,7 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 7206.863000057638,
+      "duration_ms": 7054.562999866903,
       "dbt_seconds": {}
     },
     {
@@ -109,7 +109,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 5479.8488998785615,
+      "duration_ms": 6170.719200046733,
       "dbt_seconds": {}
     },
     {
@@ -138,7 +138,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 22759.733899962157,
+      "duration_ms": 48636.292200069875,
       "dbt_seconds": {}
     },
     {
@@ -151,7 +151,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 2780.675199814141,
+      "duration_ms": 3546.386200003326,
       "dbt_seconds": {}
     },
     {
@@ -162,7 +162,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 160608.4755999036,
+      "duration_ms": 173486.47390003316,
       "dbt_seconds": {}
     },
     {
@@ -174,7 +174,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 5633.8641999755055,
+      "duration_ms": 3799.7649000026286,
       "dbt_seconds": {}
     },
     {
@@ -185,7 +185,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 30624.39649994485,
+      "duration_ms": 49879.92749991827,
       "dbt_seconds": {}
     },
     {
@@ -198,7 +198,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 5738.6147999204695,
+      "duration_ms": 7044.559399830177,
       "dbt_seconds": {}
     },
     {
@@ -209,7 +209,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 133981.07869992964,
+      "duration_ms": 152327.89009995759,
       "dbt_seconds": {}
     },
     {
@@ -228,18 +228,18 @@
       ],
       "group": "gold",
       "status": "success",
-      "duration_ms": 44057.41289979778,
+      "duration_ms": 50325.61509986408,
       "dbt_seconds": {
-        "gold_agg_bb_drives": 0.900978,
-        "gold_agg_bb_picks": 1.570918,
-        "gold_agg_bb_shots": 1.104605,
-        "gold_agg_fb_obr": 0.911304,
-        "gold_agg_fb_passing": 0.835551,
-        "gold_agg_fb_physical": 0.872709,
-        "gold_dim_metric": 0.305798,
-        "gold_dim_player": 1.748623,
-        "gold_dim_season_team": 0.799358,
-        "gold_fact_player_season_metric": 4.143865
+        "gold_agg_bb_drives": 1.064733,
+        "gold_agg_bb_picks": 1.553514,
+        "gold_agg_bb_shots": 1.113314,
+        "gold_agg_fb_obr": 1.072896,
+        "gold_agg_fb_passing": 0.877352,
+        "gold_agg_fb_physical": 0.841445,
+        "gold_dim_metric": 0.366337,
+        "gold_dim_player": 1.001549,
+        "gold_dim_season_team": 0.485046,
+        "gold_fact_player_season_metric": 2.982569
       }
     },
     {
@@ -251,7 +251,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 9062.20389995724,
+      "duration_ms": 11294.198400108144,
       "dbt_seconds": {}
     },
     {
@@ -261,7 +261,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 39399.60239990614,
+      "duration_ms": 48397.47550012544,
       "dbt_seconds": {}
     },
     {
@@ -271,7 +271,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 370.6350999418646,
+      "duration_ms": 591.6361999697983,
       "dbt_seconds": {}
     },
     {
@@ -292,20 +292,20 @@
       ],
       "group": "silver",
       "status": "success",
-      "duration_ms": 166390.75089991093,
+      "duration_ms": 197852.65049990267,
       "dbt_seconds": {
-        "seed_event_type_map": 0.253377,
-        "seed_surface_spec": 0.255523,
-        "silver_dim_entity": 0.372641,
-        "silver_dim_match": 0.502179,
-        "silver_dim_period": 0.733034,
-        "silver_dim_sport": 0.536052,
-        "silver_dim_team": 0.625983,
-        "silver_dim_team_period": 0.533951,
-        "silver_events": 7.326851,
-        "silver_frame_possession": 0.133695,
-        "silver_frames": 74.520524,
-        "silver_frames_attacking": 0.11558
+        "seed_event_type_map": 0.341458,
+        "seed_surface_spec": 0.337853,
+        "silver_dim_entity": 0.447634,
+        "silver_dim_match": 0.47636,
+        "silver_dim_period": 0.848178,
+        "silver_dim_sport": 0.683899,
+        "silver_dim_team": 0.846423,
+        "silver_dim_team_period": 0.592321,
+        "silver_events": 7.305429,
+        "silver_frame_possession": 0.160768,
+        "silver_frames": 93.362551,
+        "silver_frames_attacking": 0.135971
       }
     },
     {
@@ -315,7 +315,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 7556.0054001398385,
+      "duration_ms": 15826.913800090551,
       "dbt_seconds": {}
     },
     {
@@ -325,7 +325,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 1052.633399842307,
+      "duration_ms": 3134.2396000400186,
       "dbt_seconds": {}
     },
     {
@@ -335,7 +335,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 19437.575799878687,
+      "duration_ms": 34479.752300074324,
       "dbt_seconds": {}
     },
     {
@@ -345,7 +345,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 20164.87960005179,
+      "duration_ms": 33035.00819997862,
       "dbt_seconds": {}
     },
     {
@@ -355,7 +355,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 154903.17689999938,
+      "duration_ms": 263526.50490007363,
       "dbt_seconds": {}
     },
     {
@@ -365,7 +365,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 1094.1545001696795,
+      "duration_ms": 986.7845999542624,
       "dbt_seconds": {}
     },
     {
@@ -375,7 +375,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 5899.5374999940395,
+      "duration_ms": 16072.959200013429,
       "dbt_seconds": {}
     }
   ],
@@ -762,7 +762,7 @@
       "table": "dim_metric",
       "files": 1,
       "rows": 1242,
-      "bytes": 14280
+      "bytes": 14316
     },
     {
       "layer": "gold",
@@ -770,7 +770,7 @@
       "table": "dim_player",
       "files": 1,
       "rows": 608,
-      "bytes": 17005
+      "bytes": 17100
     },
     {
       "layer": "gold",
@@ -778,7 +778,7 @@
       "table": "dim_season_team",
       "files": 1,
       "rows": 31,
-      "bytes": 1353
+      "bytes": 1351
     },
     {
       "layer": "gold",
@@ -794,7 +794,7 @@
       "table": "dim_entity",
       "files": 1,
       "rows": 983,
-      "bytes": 25501
+      "bytes": 25546
     },
     {
       "layer": "silver",
@@ -802,7 +802,7 @@
       "table": "dim_match",
       "files": 1,
       "rows": 30,
-      "bytes": 4712
+      "bytes": 4709
     },
     {
       "layer": "silver",
@@ -810,7 +810,7 @@
       "table": "dim_period",
       "files": 1,
       "rows": 81,
-      "bytes": 3175
+      "bytes": 3161
     },
     {
       "layer": "silver",
@@ -826,7 +826,7 @@
       "table": "dim_team",
       "files": 1,
       "rows": 30,
-      "bytes": 1947
+      "bytes": 1961
     },
     {
       "layer": "silver",
@@ -850,7 +850,7 @@
       "table": "frames",
       "files": 30,
       "rows": 29340593,
-      "bytes": 244093643
+      "bytes": 244095154
     }
   ],
   "matches": [
