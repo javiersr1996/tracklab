@@ -46,6 +46,10 @@ jobs:
       # Compares the runner's fresh rows against the versioned platform.json and stats.json
       # (task 34); never the runner's seconds or bytes, which are of this one machine (task 37).
       - run: uv run tracklab publish platform --check --run "${{ steps.build_record.outputs.path }}"
+      # Task 46: gold on the real data, through the build above; the committed Parquet and the
+      # example answers must be what it wrote.
+      - run: uv run tracklab publish warehouse --check
+      - run: uv run tracklab publish examples --check
       - run: uv run pytest -q
       - run: uv run tracklab stats
       - uses: actions/upload-artifact@v4

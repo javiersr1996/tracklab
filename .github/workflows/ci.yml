@@ -58,6 +58,10 @@ jobs:
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
       - run: uv run tracklab build --select "group:silver or group:gold"
       - run: uv run tracklab publish lineage --check
+      # Task 46: the committed Parquet and example answers are what gold writes, on Linux too
+      # (the fixtures carry the six season aggregates whole, so the bytes are the real ones).
+      - run: uv run tracklab publish warehouse --check
+      - run: uv run tracklab publish examples --check
       # Task 44 by hand, as Javier will run it against Neon: two loads of the same gold (the
       # second prints inserted=0 updated=0 deleted=0) and the snapshot, to a scratch directory.
       # The tests below assert all of it.
@@ -71,8 +75,8 @@ jobs:
   web:
     runs-on: ubuntu-latest
     # 20, not 15: a slow `playwright install` (690 s once) left the job 36 s short of 15 min, and
-    # task 45 adds about 40 s (service container, route tests, three more e2e). The cache that
-    # would stop the install from varying is task 46's.
+    # task 45 adds about 40 s (service container, route tests, three more e2e). Task 46 caches
+    # the browser, so the install no longer varies on a cache hit; the 20 stays for a miss.
     timeout-minutes: 20
     defaults:
       run:
@@ -120,7 +124,20 @@ jobs:
       - run: npm run build
       # The tests ran before the build, so this one reads the bundle it made (task 45).
       - run: npx vitest run tests/warehouse-pg-secret.test.ts
-      - run: npx playwright install --with-deps chromium
+      # The browser download is what took from 26 s to 690 s. Cached by Playwright's own version;
+      # the system libraries are not cached (they live outside ~/.cache), so a hit still runs
+      # `install-deps`.
+      - id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - id: browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - if: steps.browsers.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       - run: npm run e2e
       # Screenshots are for looking at, not assertions (task 21).
       - uses: actions/upload-artifact@v4
