@@ -257,3 +257,14 @@ body {
 .table-scroll td:nth-child(2) {
   text-align: left;
 }
+
+.warehouse {
+  margin: 1.5rem 0;
+}
+
+.warehouse textarea {
+  box-sizing: border-box;
+  width: 100%;
+  font-family: ui-monospace, monospace;
+  font-size: 1rem;
+}
