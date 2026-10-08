@@ -6,7 +6,7 @@ import { dispose, run, useWarehouse } from "../../lib/warehouse/engine";
 
 // Task 42: the engine on the page, driven by state. `figure.warehouse` carries what the e2e
 // reads (`data-engine`, `data-query`, `data-run`, `data-bytes-engine`, `data-bytes-query`,
-// `data-requests`, `data-rows`), one `li[data-file]` per Parquet file the query touched, and
+// `data-bytes-distinct`, `data-requests`, `data-rows`), one `li[data-file]` per Parquet file the query touched, and
 // nothing of the engine is fetched until "Run" is pressed. Task 43 builds the console around it.
 
 // The percentile query task 38 measured on the long fact: it reads by range and skips row groups.
@@ -32,6 +32,7 @@ export function Warehouse() {
       data-run={s.runs}
       data-bytes-engine={s.engineBytes ?? undefined}
       data-bytes-query={r?.bytes}
+      data-bytes-distinct={r?.distinctBytes}
       data-requests={r?.requests}
       data-rows={r?.rowCount}
       data-ms={r === null ? undefined : Math.round(r.ms)}
@@ -57,7 +58,7 @@ export function Warehouse() {
         {s.versions ? ` (duckdb-wasm ${s.versions.package}, DuckDB ${s.versions.duckdb})` : ""}. Query:{" "}
         {s.query}
         {r
-          ? `, ${r.rowCount.toLocaleString("en-US")} rows in ${Math.round(r.ms)} ms, ${formatBytes(r.bytes)} of Parquet in ${r.requests} requests`
+          ? `, ${r.rowCount.toLocaleString("en-US")} rows in ${Math.round(r.ms)} ms, ${formatBytes(r.distinctBytes)} of Parquet read (${formatBytes(r.bytes)} requested) in ${r.requests} requests`
           : ""}
         .
       </figcaption>
@@ -71,10 +72,12 @@ export function Warehouse() {
                 data-file={f.file}
                 data-table={f.table}
                 data-bytes={f.bytes}
+                data-bytes-distinct={f.distinctBytes}
                 data-requests={f.requests}
                 data-file-bytes={f.fileBytes}
               >
-                {f.table}: {formatBytes(f.bytes)} of {formatBytes(f.fileBytes)} in {f.requests} requests
+                {f.table}: {formatBytes(f.distinctBytes)} of {formatBytes(f.fileBytes)} ({formatBytes(f.bytes)} requested) in{" "}
+                {f.requests} requests
               </li>
             ))}
           </ul>

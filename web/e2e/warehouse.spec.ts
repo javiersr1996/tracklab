@@ -122,13 +122,15 @@ test("loads no engine until Run, then reads Parquet by range from this origin on
   await expect(figure).toHaveAttribute("data-query", "idle");
 
   const origin = new URL(page.url()).origin;
-  // The page's default (the percentile over the long fact), another table, and the default
-  // again once its blocks are in the engine.
+  // The page's default (the percentile over the long fact), another table, the default again
+  // once its blocks are in the engine, and every column of the widest table (the engine asks
+  // twice for part of it: more bytes requested than the file has).
   const defaultSql = await page.getByLabel("SQL").inputValue();
   const queries = [
     defaultSql,
     "SELECT player_name, team_name, games_played FROM bb_shots WHERE NOT is_season_total ORDER BY player_id LIMIT 5",
     defaultSql,
+    "SELECT * FROM bb_picks LIMIT 25",
   ];
   const measured = [];
   let engine: { page: number; timing: { url: string; bytes: number }[] } | null = null;
@@ -175,9 +177,12 @@ test("loads no engine until Run, then reads Parquet by range from this origin on
     // The network's count is that minus what Chrome already held.
     expect(sum(dataTiming.map((t) => t.bytes)), "worker Resource Timing vs page bytes minus cached").toBe(pageBytes - ranged.cached);
     // Per file: the page's figures against the worker's entries for that file.
+    // And each byte of a file counted once: no more than the file, no less than the network sent.
     for (const f of files) {
       const entries = dataTiming.filter((t) => t.url.endsWith(`${DATA}${f.file}`));
       expect(Number(f.requests), f.file).toBe(entries.length);
+      expect(Number(f.bytesDistinct), f.file).toBeLessThanOrEqual(Number(f.fileBytes));
+      expect(Number(f.bytesDistinct), f.file).toBeGreaterThanOrEqual(sum(entries.map((t) => t.bytes)));
     }
     expect(sum(files.map((f) => Number(f.bytes)))).toBe(pageBytes);
     measured.push({
@@ -188,7 +193,14 @@ test("loads no engine until Run, then reads Parquet by range from this origin on
       page_requests: Number(attrs.requests),
       network_bytes: sum(dataTiming.map((t) => t.bytes)),
       cached_bytes: ranged.cached,
-      files: files.map((f) => ({ file: f.file, bytes: Number(f.bytes), requests: Number(f.requests), file_bytes: Number(f.fileBytes) })),
+      page_distinct_bytes: Number(attrs.bytesDistinct),
+      files: files.map((f) => ({
+        file: f.file,
+        bytes: Number(f.bytes),
+        distinct_bytes: Number(f.bytesDistinct),
+        requests: Number(f.requests),
+        file_bytes: Number(f.fileBytes),
+      })),
     });
   }
 

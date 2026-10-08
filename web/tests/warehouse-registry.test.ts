@@ -14,7 +14,9 @@ import {
 // Mutations checked by hand (each restored byte for byte):
 // - dropping the `FILE_NAME` check lets `x.parquet' ...` through, failing `refuses a name ...`;
 // - charging a request to an unregistered URL to the first file (`?? files[0]`) fails
-//   `keeps a request to anything else apart ...`.
+//   `keeps a request to anything else apart ...`;
+// - summing spans without clipping the overlap (`total += b - a`) fails `counts a byte the
+//   engine asked for twice once ...`.
 
 const ORIGIN = "https://example.test";
 
@@ -102,17 +104,50 @@ describe("readsByFile", () => {
       files,
     );
     expect(summary.files).toEqual([
-      { table: "bb_shots", file: "bb_shots.38163f30.parquet", fileBytes: 317195, bytes: 5899, requests: 1, ranges: ["bytes=311296-317194"] },
+      {
+        table: "bb_shots",
+        file: "bb_shots.38163f30.parquet",
+        fileBytes: 317195,
+        bytes: 5899,
+        distinctBytes: 5899,
+        requests: 1,
+        ranges: ["bytes=311296-317194"],
+      },
       {
         table: "fact",
         file: "fact.00ed21c4.parquet",
         fileBytes: 745465,
         bytes: 8186,
+        distinctBytes: 8186,
         requests: 3,
         ranges: ["bytes=0-0", "bytes=0-", "bytes=737280-745464"],
       },
     ]);
-    expect([summary.bytes, summary.requests, summary.other]).toEqual([14085, 4, []]);
+    expect([summary.bytes, summary.distinctBytes, summary.requests, summary.other]).toEqual([14085, 14085, 4, []]);
+  });
+
+  it("counts a byte the engine asked for twice once in distinctBytes, never past the file", () => {
+    // The sequence measured on `SELECT * FROM bb_picks` (task 42): the footer read when the view
+    // is created, then the scan asking again for ranges that overlap it.
+    const picks = registry(manifest([{ table: "bb_picks", file: "bb_picks.89cc2992.parquet", bytes: 490408 }]), ORIGIN);
+    const f = "bb_picks.89cc2992.parquet";
+    const summary = readsByFile(
+      [
+        read(f, "bytes=0-0", 1),
+        read(f, "bytes=0-", 0, "HEAD"),
+        read(f, "bytes=475136-490407", 15272),
+        read(f, "bytes=294912-311295", 16384),
+        read(f, "bytes=311296-376831", 65536),
+        read(f, "bytes=376832-490407", 113576),
+        read(f, "bytes=0-16383", 16384),
+        read(f, "bytes=16384-81919", 65536),
+        read(f, "bytes=81920-344063", 262144),
+      ],
+      picks,
+    );
+    expect([summary.bytes, summary.distinctBytes, summary.requests]).toEqual([554833, 490408, 9]);
+    // A whole-file GET (no Range) covers the file from its first byte.
+    expect(readsByFile([read(f, null, 490408)], picks).distinctBytes).toBe(490408);
   });
 
   it("keeps a request to anything else apart instead of dropping it", () => {

@@ -73,7 +73,12 @@ export interface FileReads {
   table: string;
   file: string;
   fileBytes: number;
+  // Body bytes the engine received, summed over its requests.
   bytes: number;
+  // Bytes of the file those requests covered, each counted once: no more than `fileBytes`.
+  // The engine can ask twice for the same bytes in one query (the footer when a view is
+  // created and again when it is scanned), so `bytes` can exceed the file.
+  distinctBytes: number;
   requests: number;
   ranges: (string | null)[];
 }
@@ -81,10 +86,31 @@ export interface FileReads {
 export interface ReadSummary {
   files: FileReads[];
   bytes: number;
+  distinctBytes: number;
   requests: number;
   // Requests to anything that is not a registered file (none is expected once the engine is
   // ready; kept so a stray one is counted, not dropped).
   other: Read[];
+}
+
+// Where in the file a read's body sits: its Range from the first byte, or the start of the file
+// when it had none (a whole-file GET). Bodiless reads (the HEAD) cover nothing.
+function span(read: Read): [number, number] | null {
+  if (read.bytes === 0) return null;
+  const start = Number(read.range?.match(/^bytes=(\d+)-/)?.[1] ?? 0);
+  return [start, start + read.bytes];
+}
+
+function covered(spans: [number, number][]): number {
+  let total = 0;
+  let end = 0;
+  for (const [a, b] of [...spans].sort((x, y) => x[0] - y[0])) {
+    if (b > end) {
+      total += b - Math.max(a, end);
+      end = b;
+    }
+  }
+  return total;
 }
 
 // The requests of one query, per registered file, in registry order; files it did not touch
@@ -92,6 +118,7 @@ export interface ReadSummary {
 export function readsByFile(reads: Read[], files: RegisteredFile[]): ReadSummary {
   const byUrl = new Map(files.map((f) => [f.url, f]));
   const touched = new Map<string, FileReads>();
+  const spans = new Map<string, [number, number][]>();
   const other: Read[] = [];
   for (const read of reads) {
     const file = byUrl.get(read.url);
@@ -104,6 +131,7 @@ export function readsByFile(reads: Read[], files: RegisteredFile[]): ReadSummary
       file: file.file,
       fileBytes: file.bytes,
       bytes: 0,
+      distinctBytes: 0,
       requests: 0,
       ranges: [],
     };
@@ -111,12 +139,19 @@ export function readsByFile(reads: Read[], files: RegisteredFile[]): ReadSummary
     entry.requests += 1;
     entry.ranges.push(read.range);
     touched.set(file.url, entry);
+    const s = span(read);
+    if (s) spans.set(file.url, [...(spans.get(file.url) ?? []), s]);
   }
-  const summary = files.flatMap((f) => touched.get(f.url) ?? []);
+  const summary = files.flatMap((f) => {
+    const entry = touched.get(f.url);
+    return entry ? [{ ...entry, distinctBytes: covered(spans.get(f.url) ?? []) }] : [];
+  });
+  const total = (key: "bytes" | "distinctBytes" | "requests") => summary.reduce((t, f) => t + f[key], 0);
   return {
     files: summary,
-    bytes: summary.reduce((total, f) => total + f.bytes, 0),
-    requests: summary.reduce((total, f) => total + f.requests, 0),
+    bytes: total("bytes"),
+    distinctBytes: total("distinctBytes"),
+    requests: total("requests"),
     other,
   };
 }

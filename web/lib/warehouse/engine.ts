@@ -38,8 +38,10 @@ export interface QueryResult {
   rowCount: number;
   // From the start of the query (views it needed included) to its result.
   ms: number;
-  // Body bytes and requests to the registered Parquet files, all files together and per file.
+  // Body bytes and requests to the registered Parquet files, all files together and per file;
+  // `distinctBytes` counts each byte of a file once (`FileReads` in registry.ts).
   bytes: number;
+  distinctBytes: number;
   requests: number;
   files: FileReads[];
 }
@@ -263,10 +265,10 @@ export async function run(sql: string): Promise<void> {
     const vectors = columns.map((_, i) => table.getChildAt(i)!);
     const kept = Math.min(table.numRows, ROW_LIMIT);
     const rows = Array.from({ length: kept }, (_, r) => vectors.map((v) => v.get(r) as unknown));
-    const { files, bytes, requests } = readsByFile(reads, e.files);
+    const { files, bytes, distinctBytes, requests } = readsByFile(reads, e.files);
     update({
       query: "done",
-      result: { sql, columns, rows, rowCount: table.numRows, ms, bytes, requests, files },
+      result: { sql, columns, rows, rowCount: table.numRows, ms, bytes, distinctBytes, requests, files },
     });
   } catch (error) {
     if (gen !== generation) return;
