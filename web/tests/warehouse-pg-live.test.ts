@@ -1,8 +1,8 @@
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { Client } from "pg";
 import { GET } from "../app/api/warehouse/pg/route";
 import { exampleIds, summary } from "../lib/warehouse/pg";
-import { isTimeout, runExample } from "../lib/warehouse/pg-run";
+import { DEADLINE_MS, STATEMENT_TIMEOUT_MS, isTimeout, runExample } from "../lib/warehouse/pg-run";
 import type { PgCell } from "../lib/warehouse/pg-types";
 
 // Task 45 against a real Postgres: `TRACKLAB_TEST_WEB_PG_URL` is the connection string of the
@@ -57,19 +57,7 @@ live("the route against Postgres, as the read-only role", () => {
     expect(run.rows).toEqual([[2.5, 3, "x", null]]);
   });
 
-  it("cancels a statement longer than the role's statement_timeout", async () => {
-    const started = Date.now();
-    const error = await runExample(url!, "SELECT pg_sleep(10)").then(
-      () => null,
-      (e) => e,
-    );
-    expect(error).not.toBeNull();
-    expect(isTimeout(error)).toBe(true);
-    // The role's 2 s (or the route's own 3 s deadline), never the ten seconds of the sleep.
-    expect(Date.now() - started).toBeLessThan(3500);
-  });
-
-  it("closes the connection when its own deadline passes before the role's", async () => {
+  it("closes the connection when its own deadline passes before the statement_timeout", async () => {
     const started = Date.now();
     const error = await runExample(url!, "SELECT pg_sleep(1.5)", 300).then(
       () => null,
@@ -77,6 +65,61 @@ live("the route against Postgres, as the read-only role", () => {
     );
     expect(isTimeout(error)).toBe(true);
     expect(Date.now() - started).toBeLessThan(1000);
+  });
+
+  // Review V of P4, M1: Postgres lets any role change its own defaults in a database, so whoever
+  // holds the reader's password can switch off task 44's 2 s and read-only default for every
+  // later session. The route must hold its limits without them.
+  describe("after the role switched off its own defaults", () => {
+    const asReader = async (statements: string[]) => {
+      const client = new Client({ connectionString: url });
+      await client.connect();
+      try {
+        const results = [];
+        for (const statement of statements) results.push((await client.query(statement)).rows);
+        return results;
+      } finally {
+        await client.end();
+      }
+    };
+    const setOwnDefaults = async (timeout: string, readOnly: string) => {
+      const [[{ db }]] = await asReader(["SELECT current_database() AS db"]);
+      const role = `ALTER ROLE warehouse_reader IN DATABASE "${db}" SET`;
+      await asReader([
+        "SET default_transaction_read_only = off",
+        `${role} statement_timeout = '${timeout}'`,
+        `${role} default_transaction_read_only = ${readOnly}`,
+      ]);
+    };
+    beforeAll(() => setOwnDefaults("0", "off"));
+    afterAll(() => setOwnDefaults("2s", "on"));
+
+    it("a new session of the role has no time limit and may write", async () => {
+      const [[timeout], [readOnly]] = await asReader(["SHOW statement_timeout", "SHOW default_transaction_read_only"]);
+      expect([timeout.statement_timeout, readOnly.default_transaction_read_only]).toEqual(["0", "off"]);
+    });
+
+    it("the route still cancels a slow statement at its own statement_timeout", async () => {
+      const started = Date.now();
+      const error = await runExample(url!, "SELECT pg_sleep(3)").then(
+        () => null,
+        (e) => e,
+      );
+      const elapsed = Date.now() - started;
+      // Cancelled by the server (57014) at the route's 2 s, not by the route's own 3 s deadline.
+      expect(isTimeout(error)).toBe(true);
+      expect(error?.code).toBe("57014");
+      expect(elapsed).toBeGreaterThanOrEqual(STATEMENT_TIMEOUT_MS);
+      expect(elapsed).toBeLessThan(DEADLINE_MS - 500);
+    });
+
+    it("the route still cannot write a large object", async () => {
+      const error = await runExample(url!, "SELECT lo_from_bytea(0, decode('41', 'hex'))").then(
+        () => null,
+        (e) => e,
+      );
+      expect(error?.code).toBe("25006");
+    });
   });
 
   it("cannot write, even in a transaction opened read-write", async () => {

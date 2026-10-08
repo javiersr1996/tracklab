@@ -104,7 +104,7 @@ def test_migrations_apply_once_and_refuse_a_changed_file(pg_dsn: str, tmp_path: 
     for path in SQL_DIR.glob("[0-9][0-9][0-9]_*.sql"):
         shutil.copy(path, sql_dir)
     with connect(pg_dsn) as conn:
-        assert migrate(conn, sql_dir) == ["001_warehouse"]
+        assert migrate(conn, sql_dir) == ["001_warehouse", "002_no_temporary_tables"]
         assert migrate(conn, sql_dir) == []
         edited = sql_dir / "001_warehouse.sql"
         edited.write_bytes(edited.read_bytes() + b"-- edited\n")
@@ -214,7 +214,9 @@ def test_a_removed_player_deletes_his_rows(pg_dsn: str, tmp_gold: Path) -> None:
     assert left == (0,)
 
 
-def test_the_reader_reads_every_table_and_cannot_write_or_run_long(loaded_dsn: str) -> None:
+def test_the_reader_reads_every_table_and_cannot_write_to_them_or_run_long(
+    loaded_dsn: str,
+) -> None:
     password = secrets.token_urlsafe(24)
     with connect(loaded_dsn) as conn:
         set_reader_password(conn, password)
@@ -242,3 +244,24 @@ def test_the_reader_reads_every_table_and_cannot_write_or_run_long(loaded_dsn: s
                 r.execute(statement.encode())
         with pytest.raises(errors.QueryCanceled):
             r.execute("SELECT pg_sleep(3)")
+
+
+def test_the_reader_cannot_create_temporary_tables_and_the_owner_still_can(
+    owned_dsn: tuple[str, str],
+) -> None:
+    """Review V of P4, M1. PUBLIC holds TEMPORARY on every database, and read only is just the
+    reader's default: in a transaction opened read-write it created temporary tables until 002
+    revoked that. The database's owner, not a superuser here as on Neon, still stages the load in
+    temporary tables."""
+    dsn, as_owner = owned_dsn
+    password = secrets.token_urlsafe(24)
+    with connect(dsn) as conn:
+        assert "002_no_temporary_tables" in migrate(conn)
+        set_reader_password(conn, password)
+    as_reader = make_conninfo(dsn, user=READER_ROLE, password=password)
+    with psycopg.connect(as_reader, autocommit=True) as r:
+        with pytest.raises(errors.InsufficientPrivilege), r.transaction():
+            r.execute("SET TRANSACTION READ WRITE")
+            r.execute("CREATE TEMP TABLE scratch AS SELECT 1 AS a")
+    with psycopg.connect(as_owner, autocommit=True) as o, o.transaction():
+        o.execute("CREATE TEMP TABLE stage (a int) ON COMMIT DROP")

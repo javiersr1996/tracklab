@@ -82,7 +82,7 @@ jobs:
       run:
         working-directory: web
     # Task 45: the route of /warehouse is tested against a real Postgres, as the read-only role.
-    # Only the schema of task 44 goes in (psql below, no pipeline): the route tests check that the
+    # Only the migrations of task 44 go in (psql below, no pipeline): the route tests check that the
     # five queries run as that role and return their columns, not their rows, which the
     # pipeline job and the local run against the real gold cover. The e2e needs no database.
     services:
@@ -116,7 +116,7 @@ jobs:
           PGPASSWORD: ci-${{ github.run_id }}
         run: |
           psql -v ON_ERROR_STOP=1 -c "CREATE SCHEMA warehouse"
-          psql -v ON_ERROR_STOP=1 -f ../pipeline/sql/001_warehouse.sql
+          for migration in ../pipeline/sql/[0-9][0-9][0-9]_*.sql; do psql -v ON_ERROR_STOP=1 -f "$migration"; done
           psql -v ON_ERROR_STOP=1 -c "ALTER ROLE warehouse_reader WITH LOGIN PASSWORD 'ci-${{ github.run_id }}'"
       - run: npm run lint
       - run: npm run typecheck

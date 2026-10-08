@@ -44,10 +44,13 @@ def pg_admin_dsn() -> str:
 
 
 @contextmanager
-def throwaway_database(admin_dsn: str) -> Iterator[str]:
+def throwaway_database(admin_dsn: str, owner: str | None = None) -> Iterator[str]:
     name = f"tracklab_test_{secrets.token_hex(4)}"
+    create = sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name))
+    if owner is not None:
+        create = sql.SQL("{} OWNER {}").format(create, sql.Identifier(owner))
     with psycopg.connect(admin_dsn, autocommit=True) as conn:
-        conn.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
+        conn.execute(create)
     try:
         yield make_conninfo(admin_dsn, dbname=name)
     finally:
@@ -60,6 +63,25 @@ def pg_dsn(pg_admin_dsn: str) -> Iterator[str]:
     """An empty database."""
     with throwaway_database(pg_admin_dsn) as dsn:
         yield dsn
+
+
+@pytest.fixture
+def owned_dsn(pg_admin_dsn: str) -> Iterator[tuple[str, str]]:
+    """An empty database owned by a new role that is not a superuser, as the owner is on Neon:
+    `(dsn as the admin, dsn as the owner)`. The role goes with the database."""
+    owner, password = f"tracklab_test_owner_{secrets.token_hex(4)}", secrets.token_urlsafe(24)
+    with psycopg.connect(pg_admin_dsn, autocommit=True) as conn:
+        conn.execute(
+            sql.SQL("CREATE ROLE {} LOGIN PASSWORD {}").format(
+                sql.Identifier(owner), sql.Literal(password)
+            )
+        )
+    try:
+        with throwaway_database(pg_admin_dsn, owner=owner) as dsn:
+            yield dsn, make_conninfo(dsn, user=owner, password=password)
+    finally:
+        with psycopg.connect(pg_admin_dsn, autocommit=True) as conn:
+            conn.execute(sql.SQL("DROP ROLE {}").format(sql.Identifier(owner)))
 
 
 @pytest.fixture(scope="module")

@@ -6,12 +6,15 @@
 // (WebSocket or HTTP) buys nothing for a Node function, and `postgres` adds nothing `pg` lacks
 // for five fixed queries.
 //
-// Limits, innermost first: the role's `statement_timeout` (task 44, 2 s, set on the role in the
-// database, so it holds through a pooler that rejects startup parameters), the connection
-// timeout, and a deadline over connect and query together, after which the connection is closed.
+// Limits, innermost first: the transaction's own, READ ONLY and `SET LOCAL statement_timeout`
+// (STATEMENT_TIMEOUT_MS, the 2 s of decision 7), the connection timeout, and a deadline over
+// connect and query together, after which the connection is closed. The role's defaults (read
+// only, 2 s, task 44) are not relied on: any role can change its own (review V of P4, M1). `SET
+// LOCAL` lives inside the transaction, so it holds through a pooler in transaction mode.
 import { Client, types } from "pg";
 import type { PgCell } from "./pg-types";
 
+export const STATEMENT_TIMEOUT_MS = 2000;
 export const CONNECT_MS = 2000;
 export const DEADLINE_MS = 3000;
 
@@ -59,12 +62,14 @@ export async function runExample(
 
 async function work(client: Client, sql: string): Promise<PgRun> {
   await client.connect();
+  // One round trip for both. No COMMIT: the transaction ends when `runExample` closes the connection.
+  await client.query(`BEGIN READ ONLY; SET LOCAL statement_timeout = ${STATEMENT_TIMEOUT_MS}`);
   const started = performance.now();
   const res = await client.query({ text: sql, rowMode: "array" });
   return { columns: res.fields.map((f) => f.name), rows: res.rows as PgCell[][], ms: performance.now() - started };
 }
 
-// `57014` is query_canceled, what the role's statement_timeout raises.
+// `57014` is query_canceled, what the statement_timeout raises.
 export const isTimeout = (e: unknown): boolean =>
   e instanceof PgTimeout ||
   (e as { code?: string } | null)?.code === "57014" ||

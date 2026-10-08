@@ -5,8 +5,9 @@ import type { PgRouteAnswer } from "../../../../lib/warehouse/pg-types";
 // Task 45. GET /api/warehouse/pg?id=<example>: runs the SQL of one example from
 // `warehouse_pg.json`, the one place the SQL comes from. The request carries an id and nothing
 // else: any other parameter, or a missing or unknown id, is a 400 before anything touches the
-// database, and there is no POST. The connection is `DATABASE_URL` (the `warehouse_reader` role:
-// read only, with a statement_timeout), a server variable that no client file reads.
+// database, and there is no POST. The connection is `DATABASE_URL` (the `warehouse_reader` role,
+// which can read the warehouse schema and write none of it), a server variable that no client file
+// reads; each query runs in a read-only transaction with its own statement_timeout (pg-run.ts).
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 

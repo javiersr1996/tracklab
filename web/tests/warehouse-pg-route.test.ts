@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Task 45: the route takes the id of an example and nothing else. The driver is mocked so the
 // test can count the connections the route opens: a request it refuses must open none.
-const connections = vi.hoisted(() => ({ opened: 0 }));
+const connections = vi.hoisted(() => ({ opened: 0, sent: [] as string[] }));
 vi.mock("pg", () => {
   class Client {
     constructor() {
@@ -10,7 +10,8 @@ vi.mock("pg", () => {
     }
     on() {}
     async connect() {}
-    async query() {
+    async query(query: string | { text: string }) {
+      connections.sent.push(typeof query === "string" ? query : query.text);
       return { fields: [{ name: "x" }], rows: [[1]] };
     }
     async end() {}
@@ -21,11 +22,13 @@ vi.mock("pg", () => {
 import * as route from "../app/api/warehouse/pg/route";
 import { EXAMPLES } from "../lib/warehouse/examples";
 import { exampleIds, sqlOf, summary } from "../lib/warehouse/pg";
+import { STATEMENT_TIMEOUT_MS } from "../lib/warehouse/pg-run";
 
 const ask = (query: string) => route.GET(new Request(`http://localhost/api/warehouse/pg${query}`));
 
 beforeEach(() => {
   connections.opened = 0;
+  connections.sent = [];
   vi.stubEnv("DATABASE_URL", "postgresql://reader@db.invalid/db");
 });
 afterEach(() => vi.unstubAllEnvs());
@@ -62,6 +65,15 @@ describe("an example id", () => {
     expect(res.headers.get("cache-control")).toBe("no-store");
     expect(await res.json()).toMatchObject({ status: "live", id: "profile", columns: ["x"], rows: [[1]] });
     expect(connections.opened).toBe(1);
+  });
+
+  it("runs it inside a read-only transaction with its own statement_timeout", async () => {
+    await ask("?id=profile");
+    // Not the role's defaults, which the role can change on itself (review V of P4, M1).
+    expect(connections.sent).toEqual([
+      `BEGIN READ ONLY; SET LOCAL statement_timeout = ${STATEMENT_TIMEOUT_MS}`,
+      sqlOf("profile"),
+    ]);
   });
 
   it("without DATABASE_URL answers absent and opens no connection", async () => {
