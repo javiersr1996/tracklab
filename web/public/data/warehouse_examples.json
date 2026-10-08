@@ -1,0 +1,353 @@
+{
+  "schema_version": 1,
+  "params": {
+    "min_matches": 5,
+    "min_games": 10,
+    "football_metric": "psv99",
+    "profile_player": "Timothe Luwawu-Cabarrot",
+    "football_player": "Jay Barnett",
+    "basketball_player": "Guillem Vives"
+  },
+  "examples": [
+    {
+      "id": "profile",
+      "table": "bb_shots",
+      "columns": [
+        {
+          "name": "player_name",
+          "decimals": null
+        },
+        {
+          "name": "team_name",
+          "decimals": null
+        },
+        {
+          "name": "games_played",
+          "decimals": null
+        },
+        {
+          "name": "attempts",
+          "decimals": null
+        },
+        {
+          "name": "mades",
+          "decimals": null
+        },
+        {
+          "name": "three_attempts",
+          "decimals": null
+        },
+        {
+          "name": "three_mades",
+          "decimals": null
+        },
+        {
+          "name": "total_points",
+          "decimals": null
+        },
+        {
+          "name": "points_per_game",
+          "decimals": 1
+        }
+      ],
+      "rows": [
+        [
+          "Timothe Luwawu-Cabarrot",
+          "Bitci Baskonia",
+          30,
+          373,
+          172,
+          207,
+          81,
+          558,
+          18.6
+        ]
+      ]
+    },
+    {
+      "id": "percentile",
+      "table": "fb_physical",
+      "columns": [
+        {
+          "name": "player_name",
+          "decimals": null
+        },
+        {
+          "name": "team_name",
+          "decimals": null
+        },
+        {
+          "name": "position_group",
+          "decimals": null
+        },
+        {
+          "name": "psv99",
+          "decimals": 2
+        },
+        {
+          "name": "percentile",
+          "decimals": 1
+        },
+        {
+          "name": "players_in_group",
+          "decimals": null
+        },
+        {
+          "name": "matches_in_group",
+          "decimals": null
+        }
+      ],
+      "rows": [
+        [
+          "Jay Barnett",
+          "Adelaide United Football Club",
+          "Midfield",
+          27.03,
+          52.17391304347826,
+          47,
+          722
+        ]
+      ]
+    },
+    {
+      "id": "teams",
+      "table": "bb_shots",
+      "columns": [
+        {
+          "name": "team_name",
+          "decimals": null
+        },
+        {
+          "name": "attempts",
+          "decimals": null
+        },
+        {
+          "name": "mades",
+          "decimals": null
+        },
+        {
+          "name": "fg_pct",
+          "decimals": 1
+        },
+        {
+          "name": "points",
+          "decimals": null
+        }
+      ],
+      "rows": [
+        [
+          "Real Madrid",
+          2197,
+          1072,
+          48.793809740555304,
+          3154
+        ],
+        [
+          "Leche Rio Breogan",
+          2272,
+          1085,
+          47.75528169014085,
+          3091
+        ],
+        [
+          "Bitci Baskonia",
+          2063,
+          1002,
+          48.57004362578769,
+          2972
+        ],
+        [
+          "BC Barcelona",
+          2086,
+          1083,
+          51.917545541706616,
+          2969
+        ],
+        [
+          "San Pablo Burgos",
+          2305,
+          1062,
+          46.073752711496745,
+          2968
+        ],
+        [
+          "Basquet Girona",
+          2286,
+          1008,
+          44.09448818897638,
+          2911
+        ],
+        [
+          "Valencia BC",
+          2184,
+          1033,
+          47.298534798534796,
+          2909
+        ],
+        [
+          "Malaga",
+          2182,
+          1005,
+          46.058661778185154,
+          2900
+        ],
+        [
+          "Lenovo Tenerife",
+          1947,
+          966,
+          49.61479198767334,
+          2867
+        ],
+        [
+          "Coviran Granada",
+          2061,
+          931,
+          45.17224648229015,
+          2847
+        ],
+        [
+          "CB UCAM Murcia",
+          2085,
+          983,
+          47.146282973621105,
+          2830
+        ],
+        [
+          "BAXI Manresa",
+          2159,
+          939,
+          43.49235757295044,
+          2826
+        ],
+        [
+          "Bilbao Basket",
+          2044,
+          917,
+          44.863013698630134,
+          2798
+        ],
+        [
+          "ICG Forca Lleida",
+          2094,
+          955,
+          45.60649474689589,
+          2761
+        ],
+        [
+          "Club Joventut Badalona",
+          2084,
+          975,
+          46.785028790786946,
+          2725
+        ],
+        [
+          "Casademont Zaragoza",
+          2001,
+          941,
+          47.026486756621686,
+          2673
+        ],
+        [
+          "BC MoraBanc Andorra",
+          1969,
+          880,
+          44.6927374301676,
+          2653
+        ],
+        [
+          "Dreamland Gran Canaria",
+          2010,
+          897,
+          44.62686567164179,
+          2578
+        ]
+      ]
+    },
+    {
+      "id": "fact",
+      "table": "fact",
+      "columns": [
+        {
+          "name": "p50",
+          "decimals": 2
+        },
+        {
+          "name": "p90",
+          "decimals": 2
+        },
+        {
+          "name": "n",
+          "decimals": null
+        }
+      ],
+      "rows": [
+        [
+          28.26,
+          30.005000000000003,
+          406
+        ]
+      ]
+    },
+    {
+      "id": "basketball_percentile",
+      "table": "bb_shots",
+      "columns": [
+        {
+          "name": "player_name",
+          "decimals": null
+        },
+        {
+          "name": "team_name",
+          "decimals": null
+        },
+        {
+          "name": "games_played",
+          "decimals": null
+        },
+        {
+          "name": "three_attempts",
+          "decimals": null
+        },
+        {
+          "name": "threes_per_game",
+          "decimals": 2
+        },
+        {
+          "name": "percentile",
+          "decimals": 1
+        },
+        {
+          "name": "players_in_pool",
+          "decimals": null
+        },
+        {
+          "name": "games_in_pool",
+          "decimals": null
+        }
+      ],
+      "rows": [
+        [
+          "Guillem Vives",
+          "Club Joventut Badalona",
+          27,
+          65,
+          2.4074074074074074,
+          50.607287449392715,
+          248,
+          6227
+        ]
+      ]
+    }
+  ],
+  "aliases": {
+    "alias_ids": 9,
+    "bb_shots_alias_rows_in_a_team_with_their_canonical_id": 8,
+    "profile_player_has_an_alias": false,
+    "basketball_percentile": {
+      "pool_rows_naive": 248,
+      "pool_rows_merged": 247,
+      "percentile_naive": 50.607287449392715,
+      "percentile_merged": 50.81300813008131
+    }
+  }
+}

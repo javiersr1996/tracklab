@@ -30,6 +30,7 @@ from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.paths import data_root
+from tracklab.publish.examples import run_publish_examples
 from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.platform import run_publish_platform
 from tracklab.publish.possessions import run_publish_possessions
@@ -177,6 +178,10 @@ def _cmd_publish_platform(args: argparse.Namespace) -> int:
 
 def _cmd_publish_warehouse(args: argparse.Namespace) -> int:
     return run_publish_warehouse(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
+
+
+def _cmd_publish_examples(args: argparse.Namespace) -> int:
+    return run_publish_examples(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
 
 
 def _cmd_publish_quality(args: argparse.Namespace) -> int:
@@ -481,6 +486,30 @@ def build_parser() -> argparse.ArgumentParser:
         "and warehouse.json; write nothing.",
     )
     publish_warehouse.set_defaults(func=_cmd_publish_warehouse)
+
+    publish_examples = publish_sub.add_parser(
+        "examples",
+        help="Write warehouse_examples.json: what the /warehouse example queries must return, "
+        "computed from gold without SQL, and the basketball alias figures.",
+    )
+    publish_examples.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; gold and the bronze aliases are read from it (default: data).",
+    )
+    publish_examples.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where warehouse_examples.json goes (default: ../web/public/data).",
+    )
+    publish_examples.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare with the file on disk; write nothing.",
+    )
+    publish_examples.set_defaults(func=_cmd_publish_examples)
 
     publish_quality = publish_sub.add_parser(
         "quality",
