@@ -1,6 +1,6 @@
 import { formatBytes } from "../../lib/format";
 import type { QueryResult } from "../../lib/warehouse/engine";
-import type { PgAnswer } from "../../lib/warehouse/pg-client";
+import { CLIENT_LIMIT_MS, type PgAnswer } from "../../lib/warehouse/pg-client";
 import type { PgCell, PgSnapshotExample, PgSnapshotSummary } from "../../lib/warehouse/pg-types";
 
 // The Postgres half of /warehouse (task 45), beside the Parquet panel of the same example.
@@ -38,11 +38,12 @@ export function PostgresPanel({
   const rows = live ? pg.rows : example.rows;
   const { source } = summary;
   const snapshotLine = `Snapshot of ${stamp(summary.measured_at)}: ${source.engine} ${source.version}, ${source.where} (warehouse_pg.json).`;
-  const planSource = `EXPLAIN (ANALYZE, BUFFERS) in warehouse_pg.json, ${stamp(summary.measured_at)}`;
+  // Where the plan was measured, also when the rows above are live from another Postgres.
+  const planSource = `EXPLAIN (ANALYZE, BUFFERS) in warehouse_pg.json, ${stamp(summary.measured_at)}, ${source.where}`;
   return (
     <section data-pg-panel data-pg-source={live ? "live" : "snapshot"}>
       <h3>Postgres</h3>
-      {pg.backend === "running" ? <p>Asking Postgres, for up to 4 seconds.</p> : null}
+      {pg.backend === "running" ? <p>Asking Postgres, for up to {CLIENT_LIMIT_MS / 1000} seconds.</p> : null}
       {pg.backend === "live" ? (
         <p>
           Live: Postgres answered this page&apos;s own route in {pg.ms.toFixed(1)} ms (the query alone, as the
