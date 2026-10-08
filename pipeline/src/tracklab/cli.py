@@ -29,6 +29,7 @@ from tracklab.formats.football_report import freeze_football
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
+from tracklab.load.postgres import run_load_postgres
 from tracklab.paths import data_root
 from tracklab.publish.examples import run_publish_examples
 from tracklab.publish.lineage import run_publish_lineage
@@ -182,6 +183,14 @@ def _cmd_publish_warehouse(args: argparse.Namespace) -> int:
 
 def _cmd_publish_examples(args: argparse.Namespace) -> int:
     return run_publish_examples(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
+
+
+def _cmd_load_postgres(args: argparse.Namespace) -> int:
+    return run_load_postgres(
+        data_dir=args.data_dir,
+        dsn_env=args.dsn_env,
+        reader_password_env=args.reader_password_env,
+    )
 
 
 def _cmd_publish_quality(args: argparse.Namespace) -> int:
@@ -510,6 +519,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="Regenerate in memory and compare with the file on disk; write nothing.",
     )
     publish_examples.set_defaults(func=_cmd_publish_examples)
+
+    load = subparsers.add_parser("load", help="Load gold into a database outside the repo.")
+    load_sub = load.add_subparsers(dest="load_command", required=True)
+    load_postgres = load_sub.add_parser(
+        "postgres",
+        help="Apply pipeline/sql/ and load the gold dimensional model into Postgres, "
+        "incrementally: only new, changed and gone rows are written.",
+    )
+    load_postgres.add_argument(
+        "--dsn-env",
+        default="TRACKLAB_PG_DSN",
+        help="Environment variable holding the connection string (default: TRACKLAB_PG_DSN).",
+    )
+    load_postgres.add_argument(
+        "--reader-password-env",
+        default=None,
+        help="Environment variable holding a password for the read-only role "
+        "warehouse_reader; given, the role can log in with it (default: unchanged).",
+    )
+    load_postgres.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; gold is read from it (default: data).",
+    )
+    load_postgres.set_defaults(func=_cmd_load_postgres)
 
     publish_quality = publish_sub.add_parser(
         "quality",
