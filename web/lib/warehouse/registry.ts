@@ -101,6 +101,24 @@ function span(read: Read): [number, number] | null {
   return [start, start + read.bytes];
 }
 
+// Where each row group of a file sits in it: `start` to `end` is the byte span of its column
+// chunks, read from the file's own footer (`parquet_metadata`, engine.ts).
+export interface RowGroupSpan {
+  start: number;
+  end: number;
+}
+
+// How many row groups have bytes among those the engine fetched for `url`. Fetches come in
+// whole blocks, so a group next to the one a query needs can overlap by the block's edge: this
+// counts overlap, not decoding.
+export function rowGroupsRead(groups: RowGroupSpan[], reads: Read[], url: string): number {
+  const spans = reads
+    .filter((r) => r.url === url)
+    .map(span)
+    .filter((s): s is [number, number] => s !== null);
+  return groups.filter((g) => spans.some(([a, b]) => a < g.end && b > g.start)).length;
+}
+
 function covered(spans: [number, number][]): number {
   let total = 0;
   let end = 0;

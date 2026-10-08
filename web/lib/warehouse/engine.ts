@@ -1,6 +1,16 @@
 import { useSyncExternalStore } from "react";
 import type { AsyncDuckDB, AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
-import { readsByFile, registry, viewSql, WAREHOUSE, type FileReads, type Read, type RegisteredFile } from "./registry";
+import {
+  readsByFile,
+  registry,
+  rowGroupsRead,
+  viewSql,
+  WAREHOUSE,
+  type FileReads,
+  type Read,
+  type RegisteredFile,
+  type RowGroupSpan,
+} from "./registry";
 import { checkSql } from "./sql";
 
 // Task 42: one DuckDB-WASM instance per page, loaded only when a query is run (decision 5),
@@ -43,7 +53,15 @@ export interface QueryResult {
   bytes: number;
   distinctBytes: number;
   requests: number;
-  files: FileReads[];
+  files: FileDetail[];
+}
+
+// A file's reads plus two things the panel has to say beside them: whether an earlier query of
+// this visit had already touched the file (the engine keeps what it read, so these bytes are not
+// a cold read), and how many of its row groups had bytes fetched.
+export interface FileDetail extends FileReads {
+  warm: boolean;
+  rowGroups: { read: number; total: number };
 }
 
 export interface WarehouseSnapshot {
@@ -57,6 +75,8 @@ export interface WarehouseSnapshot {
   versions: { package: string; duckdb: string } | null;
   result: QueryResult | null;
   error: string | null;
+  // `EXPLAIN ANALYZE` of the last result's query, once asked for (`explain()`).
+  plan: string | null;
 }
 
 const INITIAL: WarehouseSnapshot = {
@@ -67,6 +87,7 @@ const INITIAL: WarehouseSnapshot = {
   versions: null,
   result: null,
   error: null,
+  plan: null,
 };
 
 let snapshot = INITIAL;
@@ -100,6 +121,8 @@ interface Engine {
   conn: AsyncDuckDBConnection;
   files: RegisteredFile[];
   views: Set<string>;
+  // Files an earlier query of this visit has read from.
+  touched: Set<string>;
   report: () => Promise<Report>;
 }
 
@@ -212,7 +235,7 @@ async function start(gen: number): Promise<Engine> {
     engineBytes: engineFiles.reduce((total, f) => total + f.bytes, 0),
     versions: { package: duckdb.PACKAGE_VERSION, duckdb: await db.getVersion() },
   });
-  return { conn, files, views: new Set(), report };
+  return { conn, files, views: new Set(), touched: new Set(), report };
 }
 
 function ensureEngine(gen: number): Promise<Engine> {
@@ -243,11 +266,11 @@ export async function run(sql: string): Promise<void> {
   const runs = snapshot.runs + 1;
   const check = checkSql(sql, TABLES);
   if (!check.ok) {
-    update({ query: "error", runs, error: check.reason, result: null });
+    update({ query: "error", runs, error: check.reason, result: null, plan: null });
     return;
   }
   const gen = generation;
-  update({ query: "running", runs, error: null, result: null });
+  update({ query: "running", runs, error: null, result: null, plan: null });
   try {
     const e = await ensureEngine(gen);
     await e.report(); // empties the log: what follows is this query's
@@ -265,14 +288,65 @@ export async function run(sql: string): Promise<void> {
     const vectors = columns.map((_, i) => table.getChildAt(i)!);
     const kept = Math.min(table.numRows, ROW_LIMIT);
     const rows = Array.from({ length: kept }, (_, r) => vectors.map((v) => v.get(r) as unknown));
-    const { files, bytes, distinctBytes, requests } = readsByFile(reads, e.files);
+    const summary = readsByFile(reads, e.files);
+    const files: FileDetail[] = [];
+    for (const f of summary.files) {
+      const registered = e.files.find((r) => r.file === f.file)!;
+      const groups = await rowGroupSpans(e, f.file);
+      files.push({
+        ...f,
+        warm: e.touched.has(f.file),
+        rowGroups: { read: rowGroupsRead(groups, reads, registered.url), total: groups.length },
+      });
+    }
+    for (const f of files) e.touched.add(f.file);
+    const { bytes, distinctBytes, requests } = summary;
+    if (gen !== generation) return;
     update({
       query: "done",
+      plan: null,
       result: { sql, columns, rows, rowCount: table.numRows, ms, bytes, distinctBytes, requests, files },
     });
   } catch (error) {
     if (gen !== generation) return;
     update({ query: "error", error: message(error) });
+  }
+}
+
+// The byte span of every row group of a file, from its footer. The footer is already in the
+// engine's memory (the query that just ran read it), and whatever this asks of the network is
+// dropped from the log, so it does not count toward any query.
+async function rowGroupSpans(e: Engine, file: string): Promise<RowGroupSpan[]> {
+  const table = await e.conn.query(
+    `SELECT min(coalesce(dictionary_page_offset, data_page_offset))::DOUBLE AS start,
+            max(coalesce(dictionary_page_offset, data_page_offset) + total_compressed_size)::DOUBLE AS "end"
+     FROM parquet_metadata('${file}') GROUP BY row_group_id ORDER BY row_group_id`,
+  );
+  await e.report();
+  return Array.from({ length: table.numRows }, (_, i) => ({
+    start: Number(table.getChildAt(0)!.get(i)),
+    end: Number(table.getChildAt(1)!.get(i)),
+  }));
+}
+
+// `EXPLAIN ANALYZE` of the last result's query, run once more on the same connection. The
+// plan is DuckDB's own text; it describes this second execution, which the engine mostly serves
+// from what it already holds.
+export async function explain(): Promise<void> {
+  const sql = snapshot.result?.sql;
+  if (!sql || !engine || snapshot.query === "running") return;
+  const gen = generation;
+  try {
+    const e = await engine;
+    await e.report();
+    const table = await e.conn.query(`EXPLAIN ANALYZE ${sql}`);
+    await e.report();
+    if (gen !== generation) return;
+    const last = table.numRows - 1;
+    update({ plan: String(table.getChildAt(table.numCols - 1)!.get(last)) });
+  } catch (error) {
+    if (gen !== generation) return;
+    update({ plan: `EXPLAIN ANALYZE failed: ${message(error)}` });
   }
 }
 

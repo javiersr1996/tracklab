@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   readsByFile,
   registry,
+  rowGroupsRead,
   viewSql,
   WAREHOUSE,
   type Read,
@@ -15,6 +16,8 @@ import {
 // - dropping the `FILE_NAME` check lets `x.parquet' ...` through, failing `refuses a name ...`;
 // - charging a request to an unregistered URL to the first file (`?? files[0]`) fails
 //   `keeps a request to anything else apart ...`;
+// - counting a row group whose span merely touches a read (`<=` for `<`) fails `counts a row
+//   group only if a fetched byte lies inside it`;
 // - summing spans without clipping the overlap (`total += b - a`) fails `counts a byte the
 //   engine asked for twice once ...`.
 
@@ -154,5 +157,26 @@ describe("readsByFile", () => {
     const stray: Read = { url: `${ORIGIN}/duckdb/ext/x.wasm`, method: "GET", range: null, status: 200, bytes: 99 };
     const summary = readsByFile([stray], files);
     expect([summary.files, summary.bytes, summary.requests, summary.other]).toEqual([[], 0, 0, [stray]]);
+  });
+
+  it("counts a row group only if a fetched byte lies inside it", () => {
+    const f = "fact.00ed21c4.parquet";
+    const url = `${ORIGIN}/data/warehouse/${f}`;
+    const groups = [
+      { start: 4, end: 1000 },
+      { start: 1000, end: 2000 },
+      { start: 2000, end: 3000 },
+    ];
+    // The footer, the second group's bytes 1000 to 1499, a HEAD (no body) and another file's read.
+    const reads = [
+      read(f, "bytes=3000-3499", 500),
+      read(f, "bytes=1000-1499", 500),
+      read(f, "bytes=0-", 0, "HEAD"),
+      { url: `${ORIGIN}/data/warehouse/other.00000000.parquet`, method: "GET", range: "bytes=0-99", status: 206, bytes: 100 },
+    ];
+    expect(rowGroupsRead(groups, reads, url)).toBe(1);
+    expect(rowGroupsRead(groups, [read(f, "bytes=900-1100", 201)], url)).toBe(2);
+    // A whole-file GET touches every group.
+    expect(rowGroupsRead(groups, [read(f, null, 3500)], url)).toBe(3);
   });
 });
