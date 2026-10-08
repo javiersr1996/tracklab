@@ -56,6 +56,17 @@ def test_title_is_fmt_of_bytes_pinned_and_the_publish_layers_bytes() -> None:
     assert payload["title"] == expected
 
 
+def test_subtitle_is_fmt_of_the_json_and_the_parquet_that_make_up_out() -> None:
+    payload = _payload()
+    publish_layer = next(layer for layer in payload["layers"] if layer["layer"] == "publish")
+    print(f"subtitle: {payload['subtitle']}")
+    assert publish_layer["json_bytes"] + publish_layer["parquet_bytes"] == publish_layer["bytes"]
+    assert publish_layer["parquet_files"] == 7, "the seven Parquet of warehouse.json"
+    watch, query = fmt(publish_layer["json_bytes"]), fmt(publish_layer["parquet_bytes"])
+    expected = f"{watch} to watch, {query} to query"
+    assert payload["subtitle"] == expected
+
+
 def test_raw_bytes_over_matches_plus_season_files_is_bytes_pinned() -> None:
     payload = _payload()
     total = sum(m["raw_bytes"] for m in payload["matches"]) + payload["season_files"]["bytes"]

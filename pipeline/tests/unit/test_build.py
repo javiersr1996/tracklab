@@ -28,6 +28,7 @@ from tracklab.build import (
     StepPlan,
     bytes_read,
     default_record_dir,
+    measure_disk,
     measure_publish,
     measure_table,
     run_build,
@@ -222,6 +223,39 @@ def test_publish_leaves_out_the_files_written_from_a_record(tmp_path: Path) -> N
 
     assert [f["path"] for f in publish["json"]] == ["stats.json"]
     assert (publish["files"], publish["bytes"]) == (1, 10)
+
+
+def test_publish_counts_the_parquet_the_browser_queries(tmp_path: Path) -> None:
+    """Decision 10, option C: "out" is the JSON to watch plus the Parquet to query. Without
+    the `*.parquet` pass the 4,000 bytes below are not counted and this fails."""
+    (tmp_path / "stats.json").write_bytes(b"x" * 10)
+    (tmp_path / "platform.json").write_bytes(b"x" * 300)
+    (tmp_path / "warehouse").mkdir()
+    (tmp_path / "warehouse" / "fact.abcd1234.parquet").write_bytes(b"x" * 3000)
+    (tmp_path / "warehouse" / "bb_picks.ef567890.parquet").write_bytes(b"x" * 1000)
+    (tmp_path / "warehouse.json").write_bytes(b"x" * 20)
+
+    publish = measure_publish(tmp_path)
+
+    assert [f["path"] for f in publish["parquet"]] == [
+        "warehouse/bb_picks.ef567890.parquet",
+        "warehouse/fact.abcd1234.parquet",
+    ]
+    assert (publish["json_bytes"], publish["parquet_bytes"]) == (30, 4000)
+    assert (publish["files"], publish["bytes"]) == (4, 4030)
+
+
+def test_the_disk_measure_has_a_gold_layer(tmp_path: Path) -> None:
+    table = tmp_path / "gold" / "dim_player"
+    table.mkdir(parents=True)
+    pq.write_table(pa.table({"x": [1, 2, 3]}), table / "data.parquet")
+
+    disk = measure_disk(tmp_path, Path("manifest/sources.json"), tmp_path / "r", tmp_path / "w")
+
+    assert [(t["layer"], t["table"], t["rows"]) for t in disk["gold"]["tables"]] == [
+        ("gold", "dim_player", 3)
+    ]
+    assert (disk["gold"]["files"], disk["gold"]["rows"]) == (1, 3)
 
 
 def test_a_truncated_parquet_still_leaves_a_record_and_exits_1(tmp_path: Path) -> None:
