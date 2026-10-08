@@ -126,6 +126,21 @@ interface Engine {
   // Files an earlier query of this visit has read from.
   touched: Set<string>;
   report: () => Promise<Report>;
+  serial: Serial;
+}
+
+type Serial = <T>(work: () => Promise<T>) => Promise<T>;
+
+// One piece of work on the engine at a time. A query and an EXPLAIN each empty the request log
+// when they start and read it when they end: two that overlapped (EXPLAIN ANALYZE and an example
+// clicked together) took each other's requests, and the query showed a fraction of its reads.
+function serializer(): Serial {
+  let tail: Promise<unknown> = Promise.resolve();
+  return (work) => {
+    const next = tail.then(work);
+    tail = next.catch(() => undefined);
+    return next;
+  };
 }
 
 // Runs inside the worker before DuckDB's own script. DuckDB reads files and loads extensions
@@ -237,7 +252,7 @@ async function start(gen: number): Promise<Engine> {
     engineBytes: engineFiles.reduce((total, f) => total + f.bytes, 0),
     versions: { package: duckdb.PACKAGE_VERSION, duckdb: await db.getVersion() },
   });
-  return { conn, files, views: new Set(), touched: new Set(), report };
+  return { conn, files, views: new Set(), touched: new Set(), report, serial: serializer() };
 }
 
 function ensureEngine(gen: number): Promise<Engine> {
@@ -275,40 +290,41 @@ export async function run(sql: string): Promise<void> {
   update({ query: "running", runs, error: null, result: null, plan: null });
   try {
     const e = await ensureEngine(gen);
-    await e.report(); // empties the log: what follows is this query's
-    const started = performance.now();
-    const table = await execute(e, sql, check.tables);
-    const ms = performance.now() - started;
-    const { reads } = await e.report();
+    const result = await e.serial(() => measure(e, sql, check.tables));
     if (gen !== generation) return;
-    const { fields } = table.schema;
-    const columns = fields.map((field) => field.name);
-    const vectors = fields.map((_, i) => table.getChildAt(i)!);
-    const kept = Math.min(table.numRows, ROW_LIMIT);
-    const rows = Array.from({ length: kept }, (_, r) => vectors.map((v, i) => cellText(v.get(r), fields[i].type)));
-    const summary = readsByFile(reads, e.files);
-    const files: FileDetail[] = [];
-    for (const f of summary.files) {
-      const registered = e.files.find((r) => r.file === f.file)!;
-      const groups = await rowGroupSpans(e, f.file);
-      files.push({
-        ...f,
-        warm: e.touched.has(f.file),
-        rowGroups: { read: rowGroupsRead(groups, reads, registered.url), total: groups.length },
-      });
-    }
-    for (const f of files) e.touched.add(f.file);
-    const { bytes, distinctBytes, requests } = summary;
-    if (gen !== generation) return;
-    update({
-      query: "done",
-      plan: null,
-      result: { sql, columns, rows, rowCount: table.numRows, ms, bytes, distinctBytes, requests, files },
-    });
+    update({ query: "done", plan: null, result });
   } catch (error) {
     if (gen !== generation) return;
     update({ query: "error", error: message(error) });
   }
+}
+
+// One query, from an empty request log to its result and what it fetched per file.
+async function measure(e: Engine, sql: string, tables: string[]): Promise<QueryResult> {
+  await e.report(); // empties the log: what follows is this query's
+  const started = performance.now();
+  const table = await execute(e, sql, tables);
+  const ms = performance.now() - started;
+  const { reads } = await e.report();
+  const { fields } = table.schema;
+  const columns = fields.map((field) => field.name);
+  const vectors = fields.map((_, i) => table.getChildAt(i)!);
+  const kept = Math.min(table.numRows, ROW_LIMIT);
+  const rows = Array.from({ length: kept }, (_, r) => vectors.map((v, i) => cellText(v.get(r), fields[i].type)));
+  const summary = readsByFile(reads, e.files);
+  const files: FileDetail[] = [];
+  for (const f of summary.files) {
+    const registered = e.files.find((r) => r.file === f.file)!;
+    const groups = await rowGroupSpans(e, f.file);
+    files.push({
+      ...f,
+      warm: e.touched.has(f.file),
+      rowGroups: { read: rowGroupsRead(groups, reads, registered.url), total: groups.length },
+    });
+  }
+  for (const f of files) e.touched.add(f.file);
+  const { bytes, distinctBytes, requests } = summary;
+  return { sql, columns, rows, rowCount: table.numRows, ms, bytes, distinctBytes, requests, files };
 }
 
 // Creates the views a query names and runs it. A query that fails can still have read a file
@@ -351,17 +367,23 @@ async function rowGroupSpans(e: Engine, file: string): Promise<RowGroupSpan[]> {
 export async function explain(): Promise<void> {
   const sql = snapshot.result?.sql;
   if (!sql || !engine || snapshot.query === "running") return;
+  // The plan belongs to the result on screen: a query started meanwhile replaces both.
   const gen = generation;
+  const runs = snapshot.runs;
+  const current = () => gen === generation && runs === snapshot.runs;
   try {
     const e = await engine;
-    await e.report();
-    const table = await e.conn.query(`EXPLAIN ANALYZE ${sql}`);
-    await e.report();
-    if (gen !== generation) return;
+    const table = await e.serial(async () => {
+      await e.report();
+      const plan = await e.conn.query(`EXPLAIN ANALYZE ${sql}`);
+      await e.report();
+      return plan;
+    });
+    if (!current()) return;
     const last = table.numRows - 1;
     update({ plan: String(table.getChildAt(table.numCols - 1)!.get(last)) });
   } catch (error) {
-    if (gen !== generation) return;
+    if (!current()) return;
     update({ plan: `EXPLAIN ANALYZE failed: ${message(error)}` });
   }
 }

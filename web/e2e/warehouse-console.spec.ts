@@ -193,6 +193,31 @@ test("after a query that fails, the next one on the same file is not presented a
   await expect(line).toContainText("an earlier query had already read this file");
 });
 
+// EXPLAIN ANALYZE and an example clicked in the same tick (a double click is enough). Each empties
+// the engine's request log when it starts and reads it when it ends: before they ran one at a
+// time, the EXPLAIN took the example's first reads and `teams` showed 16,384 B in 1 request.
+test("EXPLAIN ANALYZE and an example clicked together do not share the example's reads", async ({ page }) => {
+  test.setTimeout(240_000);
+  await page.goto("/warehouse");
+  const cold = await click(page, '[data-example-button="teams"]');
+  expect(cold.query, cold.error).toBe("done");
+
+  await page.reload();
+  await click(page, '[data-example-button="fact"]');
+  const before = Number(await figure(page).getAttribute("data-run"));
+  await page.evaluate(() => {
+    document.querySelector<HTMLButtonElement>("button[data-explain]")!.click();
+    document.querySelector<HTMLButtonElement>('[data-example-button="teams"]')!.click();
+  });
+  const raced = await finished(page, before);
+  expect(raced.query, raced.error).toBe("done");
+  expect(raced.example).toBe("teams");
+  expect([raced.bytesQuery, raced.requests]).toEqual([cold.bytesQuery, cold.requests]);
+  await expect(page.locator('li[data-table="bb_shots"]')).toHaveAttribute("data-warm", "false");
+  // The plan of the fact query is not shown under the teams result.
+  await expect(page.locator("pre[data-plan]")).toHaveCount(0);
+});
+
 // 320 is narrower than the brief asks for: the long column names overflowed there first.
 for (const width of [320, 390, 1440]) {
   test(`/warehouse at ${width} px: under 400,000 bytes without the engine, no sideways scroll, text of 16 px or more`, async ({
