@@ -125,7 +125,7 @@ and labelled with where it was measured.
 ```
 uv run tracklab publish warehouse --check          # the Parquet are what gold would write
 uv run tracklab publish examples --check           # warehouse_examples.json is what gold answers
-uv run tracklab load postgres                      # needs TRACKLAB_PG_DSN in .env
+uv run --env-file .env tracklab load postgres       # TRACKLAB_PG_DSN in pipeline/.env (ignored)
 ```
 
 ## Data quality

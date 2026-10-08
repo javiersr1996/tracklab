@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Task 45: the route takes the id of an example and nothing else. The driver is mocked so the
 // test can count the connections the route opens: a request it refuses must open none.
-const connections = vi.hoisted(() => ({ opened: 0, sent: [] as string[] }));
+const connections = vi.hoisted(() => ({ opened: 0, sent: [] as string[], fail: null as Error | null }));
 vi.mock("pg", () => {
   class Client {
     constructor() {
@@ -12,6 +12,7 @@ vi.mock("pg", () => {
     async connect() {}
     async query(query: string | { text: string }) {
       connections.sent.push(typeof query === "string" ? query : query.text);
+      if (connections.fail) throw connections.fail;
       return { fields: [{ name: "x" }], rows: [[1]] };
     }
     async end() {}
@@ -29,9 +30,13 @@ const ask = (query: string) => route.GET(new Request(`http://localhost/api/wareh
 beforeEach(() => {
   connections.opened = 0;
   connections.sent = [];
+  connections.fail = null;
   vi.stubEnv("DATABASE_URL", "postgresql://reader@db.invalid/db");
 });
-afterEach(() => vi.unstubAllEnvs());
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.restoreAllMocks();
+});
 
 describe("a request that is not one example id", () => {
   const refused: [string, string][] = [
@@ -74,6 +79,15 @@ describe("an example id", () => {
       `BEGIN READ ONLY; SET LOCAL statement_timeout = ${STATEMENT_TIMEOUT_MS}`,
       sqlOf("profile"),
     ]);
+  });
+
+  it("logs the code of an error, never its message", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    connections.fail = Object.assign(new Error('password authentication failed for user "reader" at db.invalid'), {
+      code: "28P01",
+    });
+    expect(await (await ask("?id=profile")).json()).toEqual({ status: "unavailable" });
+    expect(log.mock.calls).toEqual([["warehouse pg route: 28P01"]]);
   });
 
   it("without DATABASE_URL answers absent and opens no connection", async () => {

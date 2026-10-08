@@ -28,6 +28,10 @@ export async function GET(request: Request) {
   try {
     return answer({ status: "live", id, ...(await runExample(dsn, sql)) });
   } catch (e) {
+    // One line for the server log: the error's code or class, never its message, which can quote
+    // the host, the user or a malformed piece of the connection string (review V of P4, B2).
+    const { code, name } = (e ?? {}) as { code?: unknown; name?: unknown };
+    console.error(`warehouse pg route: ${typeof code === "string" ? code : String(name ?? "error")}`);
     return answer({ status: isTimeout(e) ? "timeout" : "unavailable" });
   }
 }

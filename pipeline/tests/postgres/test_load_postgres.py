@@ -98,6 +98,27 @@ def test_a_missing_variable_is_named_without_a_traceback(
     assert capsys.readouterr().out == "load postgres: $TRACKLAB_TEST_NOT_SET is not set\n"
 
 
+def test_a_connection_string_that_cannot_be_parsed_is_not_quoted(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """libpq quotes the token it cannot read, which can be a password with a `%` (review V of
+    P4, B2). The fragment below is a user name so the repository holds no password shape."""
+    monkeypatch.setenv("TRACKLAB_TEST_BAD_DSN", "postgresql://us%ZZer@db.invalid/db")
+    assert run_load_postgres(Path("nowhere"), "TRACKLAB_TEST_BAD_DSN") == 1
+    out = capsys.readouterr().out
+    assert out.startswith("load postgres: the connection string cannot be parsed")
+    assert "ZZ" not in out
+
+
+def test_the_readme_loads_the_env_file_it_names() -> None:
+    """`uv run` reads no `.env` unless told to (review V of P4, B1): a README command that keeps
+    the connection string in `.env` passes `--env-file .env`."""
+    readme = (SQL_DIR.parents[1] / "README.md").read_text(encoding="utf-8")
+    lines = [line for line in readme.splitlines() if "uv run" in line and ".env" in line]
+    assert lines, "the README no longer says where the connection string lives"
+    assert [line for line in lines if "--env-file .env" not in line] == []
+
+
 def test_migrations_apply_once_and_refuse_a_changed_file(pg_dsn: str, tmp_path: Path) -> None:
     sql_dir = tmp_path / "sql"
     sql_dir.mkdir()

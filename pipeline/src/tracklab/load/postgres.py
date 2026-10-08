@@ -28,6 +28,7 @@ from typing import Any
 import duckdb
 import psycopg
 from psycopg import sql
+from psycopg.conninfo import conninfo_to_dict
 from psycopg.rows import TupleRow
 
 SQL_DIR = Path(__file__).resolve().parents[3] / "sql"
@@ -123,6 +124,13 @@ def env_value(name: str) -> str:
 
 
 def connect(dsn: str) -> Connection:
+    try:
+        conninfo_to_dict(dsn)
+    except psycopg.ProgrammingError:
+        # libpq quotes the part it cannot read, which may be the password (review V of P4, B2).
+        raise LoadError(
+            "the connection string cannot be parsed (a character may need percent-encoding)"
+        ) from None
     return psycopg.connect(dsn, autocommit=True)
 
 
