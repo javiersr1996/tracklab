@@ -70,7 +70,10 @@ jobs:
 
   web:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 20, not 15: a slow `playwright install` (690 s once) left the job 36 s short of 15 min, and
+    # task 45 adds about 40 s (service container, route tests, three more e2e). The cache that
+    # would stop the install from varying is task 46's.
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: web
@@ -115,6 +118,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
+      # The tests ran before the build, so this one reads the bundle it made (task 45).
+      - run: npx vitest run tests/warehouse-pg-secret.test.ts
       - run: npx playwright install --with-deps chromium
       - run: npm run e2e
       # Screenshots are for looking at, not assertions (task 21).
