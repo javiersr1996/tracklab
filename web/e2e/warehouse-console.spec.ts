@@ -34,6 +34,13 @@ async function click(page: Page, selector: string) {
   return finished(page, before);
 }
 
+async function runSql(page: Page, sql: string) {
+  await page.getByLabel("SQL").fill(sql);
+  const before = Number(await figure(page).getAttribute("data-run"));
+  await page.getByRole("button", { name: "Run", exact: true }).click();
+  return finished(page, before);
+}
+
 // Cells of the result table as text: header names, then rows.
 async function resultTable(page: Page) {
   const header = await page.locator("figure.warehouse thead th").allTextContents();
@@ -154,20 +161,36 @@ test("results are text: a value that looks like HTML is not parsed", async ({ pa
 test("values are written by their type: decimals at their scale, dates as dates, integers whole", async ({ page }) => {
   test.setTimeout(180_000);
   await page.goto("/warehouse");
-  await page
-    .getByLabel("SQL")
-    .fill(
-      "SELECT 1.5 AS a, 0.25::DECIMAL(4,2) AS b, -0.05::DECIMAL(4,2) AS c, DATE '2001-02-14' AS d, " +
-        "TIMESTAMP '2025-01-02 03:04:05' AS e, 9007199254740993::BIGINT AS f, 12345678901234567890::HUGEINT AS g",
-    );
-  const before = Number(await figure(page).getAttribute("data-run"));
-  await page.getByRole("button", { name: "Run", exact: true }).click();
-  const attrs = await finished(page, before);
+  const attrs = await runSql(
+    page,
+    "SELECT 1.5 AS a, 0.25::DECIMAL(4,2) AS b, -0.05::DECIMAL(4,2) AS c, DATE '2001-02-14' AS d, " +
+      "TIMESTAMP '2025-01-02 03:04:05' AS e, 9007199254740993::BIGINT AS f, 12345678901234567890::HUGEINT AS g",
+  );
   expect(attrs.query, attrs.error).toBe("done");
   const { rows } = await resultTable(page);
   expect(rows).toEqual([
     ["1.5", "0.25", "-0.05", "2001-02-14", "2025-01-02 03:04:05", "9007199254740993", "12345678901234567890"],
   ]);
+});
+
+// A typo and its correction: the failing query already read the view's footer, which the engine
+// keeps, so the corrected one fetches less than a cold read and its line has to say a file was
+// held. Before the fix it read 16,384 B in 1 request and said nothing.
+test("after a query that fails, the next one on the same file is not presented as cold", async ({ page }) => {
+  test.setTimeout(180_000);
+  const good = "SELECT player_name, team_name FROM bb_picks WHERE NOT is_season_total LIMIT 3";
+  const line = page.locator('li[data-table="bb_picks"]');
+  await page.goto("/warehouse");
+  expect((await runSql(page, good)).query).toBe("done");
+  await expect(line).toHaveAttribute("data-warm", "false");
+
+  await page.reload();
+  const bad = await runSql(page, "SELECT no_such_column FROM bb_picks");
+  expect(bad.error).toMatch(/no_such_column/);
+  const after = await runSql(page, good);
+  expect(after.query, after.error).toBe("done");
+  await expect(line).toHaveAttribute("data-warm", "true");
+  await expect(line).toContainText("an earlier query had already read this file");
 });
 
 // 320 is narrower than the brief asks for: the long column names overflowed there first.

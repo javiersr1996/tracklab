@@ -277,12 +277,7 @@ export async function run(sql: string): Promise<void> {
     const e = await ensureEngine(gen);
     await e.report(); // empties the log: what follows is this query's
     const started = performance.now();
-    for (const f of e.files) {
-      if (!check.tables.includes(f.table) || e.views.has(f.table)) continue;
-      await e.conn.query(viewSql(f));
-      e.views.add(f.table);
-    }
-    const table = await e.conn.query(sql);
+    const table = await execute(e, sql, check.tables);
     const ms = performance.now() - started;
     const { reads } = await e.report();
     if (gen !== generation) return;
@@ -313,6 +308,24 @@ export async function run(sql: string): Promise<void> {
   } catch (error) {
     if (gen !== generation) return;
     update({ query: "error", error: message(error) });
+  }
+}
+
+// Creates the views a query names and runs it. A query that fails can still have read a file
+// (the footer its view reads, part of a scan), and the engine keeps those bytes: its files count
+// as touched, so the next query on them is not presented as cold.
+async function execute(e: Engine, sql: string, tables: string[]) {
+  try {
+    for (const f of e.files) {
+      if (!tables.includes(f.table) || e.views.has(f.table)) continue;
+      await e.conn.query(viewSql(f));
+      e.views.add(f.table);
+    }
+    return await e.conn.query(sql);
+  } catch (error) {
+    const { reads } = await e.report();
+    for (const f of readsByFile(reads, e.files).files) e.touched.add(f.file);
+    throw error;
   }
 }
 
