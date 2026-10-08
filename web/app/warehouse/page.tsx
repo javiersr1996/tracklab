@@ -8,8 +8,10 @@ import { formatBytes } from "../../lib/format";
 
 export const metadata: Metadata = { title: "Warehouse | Track Lab" };
 
-const BASKETBALL_README = "https://github.com/SkillCorner/opendata-basketball";
-const FOOTBALL_README = "https://github.com/SkillCorner/opendata";
+// The READMEs at the commit that was read, at the quoted line.
+const BASKETBALL_README =
+  "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/README.md#L31";
+const FOOTBALL_README = "https://github.com/SkillCorner/opendata/blob/02a396ffd09b283c9f092fdedeff11da6d535b66/README.md";
 
 const fixed = (value: number) => value.toFixed(1);
 
@@ -35,8 +37,9 @@ export default function WarehousePage() {
           Holds: the season aggregates the providers publish.{" "}
           <a href={BASKETBALL_README}>The basketball README</a> says its aggregates cover 293 of
           the 327 games of the Liga ACB 2025-2026 (regular season and playoffs);{" "}
-          <a href={FOOTBALL_README}>the football one</a> says its are the A-League 2024-2025
-          season, filtered for performances above 60 minutes. Profiles and percentiles are read
+          <a href={`${FOOTBALL_README}#L30`}>the football one</a> says its are the A-League
+          2024-2025 season, <a href={`${FOOTBALL_README}#L75`}>filtered for performances above 60
+          minutes</a>. Profiles and percentiles are read
           from these, and each percentile in the examples is printed with its pool: the players
           in it and the matches or games they played between them, a sum that counts a match once
           per player in it, not a count of matches.
@@ -57,9 +60,10 @@ export default function WarehousePage() {
           adding it to the team rows would count that player twice.
         </li>
         <li>
-          Basketball metrics that are shares run from 0 to 1 and football ones from 0 to 100, and
-          the distance metrics mix per-match averages with season totals. No example combines
-          columns across those scales.
+          Basketball shares are written per one (0.5 is half; an effective field-goal share can
+          pass 1) and football ones per hundred, and the distance metrics are averages of two
+          kinds: per match (football&apos;s physical table) and per action (the average distance
+          of a run, a pass or a shot). No example combines columns across those scales.
         </li>
         <li data-aliases>
           The provider changed {aliases.alias_ids} basketball player ids during the season and
@@ -74,7 +78,7 @@ export default function WarehousePage() {
           {params.basketball_player} sits at the{" "}
           {fixed(shooting.percentile_naive)}th percentile in the first pool and the{" "}
           {fixed(shooting.percentile_merged)}th in the second. The player profile
-          {aliases.profile_player_has_an_alias ? " has" : " has no"} an alias; team totals are
+          {aliases.profile_player_has_an_alias ? " has an alias" : " has no alias"}; team totals are
           sums by team and do not depend on the id. Football has no alias file.
         </li>
       </ul>

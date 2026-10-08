@@ -88,8 +88,9 @@ export interface ReadSummary {
   bytes: number;
   distinctBytes: number;
   requests: number;
-  // Requests to anything that is not a registered file (none is expected once the engine is
-  // ready; kept so a stray one is counted, not dropped).
+  // Requests to anything that is not a registered file, kept apart from the files' figures.
+  // None is expected once the engine is locked; the page does not show them, and
+  // e2e/warehouse.spec.ts watches the network itself for a request to another origin.
   other: Read[];
 }
 

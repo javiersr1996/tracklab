@@ -102,7 +102,7 @@ export function Console() {
       <p>
         {s.engineBytes === null
           ? "Not loaded: nothing of the engine is downloaded until a query runs."
-          : `${formatBytes(s.engineBytes)} transferred once for this visit (the worker, the WebAssembly and the Parquet extension), before the first query and not counted in any query below.`}
+          : `${formatBytes(s.engineBytes)} of engine (the worker, the WebAssembly and the Parquet extension, at their encoded size), fetched before the first query of this visit from the network or from this browser's cache, and not counted in any query below.`}
         {s.versions ? ` duckdb-wasm ${s.versions.package}, DuckDB ${s.versions.duckdb}.` : ""}
       </p>
 
@@ -163,9 +163,15 @@ export function Console() {
             </button>
           </p>
           {s.plan ? (
-            <div className="warehouse-scroll">
-              <pre data-plan>{s.plan}</pre>
-            </div>
+            <>
+              <p>
+                DuckDB&apos;s plan of a second run of this query: the engine already holds most of
+                what the first run read, so its timings and reads are not the ones above.
+              </p>
+              <div className="warehouse-scroll">
+                <pre data-plan>{s.plan}</pre>
+              </div>
+            </>
           ) : null}
           {listing ? (
             <p data-columns>
