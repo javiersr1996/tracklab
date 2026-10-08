@@ -34,8 +34,11 @@ from psycopg.rows import TupleRow
 SQL_DIR = Path(__file__).resolve().parents[3] / "sql"
 SCHEMA = "warehouse"
 READER_ROLE = "warehouse_reader"
-# pg_advisory_xact_lock key: one migration or load at a time per database.
+# Advisory lock key: one migration or load at a time per database. Any session of the reader
+# role can take it too, so the wait for it has a limit (review V of P4, B9).
 LOCK_KEY = 44
+LOCK_WAIT_SECONDS = 30.0
+LOCK_POLL_SECONDS = 0.25
 
 Connection = psycopg.Connection[TupleRow]
 
@@ -158,11 +161,28 @@ def _columns(prefix: str | None, names: Sequence[str]) -> sql.Composed:
     )
 
 
+def _take_lock(conn: Connection) -> None:
+    """Take the transaction-scoped advisory lock, waiting at most LOCK_WAIT_SECONDS."""
+    deadline = time.monotonic() + LOCK_WAIT_SECONDS
+    while True:
+        row = conn.execute("SELECT pg_try_advisory_xact_lock(%s)", [LOCK_KEY]).fetchone()
+        if row is not None and row[0]:
+            return
+        if time.monotonic() >= deadline:
+            raise LoadError(
+                f"advisory lock {LOCK_KEY} is still held after {LOCK_WAIT_SECONDS:g} s: another "
+                "load or migration is running, or a session holds it "
+                "(SELECT pid, usename FROM pg_locks JOIN pg_stat_activity USING (pid) "
+                f"WHERE locktype = 'advisory' AND objid = {LOCK_KEY})"
+            )
+        time.sleep(LOCK_POLL_SECONDS)
+
+
 def migrate(conn: Connection, sql_dir: Path = SQL_DIR) -> list[str]:
     """Apply, in order, the numbered SQL files not applied yet; refuse if an applied one changed."""
     applied: list[str] = []
     with conn.transaction():
-        conn.execute("SELECT pg_advisory_xact_lock(%s)", [LOCK_KEY])
+        _take_lock(conn)
         conn.execute("CREATE SCHEMA IF NOT EXISTS warehouse")
         conn.execute(
             "CREATE TABLE IF NOT EXISTS warehouse.schema_migrations (version text PRIMARY KEY, "
@@ -261,7 +281,7 @@ def load(conn: Connection, data_dir: Path) -> list[Counts]:
     """One incremental load of gold, in one transaction; returns what it wrote per table."""
     staged = {t.name: [(*row, row_hash(row)) for row in gold_rows(data_dir, t)] for t in TABLES}
     with conn.transaction():
-        conn.execute("SELECT pg_advisory_xact_lock(%s)", [LOCK_KEY])
+        _take_lock(conn)
         for t in TABLES:
             _copy_to_stage(conn, t, staged[t.name])
         written = {t.name: _update_and_insert(conn, t) for t in TABLES}

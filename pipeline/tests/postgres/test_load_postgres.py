@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import secrets
 import shutil
+import time
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ from psycopg.conninfo import make_conninfo
 
 from tracklab.cli import main
 from tracklab.load.postgres import (
+    LOCK_KEY,
     READER_ROLE,
     SQL_DIR,
     TABLES,
@@ -131,6 +133,28 @@ def test_migrations_apply_once_and_refuse_a_changed_file(pg_dsn: str, tmp_path: 
         edited.write_bytes(edited.read_bytes() + b"-- edited\n")
         with pytest.raises(LoadError, match="changed after it was applied"):
             migrate(conn, sql_dir)
+
+
+def test_a_held_advisory_lock_stops_the_loader_with_a_clear_error(
+    pg_dsn: str, tmp_gold: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Review V of P4, B9. The reader role can take advisory lock 44 (any role can), and the
+    loader used to wait for it without limit."""
+    monkeypatch.setattr("tracklab.load.postgres.LOCK_WAIT_SECONDS", 0.5)
+    with connect(pg_dsn) as conn:
+        migrate(conn)
+    with psycopg.connect(pg_dsn, autocommit=True) as holder:
+        holder.execute("SELECT pg_advisory_lock(%s)", [LOCK_KEY])
+        with connect(pg_dsn) as conn:
+            started = time.monotonic()
+            with pytest.raises(LoadError, match="advisory lock 44 is still held after 0.5 s"):
+                load(conn, tmp_gold)
+            conn.rollback()
+            with pytest.raises(LoadError, match="advisory lock 44 is still held"):
+                migrate(conn)
+            assert time.monotonic() - started < 5
+    with connect(pg_dsn) as conn:
+        assert [c.inserted for c in load(conn, tmp_gold)] != [0, 0, 0, 0]
 
 
 def test_a_second_load_of_the_same_gold_writes_no_row(
