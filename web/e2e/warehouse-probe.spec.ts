@@ -10,12 +10,13 @@ import { type APIRequestContext, type Browser, expect, type Request, test } from
 // writes both to pipeline/reports/warehouse_probe.json, one entry per platform and
 // server, so no figure in the plan is typed by hand.
 //
-// The route and its Parquet files are deleted when task 38 closes. From then on this
-// spec skips, on the state of the server it runs against (/probe answers 404), not on a
-// flag: pointed with BASE_URL at a deployment that still has the route (the preview of
-// the probe commit), it measures again.
+// The route, its Parquet files and the prebuild copy of the engine were deleted when task
+// 38 closed; 35295fb is the last commit that has them (web/app/probe/Probe.tsx). From then
+// on this spec skips, on the state of the server it runs against (/probe answers 404), not
+// on a flag: pointed with BASE_URL at a deployment that still has the route (the Vercel
+// preview of 0a1b203, the probe commit that was pushed), it measures again.
 
-// The three ways /probe loads the engine (see VARIANTS in app/probe/Probe.tsx).
+// The three ways /probe loads the engine (VARIANTS in app/probe/Probe.tsx at 35295fb).
 const VARIANTS = ["self_defaults", "self_ranges", "jsdelivr_ranges"] as const;
 type Variant = (typeof VARIANTS)[number];
 // Same query over several layouts of one table: the results must not depend on layout.
@@ -112,8 +113,8 @@ function areas(spans: Span[], ranges: [number, number][]) {
   };
 }
 
-// The filter of each filtered query in app/probe/Probe.tsx, checked against the min and
-// max that the footer stores for that column in each row group.
+// The filter of each filtered query in app/probe/Probe.tsx (at 35295fb), checked against
+// the min and max that the footer stores for that column in each row group.
 const FILTERS: Record<string, (min: string, max: string) => boolean> = {
   team: (min, max) => Number(min) <= 1331 && 1331 <= Number(max),
   metric_percentile: (min, max) => min <= "handler_ppp" && "handler_ppp" <= max,
