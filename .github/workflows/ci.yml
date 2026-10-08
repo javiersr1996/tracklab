@@ -74,6 +74,25 @@ jobs:
     defaults:
       run:
         working-directory: web
+    # Task 45: the route of /warehouse is tested against a real Postgres, as the read-only role.
+    # Only the schema of task 44 goes in (psql below, no pipeline): the route tests check that the
+    # five queries run as that role and return their columns, not their rows, which the
+    # pipeline job and the local run against the real gold cover. The e2e needs no database.
+    services:
+      postgres:
+        image: postgres:17.11
+        env:
+          POSTGRES_PASSWORD: ci-${{ github.run_id }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      TRACKLAB_TEST_WEB_PG_URL: postgresql://warehouse_reader:ci-${{ github.run_id }}@localhost:5432/postgres
+      TRACKLAB_REQUIRE_PG: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -82,6 +101,16 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+      - name: Schema and read-only login for the route tests
+        env:
+          PGHOST: localhost
+          PGUSER: postgres
+          PGDATABASE: postgres
+          PGPASSWORD: ci-${{ github.run_id }}
+        run: |
+          psql -v ON_ERROR_STOP=1 -c "CREATE SCHEMA warehouse"
+          psql -v ON_ERROR_STOP=1 -f ../pipeline/sql/001_warehouse.sql
+          psql -v ON_ERROR_STOP=1 -c "ALTER ROLE warehouse_reader WITH LOGIN PASSWORD 'ci-${{ github.run_id }}'"
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
