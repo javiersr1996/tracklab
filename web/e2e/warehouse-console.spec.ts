@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page, type Route, test } from "@playwright/test";
 
 // Task 43: the console on /warehouse, driven by the state on `figure.warehouse` and checked
 // against `warehouse_examples.json`, which `tracklab publish examples` computes from gold in
@@ -290,6 +290,23 @@ test("a query that fails while its rows are written still marks the file as read
   const after = await runSql(page, good);
   expect(after.query, after.error).toBe("done");
   await expect(page.locator('li[data-table="fb_physical"]')).toHaveAttribute("data-warm", "true");
+});
+
+// N7 of the second pass: a file whose first request fails (here aborted) could not be opened again
+// by the same engine until the page was reloaded ("file system operations are disabled").
+test("a file that failed to open can be queried again once the network is back", async ({ page }) => {
+  test.setTimeout(180_000);
+  const sql = "SELECT player_name, team_name FROM bb_shots WHERE NOT is_season_total LIMIT 3";
+  await page.goto("/warehouse");
+  expect((await runSql(page, "SELECT 1 AS x")).query).toBe("done");
+  const pattern = /bb_shots..*.parquet/;
+  const abort = (route: Route) => route.abort();
+  await page.route(pattern, abort);
+  expect((await runSql(page, sql)).query).toBe("error");
+  await page.unroute(pattern, abort);
+  const again = await runSql(page, sql);
+  expect(again.query, again.error).toBe("done");
+  expect((await resultTable(page)).rows).toHaveLength(3);
 });
 
 // 320 is narrower than the brief asks for: the long column names overflowed there first.

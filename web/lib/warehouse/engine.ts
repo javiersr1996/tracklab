@@ -336,16 +336,24 @@ async function measure(e: Engine, sql: string, tables: string[]): Promise<QueryR
 // (the footer its view reads, part of a scan), and the engine keeps those bytes: its files count
 // as touched, so the next query on them is not presented as cold.
 async function execute(e: Engine, sql: string, tables: string[]) {
+  let opening = true;
   try {
     for (const f of e.files) {
       if (!tables.includes(f.table) || e.views.has(f.table)) continue;
       await e.conn.query(viewSql(f));
       e.views.add(f.table);
     }
+    opening = false;
     return await e.conn.query(sql);
   } catch (error) {
     const { reads } = await e.report();
     for (const f of readsByFile(reads, e.files).files) e.touched.add(f.file);
+    // A file that failed to open (the network dropped, a 500) stays unusable inside the engine:
+    // DuckDB then looks for its name as a directory and refuses. A new engine opens it again.
+    if (opening && engine && (await engine) === e) {
+      stop();
+      update({ engine: "idle", engineBytes: null, versions: null });
+    }
     throw error;
   }
 }
