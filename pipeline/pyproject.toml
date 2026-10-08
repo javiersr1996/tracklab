@@ -10,6 +10,7 @@ dependencies = [
     "dagster>=1.8",
     "dagster-dbt>=0.26",
     "httpx>=0.27",
+    "psycopg[binary]==3.3.6",
 ]
 
 [project.scripts]
