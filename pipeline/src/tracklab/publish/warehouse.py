@@ -43,9 +43,9 @@ TABLES: tuple[tuple[str, str, str], ...] = (
 )
 FACT = "fact"
 
-# PROVISIONAL until task 38 (the DuckDB-WASM probe) measures which layout reads fewest bytes.
-# Task 38 has not been run: this order and these row group sizes are a placeholder chosen so
-# the long fact has several row groups with a min and a max to prune on, not a measured choice.
+# Confirmed by Javier on 2026-10-08 with task 38's measurements in front of him
+# (pipeline/reports/warehouse_probe.json, decision 9 in tasks/todo.md): of the layouts the
+# DuckDB-WASM probe read, these read the fewest bytes per query, for the fact and the wide tables.
 # The only place they are defined; change them here and `warehouse.json` follows.
 #
 # Wide tables: sorted by the grain (columns a table lacks are skipped), a single row group:
