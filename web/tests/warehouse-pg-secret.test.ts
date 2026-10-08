@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -40,5 +41,27 @@ describe("DATABASE_URL", () => {
       expect(text, rel(f)).not.toMatch(/postgres(ql)?:\/\/[^\s"']*@/);
       expect(text, rel(f)).not.toContain("node-postgres");
     }
+  });
+});
+
+describe("the repository", () => {
+  // Review V of P4, B6: the acceptance grep of task 44 (`[^ ]*` around the colon) missed the URL
+  // in ci.yml, whose password held spaces. A user, a colon and an @ after the scheme, on one line.
+  it("holds no connection string with a password in any file git tracks", () => {
+    const repo = path.resolve(root, "..");
+    const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: repo, encoding: "utf8" }).split("\0").filter(Boolean);
+    expect(tracked.length).toBeGreaterThan(100);
+    const found: string[] = [];
+    for (const file of tracked) {
+      const bytes = readFileSync(path.join(repo, file));
+      if (bytes.includes(0)) continue;
+      bytes
+        .toString("utf8")
+        .split("\n")
+        .forEach((line, i) => {
+          if (/postgres(ql)?:\/\/[^@\s]*:[^@]*@/.test(line)) found.push(`${file}:${i + 1}`);
+        });
+    }
+    expect(found).toEqual([]);
   });
 });

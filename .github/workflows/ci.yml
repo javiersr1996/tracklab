@@ -97,8 +97,12 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 12
+    # The read-only role's password, like the server's, is ci-<run id>. It goes in PGPASSWORD, which
+    # `pg` reads when the URL carries none, so no connection string here holds a password
+    # (review V of P4, B6; `tests/warehouse-pg-secret.test.ts` looks for one in every file).
     env:
-      TRACKLAB_TEST_WEB_PG_URL: postgresql://warehouse_reader:ci-${{ github.run_id }}@localhost:5432/postgres
+      PGPASSWORD: ci-${{ github.run_id }}
+      TRACKLAB_TEST_WEB_PG_URL: postgresql://warehouse_reader@localhost:5432/postgres
       TRACKLAB_REQUIRE_PG: "1"
     steps:
       - uses: actions/checkout@v4
