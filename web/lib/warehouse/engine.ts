@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { AsyncDuckDB, AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
-import { cellText } from "./cell";
+import { columnCell } from "./cell";
 import {
   readsByFile,
   registry,
@@ -310,7 +310,7 @@ async function measure(e: Engine, sql: string, tables: string[]): Promise<QueryR
   const columns = fields.map((field) => field.name);
   const vectors = fields.map((_, i) => table.getChildAt(i)!);
   const kept = Math.min(table.numRows, ROW_LIMIT);
-  const rows = Array.from({ length: kept }, (_, r) => vectors.map((v, i) => cellText(v.get(r), fields[i].type)));
+  const rows = Array.from({ length: kept }, (_, r) => vectors.map((v) => columnCell(v, r)));
   const summary = readsByFile(reads, e.files);
   const files: FileDetail[] = [];
   for (const f of summary.files) {

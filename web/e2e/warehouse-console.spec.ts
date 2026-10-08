@@ -173,6 +173,27 @@ test("values are written by their type: decimals at their scale, dates as dates,
   ]);
 });
 
+// INTERVAL and what sits inside LIST, STRUCT, MAP and UNION, which arrow's own `get()` reads
+// wrongly (`0,0` for a day, `[15,25]` for [1.5, 2.5]). Each is written as DuckDB prints it.
+test("intervals and nested values are written as DuckDB prints them", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto("/warehouse");
+  let attrs = await runSql(page, "SELECT * FROM (VALUES (INTERVAL 1 DAY), (INTERVAL 2 MONTH), (INTERVAL 3 HOUR)) t(i)");
+  expect(attrs.query, attrs.error).toBe("done");
+  expect((await resultTable(page)).rows).toEqual([["1 day"], ["2 months"], ["03:00:00"]]);
+
+  attrs = await runSql(
+    page,
+    "SELECT age(DATE '2025-01-01', player_birthdate) AS a, list(player_birthdate) AS l, " +
+      "{'name': player_name, 'born': player_birthdate} AS s, [1.5, 2.5] AS d, MAP {'k': 1.5} AS m, " +
+      "union_value(k := 1.5) AS u FROM fb_physical WHERE player_name = 'Jay Barnett' GROUP BY player_name, player_birthdate",
+  );
+  expect(attrs.query, attrs.error).toBe("done");
+  expect((await resultTable(page)).rows).toEqual([
+    ["23 years 10 months 15 days", "[2001-02-14]", "{'name': Jay Barnett, 'born': 2001-02-14}", "[1.5, 2.5]", "{k=1.5}", "1.5"],
+  ]);
+});
+
 // A typo and its correction: the failing query already read the view's footer, which the engine
 // keeps, so the corrected one fetches less than a cold read and its line has to say a file was
 // held. Before the fix it read 16,384 B in 1 request and said nothing.
