@@ -1,7 +1,8 @@
 # Every push and pull request: lint, types, and the whole silver and gold build with their
 # dbt tests, on the bronze slice versioned in pipeline/tests/fixtures (task 14).
 # The contract tests read pipeline/data, which CI does not have, so they skip
-# here and run in full-build.yml against the real bundles.
+# here and run in full-build.yml against the real bundles. The Postgres load of
+# task 44 runs against a service container, never against Neon.
 name: ci
 
 on:
@@ -17,8 +18,28 @@ jobs:
     defaults:
       run:
         working-directory: pipeline
+    # The Postgres of task 44's loader: the minor of 17 that Neon runs. The password changes with
+    # every run and the container lives as long as the job; it guards nothing worth a secret.
+    services:
+      postgres:
+        image: postgres:17.11
+        env:
+          POSTGRES_PASSWORD: ci-${{ github.run_id }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     env:
       TRACKLAB_DATA_ROOT: tests/fixtures/data
+      PGPASSWORD: ci-${{ github.run_id }}
+      TRACKLAB_PG_DSN: host=localhost port=5432 user=postgres dbname=postgres
+      # The Postgres tests create and drop their own databases here, and fail instead of
+      # skipping when the variable is missing.
+      TRACKLAB_TEST_PG_DSN: host=localhost port=5432 user=postgres dbname=postgres
+      TRACKLAB_REQUIRE_PG: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -37,6 +58,14 @@ jobs:
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
       - run: uv run tracklab build --select "group:silver or group:gold"
       - run: uv run tracklab publish lineage --check
+      # Task 44 by hand, as Javier will run it against Neon: two loads of the same gold (the
+      # second prints inserted=0 updated=0 deleted=0) and the snapshot, to a scratch directory.
+      # The tests below assert all of it.
+      - run: uv run tracklab load postgres
+      - run: uv run tracklab load postgres
+      - run: |
+          cp ../web/public/data/warehouse_examples.json "$RUNNER_TEMP/"
+          uv run tracklab publish warehouse-pg --where ci --out-dir "$RUNNER_TEMP"
       - run: uv run pytest -q -rs
 
   web:
