@@ -15,8 +15,6 @@ import { WAREHOUSE } from "../../lib/warehouse/registry";
 
 const SHOWN_ROWS = 20;
 
-const cell = (value: unknown) => (value === null || value === undefined ? "NULL" : String(value));
-
 export function Console() {
   const s = useWarehouse();
   const [sql, setSql] = useState(EXAMPLES.find((e) => e.id === "fact")!.sql);
@@ -191,7 +189,7 @@ export function Console() {
                     {r.rows.slice(0, SHOWN_ROWS).map((row, i) => (
                       <tr key={i}>
                         {row.map((value, j) => (
-                          <td key={j}>{cell(value)}</td>
+                          <td key={j}>{value}</td>
                         ))}
                       </tr>
                     ))}

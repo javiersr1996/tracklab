@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { AsyncDuckDB, AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
+import { cellText } from "./cell";
 import {
   readsByFile,
   registry,
@@ -44,7 +45,8 @@ export const ROW_LIMIT = 1000;
 export interface QueryResult {
   sql: string;
   columns: string[];
-  rows: unknown[][];
+  // Each value as the text the table shows (`cellText`).
+  rows: string[][];
   rowCount: number;
   // From the start of the query (views it needed included) to its result.
   ms: number;
@@ -284,10 +286,11 @@ export async function run(sql: string): Promise<void> {
     const ms = performance.now() - started;
     const { reads } = await e.report();
     if (gen !== generation) return;
-    const columns = table.schema.fields.map((field) => field.name);
-    const vectors = columns.map((_, i) => table.getChildAt(i)!);
+    const { fields } = table.schema;
+    const columns = fields.map((field) => field.name);
+    const vectors = fields.map((_, i) => table.getChildAt(i)!);
     const kept = Math.min(table.numRows, ROW_LIMIT);
-    const rows = Array.from({ length: kept }, (_, r) => vectors.map((v) => v.get(r) as unknown));
+    const rows = Array.from({ length: kept }, (_, r) => vectors.map((v, i) => cellText(v.get(r), fields[i].type)));
     const summary = readsByFile(reads, e.files);
     const files: FileDetail[] = [];
     for (const f of summary.files) {

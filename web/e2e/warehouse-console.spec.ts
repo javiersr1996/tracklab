@@ -148,6 +148,28 @@ test("results are text: a value that looks like HTML is not parsed", async ({ pa
   expect(await page.evaluate(() => (window as unknown as { __pwned?: number }).__pwned)).toBeUndefined();
 });
 
+// Arrow hands back a DECIMAL as its unscaled integer and a DATE or TIMESTAMP as milliseconds
+// since 1970: before `lib/warehouse/cell.ts` this row read 15, 25, -5, 982108800000 and
+// 1735787045000. The three football tables each have a DATE column (`player_birthdate`).
+test("values are written by their type: decimals at their scale, dates as dates, integers whole", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto("/warehouse");
+  await page
+    .getByLabel("SQL")
+    .fill(
+      "SELECT 1.5 AS a, 0.25::DECIMAL(4,2) AS b, -0.05::DECIMAL(4,2) AS c, DATE '2001-02-14' AS d, " +
+        "TIMESTAMP '2025-01-02 03:04:05' AS e, 9007199254740993::BIGINT AS f, 12345678901234567890::HUGEINT AS g",
+    );
+  const before = Number(await figure(page).getAttribute("data-run"));
+  await page.getByRole("button", { name: "Run", exact: true }).click();
+  const attrs = await finished(page, before);
+  expect(attrs.query, attrs.error).toBe("done");
+  const { rows } = await resultTable(page);
+  expect(rows).toEqual([
+    ["1.5", "0.25", "-0.05", "2001-02-14", "2025-01-02 03:04:05", "9007199254740993", "12345678901234567890"],
+  ]);
+});
+
 // 320 is narrower than the brief asks for: the long column names overflowed there first.
 for (const width of [320, 390, 1440]) {
   test(`/warehouse at ${width} px: under 400,000 bytes without the engine, no sideways scroll, text of 16 px or more`, async ({
