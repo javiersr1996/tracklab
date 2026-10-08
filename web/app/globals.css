@@ -268,3 +268,29 @@ body {
   font-family: ui-monospace, monospace;
   font-size: 1rem;
 }
+
+.warehouse button {
+  font-size: 1rem;
+}
+
+.warehouse-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.warehouse-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.warehouse-page code,
+.warehouse pre {
+  font-family: ui-monospace, monospace;
+  font-size: 1rem;
+}
+
+.warehouse pre {
+  margin: 0.5rem 0;
+}

@@ -51,7 +51,7 @@ async function runQuery(page: Page, sql: string | null) {
   const figure = page.locator("figure.warehouse");
   const before = Number(await figure.getAttribute("data-run"));
   if (sql !== null) await page.getByLabel("SQL").fill(sql);
-  await page.getByRole("button", { name: "Run" }).click();
+  await page.getByRole("button", { name: "Run", exact: true }).click();
   await expect(figure).toHaveAttribute("data-run", String(before + 1));
   await expect(figure).toHaveAttribute("data-query", /^(done|error)$/, { timeout: 120_000 });
   const attrs = await figure.evaluate((el) => ({ ...(el as HTMLElement).dataset }));
