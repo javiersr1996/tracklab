@@ -33,7 +33,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from tracklab.runs import effect, placebo
-from tracklab.runs.data import DEFAULT_PROTOCOL, require_readable
+from tracklab.runs.data import require_readable
 from tracklab.runs.protocol import (
     COVERAGE_AFTER_END_S,
     COVERAGE_BEFORE_START_S,
@@ -437,13 +437,13 @@ def pair_effects(
     t: MatchTracking,
     runs: Sequence[Run],
     instants: Mapping[tuple[int, str], Sequence[tuple[int, int]]],
-    *,
-    protocol_path: Path = DEFAULT_PROTOCOL,
 ) -> list[PairEffect]:
     """One `PairEffect` per clean run with a direction and a supported placebo: the quantities
     at t_c minus the same quantities at t', both along the run's direction. Refuses a held-out
-    match until the protocol is frozen in a clean tree. Never call it on real data to print."""
-    require_readable(t.match_id, protocol_path)
+    match until the protocol committed in HEAD is frozen in a clean tree (`data`, which takes
+    no path: the committed protocol is the only one asked). Never call it on real data to
+    print."""
+    require_readable(t.match_id)
     out: list[PairEffect] = []
     for run in runs:
         lo, hi, _ = window_bounds(t, run)

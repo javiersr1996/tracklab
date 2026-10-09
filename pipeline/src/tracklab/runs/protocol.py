@@ -5,7 +5,16 @@ the split rule and its two lists, the cause instant, the windows, the placebo ru
 instrument and the effect, the null, the bar, the testability threshold, the held-out bar
 and the death criteria M1 to M5b of tasks/todo.md (P5). `--check` regenerates it in memory
 and compares the bytes, so a threshold moved by hand after looking shows as a diff (D13 of
-the sister repo: a preregistered threshold that fails is reported, never moved).
+the sister repo: a preregistered threshold that fails is reported, never moved). On a file
+in stage `frozen` (task 50) `--check` verifies instead what the freeze must keep: the design
+and its fingerprint, the evidence, the seal and the history; what the freeze adds (the
+candidates, a sha of the code tree) is task 50's to check. Write mode never overwrites a
+frozen file.
+
+The status line says how much of the warehouse backed the check: `FULL 20/20` when every
+match was at hand and the counts recomputed, `PARTIAL n/20` when the rows travelled in the
+file and the counts were taken as written (the CI fixtures hold one match). A PARTIAL pass
+is a pass on the file's consistency, never on the data.
 
 Three sections:
 
@@ -27,6 +36,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import importlib.metadata
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -58,7 +68,8 @@ BAR_Z = 3.0
 TESTABILITY_MDE80_SD = 0.3
 HELD_OUT_P = 0.01
 NULL_AT_LEAST_ONE_MAX_PCT = 5.0
-NUMPY_VERSION = "2.5.3"
+# The installed numpy, which `uv sync --locked` pins to pyproject.toml (a test ties the two).
+NUMPY_VERSION = importlib.metadata.version("numpy")
 
 # Decision 2 left one choice to this task: whether a teammate's run near the placebo instant
 # excludes it. Decided with the counts in `evidence` (coverage, never an outcome): excluded.
@@ -225,11 +236,21 @@ def design(rows: list[MatchRow]) -> dict[str, Any]:
                 "football tracking; 49 may replace it only by the minimum window that cadence "
                 "admits, once, before any per-subtype effect, and writes the change in history"
             ),
+            "velocity_window_rule": (
+                f"{VELOCITY_WINDOW_S} s has no measured source: a hypothesis, like W, until "
+                "task 49 measures the cadence; 49 may replace it once, before any per-subtype "
+                "effect, and writes the change in history"
+            ),
         },
         "frames": {
             "coordinates": (
-                "silver frames_attacking (x_att_m, y_att_m): the runner's team attacks towards "
-                "+x, the frame of the provider's events"
+                "silver frames (x_m, y_m: the venue frame, metres), every player row of the "
+                "match, turned to the attack frame of the runner's team with "
+                "dim_team_period.attack_sign of (period, runner's team): x_att = attack_sign * "
+                "x_m and y_att = attack_sign * y_m, so the runner's team attacks towards +x in "
+                "every frame of a window whichever team has the ball; never the "
+                "frames_attacking view, which turns by the team in possession and drops the "
+                "frames no possession claims"
             ),
             "runner": "entity fb:<player_id> of dim_entity, the player_id of the event",
             "opponents": "entities of kind player of the other team of the match",
@@ -244,6 +265,11 @@ def design(rows: list[MatchRow]) -> dict[str, Any]:
             "run_direction": (
                 "d = unit vector from the runner's tracked position at frame_start to his "
                 f"position at frame_end; runs shorter than {MIN_RUN_LENGTH_M} m are excluded"
+            ),
+            "min_run_length_rule": (
+                f"{MIN_RUN_LENGTH_M} m has no measured source: a hypothesis until task 49 "
+                "reports the tracked lengths of the runs against it; 49 may replace it once, "
+                "before any per-subtype effect, and writes the change in history"
             ),
             "marker": "the opponent nearest to the runner at t_c, goalkeeper included",
             "marker_displacement_m": (
@@ -416,6 +442,18 @@ def fingerprint(design_payload: dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def seal(payload: dict[str, Any]) -> dict[str, Any]:
+    """The payload with `content_sha256` over everything else, last. Task 50 reseals the file
+    it freezes with this; the guard (`data.committed_protocol`) verifies it with `sealed`."""
+    body = {k: v for k, v in payload.items() if k != "content_sha256"}
+    return {**body, "content_sha256": fingerprint(body)}
+
+
+def sealed(payload: dict[str, Any]) -> bool:
+    body = {k: v for k, v in payload.items() if k != "content_sha256"}
+    return payload.get("content_sha256") == fingerprint(body)
+
+
 def build_protocol(rows: list[MatchRow], counts: list[placebo.PlaceboCount]) -> dict[str, Any]:
     design_payload = design(rows)
     payload = {
@@ -441,8 +479,7 @@ def build_protocol(rows: list[MatchRow], counts: list[placebo.PlaceboCount]) -> 
     }
     # Over everything above: a hand edit of the evidence shows even where `--check` cannot
     # recount it (the CI fixtures hold one match).
-    payload["content_sha256"] = fingerprint(payload)
-    return payload
+    return seal(payload)
 
 
 def render(payload: dict[str, Any]) -> str:
@@ -472,6 +509,11 @@ def run_runs_protocol(data_dir: Path, reports_dir: Path, *, check: bool = False)
     complete = set(flags) <= set(kickoffs)
 
     if not check:
+        if path.is_file() and json.loads(path.read_text(encoding="utf-8")).get("stage") == (
+            STAGE_FROZEN
+        ):
+            print(f"runs protocol: {path} is frozen and is not rewritten (D13); use --check")
+            return 1
         try:
             rows = match_rows(kickoffs, flags)
         except ProtocolInputError as exc:
@@ -487,7 +529,7 @@ def run_runs_protocol(data_dir: Path, reports_dir: Path, *, check: bool = False)
             return 1
         reports_dir.mkdir(parents=True, exist_ok=True)
         path.write_text(render(payload), encoding="utf-8", newline="\n")
-        print(_summary(payload, verified=len(rows), counted=True))
+        print(_summary(payload, status=f"FULL {len(rows)}/{len(rows)}"))
         print(f"runs protocol: {path} ({path.stat().st_size} bytes)")
         return 0
 
@@ -496,13 +538,14 @@ def run_runs_protocol(data_dir: Path, reports_dir: Path, *, check: bool = False)
         return 1
     current_text = path.read_text(encoding="utf-8")
     current = json.loads(current_text)
-    if current.get("stage") != STAGE_DESIGN:
-        print(f"runs protocol --check: stage {current.get('stage')!r} is not for this task")
+    stage = current.get("stage")
+    if stage not in (STAGE_DESIGN, STAGE_FROZEN):
+        print(f"runs protocol --check: unknown stage {stage!r}")
         return 1
     if complete:
         rows = match_rows(kickoffs, flags)
         counts = placebo.placebo_counts(data_dir, split_matches(rows)[0])
-        verified = len(rows)
+        status = f"FULL {len(rows)}/{len(rows)}"
     else:
         # The warehouse at hand holds fewer matches than the split (CI fixtures): the rows
         # travel in the file, what is at hand is compared, and the counts are kept as written.
@@ -515,14 +558,40 @@ def run_runs_protocol(data_dir: Path, reports_dir: Path, *, check: bool = False)
             placebo.PlaceboCount(**r)
             for r in current["evidence"]["placebo_counts_calibration"]["per_match"]
         ]
-        verified = len(set(kickoffs) & {r.match_id for r in rows})
-    expected = render(build_protocol(rows, counts))
-    print(_summary(json.loads(expected), verified=verified, counted=complete))
-    if expected == current_text:
-        print(f"runs protocol --check: {path} matches")
-        return 0
-    print(f"runs protocol --check: {path} differs from what the code writes")
-    return 1
+        at_hand = len(set(kickoffs) & {r.match_id for r in rows})
+        status = f"PARTIAL {at_hand}/{len(rows)}"
+    expected = build_protocol(rows, counts)
+    print(_summary(expected, status=status))
+    if stage == STAGE_DESIGN:
+        problems = [] if render(expected) == current_text else ["differs from what the code writes"]
+    else:
+        problems = frozen_problems(current, expected)
+    if problems:
+        print(f"runs protocol --check: {path} " + "; ".join(problems))
+        return 1
+    print(f"runs protocol --check: {path} matches ({status}, stage {stage})")
+    return 0
+
+
+FROZEN_KEEPS = ("schema_version", "written", "plan", "fingerprint", "design", "evidence")
+
+
+def frozen_problems(current: dict[str, Any], expected: dict[str, Any]) -> list[str]:
+    """What a frozen file must keep from the design the code writes, and what the freeze must
+    leave verifiable: the seal, the design entry opening the history and a frozen one after
+    it. What task 50 adds on top (its candidates, a sha of the code tree) is checked there."""
+    problems: list[str] = []
+    if not sealed(current):
+        problems.append("content_sha256 does not cover the file")
+    for key in FROZEN_KEEPS:
+        if current.get(key) != expected[key]:
+            problems.append(f"{key} differs from what the code writes")
+    history = current.get("history") or []
+    if not history or history[0] != expected["history"][0]:
+        problems.append("history does not open with the design entry")
+    if not any(h.get("stage") == STAGE_FROZEN for h in history[1:]):
+        problems.append("history has no frozen entry")
+    return problems
 
 
 def _rows_against(
@@ -545,15 +614,16 @@ def _rows_against(
     return problems
 
 
-def _summary(payload: dict[str, Any], *, verified: int, counted: bool) -> str:
+def _summary(payload: dict[str, Any], *, status: str) -> str:
+    """`status` is `FULL n/n` (every match at hand, counts recomputed) or `PARTIAL k/n`
+    (rows from the file, counts as written)."""
     split = payload["design"]["split"]
     counts = payload["evidence"]["placebo_counts_calibration"]["total"]
     rule = "team_overlap" if PLACEBO_EXCLUDES_TEAMMATES_RUNS else "runner_overlap"
     return (
-        f"runs protocol: stage={payload['stage']} matches={len(split['matches'])} "
+        f"runs protocol: warehouse={status} matches={len(split['matches'])} "
         f"calibration={len(split['calibration'])} held_out={len(split['held_out'])} "
-        f"verified_against_dim_match={verified} placebo_rule={rule} "
-        f"placebo_runs={counts[rule]}/{counts['runs']} "
-        f"(counts {'recomputed' if counted else 'as written'}) "
+        f"placebo_rule={rule} placebo_runs={counts[rule]}/{counts['runs']} "
+        f"(counts {'recomputed' if status.startswith('FULL') else 'as written'}) "
         f"fingerprint={payload['fingerprint'][:12]}"
     )

@@ -17,6 +17,7 @@ from __future__ import annotations
 import csv
 import math
 import shutil
+import subprocess
 from dataclasses import fields
 from pathlib import Path
 
@@ -25,9 +26,9 @@ import numpy as np
 import pytest
 
 from tracklab.paths import data_root
-from tracklab.runs import effect, placebo
-from tracklab.runs.coverage import COVERAGE_NAME, HEADER, _row, match_halves, run_runs_coverage
-from tracklab.runs.data import HeldOutLocked, counting_match_ids, load_half
+from tracklab.runs import data, effect, placebo
+from tracklab.runs.coverage import COVERAGE_NAME, HEADER, _row, run_runs_coverage
+from tracklab.runs.data import HeldOutLocked, counting_match_ids, load_half, match_halves
 from tracklab.runs.protocol import (
     EFFECT_WINDOW_S,
     MIN_RUN_LENGTH_M,
@@ -225,7 +226,7 @@ def _synthetic(
 
 def _recovered(push: float, line: float, seed: int) -> tuple[float, float, float, float, int]:
     tracking, runs, instants = _synthetic(3000, push, line, seed)
-    pairs = pair_effects(tracking, runs, instants, protocol_path=PROTOCOL)
+    pairs = pair_effects(tracking, runs, instants)
     marker = np.array([p.marker_m for p in pairs])
     line_m = np.array([p.line_m for p in pairs])
     (m_mean, m_se), (l_mean, l_se) = effect.mean_and_se(marker), effect.mean_and_se(line_m)
@@ -263,8 +264,8 @@ def test_the_line_ignores_the_goalkeeper() -> None:
             "is_goalkeeper": np.zeros(13, dtype=np.bool_),
         }
     )
-    with_keeper = pair_effects(keeper_counts_as_outfield, runs, instants, protocol_path=PROTOCOL)
-    without = pair_effects(tracking, runs, instants, protocol_path=PROTOCOL)
+    with_keeper = pair_effects(keeper_counts_as_outfield, runs, instants)
+    without = pair_effects(tracking, runs, instants)
     mean_with = float(np.mean([p.line_m for p in with_keeper]))
     mean_without = float(np.mean([p.line_m for p in without]))
     assert mean_without == pytest.approx(PLANTED_LINE_M, rel=0.1)
@@ -368,28 +369,47 @@ def test_window_bounds_clip_to_the_period() -> None:
 
 
 def test_pair_effects_refuses_a_held_out_match_and_opens_a_calibration_one(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    protocol = tmp_path / "runs_protocol.json"  # outside any git repository: never frozen
+    """On a throwaway repository whose HEAD holds the protocol in stage design, so the
+    outcome does not depend on this repository's stage (task 50 freezes it)."""
+    for args in (
+        ("init", "-q"),
+        ("config", "user.email", "ci@example.invalid"),
+        (
+            "config",
+            "user.name",
+            "ci",
+        ),
+        ("config", "commit.gpgsign", "false"),
+    ):
+        subprocess.run(["git", "-C", str(tmp_path), *args], check=True, capture_output=True)
+    protocol = tmp_path / data.PROTOCOL_IN_REPO
+    protocol.parent.mkdir(parents=True)
     shutil.copy(PROTOCOL, protocol)
+    subprocess.run(["git", "-C", str(tmp_path), "add", "."], check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "commit", "-q", "-m", "design"],
+        check=True,
+        capture_output=True,
+    )
+    monkeypatch.setattr(data, "repo_root", lambda: tmp_path)
     held, runs, instants = _synthetic(3, 1.0, 0.0, seed=1, match_id=HELD_OUT_MATCH)
     with pytest.raises(HeldOutLocked):
-        pair_effects(held, runs, instants, protocol_path=protocol)
+        pair_effects(held, runs, instants)
     ok, runs, instants = _synthetic(3, 1.0, 0.0, seed=1, match_id=CI_FIXTURE_MATCH)
-    assert len(pair_effects(ok, runs, instants, protocol_path=protocol)) == 3
+    assert len(pair_effects(ok, runs, instants)) == 3
     stranger, runs, instants = _synthetic(3, 1.0, 0.0, seed=1, match_id=1)
     with pytest.raises(ValueError, match="neither half"):
-        pair_effects(stranger, runs, instants, protocol_path=protocol)
+        pair_effects(stranger, runs, instants)
 
 
 def test_counting_covers_both_halves_and_returns_only_counts() -> None:
-    ids = counting_match_ids(PROTOCOL)
-    halves = match_halves(PROTOCOL)
+    ids = counting_match_ids()
+    halves = match_halves()
     assert ids == sorted(halves)
     assert len(ids) == 20
-    assert sorted(m for m, h in halves.items() if h == "calibration") == load_half(
-        "calibration", PROTOCOL
-    )
+    assert sorted(m for m, h in halves.items() if h == "calibration") == load_half("calibration")
     # a count has no coordinate: every field is an integer or a detection fraction
     for f in fields(MatchCounts):
         assert f.type in ("int", "float", "tuple[int, ...]"), f.name
@@ -411,9 +431,17 @@ def _count_fixture_match(root: Path | None = None) -> tuple[MatchCounts, int]:
     instants = placebo.placebo_instants(root, [CI_FIXTURE_MATCH], PLACEBO_RULE)
     counts = count_match(tracking, runs, instants)
     # the analysis set is what the estimator forms (held in memory, never printed)
-    return counts, len(pair_effects(tracking, runs, instants, protocol_path=PROTOCOL))
+    return counts, len(pair_effects(tracking, runs, instants))
 
 
+needs_the_fixture_match = pytest.mark.skipif(
+    not (data_root() / "silver" / "frames" / "sport=football").is_dir()
+    or not any((data_root() / "bronze" / "football" / "dynamic_events").glob("*.parquet")),
+    reason="no football frames and events under the data root (a clone without data)",
+)
+
+
+@needs_the_fixture_match
 def test_the_counts_of_the_ci_fixture_match_are_consistent() -> None:
     """On the CI fixtures this is a slice of the match (one possession), on the real warehouse
     the whole match: the invariants hold on both, the versioned row only on the second."""
@@ -434,6 +462,7 @@ def test_the_counts_of_the_ci_fixture_match_are_consistent() -> None:
     assert 0.0 <= counts.opp_detected_p10 <= counts.opp_detected_p50 <= 1.0
 
 
+@needs_the_fixture_match
 def test_the_fixture_match_reproduces_its_versioned_row_when_the_match_is_whole() -> None:
     counts, formed = _count_fixture_match()
     row = _committed_rows()[str(CI_FIXTURE_MATCH)]
@@ -458,8 +487,8 @@ def test_the_fixture_match_reproduces_its_versioned_row_when_the_match_is_whole(
 
 def test_the_versioned_counts_are_the_inventorys() -> None:
     rows = _committed_rows()
-    assert sorted(int(m) for m in rows) == counting_match_ids(PROTOCOL)
-    assert {int(m): r["half"] for m, r in rows.items()} == match_halves(PROTOCOL)
+    assert sorted(int(m) for m in rows) == counting_match_ids()
+    assert {int(m): r["half"] for m, r in rows.items()} == match_halves()
 
     def total(column: str) -> int:
         return sum(int(r[column]) for r in rows.values())
@@ -480,10 +509,10 @@ def test_the_versioned_counts_are_the_inventorys() -> None:
 
 
 def _reports_copy(tmp_path: Path) -> Path:
+    """The coverage file alone: the split comes from the protocol committed in HEAD."""
     reports = tmp_path / "reports"
     reports.mkdir()
-    for name in ("runs_protocol.json", COVERAGE_NAME):
-        shutil.copy(REPORTS / name, reports / name)
+    shutil.copy(REPORTS / COVERAGE_NAME, reports / COVERAGE_NAME)
     return reports
 
 
@@ -534,3 +563,8 @@ def test_no_path_goes_through_the_possession_flipped_view() -> None:
         assert "frames_attacking" not in source, name
     windows = (PIPELINE / "src" / "tracklab" / "runs" / "windows.py").read_text(encoding="utf-8")
     assert "silver" in windows and "dim_team_period" in windows and '"frames"' in windows
+    # and the protocol says exactly that (review of tasks 47-48, finding 2)
+    coordinates = read_protocol(PROTOCOL)["design"]["frames"]["coordinates"]
+    assert coordinates.startswith("silver frames (x_m, y_m")
+    assert "dim_team_period.attack_sign" in coordinates
+    assert "never the frames_attacking view" in coordinates

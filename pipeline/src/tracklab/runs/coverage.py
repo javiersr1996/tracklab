@@ -6,8 +6,10 @@ detection fractions and nothing else; `windows.count_match` has no way to return
 a displacement or a line height, and this module only formats what it returns.
 
 `--check` regenerates the rows of the matches present in the warehouse at hand and compares
-them with the versioned file, so on the CI fixtures (one match) it verifies one row of 20; the
-other 19 are covered only where the whole warehouse exists (lesson of task 47).
+them with the versioned file; on the CI fixtures (a slice of one match) it can recount none
+of the 20 and says so with a `PARTIAL 0/20` status, the other rows being covered only where
+the whole warehouse exists (lesson of task 47). The ids and the halves come from the protocol
+committed in HEAD (`data`), never from a file at hand.
 """
 
 from __future__ import annotations
@@ -17,7 +19,7 @@ import io
 from pathlib import Path
 
 from tracklab.runs import placebo
-from tracklab.runs.data import counting_match_ids, load_half
+from tracklab.runs.data import counting_match_ids, match_halves
 from tracklab.runs.windows import (
     COUNT_FIELDS,
     PLACEBO_RULE,
@@ -53,19 +55,8 @@ def _row(counts: MatchCounts, half: str) -> list[str]:
     return [values[h] for h in HEADER]
 
 
-def match_halves(protocol_path: Path) -> dict[int, str]:
-    """Which half each of the 20 matches belongs to, through `data` and not the split lists.
-    The calibration list has no guard; every other id is the held-out half, whose ids alone
-    are public (counting only, see `data.counting_match_ids`)."""
-    calibration = set(load_half("calibration", protocol_path))
-    return {
-        m: "calibration" if m in calibration else "held_out"
-        for m in counting_match_ids(protocol_path)
-    }
-
-
-def coverage_rows(data_dir: Path, match_ids: list[int], protocol_path: Path) -> list[list[str]]:
-    halves = match_halves(protocol_path)
+def coverage_rows(data_dir: Path, match_ids: list[int]) -> list[list[str]]:
+    halves = match_halves()
     instants = placebo.placebo_instants(data_dir, match_ids, PLACEBO_RULE)
     rows = []
     for match_id in match_ids:
@@ -85,15 +76,8 @@ def render(rows: list[list[str]]) -> str:
     return out.getvalue()
 
 
-def run_runs_coverage(
-    data_dir: Path,
-    reports_dir: Path,
-    *,
-    check: bool = False,
-    protocol_path: Path | None = None,
-) -> int:
-    protocol = protocol_path or reports_dir / "runs_protocol.json"
-    wanted = counting_match_ids(protocol)
+def run_runs_coverage(data_dir: Path, reports_dir: Path, *, check: bool = False) -> int:
+    wanted = counting_match_ids()
     at_hand = [m for m in wanted if _has_frames(data_dir, m)]
     path = reports_dir / COVERAGE_NAME
     if not check:
@@ -103,7 +87,7 @@ def run_runs_coverage(
                 f"under {data_dir}; the file is written from all of them or not at all"
             )
             return 1
-        rows = coverage_rows(data_dir, wanted, protocol)
+        rows = coverage_rows(data_dir, wanted)
         reports_dir.mkdir(parents=True, exist_ok=True)
         path.write_text(render(rows), encoding="utf-8", newline="\n")
         print(_summary(rows, len(rows)))
@@ -140,14 +124,16 @@ def run_runs_coverage(
     if unexplained:
         print(f"runs coverage --check: more runs than the file holds for {unexplained}")
         return 1
-    fresh = coverage_rows(data_dir, whole, protocol) if whole else []
+    fresh = coverage_rows(data_dir, whole) if whole else []
     stale = [r[0] for r in fresh if committed[r[0]] != r]
     if stale:
         print(f"runs coverage --check: rows differ for {stale}")
         return 1
+    status = "FULL" if len(whole) == len(wanted) else "PARTIAL"
     print(
-        f"runs coverage --check: {len(whole)} of {len(wanted)} rows recounted and equal, "
-        f"{len(slices)} present only as slices (header and match list verified), {path} matches"
+        f"runs coverage --check: warehouse={status} {len(whole)}/{len(wanted)} rows recounted "
+        f"and equal, {len(slices)} present only as slices (header and match list verified), "
+        f"{path} matches"
     )
     return 0
 

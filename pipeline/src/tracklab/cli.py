@@ -723,7 +723,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--reports-dir",
         type=Path,
         default=Path("reports"),
-        help="Where runs_coverage.csv goes and runs_protocol.json is read from (default: reports).",
+        help="Where runs_coverage.csv goes (default: reports); the split is read from the "
+        "protocol committed in HEAD, never from a file at hand.",
     )
     runs_coverage.add_argument(
         "--check",
