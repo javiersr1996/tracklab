@@ -246,11 +246,13 @@ def design(rows: list[MatchRow]) -> dict[str, Any]:
             "coordinates": (
                 "silver frames (x_m, y_m: the venue frame, metres), every player row of the "
                 "match, turned to the attack frame of the runner's team with "
-                "dim_team_period.attack_sign of (period, runner's team): x_att = attack_sign * "
-                "x_m and y_att = attack_sign * y_m, so the runner's team attacks towards +x in "
-                "every frame of a window whichever team has the ball; never the "
-                "frames_attacking view, which turns by the team in possession and drops the "
-                "frames no possession claims"
+                "dim_team_period.attack_sign of (the period the frame belongs to, runner's "
+                "team): x_att = attack_sign * x_m and y_att = attack_sign * y_m, so the "
+                "runner's team attacks towards +x in every frame of a window whichever team "
+                "has the ball, and a placebo taken in the other half of the match is turned by "
+                "the sign of its own period, never by the run's; never the frames_attacking "
+                "view, which turns by the team in possession and drops the frames no "
+                "possession claims"
             ),
             "runner": "entity fb:<player_id> of dim_entity, the player_id of the event",
             "opponents": "entities of kind player of the other team of the match",
@@ -311,7 +313,10 @@ def design(rows: list[MatchRow]) -> dict[str, Any]:
                 "to the earlier one"
             ),
             "direction": "the placebo inherits d of its run, in the attack frame of the team",
-            "windows": "the same W and V around t' as around t_c",
+            "windows": (
+                "the same W and V around t' as around t_c; each leg, from t - V to t + W, lies "
+                "inside the period of its own instant"
+            ),
             "teammates_runs": {
                 "excluded": PLACEBO_EXCLUDES_TEAMMATES_RUNS,
                 "alternative": "exclude the runner's own runs only",

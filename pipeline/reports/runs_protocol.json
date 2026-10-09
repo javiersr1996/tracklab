@@ -3,7 +3,7 @@
   "stage": "design",
   "written": "2026-10-09",
   "plan": "tasks/todo.md, P5 'The run that moves nobody', task 47",
-  "fingerprint": "a9a81bd7eb9d9c9083aa6b05a51e3d67ae66d9304972d76e544512508b9fe7b8",
+  "fingerprint": "1ac2cae0957c7cc9c8e8f4282e5df39ed8684133bf6fbef0dff665315c345155",
   "design": {
     "question": "Which off-ball run subtypes displace the defence, measured on the tracking in the window after the run starts, against a placebo of the same runner at another instant of a possession of his team.",
     "outcome": {
@@ -197,7 +197,7 @@
       "velocity_window_rule": "0.5 s has no measured source: a hypothesis, like W, until task 49 measures the cadence; 49 may replace it once, before any per-subtype effect, and writes the change in history"
     },
     "frames": {
-      "coordinates": "silver frames (x_m, y_m: the venue frame, metres), every player row of the match, turned to the attack frame of the runner's team with dim_team_period.attack_sign of (period, runner's team): x_att = attack_sign * x_m and y_att = attack_sign * y_m, so the runner's team attacks towards +x in every frame of a window whichever team has the ball; never the frames_attacking view, which turns by the team in possession and drops the frames no possession claims",
+      "coordinates": "silver frames (x_m, y_m: the venue frame, metres), every player row of the match, turned to the attack frame of the runner's team with dim_team_period.attack_sign of (the period the frame belongs to, runner's team): x_att = attack_sign * x_m and y_att = attack_sign * y_m, so the runner's team attacks towards +x in every frame of a window whichever team has the ball, and a placebo taken in the other half of the match is turned by the sign of its own period, never by the run's; never the frames_attacking view, which turns by the team in possession and drops the frames no possession claims",
       "runner": "entity fb:<player_id> of dim_entity, the player_id of the event",
       "opponents": "entities of kind player of the other team of the match",
       "goalkeeper": "bronze match_players.player_role_name = 'Goalkeeper'",
@@ -219,7 +219,7 @@
       "exclusion_s": 3.0,
       "choice": "among the admissible candidates, the instant nearest in time to t_c; ties go to the earlier one",
       "direction": "the placebo inherits d of its run, in the attack frame of the team",
-      "windows": "the same W and V around t' as around t_c",
+      "windows": "the same W and V around t' as around t_c; each leg, from t - V to t + W, lies inside the period of its own instant",
       "teammates_runs": {
         "excluded": true,
         "alternative": "exclude the runner's own runs only",
@@ -415,5 +415,5 @@
       "date": "2026-10-09"
     }
   ],
-  "content_sha256": "f63cc08fec6946321b0f706dd1d571f92612a4d864b7f828aff50f7f3d204d44"
+  "content_sha256": "ef8d7c49d029c1889788cf4621cc7b6d3cbca9e0c37772aec4bdb8d9797bf03d"
 }

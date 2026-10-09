@@ -96,7 +96,7 @@ HELD_OUT = [
     2016236,
     2017461,
 ]
-FINGERPRINT = "a9a81bd7eb9d9c9083aa6b05a51e3d67ae66d9304972d76e544512508b9fe7b8"
+FINGERPRINT = "1ac2cae0957c7cc9c8e8f4282e5df39ed8684133bf6fbef0dff665315c345155"
 
 
 def _write(path: Path, payload: dict[str, Any]) -> None:
