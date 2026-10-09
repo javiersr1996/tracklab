@@ -40,6 +40,7 @@ from tracklab.publish.stats import run_publish_stats
 from tracklab.publish.warehouse import run_publish_warehouse
 from tracklab.publish.warehouse_pg import WHERE, run_publish_warehouse_pg
 from tracklab.quality.run import CHECKS, run_quality
+from tracklab.runs.protocol import run_runs_protocol
 from tracklab.silver.orientation import SPORTS, run_orientation
 from tracklab.silver.possessions import run_possessions
 from tracklab.silver.stats import run_stats
@@ -220,6 +221,10 @@ def _cmd_quality(args: argparse.Namespace) -> int:
 
 def _cmd_fixtures(args: argparse.Namespace) -> int:
     return run_fixtures(data_dir=args.data_dir, out_dir=args.out_dir)
+
+
+def _cmd_runs_protocol(args: argparse.Namespace) -> int:
+    return run_runs_protocol(args.data_dir, args.reports_dir, check=args.check)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -667,6 +672,36 @@ def build_parser() -> argparse.ArgumentParser:
         help="Data root the cut lands in (default: tests/fixtures/data).",
     )
     fixtures.set_defaults(func=_cmd_fixtures)
+
+    runs = subparsers.add_parser(
+        "runs", help="P5: off-ball runs against the defence's displacement in the tracking."
+    )
+    runs_sub = runs.add_subparsers(dest="runs_command", required=True)
+    runs_protocol = runs_sub.add_parser(
+        "protocol",
+        help="Write reports/runs_protocol.json: the split, the windows, the placebo, the "
+        "instrument, the bar and the death criteria, as code, before any outcome.",
+    )
+    runs_protocol.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver/dim_match and the football bronze events are read from it "
+        "(default: data).",
+    )
+    runs_protocol.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where runs_protocol.json goes and quality_partitions.csv is read from "
+        "(default: reports).",
+    )
+    runs_protocol.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare with the versioned file; write nothing.",
+    )
+    runs_protocol.set_defaults(func=_cmd_runs_protocol)
 
     build = subparsers.add_parser(
         "build",
