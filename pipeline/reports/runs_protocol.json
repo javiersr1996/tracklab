@@ -3,7 +3,7 @@
   "stage": "design",
   "written": "2026-10-09",
   "plan": "tasks/todo.md, P5 'The run that moves nobody', task 47",
-  "fingerprint": "eadd8aba787a219bdf2179467fa1f8f0d891ce7deaf01fcd85944bfd0d41dc98",
+  "fingerprint": "a9a81bd7eb9d9c9083aa6b05a51e3d67ae66d9304972d76e544512508b9fe7b8",
   "design": {
     "question": "Which off-ball run subtypes displace the defence, measured on the tracking in the window after the run starts, against a placebo of the same runner at another instant of a possession of his team.",
     "outcome": {
@@ -193,10 +193,11 @@
         "after_frame_end": 3.0,
         "clipped_to": "the period"
       },
-      "effect_window_rule": "2.0 s is a hypothesis until task 49 measures the cadence of the football tracking; 49 may replace it only by the minimum window that cadence admits, once, before any per-subtype effect, and writes the change in history"
+      "effect_window_rule": "2.0 s is a hypothesis until task 49 measures the cadence of the football tracking; 49 may replace it only by the minimum window that cadence admits, once, before any per-subtype effect, and writes the change in history",
+      "velocity_window_rule": "0.5 s has no measured source: a hypothesis, like W, until task 49 measures the cadence; 49 may replace it once, before any per-subtype effect, and writes the change in history"
     },
     "frames": {
-      "coordinates": "silver frames_attacking (x_att_m, y_att_m): the runner's team attacks towards +x, the frame of the provider's events",
+      "coordinates": "silver frames (x_m, y_m: the venue frame, metres), every player row of the match, turned to the attack frame of the runner's team with dim_team_period.attack_sign of (period, runner's team): x_att = attack_sign * x_m and y_att = attack_sign * y_m, so the runner's team attacks towards +x in every frame of a window whichever team has the ball; never the frames_attacking view, which turns by the team in possession and drops the frames no possession claims",
       "runner": "entity fb:<player_id> of dim_entity, the player_id of the event",
       "opponents": "entities of kind player of the other team of the match",
       "goalkeeper": "bronze match_players.player_role_name = 'Goalkeeper'",
@@ -204,6 +205,7 @@
     },
     "instrument": {
       "run_direction": "d = unit vector from the runner's tracked position at frame_start to his position at frame_end; runs shorter than 1.0 m are excluded",
+      "min_run_length_rule": "1.0 m has no measured source: a hypothesis until task 49 reports the tracked lengths of the runs against it; 49 may replace it once, before any per-subtype effect, and writes the change in history",
       "marker": "the opponent nearest to the runner at t_c, goalkeeper included",
       "marker_displacement_m": "projection on d of [p(t_c + W) - p(t_c)] - v(t_c) * W, with v(t_c) = [p(t_c) - p(t_c - V)] / V, W the effect window and V the velocity window; positive means the marker moved with the run",
       "line_height_m": "L(t) = mean x_att of the two deepest outfield opponents (largest x_att, goalkeepers excluded); residual [L(t_c + W) - L(t_c)] - v_L(t_c) * W with v_L(t_c) = [L(t_c) - L(t_c - V)] / V; positive means the line dropped towards its own goal",
@@ -413,5 +415,5 @@
       "date": "2026-10-09"
     }
   ],
-  "content_sha256": "a23df530bab97320502671589b189f987542643169ef76843a38517d3b1990fe"
+  "content_sha256": "f63cc08fec6946321b0f706dd1d571f92612a4d864b7f828aff50f7f3d204d44"
 }
