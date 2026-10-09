@@ -40,6 +40,7 @@ from tracklab.publish.stats import run_publish_stats
 from tracklab.publish.warehouse import run_publish_warehouse
 from tracklab.publish.warehouse_pg import WHERE, run_publish_warehouse_pg
 from tracklab.quality.run import CHECKS, run_quality
+from tracklab.runs.coverage import run_runs_coverage
 from tracklab.runs.protocol import run_runs_protocol
 from tracklab.silver.orientation import SPORTS, run_orientation
 from tracklab.silver.possessions import run_possessions
@@ -225,6 +226,10 @@ def _cmd_fixtures(args: argparse.Namespace) -> int:
 
 def _cmd_runs_protocol(args: argparse.Namespace) -> int:
     return run_runs_protocol(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_runs_coverage(args: argparse.Namespace) -> int:
+    return run_runs_coverage(args.data_dir, args.reports_dir, check=args.check)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -702,6 +707,30 @@ def build_parser() -> argparse.ArgumentParser:
         help="Regenerate in memory and compare with the versioned file; write nothing.",
     )
     runs_protocol.set_defaults(func=_cmd_runs_protocol)
+    runs_coverage = runs_sub.add_parser(
+        "coverage",
+        help="Write reports/runs_coverage.csv: runs, windows, detection and placebos per match "
+        "for the 20 matches, as counts and never an outcome.",
+    )
+    runs_coverage.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver frames and the football bronze events are read from it "
+        "(default: data).",
+    )
+    runs_coverage.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where runs_coverage.csv goes and runs_protocol.json is read from (default: reports).",
+    )
+    runs_coverage.add_argument(
+        "--check",
+        action="store_true",
+        help="Recount the matches at hand and compare with the versioned file; write nothing.",
+    )
+    runs_coverage.set_defaults(func=_cmd_runs_coverage)
 
     build = subparsers.add_parser(
         "build",

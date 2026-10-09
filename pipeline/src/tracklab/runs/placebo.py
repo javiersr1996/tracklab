@@ -21,6 +21,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
+from typing import Literal
 
 import duckdb
 
@@ -45,7 +46,7 @@ class PlaceboCount:
 
 COLUMNS = tuple(f.name for f in fields(PlaceboCount))
 
-_SQL = """
+_CANDIDATES = """
 WITH ev AS (
     SELECT match_id, event_id, event_type, player_id, team_id, frame_start, frame_end,
            phase_index, team_in_possession_phase_type AS phase_type,
@@ -55,20 +56,20 @@ WITH ev AS (
 ),
 runs AS (SELECT * FROM ev WHERE event_type = 'off_ball_run'),
 phases AS (
-    SELECT match_id, "index" AS phase_index, frame_start AS phase_frame_start,
-           frame_end AS phase_frame_end
+    SELECT match_id, "index" AS phase_index, period AS phase_period,
+           frame_start AS phase_frame_start, frame_end AS phase_frame_end
     FROM read_parquet($phases)
     WHERE match_id IN (SELECT unnest($matches))
 ),
 poss AS (
     SELECT e.match_id, e.player_id, e.team_id, e.frame_start, e.phase_index, e.phase_type,
-           ph.phase_frame_start, ph.phase_frame_end
+           ph.phase_period, ph.phase_frame_start, ph.phase_frame_end
     FROM ev e
     JOIN phases ph USING (match_id, phase_index)
     WHERE e.event_type = 'player_possession'
 ),
 cand AS (
-    SELECT r.match_id, r.event_id AS run_id, r.player_id, r.team_id,
+    SELECT r.match_id, r.event_id AS run_id, r.player_id, r.team_id, c.phase_period AS period,
            c.frame_start + (r.frame_start - r.pp_frame_start) AS t_placebo
     FROM runs r
     JOIN poss c
@@ -103,7 +104,11 @@ judged AS (
               AND abs(x.frame_start - cand.t_placebo) <= $margin
         ) AS team_start
     FROM cand
-),
+)
+"""
+
+_COUNTS = """
+,
 per_run AS (
     SELECT match_id, run_id,
            bool_or(runner_overlap) AS runner_overlap, bool_or(team_overlap) AS team_overlap,
@@ -125,26 +130,58 @@ GROUP BY ALL
 ORDER BY r.match_id
 """
 
+_INSTANTS = """
+SELECT j.match_id, j.run_id, j.period, j.t_placebo
+FROM judged j
+WHERE j.{rule}
+ORDER BY j.match_id, j.run_id, j.t_placebo
+"""
+
+
+def _params(data_dir: Path, match_ids: Sequence[int]) -> dict[str, object]:
+    football = data_dir / "bronze" / "football"
+    return {
+        "events": (football / "dynamic_events" / "*.parquet").as_posix(),
+        "phases": (football / "phases_of_play" / "*.parquet").as_posix(),
+        "matches": list(match_ids),
+        "margin": EXCLUSION_FRAMES,
+    }
+
 
 def placebo_counts(data_dir: Path, match_ids: Sequence[int]) -> list[PlaceboCount]:
     """One row per match of `match_ids`, in id order, from the football bronze under `data_dir`.
     A match with no `dynamic_events` file yields no row: the caller decides whether that is an
     error (the protocol does, for the calibration half)."""
-    football = data_dir / "bronze" / "football"
     con = duckdb.connect()
     try:
-        rows = con.execute(
-            _SQL,
-            {
-                "events": (football / "dynamic_events" / "*.parquet").as_posix(),
-                "phases": (football / "phases_of_play" / "*.parquet").as_posix(),
-                "matches": list(match_ids),
-                "margin": EXCLUSION_FRAMES,
-            },
-        ).fetchall()
+        rows = con.execute(_CANDIDATES + _COUNTS, _params(data_dir, match_ids)).fetchall()
     finally:
         con.close()
     return [PlaceboCount(*(int(v) for v in row)) for row in rows]
+
+
+Rule = Literal["runner_overlap", "team_overlap", "runner_start", "team_start"]
+
+
+def placebo_instants(
+    data_dir: Path, match_ids: Sequence[int], rule: Rule
+) -> dict[tuple[int, str], list[tuple[int, int]]]:
+    """Every admissible placebo instant under `rule`, per run: (match_id, run event_id) ->
+    [(period of the candidate's phase, t')] in time order. Task 48 filters these against the
+    tracking (runner on the pitch and detected, frames present) and picks the nearest to t_c."""
+    if rule not in ("runner_overlap", "team_overlap", "runner_start", "team_start"):
+        raise ValueError(f"unknown placebo rule {rule!r}")
+    con = duckdb.connect()
+    try:
+        rows = con.execute(
+            _CANDIDATES + _INSTANTS.format(rule=rule), _params(data_dir, match_ids)
+        ).fetchall()
+    finally:
+        con.close()
+    out: dict[tuple[int, str], list[tuple[int, int]]] = {}
+    for match_id, run_id, period, t_placebo in rows:
+        out.setdefault((int(match_id), str(run_id)), []).append((int(period), int(t_placebo)))
+    return out
 
 
 def total(counts: Sequence[PlaceboCount]) -> dict[str, int]:

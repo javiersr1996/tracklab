@@ -77,3 +77,24 @@ def load_half(half: Half, protocol_path: Path = DEFAULT_PROTOCOL) -> list[int]:
         assert_held_out_open(protocol_path)
     ids = read_protocol(protocol_path)["design"]["split"][half]
     return [int(m) for m in ids]
+
+
+def counting_match_ids(protocol_path: Path = DEFAULT_PROTOCOL) -> list[int]:
+    """The ids of all 20 matches, both halves, for counting runs and frames (task 48).
+
+    This is not a way round the guard on `load_half`: the guard stops outcomes on the held-out
+    half, and the ids, the kickoffs and the run counts were public in the protocol and the
+    inventory before the split existed. A caller that gets tracking values out of a match
+    goes through `require_readable`, which applies the guard per match."""
+    matches = read_protocol(protocol_path)["design"]["split"]["matches"]
+    return sorted(int(m["match_id"]) for m in matches)
+
+
+def require_readable(match_id: int, protocol_path: Path = DEFAULT_PROTOCOL) -> None:
+    """Allow a function that returns tracking values (displacements, residuals, line heights)
+    to run on `match_id`: calibration matches always, held-out ones only past the guard."""
+    split = read_protocol(protocol_path)["design"]["split"]
+    if match_id in split["held_out"]:
+        assert_held_out_open(protocol_path)
+    elif match_id not in split["calibration"]:
+        raise ValueError(f"match {match_id} is in neither half of the protocol")
