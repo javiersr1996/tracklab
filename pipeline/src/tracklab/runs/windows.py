@@ -6,16 +6,19 @@ tracking from silver `frames` (venue frame, turned to the attack frame with
 instants from `placebo.py`. Windows, rule and instrument are the protocol's: the lengths are
 `protocol.py`'s constants, the definitions are `effect.py`'s.
 
-Two doors, kept apart on purpose (hardened in the second review of 47-48):
+Two doors, kept apart on purpose (hardened in the second and third reviews of 47-48):
 
-* a tracking comes into being in one place, `MatchTracking`, and passes `data.require_readable`
-  there, hand-built or loaded: `load_tracking` runs the guard before it reads a byte. The one
-  exception is a tracking loaded with `data.counting_handle`, which `count_match` alone can use:
-  it returns a `MatchCounts` of integers and detection fractions, computed from booleans, for
-  the 20 matches, held-out included, because counting runs and frames is not an outcome.
-* `run_direction`, `quantities` and `pair_effects` return values of the tracking and refuse a
-  counting-only one. On real data nothing prints or stores what they return; only synthetic
-  matches run them end to end (task 48).
+* a tracking leaves this module in one shape, `MatchTracking`, which passes
+  `data.require_readable` as it is built, hand-built or loaded: `load_tracking` runs the guard
+  before it reads a byte, and `run_direction`, `quantities` and `pair_effects`, the functions
+  that return values of a tracking, take nothing else. On real data nothing prints or stores
+  what they return; only synthetic matches run them end to end (task 48).
+* `count_tracking` reads the frames of a match of either half, counts and drops them inside
+  its own scope: it returns a `MatchCounts` of integers and detection fractions, computed from
+  booleans, for the 20 matches, held-out included, because counting runs and frames is not an
+  outcome. No handle and no flag: the silver frames are read in `_read_tracking` alone, whose
+  two callers are `load_tracking` and `count_tracking`, and no public function hands a caller
+  the tracking of a match the guard refuses.
 
 A placebo instant is admissible when `placebo.py` says so (no run of the team within 3 s) and
 the tracking can support it: the runner is detected at t', and every frame from t' - V to
@@ -37,7 +40,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from tracklab.runs import effect, placebo
-from tracklab.runs.data import CountingHandle, CountingOnly, require_readable
+from tracklab.runs.data import require_readable
 from tracklab.runs.protocol import (
     COVERAGE_AFTER_END_S,
     COVERAGE_BEFORE_START_S,
@@ -106,15 +109,13 @@ class Run:
 
 
 @dataclass(frozen=True)
-class MatchTracking:
+class _Tracking:
     """The players of one match, frame by frame. `x`, `y` hold the venue frame in metres,
     NaN where the entity has no row in that frame; `detected` is the provider's flag.
     Row `i` is frame `frame0 + i`.
 
-    Built, it passes `data.require_readable` for its match, whoever builds it: a held-out
-    match is refused until the committed protocol is frozen in a clean tree. The one way past
-    that is `counting_only`, which `load_tracking` sets from a `data.CountingHandle`: then
-    `count_match` is all it can feed, and the value functions refuse it."""
+    No guard: `count_tracking` builds one for a match of either half and drops it with its
+    scope. What a caller gets to hold is a `MatchTracking`."""
 
     match_id: int
     frame0: int
@@ -126,11 +127,6 @@ class MatchTracking:
     is_goalkeeper: Bools
     period_frames: Mapping[int, tuple[int, int]]
     attack_sign: Mapping[tuple[int, str], int]
-    counting_only: bool = False
-
-    def __post_init__(self) -> None:
-        if not self.counting_only:
-            require_readable(self.match_id)
 
     @property
     def n_frames(self) -> int:
@@ -149,6 +145,17 @@ class MatchTracking:
             return self.entities.index(entity)
         except ValueError:
             return None
+
+
+@dataclass(frozen=True)
+class MatchTracking(_Tracking):
+    """A tracking a caller may hold: built, it passes `data.require_readable` for its match,
+    whoever builds it, so a held-out match has none until the committed protocol is frozen in
+    a clean tree. `dataclasses.replace` builds again, so relabelling runs the guard too. The
+    functions that return values of a tracking take this class and nothing else."""
+
+    def __post_init__(self) -> None:
+        require_readable(self.match_id)
 
 
 @dataclass(frozen=True)
@@ -195,16 +202,10 @@ def load_runs(data_dir: Path, match_id: int) -> list[Run]:
     ]
 
 
-def load_tracking(
-    data_dir: Path, match_id: int, *, counting: CountingHandle | None = None
-) -> MatchTracking:
-    """The players of `match_id` from silver. Without a handle the guard runs before a byte
-    is read; with one (`data.counting_handle`) the tracking is loaded for `count_match` alone.
-    A match with no football frames raises."""
-    if counting is None:
-        require_readable(match_id)
-    elif counting.match_id != match_id:
-        raise ValueError(f"a counting handle for match {counting.match_id} cannot load {match_id}")
+def _read_tracking(data_dir: Path, match_id: int) -> _Tracking:
+    """The players of `match_id` from silver, unguarded: the one place the frames are read,
+    for `load_tracking` (past the guard) and `count_tracking` (counts alone). A match with no
+    football frames raises."""
     silver = data_dir / "silver"
     frames_glob = (
         silver / "frames" / "sport=football" / f"native_match_id={match_id}" / "*.parquet"
@@ -253,7 +254,7 @@ def load_tracking(
     for entity, team in zip(cols["entity_id"], cols["team_id"], strict=True):
         team_of.setdefault(str(entity), str(team))
     keeper_ids = {str(k[0]) for k in keepers}
-    return MatchTracking(
+    return _Tracking(
         match_id=match_id,
         frame0=frame0,
         x=x,
@@ -264,37 +265,37 @@ def load_tracking(
         is_goalkeeper=np.array([str(n) in keeper_ids for n in names], dtype=np.bool_),
         period_frames={int(p): (int(a), int(b)) for p, a, b in periods},
         attack_sign={(int(p), str(t)): int(s) for p, t, s in signs},
-        counting_only=counting is not None,
     )
 
 
-def _refuse_counting_only(t: MatchTracking) -> None:
-    if t.counting_only:
-        raise CountingOnly(
-            f"match {t.match_id} was loaded for counting only: no value of its tracking leaves"
-        )
+def load_tracking(data_dir: Path, match_id: int) -> MatchTracking:
+    """The players of `match_id` from silver, as a `MatchTracking`: the guard runs before a
+    byte is read, and again as the tracking is built."""
+    require_readable(match_id)
+    raw = _read_tracking(data_dir, match_id)
+    return MatchTracking(**{f.name: getattr(raw, f.name) for f in fields(raw)})
 
 
 # --- geometry in the attack frame -------------------------------------------------------------
 
 
-def _xy(t: MatchTracking, frame: int, entity: int, sign: int) -> NDArray[np.float64]:
+def _xy(t: _Tracking, frame: int, entity: int, sign: int) -> NDArray[np.float64]:
     i = frame - t.frame0
     return np.array([sign * t.x[i, entity], sign * t.y[i, entity]])
 
 
-def _opponents(t: MatchTracking, team: str) -> NDArray[np.intp]:
+def _opponents(t: _Tracking, team: str) -> NDArray[np.intp]:
     return np.array([i for i, tm in enumerate(t.team) if tm != team], dtype=np.intp)
 
 
 def _opponents_xy(
-    t: MatchTracking, frame: int, opponents: NDArray[np.intp], sign: int
+    t: _Tracking, frame: int, opponents: NDArray[np.intp], sign: int
 ) -> NDArray[np.float64]:
     i = frame - t.frame0
     return np.stack([sign * t.x[i, opponents], sign * t.y[i, opponents]], axis=1)
 
 
-def window_bounds(t: MatchTracking, run: Run) -> tuple[int, int, bool]:
+def window_bounds(t: _Tracking, run: Run) -> tuple[int, int, bool]:
     """The coverage window of a run, clipped to its period: (first frame, last frame, clipped)."""
     start, end = t.period_frames[run.period]
     lo = max(run.frame_start - BEFORE_FRAMES, start)
@@ -303,18 +304,18 @@ def window_bounds(t: MatchTracking, run: Run) -> tuple[int, int, bool]:
     return lo, hi, clipped
 
 
-def _frames_present(t: MatchTracking, lo: int, hi: int) -> bool:
+def _frames_present(t: _Tracking, lo: int, hi: int) -> bool:
     return all(t.frame_present(f) for f in range(lo, hi + 1))
 
 
-def _runner_detected(t: MatchTracking, runner: int | None, lo: int, hi: int) -> bool:
+def _runner_detected(t: _Tracking, runner: int | None, lo: int, hi: int) -> bool:
     if runner is None:
         return False
     rows = [t.row(f) for f in range(lo, hi + 1)]
     return all(i is not None and bool(t.detected[i, runner]) for i in rows)
 
 
-def _direction(t: MatchTracking, run: Run) -> NDArray[np.float64] | None:
+def _direction(t: _Tracking, run: Run) -> NDArray[np.float64] | None:
     runner = t.entity_index(run.runner)
     sign = t.attack_sign.get((run.period, run.team))
     if runner is None or sign is None:
@@ -329,9 +330,8 @@ def _direction(t: MatchTracking, run: Run) -> NDArray[np.float64] | None:
 
 def run_direction(t: MatchTracking, run: Run) -> NDArray[np.float64] | None:
     """The run's direction in the attack frame of its period; None when the runner is not at
-    both ends or the run is shorter than the protocol's minimum. A value: refuses a
-    counting-only tracking."""
-    _refuse_counting_only(t)
+    both ends or the run is shorter than the protocol's minimum. A value: takes a
+    `MatchTracking`, which passed the guard as it was built."""
     return _direction(t, run)
 
 
@@ -346,7 +346,7 @@ class _LegInputs:
     marker: int
 
 
-def _leg(t: MatchTracking, run: Run, period: int, instant: int) -> _LegInputs | None:
+def _leg(t: _Tracking, run: Run, period: int, instant: int) -> _LegInputs | None:
     """The inputs of one leg, the run's (its period, t_c) or the placebo's (the candidate's
     period, t'), or None when any is missing: the runner and the attack sign of that period,
     the three frames inside it, a marker (nearest opponent at the instant) with a position at
@@ -389,9 +389,8 @@ def quantities(
     """Marker displacement and line-height residual of one leg, in metres: the run's at
     (run.period, t_c) or its placebo's at (candidate's period, t'), each turned to the attack
     frame by the sign of its own period. The marker is the opponent nearest to the runner at
-    the instant. None when any input of the formulas is missing (`_leg`). A value: refuses a
-    counting-only tracking."""
-    _refuse_counting_only(t)
+    the instant. None when any input of the formulas is missing (`_leg`). A value: takes a
+    `MatchTracking`, which passed the guard as it was built."""
     leg = _leg(t, run, period, instant)
     if leg is None:
         return None
@@ -414,7 +413,7 @@ def quantities(
 # --- placebos against the tracking ----------------------------------------------------------
 
 
-def placebo_supported(t: MatchTracking, run: Run, period: int, instant: int) -> bool:
+def placebo_supported(t: _Tracking, run: Run, period: int, instant: int) -> bool:
     """The tracking can carry a placebo at `instant`: the runner is detected there and every
     frame from t' - V to t' + W exists inside the period."""
     runner = t.entity_index(run.runner)
@@ -428,7 +427,7 @@ def placebo_supported(t: MatchTracking, run: Run, period: int, instant: int) -> 
     return i is not None and bool(t.detected[i, runner]) and _frames_present(t, lo, hi)
 
 
-def choose_placebo(t: MatchTracking, run: Run, candidates: Sequence[Leg]) -> Leg | None:
+def choose_placebo(t: _Tracking, run: Run, candidates: Sequence[Leg]) -> Leg | None:
     """The supported (period, instant) nearest to t_c; ties go to the earlier one. The period
     travels with the instant: the placebo's leg is turned by the sign of its own period."""
     supported = [
@@ -467,12 +466,12 @@ COUNT_FIELDS = tuple(f.name for f in fields(MatchCounts) if f.name != "by_subtyp
 
 
 def count_match(
-    t: MatchTracking,
+    t: _Tracking,
     runs: Sequence[Run],
     instants: Mapping[tuple[int, str], Sequence[Leg]],
 ) -> MatchCounts:
     """Everything `runs_coverage.csv` holds for one match, from booleans and integers: no
-    value function is called, so it runs on a counting-only tracking of either half. The
+    value function is called, so it runs on the unguarded tracking of either half. The
     analysis set counts the pairs the estimator can form, with the same tests `pair_effects`
     applies (`_leg` on both legs, a direction of the minimum length)."""
     by_subtype = {s: 0 for s in SUBTYPES}
@@ -521,6 +520,18 @@ def count_match(
     )
 
 
+def count_tracking(
+    data_dir: Path,
+    match_id: int,
+    runs: Sequence[Run],
+    instants: Mapping[tuple[int, str], Sequence[Leg]],
+) -> MatchCounts:
+    """`count_match` on the tracking of `match_id` read from silver, for a match of either
+    half: the frames live in this scope alone and what returns is integers and detection
+    fractions. The one way to a match the guard refuses, and no value of it comes back."""
+    return count_match(_read_tracking(data_dir, match_id), runs, instants)
+
+
 # --- effects: the door that returns values ----------------------------------------------------
 
 
@@ -531,12 +542,10 @@ def pair_effects(
 ) -> list[PairEffect]:
     """One `PairEffect` per clean run with a direction and a supported placebo: the quantities
     of the run's leg at t_c minus those of the placebo's leg at t', each in the attack frame of
-    its own period, both along the run's direction. Refuses a counting-only tracking, and a
-    held-out match until the protocol committed in HEAD is frozen in a clean tree (`data`,
-    which takes no path: the committed protocol is the only one asked). Never call it on real
-    data to print."""
-    _refuse_counting_only(t)
-    require_readable(t.match_id)
+    its own period, both along the run's direction. A value: takes a `MatchTracking`, which
+    passed the guard as it was built, so a held-out match has none until the protocol
+    committed in HEAD is frozen in a clean tree (`data`, which takes no path: the committed
+    protocol is the only one asked). Never call it on real data to print."""
     out: list[PairEffect] = []
     for run in runs:
         lo, hi, _ = window_bounds(t, run)

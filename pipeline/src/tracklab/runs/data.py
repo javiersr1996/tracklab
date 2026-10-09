@@ -14,17 +14,17 @@ in. Tests exercise throwaway repositories by monkeypatching `repo_root`, and a t
 `src/` so nothing there does. What the freeze adds to the guard (the candidates, a sha of
 the code tree) belongs to task 50's spec and is said there.
 
-Two ways to touch a match's tracking (second review of 47-48): `require_readable`, for
-anything that returns a value of it, and `counting_handle`, which lets `windows.load_tracking`
-load any match of the protocol for `windows.count_match` alone; the value functions refuse a
-tracking loaded with a handle, whichever half it is in.
+Two ways to touch a match's tracking (second and third reviews of 47-48): `require_readable`,
+which `windows.MatchTracking` runs as it is built, for anything that returns a value of it;
+and `windows.count_tracking`, which reads the frames of any match of the protocol, counts
+and drops them in its own scope, so nothing it returns holds a position. No handle and no
+flag: a tracking a caller can hold has passed the guard.
 """
 
 from __future__ import annotations
 
 import json
 import subprocess
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
@@ -43,20 +43,6 @@ PROTOCOL_IN_REPO = "pipeline/reports/runs_protocol.json"
 class HeldOutLocked(RuntimeError):
     """The committed protocol cannot vouch for what was asked: missing or unverifiable in
     HEAD, not frozen, or a dirty working tree."""
-
-
-class CountingOnly(RuntimeError):
-    """A tracking loaded with a `CountingHandle` was asked for a value."""
-
-
-@dataclass(frozen=True)
-class CountingHandle:
-    """Leave to load the tracking of one match for counting only. Issued by `counting_handle`
-    for any id of the protocol, both halves, because counting runs, frames and detected
-    positions is not an outcome; `windows.quantities`, `run_direction` and `pair_effects`
-    refuse a tracking loaded with it."""
-
-    match_id: int
 
 
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -159,21 +145,11 @@ def counting_match_ids() -> list[int]:
 
     This is not a way round the guard on `load_half`: the guard stops outcomes on the held-out
     half, and the ids, the kickoffs and the run counts were public in the protocol and the
-    inventory before the split existed. Their tracking is loaded with `counting_handle`, which
-    yields counts alone; a caller that gets tracking values out of a match goes through
+    inventory before the split existed. Their tracking is counted by `windows.count_tracking`,
+    which yields counts alone; a caller that gets tracking values out of a match goes through
     `require_readable`, which applies the guard per match."""
     calibration, held_out = committed_split()
     return sorted(calibration + held_out)
-
-
-def counting_handle(match_id: int) -> CountingHandle:
-    """The handle `windows.load_tracking` takes to load `match_id` for `count_match` alone, for
-    any match of the protocol; no guard, because nothing a counting-only tracking yields is a
-    value of it."""
-    calibration, held_out = committed_split()
-    if match_id not in calibration and match_id not in held_out:
-        raise ValueError(f"match {match_id} is in neither half of the protocol")
-    return CountingHandle(match_id)
 
 
 def match_halves() -> dict[int, str]:

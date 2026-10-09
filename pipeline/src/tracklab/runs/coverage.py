@@ -1,11 +1,11 @@
 """`tracklab runs coverage`: what the tracking holds around each off-ball run, as counts (task 48).
 
 One row per match for all 20, held-out included: counting runs, windows and detected
-positions is not an outcome (see `data.counting_match_ids`). Every tracking is loaded with a
-`data.counting_handle`, so the value functions refuse it and `windows.count_match` is all it
-can feed. The file holds integers and detection fractions and nothing else; `count_match` has
-no way to return a position, a displacement or a line height, and this module only formats
-what it returns.
+positions is not an outcome (see `data.counting_match_ids`). Every match is counted by
+`windows.count_tracking`, which reads its frames, counts and drops them in its own scope: no
+tracking comes back to this module. The file holds integers and detection fractions and
+nothing else; `count_match` has no way to return a position, a displacement or a line height,
+and this module only formats what it returns.
 
 `--check` regenerates the rows of the matches present in the warehouse at hand and compares
 them with the versioned file; on the CI fixtures (a slice of one match) it can recount none
@@ -21,15 +21,14 @@ import io
 from pathlib import Path
 
 from tracklab.runs import placebo
-from tracklab.runs.data import counting_handle, counting_match_ids, match_halves
+from tracklab.runs.data import counting_match_ids, match_halves
 from tracklab.runs.windows import (
     COUNT_FIELDS,
     PLACEBO_RULE,
     SUBTYPES,
     MatchCounts,
-    count_match,
+    count_tracking,
     load_runs,
-    load_tracking,
 )
 
 COVERAGE_NAME = "runs_coverage.csv"
@@ -63,8 +62,7 @@ def coverage_rows(data_dir: Path, match_ids: list[int]) -> list[list[str]]:
     rows = []
     for match_id in match_ids:
         half = halves[match_id]
-        tracking = load_tracking(data_dir, match_id, counting=counting_handle(match_id))
-        counts = count_match(tracking, load_runs(data_dir, match_id), instants)
+        counts = count_tracking(data_dir, match_id, load_runs(data_dir, match_id), instants)
         rows.append(_row(counts, half))
     return rows
 

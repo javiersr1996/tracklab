@@ -15,19 +15,26 @@ Mutations recorded in tasks/todo.md: the sign of the run direction flipped in
 `effect.run_direction` fails the planted-effect test; the marker taken at t_c + 1 s in
 `windows.quantities` fails the test that pins it at t_c; the placebo leg turned by the run's
 period (`sign = t.attack_sign[(run.period, ...)]` in `_leg`) fails the planted-effect tests
-and the two-period test; the placebo leg's sign flipped fails the planted-effect tests.
+and the two-period test; the placebo leg's sign flipped fails the planted-effect tests. Since
+the third review, each condition of `count_match` and each rule of `_leg` fails the sabotaged
+matches, and the guard is a shape (`MatchTracking`) rather than a flag: the held-out test
+walks what every public name of `runs.*` returns.
 """
 
 from __future__ import annotations
 
 import csv
+import importlib
 import inspect
 import math
+import pkgutil
 import re
 import shutil
 import subprocess
-from dataclasses import fields
+from collections.abc import Mapping
+from dataclasses import fields, is_dataclass, replace
 from pathlib import Path
+from types import ModuleType
 
 import duckdb
 import numpy as np
@@ -36,13 +43,10 @@ import pyarrow.parquet as pq
 import pytest
 
 from tracklab.paths import data_root
-from tracklab.runs import coverage, data, effect, placebo, windows
+from tracklab.runs import coverage, data, effect, placebo, protocol, windows
 from tracklab.runs.coverage import COVERAGE_NAME, HEADER, _row, coverage_rows, run_runs_coverage
 from tracklab.runs.data import (
-    CountingHandle,
-    CountingOnly,
     HeldOutLocked,
-    counting_handle,
     counting_match_ids,
     load_half,
     match_halves,
@@ -73,6 +77,7 @@ from tracklab.runs.windows import (
     Run,
     choose_placebo,
     count_match,
+    count_tracking,
     load_runs,
     load_tracking,
     pair_effects,
@@ -230,22 +235,21 @@ def _scene(
 Instants = dict[tuple[int, str], list[tuple[int, int]]]
 
 
-def _synthetic(
+def _synthetic_raw(
     n_runs: int,
     marker_push: float,
     line_push: float,
     seed: int,
     match_id: int = CI_FIXTURE_MATCH,
-    *,
-    counting_only: bool = False,
-) -> tuple[MatchTracking, list[Run], Instants]:
+) -> tuple[windows._Tracking, list[Run], Instants]:
     """`n_runs` runs, each with one placebo scene, in blocks of BLOCK frames: blocks 0 to
     n - 1 hold the run scenes, n to 2n - 1 the placebo scenes. Period 1 ends after the first
     half of the run scenes, so those runs find their placebo in the other half of the match
     (attack sign -1 against +1) and the rest in their own. Both scenes carry the baseline
     drift; the run scene carries the planted effect on top. Every run gets four candidates:
     a nearer instant where the runner is undetected, the placebo instant, a farther supported
-    instant of the same scene, and the placebo instant labelled with the wrong period."""
+    instant of the same scene, and the placebo instant labelled with the wrong period.
+    Unguarded, as `count_tracking` sees a match: `_synthetic` wraps it in a `MatchTracking`."""
     rng = np.random.default_rng(seed)
     n_blocks = 2 * n_runs
     n_frames = n_blocks * BLOCK
@@ -289,7 +293,7 @@ def _synthetic(
         runs.append(run)
         detected[t_p - 10, 0] = False
         instants[(match_id, run.event_id)] = [(2, t_p + 30), (2, t_p - 10), (1, t_p), (2, t_p)]
-    tracking = MatchTracking(
+    tracking = windows._Tracking(
         match_id=match_id,
         frame0=0,
         x=x,
@@ -305,9 +309,25 @@ def _synthetic(
             (1, OTHER): -SIGN[1],
             (2, OTHER): -SIGN[2],
         },
-        counting_only=counting_only,
     )
     return tracking, runs, instants
+
+
+def _guarded(raw: windows._Tracking) -> MatchTracking:
+    return MatchTracking(**{f.name: getattr(raw, f.name) for f in fields(raw)})
+
+
+def _synthetic(
+    n_runs: int,
+    marker_push: float,
+    line_push: float,
+    seed: int,
+    match_id: int = CI_FIXTURE_MATCH,
+) -> tuple[MatchTracking, list[Run], Instants]:
+    """`_synthetic_raw` as a `MatchTracking`: refused as it is built when `match_id` is held
+    out and the committed protocol is in design."""
+    raw, runs, instants = _synthetic_raw(n_runs, marker_push, line_push, seed, match_id)
+    return _guarded(raw), runs, instants
 
 
 def _placebo_instant(run: Run, instants: Instants) -> tuple[int, int]:
@@ -319,7 +339,7 @@ def _parquet(path: Path, table: pa.Table) -> None:
     pq.write_table(table, path)
 
 
-def _write_warehouse(root: Path, tracking: MatchTracking, runs: list[Run]) -> None:
+def _write_warehouse(root: Path, tracking: windows._Tracking, runs: list[Run]) -> None:
     """The synthetic match as the silver and bronze files `load_tracking`, `load_runs` and
     `placebo` read, in their layout and with their columns: `frames` (plus a ball row, which
     the player filter must drop), `dim_period`, `dim_team_period`, `match_players`,
@@ -509,7 +529,7 @@ def test_the_loading_path_reproduces_the_synthetic_match(tmp_path: Path) -> None
     tracking, runs, instants = _synthetic(120, PLANTED_MARKER_M, PLANTED_LINE_M, seed=55)
     _write_warehouse(tmp_path, tracking, runs)
     loaded = load_tracking(tmp_path, CI_FIXTURE_MATCH)
-    assert not loaded.counting_only
+    assert type(loaded) is MatchTracking
     assert loaded.match_id == tracking.match_id and loaded.frame0 == tracking.frame0
     assert loaded.period_frames == tracking.period_frames
     assert loaded.attack_sign == tracking.attack_sign
@@ -531,6 +551,9 @@ def test_the_loading_path_reproduces_the_synthetic_match(tmp_path: Path) -> None
         assert a.marker_m == pytest.approx(b.marker_m, abs=1e-9)
         assert a.line_m == pytest.approx(b.line_m, abs=1e-9)
     assert count_match(loaded, runs, instants) == count_match(tracking, runs, instants)
+    assert count_tracking(tmp_path, CI_FIXTURE_MATCH, runs, instants) == count_match(
+        tracking, runs, instants
+    )
 
 
 # --- the marker is the nearest opponent at t_c --------------------------------------------
@@ -622,13 +645,15 @@ def test_a_placebo_needs_the_runner_detected_and_the_frames_to_exist() -> None:
     assert not placebo_supported(tracking, run, 2, 60)  # a period the match does not have
     undetected = tracking.detected.copy()
     undetected[60, 0] = False
-    blind = MatchTracking(
-        **{
-            **{f.name: getattr(tracking, f.name) for f in fields(MatchTracking)},
-            "detected": undetected,
-        }
-    )
+    blind = replace(tracking, detected=undetected)
     assert not placebo_supported(blind, run, 1, 60)
+    # a frame nobody has between t' and t' + W, one the three frames of the leg never read
+    holed_x, holed_y = tracking.x.copy(), tracking.y.copy()
+    holed_x[61, :] = np.nan
+    holed_y[61, :] = np.nan
+    holed = replace(tracking, x=holed_x, y=holed_y)
+    assert not placebo_supported(holed, run, 1, 60)
+    assert choose_placebo(holed, run, [(1, 60), (1, 70)]) == (1, 70)
 
 
 def test_the_nearest_supported_instant_wins_and_ties_go_to_the_earlier() -> None:
@@ -637,6 +662,46 @@ def test_the_nearest_supported_instant_wins_and_ties_go_to_the_earlier() -> None
     assert choose_placebo(tracking, run, [(1, 50), (1, 30)]) == (1, 30)  # both 10 away
     assert choose_placebo(tracking, run, [(1, 2), (1, 95)]) is None  # neither is supported
     assert choose_placebo(tracking, run, [(1, 8), (1, 60)]) == (1, 60)  # 8 is unsupported
+
+
+def test_with_contiguous_periods_a_placebo_hugging_the_period_start_is_refused() -> None:
+    """Period 2 starts the frame after period 1 ends, so the frames before its start exist.
+    The nearest candidate sits 2 frames into period 2: its t' - V frames are in period 1, and
+    `placebo_supported` must refuse it by the period bounds, not by the frames, so the farther
+    candidate inside period 2 is picked and the run forms its pair. Without the check on the
+    period's start the nearest wins, `_leg` then refuses it, and no pair forms (third review,
+    finding 3)."""
+    n, start2 = 300, 100
+    k = np.arange(n)
+    sign = np.where(k < start2, 1.0, -1.0)  # x_m = sign * x_att, per period
+    x = np.zeros((n, 5))
+    y = np.zeros((n, 5))
+    x[:, 0] = sign * (0.5 * (k - 105) - 15.0)  # the runner, along +x_att
+    x[:, 1], y[:, 1] = sign * (0.5 * (k - 105) - 16.0), 1.0  # the marker, 1 m behind
+    x[:, 2], y[:, 2] = sign * 30.0, 8.0  # the line
+    x[:, 3], y[:, 3] = sign * 28.0, -8.0
+    x[:, 4], y[:, 4] = sign * 50.0, 0.0  # the keeper
+    tracking = MatchTracking(
+        match_id=CI_FIXTURE_MATCH,
+        frame0=0,
+        x=x,
+        y=y,
+        detected=np.ones((n, 5), dtype=np.bool_),
+        entities=("fb:7", "fb:301", "fb:302", "fb:303", "fb:304"),
+        team=(TEAM, OTHER, OTHER, OTHER, OTHER),
+        is_goalkeeper=np.array([False, False, False, False, True]),
+        period_frames={1: (0, start2 - 1), 2: (start2, n - 1)},
+        attack_sign={(1, TEAM): 1, (2, TEAM): -1, (1, OTHER): -1, (2, OTHER): 1},
+    )
+    run = Run(CI_FIXTURE_MATCH, "r", 7, 100, 2, 105, 125, "support", "p")
+    hugging, inside = (2, start2 + 2), (2, 160)
+    assert tracking.frame_present(start2 + 2 - VELOCITY_FRAMES)  # the frames exist, in period 1
+    assert not placebo_supported(tracking, run, *hugging)
+    assert placebo_supported(tracking, run, *inside)
+    assert choose_placebo(tracking, run, [hugging, inside]) == inside
+    instants = {(CI_FIXTURE_MATCH, "r"): [hugging, inside]}
+    assert len(pair_effects(tracking, [run], instants)) == 1
+    assert count_match(tracking, [run], instants).analysis_set == 1
 
 
 def test_a_placebo_in_the_other_half_is_turned_by_the_sign_of_its_own_period() -> None:
@@ -689,6 +754,118 @@ def test_window_bounds_clip_to_the_period() -> None:
     assert window_bounds(tracking, inside) == (10, 60, False)
 
 
+# --- the analysis set is what the estimator forms -------------------------------------------
+
+SABOTAGE = (
+    "marker_before",
+    "marker_after",
+    "lone_outfield_before",
+    "lone_outfield_at",
+    "lone_outfield_after",
+)
+
+
+def _sabotaged_match(seed: int) -> tuple[MatchTracking, list[Run], Instants, dict[str, int]]:
+    """A random two-period match whose legs are sabotaged on purpose (the third review's
+    probe): the opponent nearest to the runner loses its position at t - V or at t + W, or a
+    single outfield opponent is left at one of the three frames of a leg; some runners stand
+    still; some candidates hug a period edge; the half-time gap is 0 or 10 frames. Returns
+    how often each kind of sabotage was applied."""
+    rng = np.random.default_rng(seed)
+    n, n_entities = 520, 9  # entities 0 to 2 the runner's team, 3 to 7 outfield, 8 the keeper
+    x = rng.uniform(-30, 30, n_entities) + np.cumsum(rng.normal(0, 0.15, (n, n_entities)), 0)
+    y = rng.uniform(-20, 20, n_entities) + np.cumsum(rng.normal(0, 0.15, (n, n_entities)), 0)
+    gap = int(rng.choice([0, 0, 10]))
+    cut = 260
+    x[cut : cut + gap] = np.nan
+    y[cut : cut + gap] = np.nan
+    bounds = {1: (0, cut - 1), 2: (cut + gap, n - 1)}
+    x[cut + gap :] *= -1  # the teams change ends
+    y[cut + gap :] *= -1
+    k = np.arange(n)
+    x[:, 0] += 0.35 * (k % 60) * np.where(k < cut + gap, 1.0, -1.0)  # the runner moves
+    runs: list[Run] = []
+    instants: Instants = {}
+    legs: list[tuple[int, int]] = []
+    for r in range(70):
+        period = int(rng.integers(1, 3))
+        a, b = bounds[period]
+        start = int(rng.integers(a, b - 30))
+        end = start + int(rng.integers(6, 25))
+        if rng.random() < 0.12:  # a runner who stands still has no direction
+            x[start : end + 1, 0] = x[start, 0]
+            y[start : end + 1, 0] = y[start, 0]
+        run = Run(CI_FIXTURE_MATCH, f"r{r}", 7, 100, period, start, end, "support", f"p{r}")
+        runs.append(run)
+        candidates: list[tuple[int, int]] = []
+        for _ in range(int(rng.integers(1, 5))):
+            q = int(rng.integers(1, 3))
+            qa, qb = bounds[q]
+            last = qb - EFFECT_FRAMES  # the last instant whose leg fits in the period
+            edges = [qa + 2, qa + VELOCITY_FRAMES, qa + 7, last, last - 1, qb - 3]
+            if rng.random() < 0.4:
+                candidates.append((q, int(rng.choice(edges))))
+            else:
+                candidates.append((q, int(rng.integers(qa, qb + 1))))
+        instants[(CI_FIXTURE_MATCH, run.event_id)] = sorted(candidates, key=lambda c: c[1])
+        legs += [(run.period, run.frame_start), *candidates]
+    applied = dict.fromkeys(SABOTAGE, 0)
+    for _, instant in legs:
+        before, after = instant - VELOCITY_FRAMES, instant + EFFECT_FRAMES
+        if rng.random() >= 0.10 or before < 0 or after >= n:
+            continue
+        kind = str(rng.choice(SABOTAGE))
+        applied[kind] += 1
+        if kind.startswith("marker"):
+            gaps = np.hypot(x[instant, 3:] - x[instant, 0], y[instant, 3:] - y[instant, 0])
+            marker = 3 + int(np.argmin(np.where(np.isfinite(gaps), gaps, np.inf)))
+            frame = before if kind == "marker_before" else after
+            x[frame, marker] = y[frame, marker] = np.nan
+        else:
+            frame = {"before": before, "at": instant, "after": after}[kind.rsplit("_", 1)[1]]
+            keep = int(rng.choice([3, 4]))
+            for e in range(3, n_entities - 1):
+                if e != keep:
+                    x[frame, e] = y[frame, e] = np.nan
+    detected = np.isfinite(x) & (rng.random((n, n_entities)) < 0.998)
+    tracking = MatchTracking(
+        match_id=CI_FIXTURE_MATCH,
+        frame0=0,
+        x=x,
+        y=y,
+        detected=detected,
+        entities=tuple(f"fb:{7 + i}" for i in range(n_entities)),
+        team=(TEAM,) * 3 + (OTHER,) * 6,
+        is_goalkeeper=np.array([False] * 8 + [True]),
+        period_frames=bounds,
+        attack_sign={(1, TEAM): 1, (2, TEAM): -1, (1, OTHER): -1, (2, OTHER): 1},
+    )
+    return tracking, runs, instants, applied
+
+
+def test_the_analysis_set_counts_exactly_the_pairs_the_estimator_forms() -> None:
+    """`count_match` must drop a run for every reason `pair_effects` does and for no other,
+    on matches whose legs are sabotaged on purpose (third review, finding 2). Each condition
+    of `count_match` (placebo leg, run leg, direction) and each rule of `_leg` (the marker's
+    position at t + W, two outfield opponents at each frame) makes a run count that forms no
+    pair when it is dropped, so each mutant fails here."""
+    applied = dict.fromkeys(SABOTAGE, 0)
+    pairs = clean = standing = 0
+    for seed in range(20):
+        tracking, runs, instants, kinds = _sabotaged_match(seed)
+        for kind, times in kinds.items():
+            applied[kind] += times
+        counts = count_match(tracking, runs, instants)
+        formed = pair_effects(tracking, runs, instants)
+        assert counts.analysis_set == len(formed), seed
+        pairs += len(formed)
+        clean += counts.clean
+        standing += sum(run_direction(tracking, run) is None for run in runs)
+    assert all(times > 0 for times in applied.values()), applied
+    assert standing > 0
+    assert 0 < pairs < clean  # the sabotage bites: clean runs that form no pair
+
+
 # --- the guard: values leave only through readable matches ---------------------------------
 
 
@@ -728,125 +905,176 @@ def test_pair_effects_refuses_a_held_out_match_and_opens_a_calibration_one(
         _synthetic(3, 1.0, 0.0, seed=1, match_id=1)
 
 
-# Every public function or class of the three modules that touch a match, by what it does
-# with a held-out id while the committed protocol is in design. A new public name must be
-# added here, and the test below exercises each of the first two groups.
+# Every public function or class of every module of `tracklab.runs`, by what it does with a
+# held-out id while the committed protocol is in design. A new public name must be added
+# here, and the test below calls each of the first two groups with the held-out match.
 REFUSES_A_HELD_OUT_MATCH = {
-    "MatchTracking",
-    "load_tracking",
-    "run_direction",
-    "quantities",
-    "pair_effects",
-    "require_readable",
-    "load_half",
-    "assert_held_out_open",
+    "windows.MatchTracking",
+    "windows.load_tracking",
+    "windows.run_direction",  # takes a MatchTracking, of which the held-out match has none
+    "windows.quantities",  # the same
+    "windows.pair_effects",  # the same
+    "data.require_readable",
+    "data.load_half",
+    "data.assert_held_out_open",
 }
 COUNTS_ONLY = {
-    "load_runs",
-    "window_bounds",
-    "placebo_supported",
-    "choose_placebo",
-    "count_match",
-    "counting_handle",
-    "CountingHandle",
-    "counting_match_ids",
-    "match_halves",
-    "committed_split",
-    "committed_protocol",
-    "head_stage",
-    "dirty_paths",
-    "repo_root",
-    "coverage_rows",
-    "run_runs_coverage",
+    "windows.load_runs",
+    "windows.window_bounds",
+    "windows.placebo_supported",
+    "windows.choose_placebo",
+    "windows.count_match",
+    "windows.count_tracking",
+    "data.counting_match_ids",
+    "data.match_halves",
+    "data.committed_split",
+    "coverage.coverage_rows",
+    "coverage.run_runs_coverage",
+    "placebo.placebo_counts",
+    "placebo.placebo_instants",
 }
-TAKES_NO_MATCH = {
-    "whole_frames",
-    "render",
-    "Run",
-    "PairEffect",
-    "MatchCounts",
-    "HeldOutLocked",
-    "CountingOnly",
+# No tracking in, none out: the protocol and git (`data`), arithmetic on what the caller
+# passes (`effect`), the split and the events (`protocol`, `placebo`), or no input at all.
+READS_NO_FRAMES = {
+    "windows.whole_frames",
+    "windows.Run",
+    "windows.PairEffect",
+    "windows.MatchCounts",
+    "data.HeldOutLocked",
+    "data.committed_protocol",
+    "data.head_stage",
+    "data.dirty_paths",
+    "data.repo_root",
+    "coverage.render",
+    "placebo.PlaceboCount",
+    "placebo.total",
+    "placebo.as_rows",
 }
 
 
-def _public_names(module: object) -> set[str]:
-    name = module.__name__  # type: ignore[attr-defined]
+def _public_names(module: ModuleType) -> set[str]:
+    short = module.__name__.rsplit(".", 1)[-1]
     return {
-        n
+        f"{short}.{n}"
         for n, v in vars(module).items()
         if not n.startswith("_")
         and (inspect.isfunction(v) or inspect.isclass(v))
-        and v.__module__ == name
+        and v.__module__ == module.__name__
     }
 
 
-# Taken at import, before any fixture monkeypatches `data.repo_root`.
-PUBLIC = _public_names(windows) | _public_names(data) | _public_names(coverage)
+# Taken at import, before any fixture monkeypatches `data.repo_root`: every module of the
+# package, so a new module's public names must be classified too.
+PUBLIC = set[str]().union(
+    *(
+        _public_names(importlib.import_module(f"tracklab.runs.{m.name}"))
+        for m in pkgutil.iter_modules([str(Path(windows.__file__).parent)])
+    )
+)
+READS_NO_FRAMES |= _public_names(effect) | _public_names(protocol)
 
 
-def test_every_public_function_refuses_a_held_out_match_or_returns_counts_only(
+def _values_inside(obj: object, path: str = "value") -> list[str]:
+    """Where `obj` holds an array or a float, recursively through dataclasses, mappings and
+    sequences: what a counting function returns must hold none. The two detection fractions
+    of a `MatchCounts` are the exception, and they must be fractions."""
+    if isinstance(obj, np.ndarray | np.floating | float):
+        return [path]
+    if isinstance(obj, MatchCounts):
+        return [
+            f"{path}.{f.name}"
+            for f in fields(obj)
+            if not (
+                isinstance(getattr(obj, f.name), int)
+                or (f.name == "by_subtype" and all(isinstance(n, int) for n in obj.by_subtype))
+                or (f.name.startswith("opp_detected_") and 0.0 <= getattr(obj, f.name) <= 1.0)
+            )
+        ]
+    if is_dataclass(obj) and not isinstance(obj, type):
+        return [
+            found
+            for f in fields(obj)
+            for found in _values_inside(getattr(obj, f.name), f"{path}.{f.name}")
+        ]
+    if isinstance(obj, Mapping):
+        return [
+            found for key, item in obj.items() for found in _values_inside(item, f"{path}[{key!r}]")
+        ]
+    if isinstance(obj, list | tuple | set | frozenset):
+        return [
+            found for i, item in enumerate(obj) for found in _values_inside(item, f"{path}[{i}]")
+        ]
+    return []
+
+
+def test_the_walk_sees_an_array_or_a_float_wherever_it_hides() -> None:
+    held, runs, instants = _synthetic_raw(2, 1.0, 0.0, seed=3, match_id=HELD_OUT_MATCH)
+    assert _values_inside(held) == ["value.x", "value.y", "value.detected", "value.is_goalkeeper"]
+    assert _values_inside({"a": [(1, np.float64(2.0))]}) == ["value['a'][0][1]"]
+    assert _values_inside([runs[0], 1.5]) == ["value[1]"]
+    assert _values_inside(windows.PairEffect(1, "r", None, "s", 0.0, 0.0)) == [
+        "value.marker_m",
+        "value.line_m",
+    ]
+    counts = count_match(held, runs, instants)
+    assert _values_inside(counts) == []
+    assert _values_inside(replace(counts, opp_detected_p50=7.0)) == ["value.opp_detected_p50"]
+    assert _values_inside((runs, instants, {"ids": [1, 2]}, "text", None, True)) == []
+
+
+def test_every_public_name_of_runs_refuses_a_held_out_match_or_returns_counts_only(
     design_repo: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     """Behavioural, not lexical: with the committed protocol in design, every public name of
-    `windows`, `data` and `coverage` is classified, and each one is called with the held-out
-    match. The ones that return values refuse it; the ones that count work on a tracking
-    loaded with the counting handle and give back booleans, integers, ids or rows of
-    counts; a tracking built by hand with the held-out id is refused as it is built, and
-    `load_tracking` refuses before it reads a byte."""
-    assert PUBLIC == REFUSES_A_HELD_OUT_MATCH | COUNTS_ONLY | TAKES_NO_MATCH
-    held, runs, instants = _synthetic(
-        3, 1.0, 0.0, seed=2, match_id=HELD_OUT_MATCH, counting_only=True
-    )
+    every module of `tracklab.runs` is classified, and each one of the first two groups is
+    called with the held-out match. No tracking of it can be built, loaded or relabelled,
+    and the three functions that return values of a tracking take only what those three
+    doors build; what the counting names return is walked, and it holds no array and no
+    float but the detection fractions. The frames are read in one private function with
+    those two callers, `load_tracking` and `count_tracking`."""
+    assert PUBLIC == REFUSES_A_HELD_OUT_MATCH | COUNTS_ONLY | READS_NO_FRAMES
+    assert not (REFUSES_A_HELD_OUT_MATCH & COUNTS_ONLY)
+    assert not ((REFUSES_A_HELD_OUT_MATCH | COUNTS_ONLY) & READS_NO_FRAMES)
+    held, runs, instants = _synthetic_raw(3, 1.0, 0.0, seed=2, match_id=HELD_OUT_MATCH)
     root = tmp_path / "data"
     _write_warehouse(root, held, runs)
     run = runs[0]
-    d = np.array([1.0, 0.0])
+    cal, cal_runs, cal_instants = _synthetic(3, 1.0, 0.0, seed=2, match_id=CI_FIXTURE_MATCH)
+    cal_root = tmp_path / "calibration"  # its own root: a warehouse holds one dim_period
+    _write_warehouse(cal_root, cal, cal_runs)
 
-    # refusals
+    # refusals: no MatchTracking of the held-out match comes into being
     with pytest.raises(HeldOutLocked):
-        MatchTracking(
-            **{
-                **{f.name: getattr(held, f.name) for f in fields(MatchTracking)},
-                "counting_only": False,
-            }
-        )
+        _guarded(held)  # built by hand from the arrays
     with pytest.raises(HeldOutLocked):
         load_tracking(tmp_path / "nowhere", HELD_OUT_MATCH)  # refused before any read
     with pytest.raises(HeldOutLocked):
         load_tracking(root, HELD_OUT_MATCH)
+    with pytest.raises(HeldOutLocked):
+        replace(cal, match_id=HELD_OUT_MATCH)  # a calibration one relabelled
     with pytest.raises(HeldOutLocked):
         require_readable(HELD_OUT_MATCH)
     with pytest.raises(HeldOutLocked):
         load_half("held_out")
     with pytest.raises(HeldOutLocked):
         data.assert_held_out_open()
-    counting = load_tracking(root, HELD_OUT_MATCH, counting=counting_handle(HELD_OUT_MATCH))
-    assert counting.counting_only
-    with pytest.raises(CountingOnly):
-        run_direction(counting, run)
-    with pytest.raises(CountingOnly):
-        quantities(counting, run, run.period, run.frame_start, d)
-    with pytest.raises(CountingOnly):
-        pair_effects(counting, runs, instants)
-    with pytest.raises(CountingOnly):
-        run_direction(held, run)  # the hand-built counting-only one, the same
-    with pytest.raises(ValueError, match="cannot load"):
-        load_tracking(root, HELD_OUT_MATCH, counting=counting_handle(CI_FIXTURE_MATCH))
+    for name in ("run_direction", "quantities", "pair_effects"):
+        parameter = next(iter(inspect.signature(getattr(windows, name)).parameters.values()))
+        assert parameter.annotation == "MatchTracking", name
+    assert {f.name for f in fields(MatchTracking)} == {f.name for f in fields(held)}
+    pairs = pair_effects(load_tracking(cal_root, CI_FIXTURE_MATCH), cal_runs, cal_instants)
+    assert len(pairs) == 3
 
-    # counts only, on the held-out match
-    assert counting_handle(HELD_OUT_MATCH) == CountingHandle(HELD_OUT_MATCH)
-    with pytest.raises(ValueError, match="neither half"):
-        counting_handle(1)
-    assert HELD_OUT_MATCH in counting_match_ids()
-    assert match_halves()[HELD_OUT_MATCH] == "held_out"
-    assert HELD_OUT_MATCH in data.committed_split()[1]
-    assert data.head_stage() == STAGE_DESIGN
-    assert data.committed_protocol()["stage"] == STAGE_DESIGN
-    assert data.dirty_paths(design_repo) == []
-    assert data.repo_root() == design_repo
-    loaded_runs = load_runs(root, HELD_OUT_MATCH)
-    assert loaded_runs == runs
+    # counts only: each name called with the held-out match, what comes back walked
+    exercised: set[str] = set()
+
+    def counted(name: str, value: object) -> object:
+        assert name in COUNTS_ONLY, name
+        assert _values_inside(value) == [], name
+        exercised.add(name)
+        return value
+
+    assert counted("windows.load_runs", load_runs(root, HELD_OUT_MATCH)) == runs
     assert {f.name for f in fields(Run)} == {
         "match_id",
         "event_id",
@@ -858,36 +1086,56 @@ def test_every_public_function_refuses_a_held_out_match_or_returns_counts_only(
         "subtype",
         "possession_id",
     }  # the provider's keys and labels, no tracking
-    lo, hi, clipped = window_bounds(counting, run)
+    lo, hi, clipped = window_bounds(held, run)
+    counted("windows.window_bounds", (lo, hi, clipped))
     assert isinstance(lo, int) and isinstance(hi, int) and isinstance(clipped, bool)
-    assert placebo_supported(counting, run, *_placebo_instant(run, instants)) is True
-    assert choose_placebo(counting, run, instants[(HELD_OUT_MATCH, run.event_id)]) == (
-        _placebo_instant(run, instants)
-    )
-    counts = count_match(counting, runs, instants)
+    t_placebo = _placebo_instant(run, instants)
+    assert counted("windows.placebo_supported", placebo_supported(held, run, *t_placebo)) is True
+    candidates = instants[(HELD_OUT_MATCH, run.event_id)]
+    assert counted("windows.choose_placebo", choose_placebo(held, run, candidates)) == t_placebo
+    counts = counted("windows.count_match", count_match(held, runs, instants))
     assert isinstance(counts, MatchCounts)
     assert counts.runs == counts.clean == counts.placebo_found == counts.analysis_set == 3
-    for f in fields(MatchCounts):
-        value = getattr(counts, f.name)
-        assert isinstance(value, int | float | tuple), f.name
-    (row,) = coverage_rows(root, [HELD_OUT_MATCH])
+    from_disk = counted(
+        "windows.count_tracking", count_tracking(root, HELD_OUT_MATCH, runs, instants)
+    )
+    assert from_disk == counts
+    assert HELD_OUT_MATCH in counted("data.counting_match_ids", counting_match_ids())
+    assert counted("data.match_halves", match_halves())[HELD_OUT_MATCH] == "held_out"
+    assert HELD_OUT_MATCH in counted("data.committed_split", data.committed_split())[1]
+    (row,) = counted("coverage.coverage_rows", coverage_rows(root, [HELD_OUT_MATCH]))
     assert len(row) == len(HEADER) and row[HEADER.index("half")] == "held_out"
     _assert_count_row(dict(zip(HEADER, row, strict=True)))
     reports = tmp_path / "reports"
-    assert run_runs_coverage(root, reports) == 1  # one match of 20: writes nothing
-    assert not (reports / COVERAGE_NAME).exists()
+    assert counted("coverage.run_runs_coverage", run_runs_coverage(root, reports)) == 1
+    assert not (reports / COVERAGE_NAME).exists()  # one match of 20: writes nothing
     assert "1 of the 20 matches" in capsys.readouterr().out
-
-    # and the handle is counting-only on a calibration match as well
-    cal, cal_runs, cal_instants = _synthetic(3, 1.0, 0.0, seed=2, match_id=CI_FIXTURE_MATCH)
-    _write_warehouse(root, cal, cal_runs)
-    assert len(pair_effects(load_tracking(root, CI_FIXTURE_MATCH), cal_runs, cal_instants)) == 3
-    with pytest.raises(CountingOnly):
-        pair_effects(
-            load_tracking(root, CI_FIXTURE_MATCH, counting=counting_handle(CI_FIXTURE_MATCH)),
-            cal_runs,
-            cal_instants,
+    (placebos,) = counted("placebo.placebo_counts", placebo.placebo_counts(root, [HELD_OUT_MATCH]))
+    assert placebos.match_id == HELD_OUT_MATCH and placebos.runs == 3
+    assert (
+        counted(
+            "placebo.placebo_instants",
+            placebo.placebo_instants(root, [HELD_OUT_MATCH], PLACEBO_RULE),
         )
+        == {}
+    )
+    assert exercised == COUNTS_ONLY
+
+    # the rest reads no frames: the protocol and git, here; arithmetic and events elsewhere
+    assert data.head_stage() == STAGE_DESIGN
+    assert data.committed_protocol()["stage"] == STAGE_DESIGN
+    assert data.dirty_paths(design_repo) == []
+    assert data.repo_root() == design_repo
+    src = PIPELINE / "src" / "tracklab" / "runs"
+    for path in sorted(src.glob("*.py")):
+        text = path.read_text(encoding="utf-8")
+        if path.name == "windows.py":
+            assert text.count("_read_tracking(") == 3  # the definition and its two callers
+            assert text.count('"sport=football"') == 1
+        else:
+            assert "_read_tracking" not in text, path.name
+            # coverage.py tests whether the folder exists and reads nothing from it
+            assert ('"sport=football"' in text) == (path.name == "coverage.py"), path.name
 
 
 # --- the coverage file: pinned header, every column a count ---------------------------------
