@@ -69,8 +69,9 @@ CI_FIXTURE_MATCH = 1874553
 HELD_OUT_MATCH = 1899585
 
 # Decision 3, split A, as Javier confirmed it on 2026-10-09, and the fingerprint of the design
-# regenerated in the review of tasks 47-48. A change of either is a change of the
-# preregistration and must show as a diff of this file, never only of the JSON.
+# regenerated in the second review of tasks 47-48 (the frame of a placebo is turned by the
+# sign of its own period). A change of either is a change of the preregistration and must
+# show as a diff of this file, never only of the JSON.
 CALIBRATION = [
     1874553,
     1886347,
@@ -257,6 +258,15 @@ def test_check_passes_on_an_untouched_copy(reports_copy: Path) -> None:
     assert run_runs_protocol(data_root(), reports_copy, check=True) == 0
 
 
+# The fixture silver is not versioned: the `ci` workflow builds it with `tracklab build`
+# before the tests, `full-build` and a clean clone with the real data root do not have it.
+needs_the_fixture_silver = pytest.mark.skipif(
+    not (FIXTURES / "silver" / "dim_match").is_dir(),
+    reason="the fixture silver is not built (only `tracklab build` on the fixtures writes it)",
+)
+
+
+@needs_the_fixture_silver
 def test_check_says_how_much_of_the_warehouse_backed_it(
     reports_copy: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -353,6 +363,7 @@ def _rename_the_fixture_match(rows: list[MatchRow]) -> list[MatchRow]:
     ]
 
 
+@needs_the_fixture_silver
 @pytest.mark.parametrize(
     "doctor", [_move_the_fixture_kickoff, _flip_the_fixture_flag, _rename_the_fixture_match]
 )

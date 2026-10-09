@@ -6,19 +6,23 @@ tracking from silver `frames` (venue frame, turned to the attack frame with
 instants from `placebo.py`. Windows, rule and instrument are the protocol's: the lengths are
 `protocol.py`'s constants, the definitions are `effect.py`'s.
 
-Two doors, kept apart on purpose:
+Two doors, kept apart on purpose (hardened in the second review of 47-48):
 
-* `count_match` returns a `MatchCounts`: integers and detection fractions, nothing else. It is
-  what `tracklab runs coverage` writes for the 20 matches, held-out included, because counting
-  runs and frames is not an outcome. It has no way to hand back a position or an effect.
-* `pair_effects` returns the displacement and line-height effects per run, and refuses a
-  held-out match until `data.require_readable` lets it through. On real data nothing prints
-  or stores what it returns; only synthetic matches run it end to end (task 48).
+* a tracking comes into being in one place, `MatchTracking`, and passes `data.require_readable`
+  there, hand-built or loaded: `load_tracking` runs the guard before it reads a byte. The one
+  exception is a tracking loaded with `data.counting_handle`, which `count_match` alone can use:
+  it returns a `MatchCounts` of integers and detection fractions, computed from booleans, for
+  the 20 matches, held-out included, because counting runs and frames is not an outcome.
+* `run_direction`, `quantities` and `pair_effects` return values of the tracking and refuse a
+  counting-only one. On real data nothing prints or stores what they return; only synthetic
+  matches run them end to end (task 48).
 
 A placebo instant is admissible when `placebo.py` says so (no run of the team within 3 s) and
 the tracking can support it: the runner is detected at t', and every frame from t' - V to
-t' + W exists in the runner's period. The nearest admissible instant to t_c wins, ties to the
-earlier one (protocol, `placebo.choice`).
+t' + W exists in the candidate's period. The nearest admissible instant to t_c wins, ties to
+the earlier one (protocol, `placebo.choice`). A placebo may fall in the other half of the
+match, where the team attacks the other way: each leg of a pair is turned to the attack frame
+by the sign of its own period, the run's at t_c and the placebo's at t'.
 """
 
 from __future__ import annotations
@@ -33,7 +37,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from tracklab.runs import effect, placebo
-from tracklab.runs.data import require_readable
+from tracklab.runs.data import CountingHandle, CountingOnly, require_readable
 from tracklab.runs.protocol import (
     COVERAGE_AFTER_END_S,
     COVERAGE_BEFORE_START_S,
@@ -57,13 +61,25 @@ SUBTYPES = (
     "underlap",
 )
 
-EFFECT_FRAMES = round(EFFECT_WINDOW_S * SAMPLE_RATE_HZ)
-VELOCITY_FRAMES = round(VELOCITY_WINDOW_S * SAMPLE_RATE_HZ)
-BEFORE_FRAMES = round(COVERAGE_BEFORE_START_S * SAMPLE_RATE_HZ)
-AFTER_FRAMES = round(COVERAGE_AFTER_END_S * SAMPLE_RATE_HZ)
+
+def whole_frames(seconds: float) -> int:
+    """`seconds` as a count of frames, which must be whole: the formulas divide by the seconds
+    a window names, so a window rounded to the nearest frame would be measured over another
+    span than the one it divides by."""
+    n = seconds * SAMPLE_RATE_HZ
+    if n != int(n):
+        raise ValueError(f"{seconds} s is not a whole number of frames at {SAMPLE_RATE_HZ} Hz")
+    return int(n)
+
+
+EFFECT_FRAMES = whole_frames(EFFECT_WINDOW_S)
+VELOCITY_FRAMES = whole_frames(VELOCITY_WINDOW_S)
+BEFORE_FRAMES = whole_frames(COVERAGE_BEFORE_START_S)
+AFTER_FRAMES = whole_frames(COVERAGE_AFTER_END_S)
 PLACEBO_RULE: placebo.Rule = "team_overlap" if PLACEBO_EXCLUDES_TEAMMATES_RUNS else "runner_overlap"
 
 Bools = NDArray[np.bool_]
+Leg = tuple[int, int]  # (period, instant): the run's at t_c, the placebo's at t'
 
 
 @dataclass(frozen=True)
@@ -93,7 +109,12 @@ class Run:
 class MatchTracking:
     """The players of one match, frame by frame. `x`, `y` hold the venue frame in metres,
     NaN where the entity has no row in that frame; `detected` is the provider's flag.
-    Row `i` is frame `frame0 + i`."""
+    Row `i` is frame `frame0 + i`.
+
+    Built, it passes `data.require_readable` for its match, whoever builds it: a held-out
+    match is refused until the committed protocol is frozen in a clean tree. The one way past
+    that is `counting_only`, which `load_tracking` sets from a `data.CountingHandle`: then
+    `count_match` is all it can feed, and the value functions refuse it."""
 
     match_id: int
     frame0: int
@@ -105,6 +126,11 @@ class MatchTracking:
     is_goalkeeper: Bools
     period_frames: Mapping[int, tuple[int, int]]
     attack_sign: Mapping[tuple[int, str], int]
+    counting_only: bool = False
+
+    def __post_init__(self) -> None:
+        if not self.counting_only:
+            require_readable(self.match_id)
 
     @property
     def n_frames(self) -> int:
@@ -169,8 +195,16 @@ def load_runs(data_dir: Path, match_id: int) -> list[Run]:
     ]
 
 
-def load_tracking(data_dir: Path, match_id: int) -> MatchTracking:
-    """The players of `match_id` from silver. A match with no football frames raises."""
+def load_tracking(
+    data_dir: Path, match_id: int, *, counting: CountingHandle | None = None
+) -> MatchTracking:
+    """The players of `match_id` from silver. Without a handle the guard runs before a byte
+    is read; with one (`data.counting_handle`) the tracking is loaded for `count_match` alone.
+    A match with no football frames raises."""
+    if counting is None:
+        require_readable(match_id)
+    elif counting.match_id != match_id:
+        raise ValueError(f"a counting handle for match {counting.match_id} cannot load {match_id}")
     silver = data_dir / "silver"
     frames_glob = (
         silver / "frames" / "sport=football" / f"native_match_id={match_id}" / "*.parquet"
@@ -230,7 +264,15 @@ def load_tracking(data_dir: Path, match_id: int) -> MatchTracking:
         is_goalkeeper=np.array([str(n) in keeper_ids for n in names], dtype=np.bool_),
         period_frames={int(p): (int(a), int(b)) for p, a, b in periods},
         attack_sign={(int(p), str(t)): int(s) for p, t, s in signs},
+        counting_only=counting is not None,
     )
+
+
+def _refuse_counting_only(t: MatchTracking) -> None:
+    if t.counting_only:
+        raise CountingOnly(
+            f"match {t.match_id} was loaded for counting only: no value of its tracking leaves"
+        )
 
 
 # --- geometry in the attack frame -------------------------------------------------------------
@@ -272,9 +314,7 @@ def _runner_detected(t: MatchTracking, runner: int | None, lo: int, hi: int) -> 
     return all(i is not None and bool(t.detected[i, runner]) for i in rows)
 
 
-def run_direction(t: MatchTracking, run: Run) -> NDArray[np.float64] | None:
-    """The run's direction in the attack frame; None when the runner is not at both ends or
-    the run is shorter than the protocol's minimum."""
+def _direction(t: MatchTracking, run: Run) -> NDArray[np.float64] | None:
     runner = t.entity_index(run.runner)
     sign = t.attack_sign.get((run.period, run.team))
     if runner is None or sign is None:
@@ -287,36 +327,83 @@ def run_direction(t: MatchTracking, run: Run) -> NDArray[np.float64] | None:
     )
 
 
-def quantities(
-    t: MatchTracking,
-    run: Run,
-    anchor: int,
-    direction: NDArray[np.float64],
-) -> tuple[float, float] | None:
-    """Marker displacement and line-height residual around `anchor` (t_c for the run, t' for
-    its placebo), in metres. The marker is the opponent nearest to the runner at the anchor.
-    None when any input of the formulas is missing."""
+def run_direction(t: MatchTracking, run: Run) -> NDArray[np.float64] | None:
+    """The run's direction in the attack frame of its period; None when the runner is not at
+    both ends or the run is shorter than the protocol's minimum. A value: refuses a
+    counting-only tracking."""
+    _refuse_counting_only(t)
+    return _direction(t, run)
+
+
+@dataclass(frozen=True)
+class _LegInputs:
+    """What the formulas of one leg read, as indices: the attack sign of the leg's period, the
+    rows of t - V, t and t + W, the opponents and the marker among them. No position."""
+
+    sign: int
+    rows: tuple[int, int, int]
+    opponents: NDArray[np.intp]
+    marker: int
+
+
+def _leg(t: MatchTracking, run: Run, period: int, instant: int) -> _LegInputs | None:
+    """The inputs of one leg, the run's (its period, t_c) or the placebo's (the candidate's
+    period, t'), or None when any is missing: the runner and the attack sign of that period,
+    the three frames inside it, a marker (nearest opponent at the instant) with a position at
+    the three frames, and two outfield opponents with a position at each of them. Booleans and
+    indices only, so `count_match` can ask it about a held-out match."""
     runner = t.entity_index(run.runner)
-    sign = t.attack_sign.get((run.period, run.team))
-    if runner is None or sign is None:
+    sign = t.attack_sign.get((period, run.team))
+    bounds = t.period_frames.get(period)
+    if runner is None or sign is None or bounds is None:
         return None
-    before, after = anchor - VELOCITY_FRAMES, anchor + EFFECT_FRAMES
-    if any(t.row(f) is None for f in (before, anchor, after)):
+    before, after = instant - VELOCITY_FRAMES, instant + EFFECT_FRAMES
+    if before < bounds[0] or after > bounds[1]:
         return None
+    rows = tuple(t.row(f) for f in (before, instant, after))
+    if any(r is None for r in rows):
+        return None
+    i_before, i_at, i_after = (int(r) for r in rows if r is not None)
     opponents = _opponents(t, run.team)
-    runner_xy = _xy(t, anchor, runner, sign)
-    marker = effect.nearest_opponent(runner_xy, _opponents_xy(t, anchor, opponents, sign))
+    marker = effect.nearest_opponent(
+        _xy(t, instant, runner, sign), _opponents_xy(t, instant, opponents, sign)
+    )
     if marker is None:
         return None
     m = int(opponents[marker])
-    p_before, p_at, p_after = (_xy(t, f, m, sign) for f in (before, anchor, after))
+    if not all(np.isfinite(t.x[i, m]) and np.isfinite(t.y[i, m]) for i in (i_before, i_after)):
+        return None
+    outfield = opponents[~t.is_goalkeeper[opponents]]
+    if any(np.isfinite(t.x[i, outfield]).sum() < 2 for i in (i_before, i_at, i_after)):
+        return None
+    return _LegInputs(sign, (i_before, i_at, i_after), opponents, m)
+
+
+def quantities(
+    t: MatchTracking,
+    run: Run,
+    period: int,
+    instant: int,
+    direction: NDArray[np.float64],
+) -> tuple[float, float] | None:
+    """Marker displacement and line-height residual of one leg, in metres: the run's at
+    (run.period, t_c) or its placebo's at (candidate's period, t'), each turned to the attack
+    frame by the sign of its own period. The marker is the opponent nearest to the runner at
+    the instant. None when any input of the formulas is missing (`_leg`). A value: refuses a
+    counting-only tracking."""
+    _refuse_counting_only(t)
+    leg = _leg(t, run, period, instant)
+    if leg is None:
+        return None
+    sign, (i_before, i_at, i_after), opponents, m = leg.sign, leg.rows, leg.opponents, leg.marker
+    p_before, p_at, p_after = (_xy(t, t.frame0 + i, m, sign) for i in (i_before, i_at, i_after))
     residual = effect.residual_displacement(
         p_before, p_at, p_after, window_s=EFFECT_WINDOW_S, velocity_s=VELOCITY_WINDOW_S
     )
-    heights = []
-    for f in (before, anchor, after):
-        i = f - t.frame0
-        heights.append(effect.line_height(sign * t.x[i, opponents], t.is_goalkeeper[opponents]))
+    heights = [
+        effect.line_height(sign * t.x[i, opponents], t.is_goalkeeper[opponents])
+        for i in (i_before, i_at, i_after)
+    ]
     line = effect.residual_scalar(*heights, window_s=EFFECT_WINDOW_S, velocity_s=VELOCITY_WINDOW_S)
     marker_m = effect.project(residual, direction)
     if not (math.isfinite(marker_m) and math.isfinite(line)):
@@ -341,14 +428,17 @@ def placebo_supported(t: MatchTracking, run: Run, period: int, instant: int) -> 
     return i is not None and bool(t.detected[i, runner]) and _frames_present(t, lo, hi)
 
 
-def choose_placebo(t: MatchTracking, run: Run, candidates: Sequence[tuple[int, int]]) -> int | None:
-    """The supported instant nearest to t_c; ties go to the earlier one."""
+def choose_placebo(t: MatchTracking, run: Run, candidates: Sequence[Leg]) -> Leg | None:
+    """The supported (period, instant) nearest to t_c; ties go to the earlier one. The period
+    travels with the instant: the placebo's leg is turned by the sign of its own period."""
     supported = [
-        instant for period, instant in candidates if placebo_supported(t, run, period, instant)
+        (period, instant)
+        for period, instant in candidates
+        if placebo_supported(t, run, period, instant)
     ]
     if not supported:
         return None
-    return min(supported, key=lambda s: (abs(s - run.frame_start), s))
+    return min(supported, key=lambda leg: (abs(leg[1] - run.frame_start), leg[1]))
 
 
 # --- counts: the door that returns no tracking value ----------------------------------------
@@ -379,10 +469,12 @@ COUNT_FIELDS = tuple(f.name for f in fields(MatchCounts) if f.name != "by_subtyp
 def count_match(
     t: MatchTracking,
     runs: Sequence[Run],
-    instants: Mapping[tuple[int, str], Sequence[tuple[int, int]]],
+    instants: Mapping[tuple[int, str], Sequence[Leg]],
 ) -> MatchCounts:
-    """Everything `runs_coverage.csv` holds for one match. Nothing in the result is a position
-    or an effect; the analysis set is a count of the pairs the estimator can form."""
+    """Everything `runs_coverage.csv` holds for one match, from booleans and integers: no
+    value function is called, so it runs on a counting-only tracking of either half. The
+    analysis set counts the pairs the estimator can form, with the same tests `pair_effects`
+    applies (`_leg` on both legs, a direction of the minimum length)."""
     by_subtype = {s: 0 for s in SUBTYPES}
     complete = clipped_n = absent = detected_n = clean = found = analysis = 0
     fractions: list[float] = []
@@ -405,12 +497,11 @@ def count_match(
             fractions.append(float(t.detected[window][:, opponents][present].mean()))
         pick = choose_placebo(t, run, instants.get((t.match_id, run.event_id), ()))
         found += pick is not None
-        if is_clean and pick is not None:
-            direction = run_direction(t, run)
-            if direction is not None:
-                own = quantities(t, run, run.frame_start, direction)
-                other = quantities(t, run, pick, direction)
-                analysis += own is not None and other is not None
+        if is_clean and pick is not None and _direction(t, run) is not None:
+            analysis += (
+                _leg(t, run, run.period, run.frame_start) is not None
+                and _leg(t, run, *pick) is not None
+            )
     p50, p10 = (
         (float(np.quantile(fractions, q)) for q in (0.5, 0.1)) if fractions else (math.nan,) * 2
     )
@@ -436,13 +527,15 @@ def count_match(
 def pair_effects(
     t: MatchTracking,
     runs: Sequence[Run],
-    instants: Mapping[tuple[int, str], Sequence[tuple[int, int]]],
+    instants: Mapping[tuple[int, str], Sequence[Leg]],
 ) -> list[PairEffect]:
     """One `PairEffect` per clean run with a direction and a supported placebo: the quantities
-    at t_c minus the same quantities at t', both along the run's direction. Refuses a held-out
-    match until the protocol committed in HEAD is frozen in a clean tree (`data`, which takes
-    no path: the committed protocol is the only one asked). Never call it on real data to
-    print."""
+    of the run's leg at t_c minus those of the placebo's leg at t', each in the attack frame of
+    its own period, both along the run's direction. Refuses a counting-only tracking, and a
+    held-out match until the protocol committed in HEAD is frozen in a clean tree (`data`,
+    which takes no path: the committed protocol is the only one asked). Never call it on real
+    data to print."""
+    _refuse_counting_only(t)
     require_readable(t.match_id)
     out: list[PairEffect] = []
     for run in runs:
@@ -457,8 +550,8 @@ def pair_effects(
         pick = choose_placebo(t, run, instants.get((t.match_id, run.event_id), ()))
         if direction is None or pick is None:
             continue
-        own = quantities(t, run, run.frame_start, direction)
-        other = quantities(t, run, pick, direction)
+        own = quantities(t, run, run.period, run.frame_start, direction)
+        other = quantities(t, run, *pick, direction)
         if own is None or other is None:
             continue
         out.append(
