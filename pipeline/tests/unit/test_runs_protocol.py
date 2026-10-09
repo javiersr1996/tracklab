@@ -102,13 +102,24 @@ def _write(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(render(payload), encoding="utf-8", newline="\n")
 
 
+def _as_design(payload: dict[str, Any]) -> dict[str, Any]:
+    """The committed protocol as task 47 wrote it, whatever stage it is in now: the tests
+    below start from the design file so that task 50's freeze cannot flip them."""
+    return seal({**payload, "stage": STAGE_DESIGN, "history": payload["history"][:1]})
+
+
+def _design() -> dict[str, Any]:
+    return _as_design(read_protocol(PROTOCOL))
+
+
 def _freeze(payload: dict[str, Any], note: str | None = None) -> dict[str, Any]:
     """A freeze as task 50 will commit it: stage, a history entry and the seal recomputed.
     What else task 50 adds (its candidates, a sha of the code tree) is its spec's."""
     entry: dict[str, Any] = {"stage": STAGE_FROZEN, "task": 50, "date": "2026-10-09"}
     if note is not None:
         entry["note"] = note
-    return seal({**payload, "stage": STAGE_FROZEN, "history": [*payload["history"], entry]})
+    design = _as_design(payload)
+    return seal({**design, "stage": STAGE_FROZEN, "history": [*design["history"], entry]})
 
 
 # --- the split -------------------------------------------------------------------------
@@ -216,7 +227,8 @@ def test_fingerprint_follows_the_design_and_nothing_else() -> None:
     assert fingerprint(moved) != payload["fingerprint"]
     assert sealed(payload)
     assert seal({k: v for k, v in payload.items() if k != "content_sha256"}) == payload
-    assert not sealed({**payload, "stage": STAGE_FROZEN})
+    assert not sealed({**payload, "written": "1999-01-01"})
+    assert _as_design(_design()) == _design()
 
 
 def test_protocol_names_no_local_machine(assert_no_local_traces: Callable[[object], None]) -> None:
@@ -377,7 +389,7 @@ def test_check_verifies_a_frozen_file_and_sees_a_threshold_moved_after_the_freez
     _write(path, seal(moved))
     assert run_runs_protocol(data_root(), reports_copy, check=True) == 1
     assert "design differs" in capsys.readouterr().out
-    _write(path, {**payload, "stage": STAGE_FROZEN})
+    _write(path, {**_as_design(payload), "stage": STAGE_FROZEN})  # the design seal, flipped
     assert run_runs_protocol(data_root(), reports_copy, check=True) == 1
     out = capsys.readouterr().out
     assert "content_sha256" in out and "no frozen entry" in out
@@ -579,7 +591,7 @@ def _commit(repo: Path, payload: dict[str, Any], message: str) -> Path:
 
 
 def test_held_out_is_closed_while_the_committed_protocol_is_in_design(repo: Path) -> None:
-    _commit(repo, read_protocol(PROTOCOL), "protocol in stage design")
+    _commit(repo, _design(), "protocol in stage design")
     with pytest.raises(HeldOutLocked, match="'design'"):
         load_half("held_out")
 
@@ -623,7 +635,7 @@ def test_held_out_opens_only_frozen_in_a_clean_tree(repo: Path) -> None:
 def test_held_out_is_closed_when_frozen_was_flipped_by_hand(repo: Path) -> None:
     """A committed `frozen` with the seal of the design file: the stage string alone opens
     nothing."""
-    _commit(repo, {**read_protocol(PROTOCOL), "stage": STAGE_FROZEN}, "flipped by hand")
+    _commit(repo, {**_design(), "stage": STAGE_FROZEN}, "flipped by hand")
     with pytest.raises(HeldOutLocked, match="content_sha256"):
         load_half("held_out")
 
@@ -646,7 +658,7 @@ def test_held_out_is_closed_when_the_committed_lists_disagree_with_the_rows(repo
 def test_the_working_copy_cannot_move_a_match_into_calibration(repo: Path) -> None:
     """What the guard reads is HEAD: the file on disk, with a held-out id added to the
     calibration list, changes nothing."""
-    path = _commit(repo, read_protocol(PROTOCOL), "protocol in stage design")
+    path = _commit(repo, _design(), "protocol in stage design")
     doctored = read_protocol(path)
     doctored["design"]["split"]["calibration"].append(HELD_OUT_MATCH)
     _write(path, doctored)

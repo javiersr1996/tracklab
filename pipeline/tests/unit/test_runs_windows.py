@@ -34,8 +34,11 @@ from tracklab.runs.protocol import (
     MIN_RUN_LENGTH_M,
     PLACEBO_EXCLUDES_TEAMMATES_RUNS,
     SAMPLE_RATE_HZ,
+    STAGE_DESIGN,
     VELOCITY_WINDOW_S,
     read_protocol,
+    render,
+    seal,
 )
 from tracklab.runs.windows import (
     EFFECT_FRAMES,
@@ -386,7 +389,9 @@ def test_pair_effects_refuses_a_held_out_match_and_opens_a_calibration_one(
         subprocess.run(["git", "-C", str(tmp_path), *args], check=True, capture_output=True)
     protocol = tmp_path / data.PROTOCOL_IN_REPO
     protocol.parent.mkdir(parents=True)
-    shutil.copy(PROTOCOL, protocol)
+    committed = read_protocol(PROTOCOL)  # as task 47 wrote it, whatever stage it is in now
+    design = seal({**committed, "stage": STAGE_DESIGN, "history": committed["history"][:1]})
+    protocol.write_text(render(design), encoding="utf-8", newline="\n")
     subprocess.run(["git", "-C", str(tmp_path), "add", "."], check=True, capture_output=True)
     subprocess.run(
         ["git", "-C", str(tmp_path), "commit", "-q", "-m", "design"],
