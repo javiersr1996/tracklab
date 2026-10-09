@@ -17,8 +17,9 @@ the code tree) belongs to task 50's spec and is said there.
 Two ways to touch a match's tracking (second and third reviews of 47-48): `require_readable`,
 which `windows.MatchTracking` runs as it is built, for anything that returns a value of it;
 and `windows.count_tracking`, which reads the frames of any match of the protocol, counts
-and drops them in its own scope, so nothing it returns holds a position. No handle and no
-flag: a tracking a caller can hold has passed the guard.
+and drops them in its own scope, from the runs and instants it loads itself, so nothing it
+returns, raises or calls back holds a position. No handle and no flag: a tracking a caller
+can hold has passed the guard.
 """
 
 from __future__ import annotations

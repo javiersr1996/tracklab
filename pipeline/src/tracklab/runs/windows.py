@@ -14,11 +14,13 @@ Two doors, kept apart on purpose (hardened in the second and third reviews of 47
   that return values of a tracking, take nothing else. On real data nothing prints or stores
   what they return; only synthetic matches run them end to end (task 48).
 * `count_tracking` reads the frames of a match of either half, counts and drops them inside
-  its own scope: it returns a `MatchCounts` of integers and detection fractions, computed from
-  booleans, for the 20 matches, held-out included, because counting runs and frames is not an
-  outcome. No handle and no flag: the silver frames are read in `_read_tracking` alone, whose
-  two callers are `load_tracking` and `count_tracking`, and no public function hands a caller
-  the tracking of a match the guard refuses.
+  its own scope, from the runs and instants it loads itself (a caller hands it nothing that
+  runs while the frames are live): it returns a `MatchCounts` of integers and detection
+  fractions, computed from booleans, for the 20 matches, held-out included, because counting
+  runs and frames is not an outcome. A failure re-raises as a `RuntimeError` of type and
+  message only, with no frame holding an array. No handle and no flag: the silver frames are
+  read in `_read_tracking` alone, whose two callers are `load_tracking` and `count_tracking`,
+  and no public function hands a caller the tracking of a match the guard refuses.
 
 A placebo instant is admissible when `placebo.py` says so (no run of the team within 3 s) and
 the tracking can support it: the runner is detected at t', and every frame from t' - V to
@@ -520,16 +522,29 @@ def count_match(
     )
 
 
-def count_tracking(
-    data_dir: Path,
-    match_id: int,
-    runs: Sequence[Run],
-    instants: Mapping[tuple[int, str], Sequence[Leg]],
-) -> MatchCounts:
+def count_tracking(data_dir: Path, match_id: int) -> MatchCounts:
     """`count_match` on the tracking of `match_id` read from silver, for a match of either
-    half: the frames live in this scope alone and what returns is integers and detection
-    fractions. The one way to a match the guard refuses, and no value of it comes back."""
-    return count_match(_read_tracking(data_dir, match_id), runs, instants)
+    half. It loads the runs and the placebo instants itself, so a caller hands it no object
+    that is called while the frames are live, and it counts nothing but what the warehouse
+    holds. The frames live in this call alone and what returns is integers and detection
+    fractions. A failure leaves no frame behind either: the exception is caught inside the
+    scope, only its type and message are kept, and a fresh `RuntimeError` is raised outside,
+    with no traceback frame that holds an array and no `__context__`."""
+    msg: str | None = None
+    counts: MatchCounts | None = None
+    t: _Tracking | None = None
+    try:
+        t = _read_tracking(data_dir, match_id)
+        runs = load_runs(data_dir, match_id)
+        instants = placebo.placebo_instants(data_dir, [match_id], PLACEBO_RULE)
+        counts = count_match(t, runs, instants)
+    except Exception as exc:  # noqa: BLE001
+        msg = f"{type(exc).__name__}: {exc}"
+    finally:
+        t = None
+    if counts is None:
+        raise RuntimeError(f"counting match {match_id} failed: {msg}") from None
+    return counts
 
 
 # --- effects: the door that returns values ----------------------------------------------------

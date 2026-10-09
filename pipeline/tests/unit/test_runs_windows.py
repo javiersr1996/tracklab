@@ -551,9 +551,34 @@ def test_the_loading_path_reproduces_the_synthetic_match(tmp_path: Path) -> None
         assert a.marker_m == pytest.approx(b.marker_m, abs=1e-9)
         assert a.line_m == pytest.approx(b.line_m, abs=1e-9)
     assert count_match(loaded, runs, instants) == count_match(tracking, runs, instants)
-    assert count_tracking(tmp_path, CI_FIXTURE_MATCH, runs, instants) == count_match(
-        tracking, runs, instants
-    )
+    # the warehouse writes no off-ball events, so the instants it yields are none
+    assert count_tracking(tmp_path, CI_FIXTURE_MATCH) == count_match(tracking, runs, {})
+
+
+def test_a_failed_count_leaves_no_array_in_reach(tmp_path: Path) -> None:
+    """A warehouse without `silver/dim_period` fails inside `_read_tracking`, after the raw
+    columns of the match were read: the `RuntimeError` that comes out carries the type and
+    the message and no traceback frame that holds an ndarray, and no `__context__`."""
+    tracking, runs, _ = _synthetic(3, 1.0, 0.0, seed=7, match_id=CI_FIXTURE_MATCH)
+    _write_warehouse(tmp_path, tracking, runs)
+    shutil.rmtree(tmp_path / "silver" / "dim_period")
+    with pytest.raises(RuntimeError) as caught:
+        count_tracking(tmp_path, CI_FIXTURE_MATCH)
+    exc = caught.value
+    assert "dim_period" in str(exc) and exc.__context__ is None
+    frames = 0
+    tb = exc.__traceback__
+    while tb is not None:
+        frames += 1
+        held = [k for k, v in tb.tb_frame.f_locals.items() if isinstance(v, np.ndarray)]
+        held += [
+            k
+            for k, v in tb.tb_frame.f_locals.items()
+            if isinstance(v, dict) and any(isinstance(w, np.ndarray) for w in v.values())
+        ]
+        assert held == [], (tb.tb_frame.f_code.co_name, held)
+        tb = tb.tb_next
+    assert frames >= 1
 
 
 # --- the marker is the nearest opponent at t_c --------------------------------------------
@@ -769,7 +794,8 @@ def _sabotaged_match(seed: int) -> tuple[MatchTracking, list[Run], Instants, dic
     """A random two-period match whose legs are sabotaged on purpose (the third review's
     probe): the opponent nearest to the runner loses its position at t - V or at t + W, or a
     single outfield opponent is left at one of the three frames of a leg; some runners stand
-    still; some candidates hug a period edge; the half-time gap is 0 or 10 frames. Returns
+    still; some candidates hug a period edge; about 10 in-period frames are missing for every entity
+    (the fourth review's mutant M3); the half-time gap is 0 or 10 frames. Returns
     how often each kind of sabotage was applied."""
     rng = np.random.default_rng(seed)
     n, n_entities = 520, 9  # entities 0 to 2 the runner's team, 3 to 7 outfield, 8 the keeper
@@ -827,6 +853,10 @@ def _sabotaged_match(seed: int) -> tuple[MatchTracking, list[Run], Instants, dic
             for e in range(3, n_entities - 1):
                 if e != keep:
                     x[frame, e] = y[frame, e] = np.nan
+    for period in rng.integers(1, 3, 10):  # a frame missing for every entity, inside a period
+        a, b = bounds[int(period)]
+        gone = int(rng.integers(a, b + 1))
+        x[gone] = y[gone] = np.nan
     detected = np.isfinite(x) & (rng.random((n, n_entities)) < 0.998)
     tracking = MatchTracking(
         match_id=CI_FIXTURE_MATCH,
@@ -844,11 +874,12 @@ def _sabotaged_match(seed: int) -> tuple[MatchTracking, list[Run], Instants, dic
 
 
 def test_the_analysis_set_counts_exactly_the_pairs_the_estimator_forms() -> None:
-    """`count_match` must drop a run for every reason `pair_effects` does and for no other,
+    """`count_match` must drop a run for the reasons `pair_effects` does and for no other,
     on matches whose legs are sabotaged on purpose (third review, finding 2). Each condition
     of `count_match` (placebo leg, run leg, direction) and each rule of `_leg` (the marker's
     position at t + W, two outfield opponents at each frame) makes a run count that forms no
-    pair when it is dropped, so each mutant fails here."""
+    pair when it is dropped, and a window with a frame missing for every entity makes a
+    run count as clean that is not, so the mutants of those conditions fail here."""
     applied = dict.fromkeys(SABOTAGE, 0)
     pairs = clean = standing = 0
     for seed in range(20):
@@ -1096,10 +1127,8 @@ def test_every_public_name_of_runs_refuses_a_held_out_match_or_returns_counts_on
     counts = counted("windows.count_match", count_match(held, runs, instants))
     assert isinstance(counts, MatchCounts)
     assert counts.runs == counts.clean == counts.placebo_found == counts.analysis_set == 3
-    from_disk = counted(
-        "windows.count_tracking", count_tracking(root, HELD_OUT_MATCH, runs, instants)
-    )
-    assert from_disk == counts
+    from_disk = counted("windows.count_tracking", count_tracking(root, HELD_OUT_MATCH))
+    assert from_disk == count_match(held, runs, {})
     assert HELD_OUT_MATCH in counted("data.counting_match_ids", counting_match_ids())
     assert counted("data.match_halves", match_halves())[HELD_OUT_MATCH] == "held_out"
     assert HELD_OUT_MATCH in counted("data.committed_split", data.committed_split())[1]
@@ -1311,7 +1340,7 @@ def test_the_versioned_counts_are_the_inventorys() -> None:
 def test_the_versioned_coverage_is_recounted_from_the_whole_warehouse(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """The 20 rows, recounted from the real frames through the counting handles, are the
+    """The 20 rows, recounted from the real frames through `count_tracking`, are the
     versioned ones: what `runs coverage --check` says in the V gate, as a test."""
     assert run_runs_coverage(data_root(), REPORTS, check=True) == 0
     assert "warehouse=FULL 20/20 rows recounted and equal" in capsys.readouterr().out

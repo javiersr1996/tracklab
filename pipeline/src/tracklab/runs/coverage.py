@@ -2,8 +2,8 @@
 
 One row per match for all 20, held-out included: counting runs, windows and detected
 positions is not an outcome (see `data.counting_match_ids`). Every match is counted by
-`windows.count_tracking`, which reads its frames, counts and drops them in its own scope: no
-tracking comes back to this module. The file holds integers and detection fractions and
+`windows.count_tracking`, which reads its frames and runs, counts and drops them in its own
+scope: no tracking comes back to this module. The file holds integers and detection fractions and
 nothing else; `count_match` has no way to return a position, a displacement or a line height,
 and this module only formats what it returns.
 
@@ -20,11 +20,9 @@ import csv
 import io
 from pathlib import Path
 
-from tracklab.runs import placebo
 from tracklab.runs.data import counting_match_ids, match_halves
 from tracklab.runs.windows import (
     COUNT_FIELDS,
-    PLACEBO_RULE,
     SUBTYPES,
     MatchCounts,
     count_tracking,
@@ -58,11 +56,10 @@ def _row(counts: MatchCounts, half: str) -> list[str]:
 
 def coverage_rows(data_dir: Path, match_ids: list[int]) -> list[list[str]]:
     halves = match_halves()
-    instants = placebo.placebo_instants(data_dir, match_ids, PLACEBO_RULE)
     rows = []
     for match_id in match_ids:
         half = halves[match_id]
-        counts = count_tracking(data_dir, match_id, load_runs(data_dir, match_id), instants)
+        counts = count_tracking(data_dir, match_id)
         rows.append(_row(counts, half))
     return rows
 
