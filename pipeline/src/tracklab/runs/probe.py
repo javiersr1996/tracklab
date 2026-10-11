@@ -35,7 +35,7 @@ from __future__ import annotations
 
 import json
 import math
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -498,6 +498,26 @@ def mde80(
     return Power(n_pairs, n_units, tuple(rates), mde)
 
 
+def probable_subtypes(
+    mde: dict[tuple[str, str, str], float | None], halves: Iterable[str]
+) -> dict[str, list[str]]:
+    """Per quantity, the subtypes whose MDE80 (keyed by subtype, half and quantity) is at most
+    TESTABILITY_MDE80_SD placebo sd in every half; on the 0.05 grid a subtype can land on the
+    threshold exactly, and it counts. M1 counts `marker`, the forced-direction instrument;
+    `both` is the intersection."""
+    halves = list(halves)
+
+    def testable(value: float | None) -> bool:
+        return value is not None and value <= TESTABILITY_MDE80_SD
+
+    def probable(quantity: str) -> list[str]:
+        return [s for s in SUBTYPES if all(testable(mde[(s, h, quantity)]) for h in halves)]
+
+    lists = {"marker": probable("marker"), "line": probable("line")}
+    lists["both"] = [s for s in lists["marker"] if s in lists["line"]]
+    return lists
+
+
 # --- the payload --------------------------------------------------------------------------
 
 
@@ -955,14 +975,7 @@ def _power_section(
                 ]
             rows.append(row)
 
-    def testable(value: float | None) -> bool:
-        return value is not None and value <= TESTABILITY_MDE80_SD
-
-    def probable(quantity: str) -> list[str]:
-        return [s for s in SUBTYPES if all(testable(mde[(s, h, quantity)]) for h in halves)]
-
-    lists = {"marker": probable("marker"), "line": probable("line")}
-    lists["both"] = [s for s in lists["marker"] if s in lists["line"]]
+    lists = probable_subtypes(mde, halves)
     section = {
         "what": (
             "MDE80 per subtype and half: the smallest effect of the grid, in placebo sd, "

@@ -1086,6 +1086,7 @@ READS_NO_FRAMES = {
     "probe.design_effect",
     "probe.Power",
     "probe.mde80",
+    "probe.probable_subtypes",
     "probe.probe_path",
     "probe.consistency_problems",
 }

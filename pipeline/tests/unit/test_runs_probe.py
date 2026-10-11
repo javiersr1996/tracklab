@@ -51,6 +51,7 @@ from tracklab.runs.probe import (
     mde80,
     null_fire_rates,
     permutation_p,
+    probable_subtypes,
     run_runs_probe,
     unit_sums,
     z_two_sided,
@@ -382,6 +383,29 @@ def _slope_change_every(frames: int, period: int, seed: int) -> windows.MatchTra
     )
 
 
+def test_probable_counts_the_threshold_itself_both_halves_and_the_marker() -> None:
+    """MDE80 sits on a 0.05 grid that holds 0.3 itself (`coming_short` lands there in
+    calibration): on the threshold counts. A subtype testable in one half only, or on the
+    line only, stays out of the marker list M1 counts."""
+    assert TESTABILITY_MDE80_SD in probe.MDE_GRID_SD
+    halves = ("calibration", "held_out")
+    on_threshold, line_only, one_half = SUBTYPES[0], SUBTYPES[1], SUBTYPES[2]
+    mde: dict[tuple[str, str, str], float | None] = {
+        (s, h, q): None for s in SUBTYPES for h in halves for q in ("marker", "line")
+    }
+    for h in halves:
+        mde[(on_threshold, h, "marker")] = mde[(on_threshold, h, "line")] = TESTABILITY_MDE80_SD
+        mde[(line_only, h, "line")] = 0.2
+        mde[(line_only, h, "marker")] = 0.35
+    mde[(one_half, "calibration", "marker")] = 0.2
+    mde[(one_half, "held_out", "marker")] = 0.35
+    assert probable_subtypes(mde, halves) == {
+        "marker": [on_threshold],
+        "line": [on_threshold, line_only],
+        "both": [on_threshold],
+    }
+
+
 def test_cadence_sees_a_slope_change_every_five_frames() -> None:
     t = _slope_change_every(2000, 5, seed=5)
     c = cadence(t)
@@ -397,6 +421,7 @@ def test_cadence_sees_a_slope_change_every_five_frames() -> None:
     assert cadence_lag([0.9, 0.8, 0.7, 0.6]) == 1  # a curve that only decays
     assert cadence_lag([0.51, 0.58, 0.49, 0.43]) == 2
     assert cadence_lag([0.5, 0.4, 0.45, 0.46, 0.2]) == 4
+    assert cadence_lag([0.5, 0.6, 0.55, 0.5, 0.9, 0.4]) == 2  # the first, not the highest
 
 
 # --- the command on a synthetic warehouse ---------------------------------------------------
