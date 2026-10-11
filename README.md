@@ -92,8 +92,8 @@ describe them (`lineage.json` and `platform.json` excluded, as they describe the
 than its data).
 
 ```
-title: 2.3 GB in, 3.3 MB out
-subtitle: 1.2 MB to watch, 2.1 MB to query
+title: 2.3 GB in, 3.5 MB out
+subtitle: 1.4 MB to watch, 2.1 MB to query
 ```
 
 `uv run dagster asset list -m tracklab.dagster_defs` lists `81` assets, the graph
