@@ -3,14 +3,14 @@
   "plan": "tasks/todo.md, P5 'The run that moves nobody'",
   "protocol": {
     "stage": "design",
-    "fingerprint": "6941c77cbc3e2b0217f4330394fee4b3920be38a39c11e8c08072d5cdca9b810",
-    "content_sha256": "46f04329c92c0fabb8c20393da2ec7f822975b670d4c4d2cb846e3ea3c0f92e4"
+    "fingerprint": "83630615f86297318d519692a0b2ace271a00b485913540eceb285a56cb5b1aa",
+    "content_sha256": "4a9edf1b51fc1bfe53e9e13cfe16f032cd3d2058fb570ecdee40f8dcac1a5b77"
   },
   "probe": {
     "task": 49,
     "written": "2026-10-11",
-    "head": "a33f0e4baf8fd992bab57982b1b3f028fd4c04b0",
-    "code_tree_sha": "2707c7943af4ce6d0fcd50d656d984ea8d893c61",
+    "head": "73a50e8a5333d2a7e0e3339e5eddfb15372842c5",
+    "code_tree_sha": "e17199d1c75d8bb173213ce978e87dad146eaf0b",
     "half": "calibration",
     "matches": [
       1874553,
@@ -2329,8 +2329,9 @@
         }
       ],
       "probable": {
-        "rule": "MDE80 at most 0.3 placebo sd in both halves; M1 counts the marker quantity, the forced-direction instrument; the line and the intersection are listed alongside",
+        "rule": "MDE80 at most 0.3 placebo sd in both halves; M1 counts the protocol's primary quantity (marker, the forced-direction instrument); the line and the intersection are listed alongside and decide nothing",
         "mde80_sd_at_most": 0.3,
+        "primary_quantity": "marker",
         "marker": [
           "coming_short",
           "run_ahead_of_the_ball",
@@ -2347,6 +2348,7 @@
     "verdict": {
       "M1": {
         "rule": "fewer than 2 probable subtypes -> P5 dies",
+        "primary_quantity": "marker",
         "probable_subtypes": 3,
         "probable_by_line": 1,
         "probable_by_both": 1,
@@ -2362,5 +2364,5 @@
       "alive": true
     }
   },
-  "content_sha256": "5fc468087137dea5f67240b53075cc0a6ef97599eacb571c2d899207a900915c"
+  "content_sha256": "232e3edd13e80c1dca1dc9a2281bb395a68bc03af112e97299e38b0f733e5189"
 }
