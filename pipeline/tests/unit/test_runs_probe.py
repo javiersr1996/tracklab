@@ -111,6 +111,10 @@ def test_unit_labels_link_by_possession_and_by_instant_and_chain() -> None:
     # of the unit do not (the blocks of the real null add (runner, period) this way)
     assert components([("a",), ("b",), ("c", "a"), ()]) == [0, 1, 0, 2]
     assert components([("a", "x"), ("b", "x"), ("c",)]) == [0, 0, 1]
+    # every key links, the third and the fourth too (the null's units carry three, its
+    # blocks four): two items alike in their third key only are one component
+    assert components([("a", "b", "x"), ("c", "d", "x"), ("e", "f", "g", "d")]) == [0, 0, 0]
+    assert components([("a", "b", "x"), ("c", "d", "y")]) == [0, 1]
     assert components([]) == []
 
 
@@ -180,18 +184,27 @@ def test_bar_verdict_needs_the_sign_in_eight_matches_and_the_p() -> None:
     assert verdict.passes == (verdict.p <= BAR_P)
 
 
-def _probe_of(match_id: int, pairs: list[PairEffect]) -> MatchProbe:
-    """A `MatchProbe` with the pairs alone (no second placebo): what `_collect` reads."""
+def _probe_of(
+    match_id: int, pairs: list[PairEffect], second_marker: np.ndarray | None = None
+) -> MatchProbe:
+    """A `MatchProbe` with the pairs: what `_collect` reads, and, given `second_marker` (the
+    marker quantity of a second placebo per pair, at t'1 + 5 in the placebo's period), what
+    `_collect_null` reads too. Every run in period 1: one runner, one period, one block."""
     empty = np.zeros(0)
     n = len(pairs)
+    has_second = second_marker is not None
     return MatchProbe(
         match_id=match_id,
         runs=n,
         pairs=tuple(pairs),
         run_period=np.ones(n, dtype=np.int64),
-        placebo2_period=np.full(n, -1, dtype=np.int64),
-        placebo2_instant=np.full(n, -1, dtype=np.int64),
-        placebo2_marker_m=np.full(n, np.nan),
+        placebo2_period=np.array(
+            [p.placebo_period if has_second else -1 for p in pairs], dtype=np.int64
+        ),
+        placebo2_instant=np.array(
+            [p.placebo_instant + 5 if has_second else -1 for p in pairs], dtype=np.int64
+        ),
+        placebo2_marker_m=np.full(n, np.nan) if second_marker is None else second_marker,
         placebo2_line_m=np.full(n, np.nan),
         length_m=empty,
         line_at_tc_m=empty,
@@ -346,6 +359,40 @@ def test_the_outer_flips_are_shared_by_the_subtypes() -> None:
         draws=2000,
     )
     assert rates.fires_pct[0] == rates.fires_pct[1] == rates.at_least_one_pct
+
+
+def test_the_null_section_centres_placebo_1_minus_placebo_2_per_subtype() -> None:
+    """Ten fabricated matches of 60 pairs whose placebo 1 minus placebo 2 is 3 m plus noise
+    in every pair, one runner in one period, so one block per match holding every unit:
+    uncentred, every block carries the same sign and the outer flips make the inner test
+    fire in a large share of the draws (the mutation that drops the centring); centred per
+    subtype, with the means printed, the null is nominal. The unflipped contrast, on the
+    raw difference, sees the 3 m in every subtype."""
+    rng = np.random.default_rng(13)
+    probes = []
+    for m in range(10):
+        pairs = [
+            replace(
+                _pair(m, i, f"p{i}", 1000 + 10 * i, 0.0), placebo_marker_m=3.0 + rng.normal(0, 0.5)
+            )
+            for i in range(60)
+        ]
+        probes.append(_probe_of(m, pairs, second_marker=rng.normal(0.0, 0.5, 60)))
+    pairs_ = probe._collect(probes)
+    section, needed = probe._null_section(probes, pairs_, probe._collect_null(probes))
+    assert section["pooled"] == {
+        "pairs": 600,
+        "units": 600,
+        "blocks": 10,
+        "largest_block_share": 1.0,
+    }
+    assert section["pairs_with_second_placebo"] == section["of_pairs"] == 600
+    assert section["gap_s_p50"] == section["gap_s_p90"]
+    for row in section["per_subtype"]:
+        assert row["pairs"] == row["units"] == 60 and row["blocks"] == 10
+        assert abs(row["centring_mean_m"] - 3.0) < 0.3
+        assert row["unflipped"]["passes_bar"] and row["unflipped"]["same_sign_matches"] == 10
+    assert section["at_least_one_pct"] <= NULL_AT_LEAST_ONE_MAX_PCT and not needed
 
 
 def _hidden_blocks(
