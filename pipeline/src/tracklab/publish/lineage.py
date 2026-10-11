@@ -1,8 +1,8 @@
 """`tracklab publish lineage`: the Dagster asset graph exported to
 `web/public/data/lineage.json` (task 33), so `/platform` draws the real graph
-instead of `dbt docs` (which only covers 22 of the 77 nodes: seeds, silver and gold).
+instead of `dbt docs` (which only covers 22 of the 82 nodes: seeds, silver and gold).
 
-`lineage_from_defs` reads the graph `defs` already carries (77 keys: 76
+`lineage_from_defs` reads the graph `defs` already carries (82 keys: 81
 materializable assets plus `manifest_sources`, a spec no step writes) and, for
 the 22 dbt-backed nodes (10 silver models, 2 seeds, 10 gold models), reads `dbt/target/
 manifest.json` for their description, columns and test count -- the same file
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from dagster import Definitions
 
 SCHEMA_VERSION = 1
-GROUPS_IN_FLOW = ("ingest", "bronze", "silver", "gold", "quality", "publish")
+GROUPS_IN_FLOW = ("ingest", "bronze", "silver", "gold", "quality", "publish", "runs")
 DBT_MANIFEST = Path("dbt/target/manifest.json")
 SCHEMAS_DIR = Path(__file__).resolve().parent.parent / "bronze" / "schemas"
 LINEAGE_JSON = "lineage.json"
