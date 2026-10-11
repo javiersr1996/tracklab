@@ -708,7 +708,7 @@ def test_the_probe_on_a_planted_effect_passes_m2_and_check_reproduces_it(
         104.0,
         106.0,
     }
-    # the placebo design: every placebo 240 s away, no runner on the ball, nothing shared
+    # the placebo design: every placebo 300 s away, no runner on the ball, nothing shared
     design = p["placebo_design"]["pooled"]
     assert design["gap_s_p50"] == design["gap_s_p90"] == 300.0
     assert design["runner_in_possession_at_placebo_fraction"] == 0.0
@@ -744,7 +744,7 @@ def test_the_probe_on_a_planted_effect_passes_m2_and_check_reproduces_it(
     for row in null["per_subtype"]:
         assert row["pairs"] == row["units"] == 30 and row["blocks"] == 20
         assert abs(row["centring_mean_m"] - 1.0) < 0.5 and row["unflipped"]["passes_bar"]
-        assert row["unflipped"]["same_sign_matches"] >= BAR_SAME_SIGN_MATCHES  # 3 pairs a match
+        assert row["unflipped"]["p"] == round(1 / (1 + N_PERMUTATIONS), 5)  # 1 m on 30 pairs
     # the power: every subtype has 30 pairs per half, the bar simulated as applied
     assert {(r["subtype"], r["half"]) for r in p["power"]["rows"]} == {
         (s, h) for s in SUBTYPES for h in ("calibration", "other")

@@ -1120,6 +1120,7 @@ REFUSES_A_HELD_OUT_MATCH = {
     "windows.line_height_at",  # the same
     "windows.quantities",  # the same
     "windows.run_class",  # the same (task 50)
+    "windows.leg_marker",  # the same (task 50)
     "windows.leg_marker_detected",  # the same (task 50)
     "windows.pair_effects",  # the same
     "probe.probe_match",  # the same
@@ -1136,6 +1137,7 @@ TAKES_A_MATCH_TRACKING = {
     "windows.line_height_at",
     "windows.quantities",
     "windows.run_class",
+    "windows.leg_marker",
     "windows.leg_marker_detected",
     "windows.pair_effects",
     "probe.probe_match",

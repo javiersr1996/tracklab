@@ -8,11 +8,13 @@ candidates); then the freeze on a throwaway repository, after which the held-out
 and both `--check`s stay green. Real data enters only through the versioned
 `runs_calibration.json`, at the end.
 
-Mutations recorded in tasks/todo.md: the pre-trend measured at t_c + 1 s (the cause moved
-after the effect's window starts) lets the planted pre-trend pass M3 and fails the synthetic
-test; the sha comparison removed from the guard and a guard looking at `stage` alone fail
-the two tests of test_runs_protocol; a class read one second after t_c fails the hand-built
-class test; the probe rewriting the file without the foreign sections fails the keep test.
+Mutations recorded in tasks/todo.md, each run once and seen to fail: the pre-trend measured
+at t_c + 1 s (the plan's: the planted pre-trend passes M3 and the synthetic test fails); the
+sha comparison removed from the guard and a guard looking at `stage` alone (the plan's two,
+in test_runs_protocol); the class read one second after t_c; the probe rewriting the file
+without the foreign section; M4 blind to a sign change; the overlap keys without the team;
+the marker's detection read at the instant alone; and the pre-trend taken in the effect's own
+window, which makes the following marker fire M3 at the runner's onset.
 """
 
 from __future__ import annotations
@@ -32,6 +34,7 @@ from test_runs_windows import (  # the synthetic match and the throwaway design 
     PLANTED_LINE_M,
     PLANTED_MARKER_M,
     TEAM,
+    Instants,
     _git,
     _synthetic_raw,
     _write_warehouse,
@@ -40,7 +43,7 @@ from test_runs_windows import (  # the synthetic match and the throwaway design 
 
 from tracklab.cli import build_parser
 from tracklab.paths import data_root
-from tracklab.runs import candidates, data, probe
+from tracklab.runs import candidates, data, probe, windows
 from tracklab.runs.candidates import (
     M3_PRE_TREND_SHARE,
     M4_DETECTED_SHARE,
@@ -60,6 +63,7 @@ from tracklab.runs.probe import PROBE_NAME, run_runs_probe
 from tracklab.runs.protocol import (
     BAR_P,
     N_PERMUTATIONS,
+    SAMPLE_RATE_HZ,
     STAGE_DESIGN,
     STAGE_FROZEN,
     SUBTYPES,
@@ -604,6 +608,115 @@ def test_cli_wires_runs_effect_and_freeze() -> None:
     assert args.reports_dir == Path("reports")
 
 
+# --- what M3 measures: a marker that only follows -------------------------------------------
+
+FOLLOW_BLOCK = 100
+FOLLOW_ONSET = 40  # the frame of the runner's onset inside a scene
+FOLLOW_TOP_SPEED_M_S = 5.0
+FOLLOW_RAMP_S = 0.8  # from rest to the top speed
+FOLLOW_LAG_FRAMES = 2  # 0.2 s: the marker copies the runner's progress this late, never earlier
+FOLLOW_LATE_FRAMES = 11  # 1.1 s after the onset: the runner at his top speed, as at frame_start
+
+
+def _following_match(
+    seed: int, *, late_frames: int, n_runs: int = 8
+) -> tuple[windows._Tracking, list[Run], Instants]:
+    """`n_runs` scenes in one period: the runner at rest until FOLLOW_ONSET, then accelerating
+    along d to his top speed over FOLLOW_RAMP_S and holding it; the marker 2 m beside him,
+    copying his progress along d FOLLOW_LAG_FRAMES late and never anticipating; the rest
+    of the defence static. The placebo scene is the same at rest. `late_frames` is where
+    frame_start is put after the onset: 0, or the runner already running."""
+    rng = np.random.default_rng(seed)
+    n_frames = 2 * n_runs * FOLLOW_BLOCK
+    x = np.full((n_frames, 13), np.nan)
+    y = np.full((n_frames, 13), np.nan)
+    runs: list[Run] = []
+    instants: Instants = {}
+    k = np.arange(FOLLOW_BLOCK) - FOLLOW_ONSET
+    speed = np.clip(k / (FOLLOW_RAMP_S * SAMPLE_RATE_HZ), 0.0, 1.0) * FOLLOW_TOP_SPEED_M_S
+    progress = np.cumsum(np.where(k > 0, speed, 0.0)) / SAMPLE_RATE_HZ  # metres since onset
+    for i in range(n_runs):
+        angle = rng.uniform(-np.pi / 3, np.pi / 3)
+        d = np.array([np.cos(angle), np.sin(angle)])
+        perp = np.array([-d[1], d[0]])
+        start = np.array([rng.uniform(-22.0, -14.0), rng.uniform(-3.0, 3.0)])
+        rest = [(30.0, 8.0), (28.0, -8.0)] + [
+            (rng.uniform(2.0, 20.0), rng.uniform(-25.0, 25.0)) for _ in range(8)
+        ]
+        for block, moving in ((i, progress), (n_runs + i, np.zeros(FOLLOW_BLOCK))):
+            delayed = np.concatenate([np.zeros(FOLLOW_LAG_FRAMES), moving[:-FOLLOW_LAG_FRAMES]])
+            rows = slice(block * FOLLOW_BLOCK, (block + 1) * FOLLOW_BLOCK)
+            runner = start + moving[:, None] * d
+            marker = start + 2.0 * perp + delayed[:, None] * d
+            x[rows, 0], y[rows, 0] = runner.T
+            x[rows, 1], y[rows, 1] = marker.T
+            for j, (x0, y0) in enumerate(rest, start=2):
+                x[rows, j], y[rows, j] = x0, y0
+            x[rows, 12], y[rows, 12] = 50.0, 0.0
+            x[rows] += rng.normal(0.0, 0.02, (FOLLOW_BLOCK, 13))
+            y[rows] += rng.normal(0.0, 0.02, (FOLLOW_BLOCK, 13))
+        t_c = i * FOLLOW_BLOCK + FOLLOW_ONSET + late_frames
+        t_p = (n_runs + i) * FOLLOW_BLOCK + FOLLOW_ONSET + late_frames
+        run = Run(CI_FIXTURE_MATCH, f"r{i}", 7, 100, 1, t_c, t_c + 20, "support", f"p{i}")
+        runs.append(run)
+        instants[(CI_FIXTURE_MATCH, run.event_id)] = [(1, t_p)]
+    tracking = windows._Tracking(
+        match_id=CI_FIXTURE_MATCH,
+        frame0=0,
+        x=x,
+        y=y,
+        detected=np.ones((n_frames, 13), dtype=np.bool_),
+        entities=("fb:7", *(f"fb:{300 + j}" for j in range(12))),
+        team=(TEAM, *([OTHER] * 12)),
+        is_goalkeeper=np.array([False] * 12 + [True], dtype=np.bool_),
+        period_frames={1: (0, n_frames - 1)},
+        attack_sign={(1, TEAM): 1, (1, OTHER): -1},
+    )
+    return tracking, runs, instants
+
+
+@pytest.mark.usefixtures("design_repo")
+@pytest.mark.parametrize("seed", [1, 2, 3])
+def test_m3_is_quiet_at_the_runners_onset_and_fires_when_frame_start_is_late(
+    tmp_path: Path, seed: int
+) -> None:
+    """What M3 measures (review of task 50, medium 4): a marker that only follows the runner,
+    0.2 s late and never anticipating. With t_c at the runner's onset the pre-trend is
+    nothing and M3 is quiet; with t_c 1.1 s later, the runner already at his top speed as
+    the real frame_start finds him, the pre-trend window holds the start of the run and
+    the marker's following, the velocity at t_c already predicts most of what follows, and
+    M3 fires on a defence that never anticipated anything. The kinematics say which case
+    it is: the runner's speed at t_c, his onset, the marker's lag."""
+    ratios: dict[int, float] = {}
+    for late in (0, FOLLOW_LATE_FRAMES):
+        root = tmp_path / f"late{late}"
+        raw, runs, instants = _following_match(seed, late_frames=late)
+        _write_warehouse(root, raw, runs, instants)
+        me = candidates.effect_match(windows.load_tracking(root, CI_FIXTURE_MATCH), root)
+        assert len(me.pairs) == len(runs) == 8
+        pre, eff = me.pre_trend_marker_m, np.array([p.marker_m for p in me.pairs])
+        assert np.isfinite(pre).all()
+        ratios[late] = float(pre.mean() / eff.mean())
+        assert eff.mean() > 1.0  # the marker follows: an effect either way
+        if late == 0:
+            assert abs(float(pre.mean())) < 0.3  # nothing moved before the onset (jitter only)
+            assert float(np.median(me.runner_speed_tc)) < 1.0
+            assert float(np.median(me.runner_onset_s)) == pytest.approx(0.0, abs=0.11)
+            assert float(np.median(me.marker_lag_s)) == 0.0  # neither has started: no lag yet
+        else:
+            assert float(np.median(me.runner_speed_tc)) > 4.0
+            # the onset is the last frame below 3 m/s: on the ramp, between the true start
+            # and the ramp's end, and inside the pre-trend window
+            onset = float(np.median(me.runner_onset_s))
+            assert -late / SAMPLE_RATE_HZ < onset < -late / SAMPLE_RATE_HZ + FOLLOW_RAMP_S
+            assert onset >= -2.0
+            assert float(np.median(me.marker_lag_s)) == pytest.approx(
+                FOLLOW_LAG_FRAMES / SAMPLE_RATE_HZ, abs=0.11
+            )
+    assert ratios[0] < M3_PRE_TREND_SHARE / 2, ratios
+    assert ratios[FOLLOW_LATE_FRAMES] >= M3_PRE_TREND_SHARE, ratios
+
+
 # --- the versioned file -----------------------------------------------------------------------
 
 
@@ -621,29 +734,71 @@ def test_the_versioned_effect_is_sealed_and_answers_to_the_probe_and_the_protoco
     assert e["inputs"]["subtypes"] == PROBABLE
     assert e["probe_section_sha256"] == section_sha256(payload["probe"])
     assert e["code_tree_sha"] != payload["probe"]["code_tree_sha"]  # task 50's tree, not 49's
+    # the tree that computed the section is the one committed in HEAD: the section was
+    # regenerated on the final code commit of task 50 and committed alone after it
     head = subprocess.run(
         ["git", "-C", str(PIPELINE), "rev-parse", f"HEAD:{data.CODE_IN_REPO}"],
         capture_output=True,
         encoding="utf-8",
         check=True,
     ).stdout.strip()
-    assert len(head) == 40
+    assert e["code_tree_sha"] == head
 
 
 def test_the_versioned_verdict_is_pinned() -> None:
-    """The figures of task 50 as the plan records them: a change is a change of what the
-    freeze records and must show here, never only in the JSON."""
+    """The figures of task 50 as the plan records them: P5 dies at M5a. A change is a change
+    of what was preregistered against and must show here, never only in the JSON."""
     e = _versioned()["effect"]
     rows = {r["subtype"]: r for r in e["per_subtype"]}
     assert list(rows) == PROBABLE
-    for r in rows.values():
-        assert r["marker"]["pooled"]["p"] <= BAR_P
-        assert r["marker"]["pooled"]["same_sign_matches"] >= 8
-        assert r["verdict"]["passes_bar"]
-    assert e["candidates"] == PROBABLE
-    assert e["verdict"]["M5a"] == {
-        "rule": "zero candidates -> P5 dies, the held-out half is never opened",
-        "candidates": 3,
-        "dies": False,
+    reasons = {
+        s: (r["verdict"]["passes_bar"], r["verdict"]["M3"]["leaves"], r["verdict"]["M4"]["leaves"])
+        for s, r in rows.items()
     }
-    assert e["verdict"]["alive"] is True
+    assert reasons == {
+        "coming_short": (False, True, True),
+        "run_ahead_of_the_ball": (True, True, False),
+        "support": (True, True, False),
+    }
+    for r in rows.values():
+        assert r["verdict"]["M3"]["pre_trend_reaches_share"]
+        assert not r["verdict"]["M3"]["class_at_tc_opposite_sign"]
+        assert not r["verdict"]["candidate"]
+    assert [r["verdict"]["M3"]["pre_trend_ratio"] for r in rows.values()] == [
+        4.8141,
+        1.5254,
+        2.3347,
+    ]
+    assert [r["verdict"]["M4"]["detected_ratio"] for r in rows.values()] == [0.4954, 0.9604, 0.9414]
+    short = rows["coming_short"]["marker"]["pooled"]
+    assert short["same_sign_matches"] == 7 and short["p"] == 0.0055 and short["p"] > BAR_P
+    assert rows["run_ahead_of_the_ball"]["marker"]["pooled"]["mean_m"] == 1.6457
+    assert rows["support"]["marker"]["pooled"]["mean_m"] == 1.3087
+    assert e["candidates"] == []
+    assert e["verdict"] == {
+        "M5a": {
+            "rule": "zero candidates -> P5 dies, the held-out half is never opened",
+            "candidates": 0,
+            "dies": True,
+        },
+        "alive": False,
+    }
+    # the post hoc kinematics, a diagnostic that decides nothing: the runner is already
+    # running at frame_start in every subtype, his onset mostly inside the pre-trend
+    # window, his own pre-trend above his own effect, the marker starting after him
+    kin = e["kinematics"]
+    assert kin["post_hoc"] is True and "decides nothing" in kin["what"]
+    assert [r["subtype"] for r in kin["per_subtype"]] == PROBABLE
+    for r in kin["per_subtype"]:
+        pooled = r["pooled"]
+        assert len(r["per_match"]) == 10
+        assert (
+            pooled["runner_speed_at_tc_median_m_s"]
+            > 2 * pooled["runner_speed_at_placebo_median_m_s"]
+        )
+        assert pooled["runner_running_at_tc_share"] > 0.9
+        assert pooled["runner_running_half_second_before_share"] < 0.5
+        assert -2.0 < pooled["onset_median_s"] < 0.0
+        assert pooled["onset_inside_pre_trend_window_share"] > 0.5
+        assert pooled["runner_own_pre_trend_ratio"] >= 1.0
+        assert pooled["marker_after_runner_share"] > 0.5

@@ -46,7 +46,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from collections.abc import Hashable, Sequence
+from collections.abc import Callable, Hashable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -54,6 +54,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+from tracklab.runs import effect as effect_formulas
 from tracklab.runs import placebo
 from tracklab.runs.coverage import has_frames
 from tracklab.runs.data import (
@@ -79,11 +80,13 @@ from tracklab.runs.protocol import (
     BAR_SAME_SIGN_MATCHES,
     EFFECT_WINDOW_S,
     PRIMARY_QUANTITY,
+    SAMPLE_RATE_HZ,
     SECONDARY_QUANTITY,
     SEED,
     STAGE_DESIGN,
     SUBTYPES,
     TESTABILITY_MDE80_SD,
+    VELOCITY_WINDOW_S,
     freeze_payload,
     protocol_path,
     read_protocol,
@@ -99,6 +102,7 @@ from tracklab.runs.windows import (
     MatchTracking,
     PairEffect,
     components,
+    leg_marker,
     leg_marker_detected,
     load_runs,
     load_tracking,
@@ -124,6 +128,15 @@ TESTABLE_ON_LINE = "testable on the line"
 # each verdict draws from a child keyed by what it tests, so the order of the loops moves
 # nothing.
 STREAM_EFFECT, STREAM_CLASSES, STREAM_OVERLAP = 5, 6, 7
+# Post hoc diagnostic (written on 2026-10-11, after the verdict, when the review of this
+# task found what M3 measured): the runner's own kinematics around t_c. Descriptive
+# thresholds, named here and nowhere in the protocol, so they never enter the design
+# fingerprint; they decide nothing: M3, M4 and M5a stand as computed.
+KINEMATICS_RUN_SPEED_M_S = 4.0  # a runner at this speed is running, not starting to
+KINEMATICS_ONSET_SPEED_M_S = 3.0  # the onset: the last frame before t_c below this speed
+KINEMATICS_ALONG_ONSET_M_S = 1.0  # along d, for the marker's onset against the runner's
+KINEMATICS_ONSET_SEARCH_S = 10.0  # how far back the onset is looked for
+KINEMATICS_SPEED_SPAN_S = 0.2  # a speed is |p(t + 0.1 s) - p(t - 0.1 s)| / 0.2 s
 
 Array = NDArray[np.float64]
 
@@ -150,6 +163,77 @@ class MatchEffects:
     marker_detected: NDArray[np.bool_]
     run_class: tuple[str | None, ...]
     team_id: NDArray[np.int64]
+    # the post hoc kinematics, per pair (NaN where a frame is missing): the runner's speed at
+    # t_c, half a second before it and at t'; his onset before t_c in seconds (<= 0); his own
+    # pre-trend and effect pairs (run minus placebo, the M3 statistic on the runner); the
+    # marker's along-d onset minus the runner's on the run leg (positive: the marker after)
+    runner_speed_tc: Array
+    runner_speed_before: Array
+    runner_speed_placebo: Array
+    runner_onset_s: Array
+    runner_pre_m: Array
+    runner_effect_m: Array
+    marker_lag_s: Array
+
+
+def _centred_speed(t: MatchTracking, entity: int, frame: int) -> float:
+    a, b = t.row(frame - 1), t.row(frame + 1)
+    if a is None or b is None:
+        return math.nan
+    return float(np.hypot(t.x[b, entity] - t.x[a, entity], t.y[b, entity] - t.y[a, entity])) / (
+        KINEMATICS_SPEED_SPAN_S
+    )
+
+
+def _along_velocity(
+    t: MatchTracking, entity: int, sign: int, frame: int, direction: NDArray[np.float64]
+) -> float:
+    a, b = t.row(frame - 1), t.row(frame + 1)
+    if a is None or b is None:
+        return math.nan
+    dx = sign * (t.x[b, entity] - t.x[a, entity])
+    dy = sign * (t.y[b, entity] - t.y[a, entity])
+    return float(dx * direction[0] + dy * direction[1]) / KINEMATICS_SPEED_SPAN_S
+
+
+def _onset_s(value_at: Callable[[int], float], frame: int, threshold: float) -> float:
+    """-k / fs for the smallest k >= 0 with `value_at(frame - k)` finite and below
+    `threshold`, looking back KINEMATICS_ONSET_SEARCH_S; NaN when none."""
+    for k in range(int(KINEMATICS_ONSET_SEARCH_S * SAMPLE_RATE_HZ) + 1):
+        v = value_at(frame - k)
+        if math.isfinite(v) and v < threshold:
+            return -k / SAMPLE_RATE_HZ
+    return math.nan
+
+
+def _speed_onset_s(t: MatchTracking, entity: int, frame: int) -> float:
+    return _onset_s(lambda f: _centred_speed(t, entity, f), frame, KINEMATICS_ONSET_SPEED_M_S)
+
+
+def _along_onset_s(
+    t: MatchTracking, entity: int, sign: int, frame: int, direction: NDArray[np.float64]
+) -> float:
+    return _onset_s(
+        lambda f: _along_velocity(t, entity, sign, f, direction), frame, KINEMATICS_ALONG_ONSET_M_S
+    )
+
+
+def _self_residual(
+    t: MatchTracking, entity: int, sign: int, instant: int, direction: NDArray[np.float64]
+) -> float:
+    """The protocol's residual applied to `entity` itself at `instant`, along d."""
+    rows = [t.row(f) for f in (instant - VELOCITY_FRAMES, instant, instant + EFFECT_FRAMES)]
+    if any(r is None for r in rows):
+        return math.nan
+    points = [
+        np.array([sign * t.x[r, entity], sign * t.y[r, entity]]) for r in rows if r is not None
+    ]
+    if not all(np.isfinite(p).all() for p in points):
+        return math.nan
+    residual = effect_formulas.residual_displacement(
+        *points, window_s=EFFECT_WINDOW_S, velocity_s=VELOCITY_WINDOW_S
+    )
+    return effect_formulas.project(residual, direction)
 
 
 def effect_match(t: MatchTracking, data_dir: Path) -> MatchEffects:
@@ -162,6 +246,18 @@ def effect_match(t: MatchTracking, data_dir: Path) -> MatchEffects:
     detected: list[bool] = []
     classes: list[str | None] = []
     teams: list[int] = []
+    kinematics: dict[str, list[float]] = {
+        k: []
+        for k in (
+            "speed_tc",
+            "speed_before",
+            "speed_placebo",
+            "onset",
+            "self_pre",
+            "self_effect",
+            "marker_lag",
+        )
+    }
     for pair in pairs:
         run = by_id[pair.run_id]
         direction = run_direction(t, run)
@@ -177,6 +273,28 @@ def effect_match(t: MatchTracking, data_dir: Path) -> MatchEffects:
         )
         classes.append(run_class(t, run))
         teams.append(run.team_id)
+        # the post hoc kinematics of the runner and his marker
+        runner = t.entity_index(run.runner)
+        assert runner is not None
+        sign_run = t.attack_sign[(run.period, run.team)]
+        sign_placebo = t.attack_sign[(pair.placebo_period, run.team)]
+        kinematics["speed_tc"].append(_centred_speed(t, runner, pair.t_c))
+        kinematics["speed_before"].append(_centred_speed(t, runner, pair.t_c - VELOCITY_FRAMES))
+        kinematics["speed_placebo"].append(_centred_speed(t, runner, pair.placebo_instant))
+        kinematics["onset"].append(_speed_onset_s(t, runner, pair.t_c))
+        self_pre = _self_residual(t, runner, sign_run, pair.t_c - EFFECT_FRAMES, direction)
+        self_pre -= _self_residual(
+            t, runner, sign_placebo, pair.placebo_instant - EFFECT_FRAMES, direction
+        )
+        self_effect = _self_residual(t, runner, sign_run, pair.t_c, direction)
+        self_effect -= _self_residual(t, runner, sign_placebo, pair.placebo_instant, direction)
+        kinematics["self_pre"].append(self_pre)
+        kinematics["self_effect"].append(self_effect)
+        marker = leg_marker(t, run, run.period, pair.t_c)
+        assert marker is not None  # the pair exists, so the run leg has a marker
+        runner_onset = _along_onset_s(t, runner, sign_run, pair.t_c, direction)
+        marker_onset = _along_onset_s(t, marker, sign_run, pair.t_c, direction)
+        kinematics["marker_lag"].append(marker_onset - runner_onset)
     return MatchEffects(
         match_id=t.match_id,
         pairs=pairs,
@@ -184,6 +302,13 @@ def effect_match(t: MatchTracking, data_dir: Path) -> MatchEffects:
         marker_detected=np.array(detected, dtype=np.bool_),
         run_class=tuple(classes),
         team_id=np.array(teams, dtype=np.int64),
+        runner_speed_tc=np.array(kinematics["speed_tc"], dtype=np.float64),
+        runner_speed_before=np.array(kinematics["speed_before"], dtype=np.float64),
+        runner_speed_placebo=np.array(kinematics["speed_placebo"], dtype=np.float64),
+        runner_onset_s=np.array(kinematics["onset"], dtype=np.float64),
+        runner_pre_m=np.array(kinematics["self_pre"], dtype=np.float64),
+        runner_effect_m=np.array(kinematics["self_effect"], dtype=np.float64),
+        marker_lag_s=np.array(kinematics["marker_lag"], dtype=np.float64),
     )
 
 
@@ -205,6 +330,18 @@ class _Collected:
     line_m: Array
     pre_trend_m: Array
     detected: NDArray[np.bool_]
+    kinematics: dict[str, Array]  # the seven per-pair arrays of `MatchEffects`, concatenated
+
+
+KINEMATICS_FIELDS = (
+    "runner_speed_tc",
+    "runner_speed_before",
+    "runner_speed_placebo",
+    "runner_onset_s",
+    "runner_pre_m",
+    "runner_effect_m",
+    "marker_lag_s",
+)
 
 
 def run_leg_overlap_keys(
@@ -257,6 +394,10 @@ def _collect(matches: Sequence[MatchEffects]) -> _Collected:
         detected=np.concatenate([me.marker_detected for me in matches])
         if matches
         else np.zeros(0, dtype=np.bool_),
+        kinematics={
+            k: np.concatenate([getattr(me, k) for me in matches]) if matches else np.zeros(0)
+            for k in KINEMATICS_FIELDS
+        },
     )
 
 
@@ -570,6 +711,97 @@ def _subtype_section(
     }
 
 
+def _kinematics_row(c: _Collected, mask: NDArray[np.bool_]) -> dict[str, Any]:
+    """The post hoc kinematics of the pairs the mask keeps: medians and shares, each over the
+    pairs whose frames gave a value."""
+    k = c.kinematics
+
+    def finite(name: str) -> Array:
+        v = k[name][mask]
+        return v[np.isfinite(v)]
+
+    def median(values: Array, digits: int) -> float | None:
+        return _round(float(np.median(values)), digits) if values.size else None
+
+    def share(flags: NDArray[np.bool_]) -> float | None:
+        return _round(float(flags.mean()), 4) if flags.size else None
+
+    speed_tc, speed_before, speed_placebo = (
+        finite(n) for n in ("runner_speed_tc", "runner_speed_before", "runner_speed_placebo")
+    )
+    onset = finite("runner_onset_s")
+    both = mask & np.isfinite(k["runner_pre_m"]) & np.isfinite(k["runner_effect_m"])
+    self_pre = _round(float(k["runner_pre_m"][both].mean()), 4) if both.any() else None
+    self_effect = _round(float(k["runner_effect_m"][both].mean()), 4) if both.any() else None
+    lag = finite("marker_lag_s")
+    return {
+        "pairs": int(mask.sum()),
+        "runner_speed_at_tc_median_m_s": median(speed_tc, 3),
+        "runner_speed_at_placebo_median_m_s": median(speed_placebo, 3),
+        "runner_running_at_tc_share": share(speed_tc >= KINEMATICS_RUN_SPEED_M_S),
+        "runner_running_half_second_before_share": share(speed_before >= KINEMATICS_RUN_SPEED_M_S),
+        "onset_found_share": share(np.isfinite(k["runner_onset_s"][mask])),
+        "onset_median_s": median(onset, 2),
+        "onset_inside_pre_trend_window_share": share(onset >= -EFFECT_WINDOW_S),
+        "onset_before_pre_trend_window_share": share(onset < -EFFECT_WINDOW_S),
+        "runner_own_pairs": int(both.sum()),
+        "runner_own_pre_trend_m": self_pre,
+        "runner_own_effect_m": self_effect,
+        "runner_own_pre_trend_ratio": _ratio(self_pre, self_effect),
+        "pairs_with_both_onsets": int(lag.size),
+        "marker_onset_lag_median_s": median(lag, 2),
+        "marker_after_runner_share": share(lag > 0.0),
+        "marker_before_runner_share": share(lag < 0.0),
+    }
+
+
+def _kinematics_section(
+    c: _Collected, subtypes: Sequence[str], match_ids: Sequence[int]
+) -> dict[str, Any]:
+    per_subtype = []
+    for s in subtypes:
+        mine = c.subtype_of_pair == SUBTYPES.index(s)
+        per_subtype.append(
+            {
+                "subtype": s,
+                "per_match": [
+                    {"match_id": m, **_kinematics_row(c, mine & (c.match_of_pair == i))}
+                    for i, m in enumerate(match_ids)
+                ],
+                "pooled": _kinematics_row(c, mine),
+            }
+        )
+    return {
+        "post_hoc": True,
+        "what": (
+            "a post hoc diagnostic, written after the verdict (2026-10-11) when the review of "
+            "task 50 asked what M3 measured; it decides nothing: M3, M4 and M5a stand as "
+            "computed, and the thresholds below are descriptive and live outside the "
+            "protocol. Per probable subtype, per match and pooled: the runner's speed "
+            f"(|p(t + {KINEMATICS_SPEED_SPAN_S / 2} s) - p(t - {KINEMATICS_SPEED_SPAN_S / 2} s)| "
+            f"/ {KINEMATICS_SPEED_SPAN_S} s) at t_c and at t' (median), the share of runners "
+            f"at or above {KINEMATICS_RUN_SPEED_M_S} m/s at t_c and {VELOCITY_WINDOW_S} s "
+            "before it; the onset, the last frame at or before t_c with the speed below "
+            f"{KINEMATICS_ONSET_SPEED_M_S} m/s looked for over {KINEMATICS_ONSET_SEARCH_S} s "
+            "(median in seconds relative to t_c, the share inside the pre-trend window "
+            "[t_c - W, t_c] and the share before it); the M3 statistic applied to the runner "
+            "himself (his residual along d at t - W and at t, run minus placebo, on the "
+            "pairs with both) and its ratio; and the marker's along-d onset (last frame at "
+            f"or before t_c with the velocity along d below {KINEMATICS_ALONG_ONSET_M_S} "
+            "m/s) minus the runner's, on the run leg: positive when the marker starts after "
+            "the runner"
+        ),
+        "thresholds": {
+            "running_m_s": KINEMATICS_RUN_SPEED_M_S,
+            "onset_m_s": KINEMATICS_ONSET_SPEED_M_S,
+            "along_onset_m_s": KINEMATICS_ALONG_ONSET_M_S,
+            "onset_search_s": KINEMATICS_ONSET_SEARCH_S,
+            "speed_span_s": KINEMATICS_SPEED_SPAN_S,
+        },
+        "per_subtype": per_subtype,
+    }
+
+
 def probe_inputs(current: dict[str, Any]) -> dict[str, Any]:
     """What the effect reads from the probe section: the primary quantity's probable list,
     the two placebo sds and the power rows (for the line's label). The probe section must be
@@ -712,6 +944,7 @@ def build_effect(
             "by_class": by_class,
         },
         "per_subtype": per_subtype,
+        "kinematics": _kinematics_section(c, inputs["subtypes"], calibration),
         "candidates": candidates,
         "verdict": {
             "M5a": {

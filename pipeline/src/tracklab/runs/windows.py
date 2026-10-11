@@ -424,6 +424,14 @@ def run_class(t: MatchTracking, run: Run) -> str | None:
     )
 
 
+def leg_marker(t: MatchTracking, run: Run, period: int, instant: int) -> int | None:
+    """The entity index of the marker of one leg (the opponent nearest to the runner at the
+    instant), or None when the leg has no quantities (`_leg`); task 50's post hoc kinematics
+    read the marker's own movement by it. A value: takes a `MatchTracking`."""
+    leg = _leg(t, run, period, instant)
+    return None if leg is None else leg.marker
+
+
 def leg_marker_detected(t: MatchTracking, run: Run, period: int, instant: int) -> bool | None:
     """Whether the marker of one leg (the opponent nearest to the runner at the instant) is
     `is_detected` at every frame from t - V to t + W (task 50, M4: the effect repeated with
