@@ -1,0 +1,261 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tracklab.dev/runs/runs.schema.json",
+  "title": "Track Lab runs.json",
+  "description": "P5 published dead (task 52 of tasks/todo.md), as written by `tracklab publish runs`. The figures are copied from pipeline/reports, so the report subtrees are typed as objects or arrays and checked field by field against the reports in pipeline/tests/unit/test_publish_runs.py; the envelope, the stage states, the held-out block and the hook are strict.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "sources",
+    "status",
+    "dead_at",
+    "stages",
+    "funnel",
+    "effect_by_subtype",
+    "instrument",
+    "design_checks",
+    "power",
+    "null",
+    "post_hoc_kinematics",
+    "protocol",
+    "never_opened",
+    "hook"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol", "calibration", "coverage"],
+      "properties": {
+        "protocol": { "type": "string", "minLength": 1 },
+        "calibration": { "type": "string", "minLength": 1 },
+        "coverage": { "type": "string", "minLength": 1 }
+      }
+    },
+    "status": { "const": "dead" },
+    "dead_at": { "enum": ["M1", "M2", "M3", "M4", "M5a", "M5b"] },
+    "stages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["M1", "M2", "M3", "M4", "M5a", "M5b"],
+      "patternProperties": {
+        "^M[1-5][ab]?$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "rule", "figures"],
+          "properties": {
+            "state": {
+              "enum": [
+                "passed",
+                "dead",
+                "not_reached",
+                "all_subtypes_leave",
+                "some_subtypes_leave",
+                "no_subtype_leaves"
+              ]
+            },
+            "rule": { "type": "string", "minLength": 1 },
+            "figures": { "type": "object" }
+          }
+        }
+      }
+    },
+    "funnel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["probe", "coverage"],
+      "properties": {
+        "probe": { "type": "object" },
+        "coverage": { "type": "array", "minItems": 1, "items": { "type": "object" } }
+      }
+    },
+    "effect_by_subtype": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "subtype",
+          "pairs",
+          "marker",
+          "line",
+          "pre_trend",
+          "fully_detected",
+          "class_at_tc",
+          "run_leg_overlap",
+          "verdict"
+        ]
+      }
+    },
+    "instrument": { "type": "object", "required": ["marker", "line_against_provider"] },
+    "design_checks": {
+      "type": "object",
+      "required": ["cadence", "run_length", "placebo_design", "units", "standardisation"]
+    },
+    "power": { "type": "object", "required": ["rows", "probable"] },
+    "null": { "type": "object", "required": ["per_match", "per_subtype", "at_least_one_pct"] },
+    "post_hoc_kinematics": {
+      "type": "object",
+      "required": ["label", "post_hoc", "what", "thresholds", "per_subtype"],
+      "properties": { "label": { "const": "post hoc" }, "post_hoc": { "const": true } }
+    },
+    "protocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage",
+        "stages_seen",
+        "frozen",
+        "fingerprint",
+        "content_sha256",
+        "history",
+        "calibration_sha256",
+        "question",
+        "quantities",
+        "bar"
+      ],
+      "properties": {
+        "stage": { "enum": ["design", "frozen"] },
+        "stages_seen": { "type": "array", "minItems": 1, "items": { "enum": ["design", "frozen"] } },
+        "frozen": { "type": "boolean" },
+        "fingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "content_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "history": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "object", "required": ["stage", "task", "date"] }
+        },
+        "calibration_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "question": { "type": "string" },
+        "quantities": { "type": "object" },
+        "bar": { "type": "object" }
+      }
+    },
+    "never_opened": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["half", "opened", "match_ids", "counts"],
+      "properties": {
+        "half": { "const": "held_out" },
+        "opened": { "type": "boolean" },
+        "match_ids": { "type": "array", "minItems": 1, "items": { "type": "integer" } },
+        "counts": { "type": "array", "minItems": 1, "items": { "type": "object" } }
+      }
+    },
+    "hook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule",
+        "subtype",
+        "subtype_pairs",
+        "eligible_pairs",
+        "subtype_median_marker_m",
+        "subtype_mean_marker_m",
+        "pair",
+        "clips"
+      ],
+      "properties": {
+        "rule": { "type": "string", "minLength": 1 },
+        "subtype": { "type": "string", "minLength": 1 },
+        "subtype_pairs": { "type": "integer", "minimum": 1 },
+        "eligible_pairs": { "type": "integer", "minimum": 1 },
+        "subtype_median_marker_m": { "type": "number" },
+        "subtype_mean_marker_m": { "type": "number" },
+        "pair": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "match_id",
+            "run_id",
+            "possession_id",
+            "runner_entity_id",
+            "team_id",
+            "marker_effect_m",
+            "distance_to_median_m",
+            "direction"
+          ],
+          "properties": {
+            "match_id": { "type": "integer" },
+            "run_id": { "type": "string", "minLength": 1 },
+            "possession_id": { "type": ["string", "null"] },
+            "runner_entity_id": { "type": "string", "minLength": 1 },
+            "team_id": { "type": "string", "minLength": 1 },
+            "marker_effect_m": { "type": "number" },
+            "distance_to_median_m": { "type": "number", "minimum": 0 },
+            "direction": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "type": "number" }
+            }
+          }
+        },
+        "clips": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "role",
+              "file",
+              "bytes",
+              "sha256",
+              "possession_id",
+              "period",
+              "instant_frame",
+              "frame_lo",
+              "frame_hi",
+              "frames",
+              "instant_index",
+              "window_s",
+              "marker_entity_id",
+              "marker_displacement_m",
+              "defence"
+            ],
+            "properties": {
+              "role": { "enum": ["run", "placebo"] },
+              "file": { "type": "string", "pattern": "^runs/[^/]+\\.json$" },
+              "bytes": { "type": "integer", "exclusiveMinimum": 0 },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "possession_id": { "type": "string", "minLength": 1 },
+              "period": { "type": "integer", "minimum": 1 },
+              "instant_frame": { "type": "integer" },
+              "frame_lo": { "type": "integer" },
+              "frame_hi": { "type": "integer" },
+              "frames": { "type": "integer", "minimum": 1 },
+              "instant_index": { "type": "integer", "minimum": 0 },
+              "window_s": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": { "type": "number" }
+              },
+              "marker_entity_id": { "type": "string", "minLength": 1 },
+              "marker_displacement_m": { "type": "number" },
+              "defence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["entity_id", "is_goalkeeper", "is_marker", "displacement_m"],
+                  "properties": {
+                    "entity_id": { "type": "string", "minLength": 1 },
+                    "is_goalkeeper": { "type": "boolean" },
+                    "is_marker": { "type": "boolean" },
+                    "displacement_m": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

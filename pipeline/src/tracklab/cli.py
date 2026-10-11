@@ -37,6 +37,7 @@ from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.platform import run_publish_platform
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.quality import run_publish_quality
+from tracklab.publish.runs import run_publish_runs
 from tracklab.publish.stats import run_publish_stats
 from tracklab.publish.warehouse import run_publish_warehouse
 from tracklab.publish.warehouse_pg import WHERE, run_publish_warehouse_pg
@@ -189,6 +190,10 @@ def _cmd_publish_warehouse(args: argparse.Namespace) -> int:
 
 def _cmd_publish_examples(args: argparse.Namespace) -> int:
     return run_publish_examples(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
+
+
+def _cmd_publish_runs(args: argparse.Namespace) -> int:
+    return run_publish_runs(args.data_dir, args.reports_dir, args.out_dir, check=args.check)
 
 
 def _cmd_publish_warehouse_pg(args: argparse.Namespace) -> int:
@@ -551,6 +556,36 @@ def build_parser() -> argparse.ArgumentParser:
         help="Regenerate in memory and compare with the file on disk; write nothing.",
     )
     publish_examples.set_defaults(func=_cmd_publish_examples)
+
+    publish_runs = publish_sub.add_parser(
+        "runs",
+        help="Write runs.json (P5, published dead: the figures of the reports, the funnel, "
+        "the per-match tables) and the hook's two clips under runs/.",
+    )
+    publish_runs.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; the calibration frames of the clips are read from it (default: data).",
+    )
+    publish_runs.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where the P5 reports live (default: reports).",
+    )
+    publish_runs.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where runs.json and runs/ go (default: ../web/public/data).",
+    )
+    publish_runs.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare with the files on disk; write nothing.",
+    )
+    publish_runs.set_defaults(func=_cmd_publish_runs)
 
     publish_warehouse_pg = publish_sub.add_parser(
         "warehouse-pg",
