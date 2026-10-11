@@ -108,6 +108,35 @@ def test_the_schema_refuses_an_alive_status_and_an_unknown_key(published: dict[s
     assert not validator.is_valid(no_hook)
 
 
+ALIVE_FIXTURE = REPO / "web" / "e2e" / "fixtures" / "runs.alive.json"
+
+
+def test_the_schema_ties_dead_at_to_the_status(published: dict[str, Any]) -> None:
+    validator = Draft202012Validator(_json(RUNS_SCHEMA))
+    assert not validator.is_valid({**published, "dead_at": None})  # dead says where
+    assert not validator.is_valid({**published, "status": "alive"})  # alive says nowhere
+    alive = {**published, "status": "alive", "dead_at": None}
+    assert validator.is_valid(alive)
+
+
+def test_the_alive_fixture_of_the_e2e_validates_and_differs_only_where_it_declares(
+    published: dict[str, Any],
+) -> None:
+    """`/runs` is tested on both branches; the alive document of task 51 does not exist, so the
+    fixture is the dead file with the five fields that make it alive, nothing else."""
+    fixture = _json(ALIVE_FIXTURE)
+    assert list(Draft202012Validator(_json(RUNS_SCHEMA)).iter_errors(fixture)) == []
+    assert _differences(fixture, published) == [
+        "/dead_at",
+        "/never_opened/opened",
+        "/stages/M5a/figures/candidates",
+        "/stages/M5a/state",
+        "/stages/M5b/figures/died_at",
+        "/stages/M5b/state",
+        "/status",
+    ]
+
+
 def test_both_clips_validate_against_the_replay_schema_of_p1(published: dict[str, Any]) -> None:
     validator = Draft202012Validator(_json(REPLAY_SCHEMA))
     clips = published["hook"]["clips"]

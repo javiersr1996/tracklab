@@ -2,9 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tracklab.dev/runs/runs.schema.json",
   "title": "Track Lab runs.json",
-  "description": "P5 published dead (task 52 of tasks/todo.md), as written by `tracklab publish runs`. The figures are copied from pipeline/reports, so the report subtrees are typed as objects or arrays and checked field by field against the reports in pipeline/tests/unit/test_publish_runs.py; the envelope, the stage states, the held-out block and the hook are strict.",
+  "description": "P5 as `/runs` shows it (tasks 52 and 53 of tasks/todo.md). The published file is dead (`tracklab publish runs` writes only that branch); `alive` with a null `dead_at` is what the page also renders and the e2e fixture carries, because the alive document of task 51 does not exist. The figures are copied from pipeline/reports, so the report subtrees are typed as objects or arrays and checked field by field against the reports in pipeline/tests/unit/test_publish_runs.py; the envelope, the stage states, the held-out block and the hook are strict.",
   "type": "object",
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "dead" } }, "required": ["status"] },
+      "then": { "properties": { "dead_at": { "type": "string" } } },
+      "else": { "properties": { "dead_at": { "type": "null" } } }
+    }
+  ],
   "required": [
     "schema_version",
     "sources",
@@ -34,8 +41,8 @@
         "coverage": { "type": "string", "minLength": 1 }
       }
     },
-    "status": { "const": "dead" },
-    "dead_at": { "enum": ["M1", "M2", "M3", "M4", "M5a", "M5b"] },
+    "status": { "enum": ["alive", "dead"] },
+    "dead_at": { "enum": ["M1", "M2", "M3", "M4", "M5a", "M5b", null] },
     "stages": {
       "type": "object",
       "additionalProperties": false,
