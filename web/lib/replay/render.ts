@@ -26,16 +26,41 @@ export function viewed(snapshot: Snapshot, possession: Possession, normalized: b
   };
 }
 
+// Where the pitch sits on a canvas: pixels per metre and the centre.
+function layout(canvas: { width: number; height: number }, possession: Possession) {
+  const { length_m, width_m } = possession.surface;
+  const scale = Math.min(
+    canvas.width / (length_m + 2 * MARGIN_M),
+    canvas.height / (width_m + 2 * MARGIN_M),
+  );
+  return { scale, cx: canvas.width / 2, cy: canvas.height / 2 };
+}
+
+// What an overlay needs to draw on top of a frame: venue metres to canvas pixels as
+// `drawFrame` places them, and `sign`, the factor the view applies to venue x and y
+// (the same `viewed` rotation), so a direction given in the venue frame turns with it.
+export interface View {
+  project: (x: number, y: number) => [number, number];
+  sign: 1 | -1;
+}
+
+export function viewOf(
+  canvas: { width: number; height: number },
+  possession: Possession,
+  normalized: boolean,
+): View {
+  const { scale, cx, cy } = layout(canvas, possession);
+  const sign = normalized ? possession.attack_sign : 1;
+  return { project: (x, y) => [cx + sign * x * scale, cy - sign * y * scale], sign };
+}
+
 export function drawFrame(
   ctx: CanvasRenderingContext2D,
   possession: Possession,
   snapshot: Snapshot,
 ): void {
   const { width, height } = ctx.canvas;
-  const { length_m, width_m } = possession.surface;
-  const scale = Math.min(width / (length_m + 2 * MARGIN_M), height / (width_m + 2 * MARGIN_M));
-  const cx = width / 2;
-  const cy = height / 2;
+  const { scale, cx, cy } = layout(ctx.canvas, possession);
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, width, height);
