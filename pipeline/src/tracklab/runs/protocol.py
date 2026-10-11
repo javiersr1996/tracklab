@@ -82,6 +82,11 @@ BAR_OF_MATCHES = 10
 BAR_P = 0.00135
 BAR_Z = z_two_sided(BAR_P)  # derived, never a second literal: 3.205 for a two-sided 0.00135
 TESTABILITY_MDE80_SD = 0.3
+# The two quantities of the effect, and which one the tests run on (review of task 49, decided
+# by Javier on 2026-10-11 after the corrected power split the probable lists: marker 3, line
+# 1, intersection 1). Chosen on power and instrument, before any per-subtype effect exists.
+PRIMARY_QUANTITY = "marker"
+SECONDARY_QUANTITY = "line"
 HELD_OUT_P = 0.01
 NULL_AT_LEAST_ONE_MAX_PCT = 5.0
 # The installed numpy, which `uv sync --locked` pins to pyproject.toml (a test ties the two).
@@ -344,6 +349,27 @@ def design(rows: list[MatchRow]) -> dict[str, Any]:
                 ),
             },
         },
+        "quantities": {
+            "primary": PRIMARY_QUANTITY,
+            "primary_is_for": (
+                "the marker displacement, the forced-direction instrument M2 checks: M1's "
+                "count of probable subtypes (task 49), the per-subtype effect tests and "
+                "controls of task 50, and the held-out bar of task 51 (Holm over the "
+                "candidates) all run on it"
+            ),
+            "secondary": SECONDARY_QUANTITY,
+            "secondary_rule": (
+                "the line height is computed and published alongside; a subtype whose line "
+                "MDE80 exceeds the testability threshold in either half is labelled 'not "
+                "testable on the line with this sample', never a null result; the line "
+                "never adds or removes a candidate"
+            ),
+            "decided": (
+                "review of task 49, 2026-10-11, by Javier, after the corrected power split "
+                "the lists (marker 3, line 1, intersection 1): the quantity is chosen on "
+                "power and instrument, before any per-subtype effect exists"
+            ),
+        },
         "effect": {
             "pair": "quantity(run) - quantity(placebo), one pair per run",
             "per_match": (
@@ -387,9 +413,11 @@ def design(rows: list[MatchRow]) -> dict[str, Any]:
             ),
             "real_null_check": (
                 "task 49: placebo 1 minus placebo 2 per pair, the second placebo being the next "
-                "nearest admissible instant of the same rule whose window is disjoint from the "
-                "first's, centred per subtype over the calibration half (placebo quantities, "
-                "never an outcome); sign-flipped by blocks that nest the units, the connected "
+                "nearest admissible instant of the same rule whose window [t' - V, t' + W] is "
+                "disjoint from the first's (in another period, or more than V + W from it in "
+                "the same period), centred per subtype over the calibration half (placebo "
+                "quantities, never an outcome); sign-flipped by blocks that nest the units, "
+                "the connected "
                 "components of possession, placebo instants and (runner, period) inside the "
                 "match; on every draw the whole bar with its units and its permutation p; how "
                 "often it fires per subtype and for at least one subtype, against bar.hardening"
@@ -526,6 +554,19 @@ def build_protocol(rows: list[MatchRow], counts: list[placebo.PlaceboCount]) -> 
                     "bar's permutation count instead of a normal quantile; z_equivalent is "
                     "derived from p_at_most (3.205 two-sided, where 3.0 was written). No "
                     "threshold, window, seed or list moved."
+                ),
+            },
+            {
+                "stage": STAGE_DESIGN,
+                "task": 49,
+                "date": REVISED,
+                "note": (
+                    f"primary quantity: {PRIMARY_QUANTITY} (design.quantities), for M1, the "
+                    f"tests of task 50 and the held-out bar of task 51; {SECONDARY_QUANTITY} "
+                    "secondary, published with its testability label and never a candidate. "
+                    "Decided by Javier in the review of task 49 after the corrected power "
+                    "split the probable lists (marker 3, line 1, intersection 1): chosen on "
+                    "power and instrument, before any per-subtype effect exists."
                 ),
             },
         ],

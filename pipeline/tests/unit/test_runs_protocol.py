@@ -98,7 +98,7 @@ HELD_OUT = [
     2016236,
     2017461,
 ]
-FINGERPRINT = "6941c77cbc3e2b0217f4330394fee4b3920be38a39c11e8c08072d5cdca9b810"
+FINGERPRINT = "83630615f86297318d519692a0b2ace271a00b485913540eceb285a56cb5b1aa"
 
 
 def _write(path: Path, payload: dict[str, Any]) -> None:
@@ -219,6 +219,21 @@ def test_the_protocol_carries_the_plans_bar() -> None:
     assert "shared placebo instant" in payload["history"][1]["note"]
     assert [h["task"] for h in payload["history"][:2]] == [47, 49]
     assert payload["design"]["effect"]["unit_of_independence"].startswith("the unit: the conn")
+    # the primary quantity, decided by Javier in the review of task 49 after the corrected
+    # power split the lists (marker 3, line 1): literals, so a field removed or set to the
+    # line shows here and not only in the JSON
+    quantities = payload["design"]["quantities"]
+    assert quantities["primary"] == "marker" and quantities["secondary"] == "line"
+    assert quantities["primary_is_for"].startswith("the marker displacement, the forced-dir")
+    for task in ("M1", "task 50", "task 51", "Holm"):
+        assert task in quantities["primary_is_for"]
+    assert "not testable on the line with this sample" in quantities["secondary_rule"]
+    assert "never adds or removes a candidate" in quantities["secondary_rule"]
+    assert "before any per-subtype effect exists" in quantities["decided"]
+    assert [h["task"] for h in payload["history"][:3]] == [47, 49, 49]
+    assert payload["history"][2]["date"] == "2026-10-11"
+    assert payload["history"][2]["note"].startswith("primary quantity: marker (design.quant")
+    assert "in another period, or more than V + W" in null["real_null_check"]
     assert bar["held_out"]["same_sign_matches_at_least"] == 8
     assert bar["held_out"]["p_at_most"] == 0.01
     assert payload["design"]["null"]["n_permutations"] == 2000
