@@ -10,9 +10,10 @@ Two doors, kept apart on purpose (hardened in the second and third reviews of 47
 
 * a tracking leaves this module in one shape, `MatchTracking`, which passes
   `data.require_readable` as it is built, hand-built or loaded: `load_tracking` runs the guard
-  before it reads a byte, and `run_direction`, `quantities` and `pair_effects`, the functions
-  that return values of a tracking, take nothing else. On real data nothing prints or stores
-  what they return; only synthetic matches run them end to end (task 48).
+  before it reads a byte, and `run_direction`, `run_length`, `line_height_at`, `quantities`
+  and `pair_effects`, the functions that return values of a tracking, take nothing else. On
+  real data only task 49's probe (`probe.py`, calibration half) prints what they return, and
+  never per subtype; the synthetic matches run them end to end (task 48).
 * `count_tracking` reads the frames of a match of either half, counts and drops them inside
   its own scope, from the runs and instants it loads itself (a caller hands it nothing that
   runs while the frames are live): it returns a `MatchCounts` of integers and detection
@@ -162,14 +163,22 @@ class MatchTracking(_Tracking):
 
 @dataclass(frozen=True)
 class PairEffect:
-    """One run minus its placebo, in metres. Real-data instances are never printed or stored."""
+    """One run minus its placebo, in metres, with the keys task 49 clusters by (the
+    possession, the runner and the placebo instant) and the placebo leg alone, whose sd is
+    the protocol's unit. Real-data instances are never printed or stored."""
 
     match_id: int
     run_id: str
     possession_id: str | None
     subtype: str
+    player_id: int
+    t_c: int
+    placebo_period: int
+    placebo_instant: int
     marker_m: float
     line_m: float
+    placebo_marker_m: float
+    placebo_line_m: float
 
 
 # --- loading --------------------------------------------------------------------------------
@@ -337,6 +346,32 @@ def run_direction(t: MatchTracking, run: Run) -> NDArray[np.float64] | None:
     return _direction(t, run)
 
 
+def run_length(t: MatchTracking, run: Run) -> float | None:
+    """Metres between the runner's tracked positions at frame_start and frame_end, whatever
+    the protocol's minimum (task 49 reports the lengths against it); None when the runner is
+    not at both ends. A value: takes a `MatchTracking`."""
+    runner = t.entity_index(run.runner)
+    a, b = t.row(run.frame_start), t.row(run.frame_end)
+    if runner is None or a is None or b is None:
+        return None
+    length = float(np.hypot(t.x[b, runner] - t.x[a, runner], t.y[b, runner] - t.y[a, runner]))
+    return length if math.isfinite(length) else None
+
+
+def line_height_at(t: MatchTracking, run: Run) -> float | None:
+    """L(t_c) of the run's leg: the protocol's line height in the attack frame of the run's
+    period, at frame_start, for task 49's contrast with the provider's
+    `last_defensive_line_height_start`. None when the frame or the sign is missing or fewer
+    than two outfield opponents have a position. A value: takes a `MatchTracking`."""
+    sign = t.attack_sign.get((run.period, run.team))
+    i = t.row(run.frame_start)
+    if sign is None or i is None:
+        return None
+    opponents = _opponents(t, run.team)
+    height = effect.line_height(sign * t.x[i, opponents], t.is_goalkeeper[opponents])
+    return height if math.isfinite(height) else None
+
+
 @dataclass(frozen=True)
 class _LegInputs:
     """What the formulas of one leg read, as indices: the attack sign of the leg's period, the
@@ -442,13 +477,44 @@ def choose_placebo(t: _Tracking, run: Run, candidates: Sequence[Leg]) -> Leg | N
     return min(supported, key=lambda leg: (abs(leg[1] - run.frame_start), leg[1]))
 
 
+# --- the unit of the null: pairs that move together ------------------------------------------
+
+UnitKey = tuple[str | None, tuple[int, int]]  # (possession id, (runner player_id, t'))
+
+
+def unit_labels(keys: Sequence[UnitKey]) -> list[int]:
+    """One label per pair, the connected component of the pairs that share a possession
+    (`associated_player_possession_event_id`) or a placebo instant (same runner, same t'),
+    in order of first appearance. The keys of one match only: possession ids and frames repeat
+    across matches, so a caller never mixes matches here (task 49's null never does)."""
+    parent = list(range(len(keys)))
+
+    def find(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    first: dict[object, int] = {}
+    for i, (possession, instant) in enumerate(keys):
+        for key in ((("p", possession),) if possession is not None else ()) + (("i", instant),):
+            j = first.setdefault(key, i)
+            if j != i:
+                parent[find(i)] = find(j)
+    labels: dict[int, int] = {}
+    return [labels.setdefault(find(i), len(labels)) for i in range(len(keys))]
+
+
 # --- counts: the door that returns no tracking value ----------------------------------------
 
 
 @dataclass(frozen=True)
 class MatchCounts:
     """Coverage of one match: runs, windows, detection and placebos. Integers, and fractions
-    of detected opponent positions: no coordinate, no displacement."""
+    of detected opponent positions: no coordinate, no displacement. `analysis_units` (task
+    49) holds, per subtype, the sizes of the groups the subtype's pairs form inside the
+    null's units (`unit_labels` over the whole analysis set), sorted: the clustering the
+    power needs of the half whose values stay closed."""
 
     match_id: int
     runs: int
@@ -462,9 +528,25 @@ class MatchCounts:
     opp_detected_p10: float
     placebo_found: int
     analysis_set: int
+    analysis_units: tuple[tuple[int, ...], ...]
 
 
-COUNT_FIELDS = tuple(f.name for f in fields(MatchCounts) if f.name != "by_subtype")
+COUNT_FIELDS = tuple(
+    f.name for f in fields(MatchCounts) if f.name not in ("by_subtype", "analysis_units")
+)
+
+
+def units_by_subtype(
+    subtypes: Sequence[str], keys: Sequence[UnitKey]
+) -> tuple[tuple[int, ...], ...]:
+    """`MatchCounts.analysis_units` from the subtype and the unit key of each pair of one
+    match: for each protocol subtype, the sorted sizes of its pairs per unit."""
+    labels = unit_labels(keys)
+    sizes: dict[str, dict[int, int]] = {s: {} for s in SUBTYPES}
+    for subtype, label in zip(subtypes, labels, strict=True):
+        per_unit = sizes.setdefault(subtype, {})
+        per_unit[label] = per_unit.get(label, 0) + 1
+    return tuple(tuple(sorted(sizes[s].values())) for s in SUBTYPES)
 
 
 def count_match(
@@ -479,6 +561,7 @@ def count_match(
     by_subtype = {s: 0 for s in SUBTYPES}
     complete = clipped_n = absent = detected_n = clean = found = analysis = 0
     fractions: list[float] = []
+    in_set: list[tuple[str, UnitKey]] = []  # (subtype, unit key) of each analysis-set run
     for run in runs:
         by_subtype[run.subtype] = by_subtype.get(run.subtype, 0) + 1
         lo, hi, clipped = window_bounds(t, run)
@@ -498,11 +581,15 @@ def count_match(
             fractions.append(float(t.detected[window][:, opponents][present].mean()))
         pick = choose_placebo(t, run, instants.get((t.match_id, run.event_id), ()))
         found += pick is not None
-        if is_clean and pick is not None and _direction(t, run) is not None:
-            analysis += (
-                _leg(t, run, run.period, run.frame_start) is not None
-                and _leg(t, run, *pick) is not None
-            )
+        if (
+            is_clean
+            and pick is not None
+            and _direction(t, run) is not None
+            and _leg(t, run, run.period, run.frame_start) is not None
+            and _leg(t, run, *pick) is not None
+        ):
+            analysis += 1
+            in_set.append((run.subtype, (run.possession_id, (run.player_id, pick[1]))))
     p50, p10 = (
         (float(np.quantile(fractions, q)) for q in (0.5, 0.1)) if fractions else (math.nan,) * 2
     )
@@ -519,6 +606,7 @@ def count_match(
         opp_detected_p10=p10,
         placebo_found=found,
         analysis_set=analysis,
+        analysis_units=units_by_subtype([s for s, _ in in_set], [k for _, k in in_set]),
     )
 
 
@@ -584,8 +672,20 @@ def pair_effects(
                 run_id=run.event_id,
                 possession_id=run.possession_id,
                 subtype=run.subtype,
+                player_id=run.player_id,
+                t_c=run.frame_start,
+                placebo_period=pick[0],
+                placebo_instant=pick[1],
                 marker_m=own[0] - other[0],
                 line_m=own[1] - other[1],
+                placebo_marker_m=other[0],
+                placebo_line_m=other[1],
             )
         )
     return out
+
+
+def pair_unit_key(pair: PairEffect) -> UnitKey:
+    """The key `unit_labels` clusters a pair by: what `count_match` builds for the same run,
+    so the units of the open half (from pairs) and of the closed one (from counts) agree."""
+    return (pair.possession_id, (pair.player_id, pair.placebo_instant))

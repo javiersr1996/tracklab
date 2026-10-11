@@ -41,6 +41,7 @@ from tracklab.publish.warehouse import run_publish_warehouse
 from tracklab.publish.warehouse_pg import WHERE, run_publish_warehouse_pg
 from tracklab.quality.run import CHECKS, run_quality
 from tracklab.runs.coverage import run_runs_coverage
+from tracklab.runs.probe import run_runs_probe
 from tracklab.runs.protocol import run_runs_protocol
 from tracklab.silver.orientation import SPORTS, run_orientation
 from tracklab.silver.possessions import run_possessions
@@ -230,6 +231,10 @@ def _cmd_runs_protocol(args: argparse.Namespace) -> int:
 
 def _cmd_runs_coverage(args: argparse.Namespace) -> int:
     return run_runs_coverage(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_runs_probe(args: argparse.Namespace) -> int:
+    return run_runs_probe(args.data_dir, args.reports_dir, check=args.check)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -732,6 +737,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="Recount the matches at hand and compare with the versioned file; write nothing.",
     )
     runs_coverage.set_defaults(func=_cmd_runs_coverage)
+    runs_probe = runs_sub.add_parser(
+        "probe",
+        help="Write reports/runs_calibration.json, section probe: death probe 1 of P5 on the "
+        "calibration half (cadence, instrument, real null, power); no effect per subtype.",
+    )
+    runs_probe.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver frames and the football bronze events are read from it "
+        "(default: data).",
+    )
+    runs_probe.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where runs_calibration.json goes (default: reports); the split is read from the "
+        "protocol committed in HEAD, never from a file at hand.",
+    )
+    runs_probe.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate where the warehouse holds the 20 matches and compare with the "
+        "versioned file, else verify its seal and consistency; write nothing.",
+    )
+    runs_probe.set_defaults(func=_cmd_runs_probe)
 
     build = subparsers.add_parser(
         "build",

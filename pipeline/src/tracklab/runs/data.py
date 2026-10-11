@@ -67,6 +67,15 @@ def _head_text(root: Path) -> str | None:
     return out.stdout if out.returncode == 0 else None
 
 
+def head_commit() -> str:
+    """The sha of HEAD of the repository this code lives in: what task 49's probe records as
+    the code that computed its figures."""
+    out = _git(repo_root(), "rev-parse", "HEAD")
+    if out.returncode != 0:
+        raise HeldOutLocked(f"git rev-parse HEAD failed: {out.stderr.strip()}")
+    return out.stdout.strip()
+
+
 def head_stage() -> str | None:
     """The `stage` of the protocol as committed in HEAD, or None when HEAD has no such file."""
     text = _head_text(repo_root())

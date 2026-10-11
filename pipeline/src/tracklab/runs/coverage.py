@@ -39,7 +39,9 @@ HEADER = (
 )
 
 
-def _has_frames(data_dir: Path, match_id: int) -> bool:
+def has_frames(data_dir: Path, match_id: int) -> bool:
+    """Whether the warehouse holds the match's football frames partition: a folder test, no
+    read (the probe of task 49 asks the same before it writes)."""
     folder = data_dir / "silver" / "frames" / "sport=football" / f"native_match_id={match_id}"
     return folder.is_dir()
 
@@ -74,7 +76,7 @@ def render(rows: list[list[str]]) -> str:
 
 def run_runs_coverage(data_dir: Path, reports_dir: Path, *, check: bool = False) -> int:
     wanted = counting_match_ids()
-    at_hand = [m for m in wanted if _has_frames(data_dir, m)]
+    at_hand = [m for m in wanted if has_frames(data_dir, m)]
     path = reports_dir / COVERAGE_NAME
     if not check:
         if at_hand != wanted:

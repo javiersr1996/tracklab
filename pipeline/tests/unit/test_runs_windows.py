@@ -43,7 +43,7 @@ import pyarrow.parquet as pq
 import pytest
 
 from tracklab.paths import data_root
-from tracklab.runs import coverage, data, effect, placebo, protocol, windows
+from tracklab.runs import coverage, data, effect, placebo, probe, protocol, windows
 from tracklab.runs.coverage import COVERAGE_NAME, HEADER, _row, coverage_rows, run_runs_coverage
 from tracklab.runs.data import (
     HeldOutLocked,
@@ -339,12 +339,28 @@ def _parquet(path: Path, table: pa.Table) -> None:
     pq.write_table(table, path)
 
 
-def _write_warehouse(root: Path, tracking: windows._Tracking, runs: list[Run]) -> None:
-    """The synthetic match as the silver and bronze files `load_tracking`, `load_runs` and
-    `placebo` read, in their layout and with their columns: `frames` (plus a ball row, which
-    the player filter must drop), `dim_period`, `dim_team_period`, `match_players`,
-    `dynamic_events` (the runs alone, so no placebo candidate comes from the events) and
-    `phases_of_play`."""
+def _provider_heights(tracking: windows._Tracking, runs: list[Run]) -> list[float]:
+    """What the provider would write as `last_defensive_line_height_start`: the height from
+    the defending goal line (pitch length 105) of the two deepest outfield opponents' mean
+    x_att at t_c, straight from the arrays (opponents are columns 1 to 11, the keeper 12)."""
+    out = []
+    for run in runs:
+        x_att = SIGN[run.period] * tracking.x[run.frame_start, 1:12]
+        out.append(52.5 - float(np.sort(x_att)[-2:].mean()))
+    return out
+
+
+def _write_warehouse(
+    root: Path, tracking: windows._Tracking, runs: list[Run], instants: Instants | None = None
+) -> None:
+    """The synthetic match as the silver and bronze files `load_tracking`, `load_runs`,
+    `placebo` and the probe read, in their layout and with their columns: `frames` (plus a
+    ball row, which the player filter must drop), `dim_period`, `dim_team_period`,
+    `match_players`, `match` (the pitch length), `dynamic_events` and `phases_of_play`.
+    Without `instants` the events are the runs alone, so no placebo candidate comes from
+    them; with them, each run gets its candidates as the SQL of `placebo.py` produces them
+    (task 49): a teammate's `player_possession` at t' in its own phase, of the run's own
+    phase type, so `placebo_instants` returns exactly the given list per run."""
     m = tracking.match_id
     present = np.isfinite(tracking.x)
     rows, cols = np.nonzero(present)
@@ -375,7 +391,7 @@ def _write_warehouse(root: Path, tracking: windows._Tracking, runs: list[Run]) -
         pa.concat_tables([frames, ball]),
     )
     _parquet(
-        root / "silver" / "dim_period" / "data.parquet",
+        root / "silver" / "dim_period" / f"{m}.parquet",
         pa.table(
             {
                 "match_id": [f"fb:{m}"] * len(tracking.period_frames),
@@ -386,7 +402,7 @@ def _write_warehouse(root: Path, tracking: windows._Tracking, runs: list[Run]) -
         ),
     )
     _parquet(
-        root / "silver" / "dim_team_period" / "data.parquet",
+        root / "silver" / "dim_team_period" / f"{m}.parquet",
         pa.table(
             {
                 "match_id": [f"fb:{m}"] * len(tracking.attack_sign),
@@ -409,39 +425,82 @@ def _write_warehouse(root: Path, tracking: windows._Tracking, runs: list[Run]) -
         ),
     )
     _parquet(
-        root / "bronze" / "football" / "dynamic_events" / f"{m}.parquet",
-        pa.table(
-            {
-                "match_id": [r.match_id for r in runs],
-                "event_id": [r.event_id for r in runs],
-                "event_type": ["off_ball_run"] * len(runs),
-                "event_subtype": [r.subtype for r in runs],
-                "player_id": [r.player_id for r in runs],
-                "team_id": [r.team_id for r in runs],
-                "period": [r.period for r in runs],
-                "frame_start": [r.frame_start for r in runs],
-                "frame_end": [r.frame_end for r in runs],
-                "associated_player_possession_event_id": [r.possession_id for r in runs],
-                "phase_index": [r.period for r in runs],
-                "team_in_possession_phase_type": ["build_up"] * len(runs),
-                "associated_player_possession_frame_start": pa.array(
-                    [None] * len(runs), pa.int64()
-                ),
-            }
-        ),
+        root / "bronze" / "football" / "match" / f"{m}.parquet",
+        pa.table({"match_id": [m], "pitch_length": [105], "pitch_width": [68]}),
+    )
+    # the events: the runs, each with its phase type and the frame of its own possession,
+    # then (with `instants`) a teammate's possession per candidate, in a phase of its own
+    events: dict[str, list[object]] = {
+        "match_id": [r.match_id for r in runs],
+        "event_id": [r.event_id for r in runs],
+        "event_type": ["off_ball_run"] * len(runs),
+        "event_subtype": [r.subtype for r in runs],
+        "player_id": [r.player_id for r in runs],
+        "team_id": [r.team_id for r in runs],
+        "period": [r.period for r in runs],
+        "frame_start": [r.frame_start for r in runs],
+        "frame_end": [r.frame_end for r in runs],
+        "associated_player_possession_event_id": [r.possession_id for r in runs],
+        "phase_index": [r.period for r in runs],
+        "team_in_possession_phase_type": [f"type_{r.event_id}" for r in runs],
+        "associated_player_possession_frame_start": [
+            r.frame_start if instants else None for r in runs
+        ],
+        "last_defensive_line_height_start": list(_provider_heights(tracking, runs)),
+    }
+    phases: dict[str, list[object]] = {
+        "match_id": [m] * len(tracking.period_frames),
+        "index": list(tracking.period_frames),
+        "period": list(tracking.period_frames),
+        "frame_start": [a for a, _ in tracking.period_frames.values()],
+        "frame_end": [b for _, b in tracking.period_frames.values()],
+    }
+    phase_index = 1000
+    for run in runs:
+        for period, instant in (instants or {}).get((m, run.event_id), ()):
+            phase_index += 1
+            events["match_id"].append(m)
+            events["event_id"].append(f"pp_{phase_index}")
+            events["event_type"].append("player_possession")
+            events["event_subtype"].append(None)
+            events["player_id"].append(8)  # a teammate, never the runner
+            events["team_id"].append(run.team_id)
+            events["period"].append(period)
+            events["frame_start"].append(instant)
+            events["frame_end"].append(instant + 1)
+            events["associated_player_possession_event_id"].append(None)
+            events["phase_index"].append(phase_index)
+            events["team_in_possession_phase_type"].append(f"type_{run.event_id}")
+            events["associated_player_possession_frame_start"].append(None)
+            events["last_defensive_line_height_start"].append(None)
+            phases["match_id"].append(m)
+            phases["index"].append(phase_index)
+            phases["period"].append(period)
+            phases["frame_start"].append(instant - 1)
+            phases["frame_end"].append(instant + 1)
+    schema = pa.schema(
+        [
+            ("match_id", pa.int64()),
+            ("event_id", pa.string()),
+            ("event_type", pa.string()),
+            ("event_subtype", pa.string()),
+            ("player_id", pa.int64()),
+            ("team_id", pa.int64()),
+            ("period", pa.int64()),
+            ("frame_start", pa.int64()),
+            ("frame_end", pa.int64()),
+            ("associated_player_possession_event_id", pa.string()),
+            ("phase_index", pa.int64()),
+            ("team_in_possession_phase_type", pa.string()),
+            ("associated_player_possession_frame_start", pa.int64()),
+            ("last_defensive_line_height_start", pa.float64()),
+        ]
     )
     _parquet(
-        root / "bronze" / "football" / "phases_of_play" / f"{m}.parquet",
-        pa.table(
-            {
-                "match_id": [m] * len(tracking.period_frames),
-                "index": list(tracking.period_frames),
-                "period": list(tracking.period_frames),
-                "frame_start": [a for a, _ in tracking.period_frames.values()],
-                "frame_end": [b for _, b in tracking.period_frames.values()],
-            }
-        ),
+        root / "bronze" / "football" / "dynamic_events" / f"{m}.parquet",
+        pa.table(events, schema=schema),
     )
+    _parquet(root / "bronze" / "football" / "phases_of_play" / f"{m}.parquet", pa.table(phases))
 
 
 def _recovered(push: float, line: float, seed: int) -> tuple[float, float, float, float, int]:
@@ -943,11 +1002,26 @@ REFUSES_A_HELD_OUT_MATCH = {
     "windows.MatchTracking",
     "windows.load_tracking",
     "windows.run_direction",  # takes a MatchTracking, of which the held-out match has none
+    "windows.run_length",  # the same
+    "windows.line_height_at",  # the same
     "windows.quantities",  # the same
     "windows.pair_effects",  # the same
+    "probe.probe_match",  # the same
+    "probe.load_provider_lines",  # the same: a provider measure, read only to contrast
+    "probe.cadence",  # the same
     "data.require_readable",
     "data.load_half",
     "data.assert_held_out_open",
+}
+TAKES_A_MATCH_TRACKING = {
+    "windows.run_direction",
+    "windows.run_length",
+    "windows.line_height_at",
+    "windows.quantities",
+    "windows.pair_effects",
+    "probe.probe_match",
+    "probe.load_provider_lines",
+    "probe.cadence",
 }
 COUNTS_ONLY = {
     "windows.load_runs",
@@ -963,23 +1037,57 @@ COUNTS_ONLY = {
     "coverage.run_runs_coverage",
     "placebo.placebo_counts",
     "placebo.placebo_instants",
+    "probe.load_player_possessions",
+}
+# No match id to pass and no tracking but a `MatchTracking`: the ids are
+# `load_half("calibration")` (test_runs_probe greps the module for it) and the other half is
+# counted through `count_tracking`.
+CALIBRATION_ONLY = {
+    "probe.build_probe",
+    "probe.run_runs_probe",
 }
 # No tracking in, none out: the protocol and git (`data`), arithmetic on what the caller
-# passes (`effect`), the split and the events (`protocol`, `placebo`), or no input at all.
+# passes (`effect`, the null and the power of `probe`), the split and the events
+# (`protocol`, `placebo`), or no input at all.
 READS_NO_FRAMES = {
     "windows.whole_frames",
     "windows.Run",
     "windows.PairEffect",
     "windows.MatchCounts",
+    "windows.unit_labels",
+    "windows.units_by_subtype",
+    "windows.pair_unit_key",
     "data.HeldOutLocked",
     "data.committed_protocol",
     "data.head_stage",
+    "data.head_commit",
     "data.dirty_paths",
     "data.repo_root",
     "coverage.render",
+    "coverage.has_frames",
     "placebo.PlaceboCount",
     "placebo.total",
     "placebo.as_rows",
+    "probe.ProbeInputError",
+    "probe.z_two_sided",
+    "probe.Cadence",
+    "probe.cadence_lag",
+    "probe.pooled_autocorrelation",
+    "probe.MatchProbe",
+    "probe.sign_flips",
+    "probe.unit_sums",
+    "probe.permutation_p",
+    "probe.same_sign_matches",
+    "probe.BarVerdict",
+    "probe.bar_verdict",
+    "probe.NullRates",
+    "probe.null_fire_rates",
+    "probe.DesignEffect",
+    "probe.design_effect",
+    "probe.Power",
+    "probe.mde80",
+    "probe.probe_path",
+    "probe.consistency_problems",
 }
 
 
@@ -1018,6 +1126,10 @@ def _values_inside(obj: object, path: str = "value") -> list[str]:
             if not (
                 isinstance(getattr(obj, f.name), int)
                 or (f.name == "by_subtype" and all(isinstance(n, int) for n in obj.by_subtype))
+                or (
+                    f.name == "analysis_units"
+                    and all(isinstance(n, int) for sizes in obj.analysis_units for n in sizes)
+                )
                 or (f.name.startswith("opp_detected_") and 0.0 <= getattr(obj, f.name) <= 1.0)
             )
         ]
@@ -1043,9 +1155,13 @@ def test_the_walk_sees_an_array_or_a_float_wherever_it_hides() -> None:
     assert _values_inside(held) == ["value.x", "value.y", "value.detected", "value.is_goalkeeper"]
     assert _values_inside({"a": [(1, np.float64(2.0))]}) == ["value['a'][0][1]"]
     assert _values_inside([runs[0], 1.5]) == ["value[1]"]
-    assert _values_inside(windows.PairEffect(1, "r", None, "s", 0.0, 0.0)) == [
+    assert _values_inside(
+        windows.PairEffect(1, "r", None, "s", 7, 20, 1, 60, 0.0, 0.0, 0.0, 0.0)
+    ) == [
         "value.marker_m",
         "value.line_m",
+        "value.placebo_marker_m",
+        "value.placebo_line_m",
     ]
     counts = count_match(held, runs, instants)
     assert _values_inside(counts) == []
@@ -1063,9 +1179,10 @@ def test_every_public_name_of_runs_refuses_a_held_out_match_or_returns_counts_on
     doors build; what the counting names return is walked, and it holds no array and no
     float but the detection fractions. The frames are read in one private function with
     those two callers, `load_tracking` and `count_tracking`."""
-    assert PUBLIC == REFUSES_A_HELD_OUT_MATCH | COUNTS_ONLY | READS_NO_FRAMES
-    assert not (REFUSES_A_HELD_OUT_MATCH & COUNTS_ONLY)
-    assert not ((REFUSES_A_HELD_OUT_MATCH | COUNTS_ONLY) & READS_NO_FRAMES)
+    groups = (REFUSES_A_HELD_OUT_MATCH, COUNTS_ONLY, CALIBRATION_ONLY, READS_NO_FRAMES)
+    assert PUBLIC == set().union(*groups)
+    assert sum(len(g) for g in groups) == len(PUBLIC)  # pairwise disjoint
+    assert TAKES_A_MATCH_TRACKING <= REFUSES_A_HELD_OUT_MATCH
     held, runs, instants = _synthetic_raw(3, 1.0, 0.0, seed=2, match_id=HELD_OUT_MATCH)
     root = tmp_path / "data"
     _write_warehouse(root, held, runs)
@@ -1089,9 +1206,11 @@ def test_every_public_name_of_runs_refuses_a_held_out_match_or_returns_counts_on
         load_half("held_out")
     with pytest.raises(HeldOutLocked):
         data.assert_held_out_open()
-    for name in ("run_direction", "quantities", "pair_effects"):
-        parameter = next(iter(inspect.signature(getattr(windows, name)).parameters.values()))
-        assert parameter.annotation == "MatchTracking", name
+    for qualified in sorted(TAKES_A_MATCH_TRACKING):
+        module_name, name = qualified.split(".")
+        function = getattr(importlib.import_module(f"tracklab.runs.{module_name}"), name)
+        parameter = next(iter(inspect.signature(function).parameters.values()))
+        assert parameter.annotation == "MatchTracking", qualified
     assert {f.name for f in fields(MatchTracking)} == {f.name for f in fields(held)}
     pairs = pair_effects(load_tracking(cal_root, CI_FIXTURE_MATCH), cal_runs, cal_instants)
     assert len(pairs) == 3
@@ -1148,7 +1267,21 @@ def test_every_public_name_of_runs_refuses_a_held_out_match_or_returns_counts_on
         )
         == {}
     )
+    assert (
+        counted(
+            "probe.load_player_possessions", probe.load_player_possessions(root, HELD_OUT_MATCH)
+        )
+        == []
+    )
     assert exercised == COUNTS_ONLY
+
+    # calibration only: no id to pass; on a root that holds the held-out match alone, the
+    # probe asks for a calibration match's frames, which are not there, and writes nothing
+    # (test_runs_probe greps its ids)
+    with pytest.raises((ValueError, duckdb.IOException)):
+        probe.build_probe(root, head="0" * 40)
+    assert probe.run_runs_probe(root, reports) == 1
+    assert not (reports / probe.PROBE_NAME).exists()
 
     # the rest reads no frames: the protocol and git, here; arithmetic and events elsewhere
     assert data.head_stage() == STAGE_DESIGN
@@ -1212,7 +1345,7 @@ def test_the_coverage_header_is_pinned_and_every_column_is_a_count() -> None:
     assert HEADER == tuple(COLUMN_TYPES)
     assert tuple(COLUMN_TYPES)[3:13] == tuple(f"runs_{s}" for s in SUBTYPES)
     for f in fields(MatchCounts):
-        assert f.type in ("int", "float", "tuple[int, ...]"), f.name
+        assert f.type in ("int", "float", "tuple[int, ...]", "tuple[tuple[int, ...], ...]"), f.name
     for row in _committed_rows().values():
         _assert_count_row(row)
 
@@ -1262,7 +1395,7 @@ needs_the_fixture_silver = pytest.mark.skipif(
 
 def _warehouse_holds_every_match() -> bool:
     return (REPORTS / COVERAGE_NAME).is_file() and all(
-        coverage._has_frames(data_root(), int(m)) for m in _committed_rows()
+        coverage.has_frames(data_root(), int(m)) for m in _committed_rows()
     )
 
 
