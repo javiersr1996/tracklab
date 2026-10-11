@@ -44,6 +44,7 @@ def _numbers(value: Any) -> set[str]:
 
 DATA_DIR = REPO / "web" / "public" / "data"
 README = REPO / "README.md"
+HOOK_SUBTYPE = "run_ahead_of_the_ball"  # the largest probable subtype of P5: the one /runs hooks on
 
 
 def _artefact(name: str) -> Any:
@@ -135,6 +136,13 @@ def code_expected() -> list[str]:
     group = max(g["rows"] for g in fact["row_groups"])
     pg_fact = next(t for t in pg["tables"] if t["table"] == "fact_player_season_metric")
     assets = sum(1 for n in lineage["nodes"] if n["kind"] == "asset")
+    runs = _artefact("runs.json")
+    marker = runs["instrument"]["marker"]["pooled"]
+    m3 = next(
+        x for x in runs["stages"]["M3"]["figures"]["subtypes"] if x["subtype"] == HOOK_SUBTYPE
+    )
+    post_hoc = runs["post_hoc_kinematics"]
+    speed = next(x for x in post_hoc["per_subtype"] if x["subtype"] == HOOK_SUBTYPE)["pooled"]
     return [
         f"title: {platform['title']}",
         f"subtitle: {platform['subtitle']}",
@@ -142,6 +150,13 @@ def code_expected() -> list[str]:
         f"has `{fact['rows']}` rows in row groups of `{group}` ordered by metric",
         f"`{pg['database_bytes']}` bytes for the whole database, `{pg_fact['rows']}` rows in the "
         "fact table",
+        f"dead_at: {runs['dead_at']}",
+        f"candidates: {runs['stages']['M5a']['figures']['candidates']}",
+        f"M2 marker mean: {marker['mean_m']} m, same sign in {marker['same_sign_matches']} of "
+        f"{marker['of_matches']} matches",
+        f"M3 pre-trend ratio, {HOOK_SUBTYPE}: {m3['pre_trend_ratio']}",
+        f"post hoc, {HOOK_SUBTYPE}, runner at {post_hoc['thresholds']['running_m_s']} m/s or more "
+        f"at t_c: {speed['runner_running_at_tc_share']}",
     ]
 
 
@@ -188,7 +203,19 @@ def test_a_changed_figure_in_code_is_caught() -> None:
     # A number that equals one of the figures, or a 0 or a 1, in a place that is none of theirs.
     for stray in ("76", "2.3", "0", "1"):
         mutated.append(flat.replace("## Warehouse ", f"## Warehouse It answers in `{stray}` s. "))
-    assert len(mutated) == 15
+    assert len(mutated) == 22
     for text in mutated:
         assert text != flat, "the mutation changed nothing: the README moved on, update this test"
         assert code_problems(text) != []
+
+
+def test_the_prose_says_where_p5_died() -> None:
+    """The stage name is no figure, so the figures tests cannot see it in the prose."""
+    readme = README.read_text("utf-8")
+    section = readme.split("## The run that moves nobody")[1].split("\n## ")[0]
+    prose = " ".join(re.sub(r"```.*?```", "", section, flags=re.S).split())
+    runs = _artefact("runs.json")
+    assert f"It stopped at {runs['dead_at']}:" in prose
+    # the other stage the prose names by its state: the instrument's M2 passed in runs.json
+    assert runs["stages"]["M2"]["state"] == "passed"
+    assert "M2 passed:" in prose

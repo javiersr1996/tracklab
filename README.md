@@ -66,7 +66,8 @@ The pipeline is a Dagster graph (`uv run dagster asset list -m tracklab.dagster_
 `raw_<sport>`, `bronze_<sport>_<table>` (one step per `tracklab bronze --tables` group),
 `bronze_common_orientation` and the `reports_orientation_<sport>` CSVs it writes, the dbt seeds
 and silver models and the season-aggregate gold models (group `gold`), whose dbt tests run as asset checks, and `publish_possessions` and
-`publish_stats` (group `publish`). The job `build` runs all of them. From `pipeline/`:
+`publish_stats` (group `publish`), and the five assets of [P5](#the-run-that-moves-nobody) (group
+`runs`). The job `build` runs all of them. From `pipeline/`:
 
 ```
 uv run dbt parse --project-dir dbt --profiles-dir dbt          # dagster-dbt reads target/manifest.json
@@ -95,8 +96,44 @@ title: 2.3 GB in, 3.3 MB out
 subtitle: 1.2 MB to watch, 2.1 MB to query
 ```
 
-`uv run dagster asset list -m tracklab.dagster_defs` lists `76` assets, the graph
+`uv run dagster asset list -m tracklab.dagster_defs` lists `81` assets, the graph
 `web/public/data/lineage.json` exports for the page.
+
+## The run that moves nobody
+
+[`/runs`](https://tracklab-sable.vercel.app/runs) is the project that died, published dead. It
+asked which off-ball run types move the defence in the tracking, with a protocol written before
+any outcome was computed (`pipeline/reports/runs_protocol.json`) and death criteria M1 to M5b.
+It stopped at M5a: no subtype was left to take to the held-out matches, which were never opened.
+
+M2 passed: the instrument sees a displacement it is forced to see, so the instrument works. M3 is
+what removed every probable subtype: the displacement before the run's `frame_start` already
+reaches more than half of the one after it. A look at the runners' speed written after the
+verdict (post hoc, it decides nothing) says why: `frame_start` comes late, the runner is already
+at speed at the instant the cause is measured (`t_c`), and M3 cannot separate the run from its own
+acceleration. The page says this design and this data could not tell a run from its acceleration;
+it does not say what any run does to the defence.
+
+```
+dead_at: M5a
+candidates: 0
+M2 marker mean: 1.423 m, same sign in 10 of 10 matches
+M3 pre-trend ratio, run_ahead_of_the_ball: 1.5254
+post hoc, run_ahead_of_the_ball, runner at 4.0 m/s or more at t_c: 0.987
+```
+
+In the graph the five assets of group `runs` do not write: each runs the `--check` of its command,
+which recomputes the versioned artefact from the warehouse and compares it. CI runs the checks on
+the fixtures (they say how much they verified) and `full-build` on the whole warehouse, after the
+build.
+
+```
+uv run tracklab runs protocol --check      # the split and the death criteria
+uv run tracklab runs coverage --check      # runs, windows and placebos per match
+uv run tracklab runs probe --check         # M1 and M2 (takes minutes)
+uv run tracklab runs effect --check        # M3 to M5a
+uv run tracklab publish runs --check       # runs.json and the two clips
+```
 
 ## Warehouse
 
