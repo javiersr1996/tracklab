@@ -675,6 +675,31 @@ def _following_match(
     return tracking, runs, instants
 
 
+def _assert_runner_is_run_minus_placebo(
+    tracking: MatchTracking, runs: list[Run], me: candidates.MatchEffects
+) -> None:
+    """The runner's own pre-trend and effect are the run leg's residual along d minus the
+    placebo leg's, recomputed here term by term; the placebo leg is jitter, not zero, so
+    dropping it would move the figure."""
+    by_id = {r.event_id: r for r in runs}
+    for i, pair in enumerate(me.pairs):
+        run = by_id[pair.run_id]
+        direction = windows.run_direction(tracking, run)
+        assert direction is not None
+        runner = tracking.entity_index(run.runner)
+        assert runner is not None
+        sign_run = tracking.attack_sign[(run.period, run.team)]
+        sign_pl = tracking.attack_sign[(pair.placebo_period, run.team)]
+        for instant, placebo_instant, got in (
+            (pair.t_c - EFFECT_FRAMES, pair.placebo_instant - EFFECT_FRAMES, me.runner_pre_m[i]),
+            (pair.t_c, pair.placebo_instant, me.runner_effect_m[i]),
+        ):
+            own = candidates._self_residual(tracking, runner, sign_run, instant, direction)
+            other = candidates._self_residual(tracking, runner, sign_pl, placebo_instant, direction)
+            assert other != 0.0
+            assert got == pytest.approx(own - other, abs=1e-9)
+
+
 @pytest.mark.usefixtures("design_repo")
 @pytest.mark.parametrize("seed", [1, 2, 3])
 def test_m3_is_quiet_at_the_runners_onset_and_fires_when_frame_start_is_late(
@@ -686,33 +711,48 @@ def test_m3_is_quiet_at_the_runners_onset_and_fires_when_frame_start_is_late(
     the real frame_start finds him, the pre-trend window holds the start of the run and
     the marker's following, the velocity at t_c already predicts most of what follows, and
     M3 fires on a defence that never anticipated anything. The kinematics say which case
-    it is: the runner's speed at t_c, his onset, the marker's lag."""
+    it is: the runner's speed at t_c, his onset, the two along-d onsets."""
     ratios: dict[int, float] = {}
     for late in (0, FOLLOW_LATE_FRAMES):
         root = tmp_path / f"late{late}"
         raw, runs, instants = _following_match(seed, late_frames=late)
         _write_warehouse(root, raw, runs, instants)
-        me = candidates.effect_match(windows.load_tracking(root, CI_FIXTURE_MATCH), root)
+        tracking = windows.load_tracking(root, CI_FIXTURE_MATCH)
+        me = candidates.effect_match(tracking, root)
         assert len(me.pairs) == len(runs) == 8
         pre, eff = me.pre_trend_marker_m, np.array([p.marker_m for p in me.pairs])
         assert np.isfinite(pre).all()
         ratios[late] = float(pre.mean() / eff.mean())
         assert eff.mean() > 1.0  # the marker follows: an effect either way
+        _assert_runner_is_run_minus_placebo(tracking, runs, me)
         if late == 0:
             assert abs(float(pre.mean())) < 0.3  # nothing moved before the onset (jitter only)
             assert float(np.median(me.runner_speed_tc)) < 1.0
             assert float(np.median(me.runner_onset_s)) == pytest.approx(0.0, abs=0.11)
-            assert float(np.median(me.marker_lag_s)) == 0.0  # neither has started: no lag yet
+            # neither has started along d by t_c: both onsets are 0.0, so no lag is counted
+            assert (me.runner_along_onset_s == 0.0).all() and (me.marker_along_onset_s == 0.0).all()
+            # the runner's own pre-trend is nothing, his effect is the whole acceleration
+            assert abs(float(np.median(me.runner_pre_m))) < 0.3
+            assert float(np.median(me.runner_effect_m)) > 5.0
+            assert float(np.median(me.runner_speed_before)) < 1.0  # at rest half a second before
+            assert float(np.median(me.runner_speed_placebo)) < 1.0  # the placebo scene is at rest
         else:
             assert float(np.median(me.runner_speed_tc)) > 4.0
             # the onset is the last frame below 3 m/s: on the ramp, between the true start
             # and the ramp's end, and inside the pre-trend window
             onset = float(np.median(me.runner_onset_s))
             assert -late / SAMPLE_RATE_HZ < onset < -late / SAMPLE_RATE_HZ + FOLLOW_RAMP_S
-            assert onset >= -2.0
-            assert float(np.median(me.marker_lag_s)) == pytest.approx(
+            # both started before t_c: the lag is read off the two arrays, 0.2 s, marker after
+            assert (me.runner_along_onset_s < 0.0).all() and (me.marker_along_onset_s < 0.0).all()
+            lag = me.marker_along_onset_s - me.runner_along_onset_s
+            assert float(np.median(lag)) == pytest.approx(
                 FOLLOW_LAG_FRAMES / SAMPLE_RATE_HZ, abs=0.11
             )
+            # the run already happened inside the pre-trend window, nothing is left to do after
+            assert float(np.median(me.runner_pre_m)) > 2.0
+            assert float(np.median(me.runner_effect_m)) < 1.0
+            assert float(np.median(me.runner_speed_before)) > 3.0
+            assert float(np.median(me.runner_speed_placebo)) < 1.0
     assert ratios[0] < M3_PRE_TREND_SHARE / 2, ratios
     assert ratios[FOLLOW_LATE_FRAMES] >= M3_PRE_TREND_SHARE, ratios
 

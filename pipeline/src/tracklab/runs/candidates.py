@@ -166,14 +166,15 @@ class MatchEffects:
     # the post hoc kinematics, per pair (NaN where a frame is missing): the runner's speed at
     # t_c, half a second before it and at t'; his onset before t_c in seconds (<= 0); his own
     # pre-trend and effect pairs (run minus placebo, the M3 statistic on the runner); the
-    # marker's along-d onset minus the runner's on the run leg (positive: the marker after)
+    # runner's and the marker's along-d onsets before t_c on the run leg (0.0: not started yet)
     runner_speed_tc: Array
     runner_speed_before: Array
     runner_speed_placebo: Array
     runner_onset_s: Array
     runner_pre_m: Array
     runner_effect_m: Array
-    marker_lag_s: Array
+    runner_along_onset_s: Array
+    marker_along_onset_s: Array
 
 
 def _centred_speed(t: MatchTracking, entity: int, frame: int) -> float:
@@ -255,7 +256,8 @@ def effect_match(t: MatchTracking, data_dir: Path) -> MatchEffects:
             "onset",
             "self_pre",
             "self_effect",
-            "marker_lag",
+            "runner_along_onset",
+            "marker_along_onset",
         )
     }
     for pair in pairs:
@@ -294,7 +296,8 @@ def effect_match(t: MatchTracking, data_dir: Path) -> MatchEffects:
         assert marker is not None  # the pair exists, so the run leg has a marker
         runner_onset = _along_onset_s(t, runner, sign_run, pair.t_c, direction)
         marker_onset = _along_onset_s(t, marker, sign_run, pair.t_c, direction)
-        kinematics["marker_lag"].append(marker_onset - runner_onset)
+        kinematics["runner_along_onset"].append(runner_onset)
+        kinematics["marker_along_onset"].append(marker_onset)
     return MatchEffects(
         match_id=t.match_id,
         pairs=pairs,
@@ -308,7 +311,8 @@ def effect_match(t: MatchTracking, data_dir: Path) -> MatchEffects:
         runner_onset_s=np.array(kinematics["onset"], dtype=np.float64),
         runner_pre_m=np.array(kinematics["self_pre"], dtype=np.float64),
         runner_effect_m=np.array(kinematics["self_effect"], dtype=np.float64),
-        marker_lag_s=np.array(kinematics["marker_lag"], dtype=np.float64),
+        runner_along_onset_s=np.array(kinematics["runner_along_onset"], dtype=np.float64),
+        marker_along_onset_s=np.array(kinematics["marker_along_onset"], dtype=np.float64),
     )
 
 
@@ -330,7 +334,7 @@ class _Collected:
     line_m: Array
     pre_trend_m: Array
     detected: NDArray[np.bool_]
-    kinematics: dict[str, Array]  # the seven per-pair arrays of `MatchEffects`, concatenated
+    kinematics: dict[str, Array]  # the eight per-pair arrays of `MatchEffects`, concatenated
 
 
 KINEMATICS_FIELDS = (
@@ -340,7 +344,8 @@ KINEMATICS_FIELDS = (
     "runner_onset_s",
     "runner_pre_m",
     "runner_effect_m",
-    "marker_lag_s",
+    "runner_along_onset_s",
+    "marker_along_onset_s",
 )
 
 
@@ -733,7 +738,11 @@ def _kinematics_row(c: _Collected, mask: NDArray[np.bool_]) -> dict[str, Any]:
     both = mask & np.isfinite(k["runner_pre_m"]) & np.isfinite(k["runner_effect_m"])
     self_pre = _round(float(k["runner_pre_m"][both].mean()), 4) if both.any() else None
     self_effect = _round(float(k["runner_effect_m"][both].mean()), 4) if both.any() else None
-    lag = finite("marker_lag_s")
+    runner_along, marker_along = k["runner_along_onset_s"][mask], k["marker_along_onset_s"][mask]
+    found = np.isfinite(runner_along) & np.isfinite(marker_along)
+    # an onset of 0.0 means the entity is still below the threshold at t_c: not started yet
+    started = found & (runner_along < 0.0) & (marker_along < 0.0)
+    lag = marker_along[started] - runner_along[started]
     return {
         "pairs": int(mask.sum()),
         "runner_speed_at_tc_median_m_s": median(speed_tc, 3),
@@ -748,7 +757,10 @@ def _kinematics_row(c: _Collected, mask: NDArray[np.bool_]) -> dict[str, Any]:
         "runner_own_pre_trend_m": self_pre,
         "runner_own_effect_m": self_effect,
         "runner_own_pre_trend_ratio": _ratio(self_pre, self_effect),
-        "pairs_with_both_onsets": int(lag.size),
+        "pairs_with_both_onsets": int(found.sum()),
+        "marker_not_started_at_tc_share": share(marker_along[found] == 0.0),
+        "runner_not_started_along_d_at_tc_share": share(runner_along[found] == 0.0),
+        "pairs_both_started": int(started.sum()),
         "marker_onset_lag_median_s": median(lag, 2),
         "marker_after_runner_share": share(lag > 0.0),
         "marker_before_runner_share": share(lag < 0.0),
@@ -788,8 +800,11 @@ def _kinematics_section(
             "himself (his residual along d at t - W and at t, run minus placebo, on the "
             "pairs with both) and its ratio; and the marker's along-d onset (last frame at "
             f"or before t_c with the velocity along d below {KINEMATICS_ALONG_ONSET_M_S} "
-            "m/s) minus the runner's, on the run leg: positive when the marker starts after "
-            "the runner"
+            "m/s), on the run leg, for the runner and the marker: the share of each that has "
+            "not started by t_c (onset 0.0) among the pairs with both onsets found; and, only "
+            "on the pairs where both started before t_c, the marker's onset minus the "
+            "runner's (median, and the shares positive: the marker after, and negative: the "
+            "marker before)"
         ),
         "thresholds": {
             "running_m_s": KINEMATICS_RUN_SPEED_M_S,
