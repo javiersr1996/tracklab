@@ -2364,5 +2364,2630 @@
       "alive": true
     }
   },
-  "content_sha256": "232e3edd13e80c1dca1dc9a2281bb395a68bc03af112e97299e38b0f733e5189"
+  "effect": {
+    "task": 50,
+    "written": "2026-10-11",
+    "head": "e1aa60897e37302b0f80988597eee097706de737",
+    "code_tree_sha": "9d2ec6df52eb4f2c226bdf8695834903180a2954",
+    "half": "calibration",
+    "matches": [
+      1874553,
+      1886347,
+      1925299,
+      1959846,
+      1996435,
+      1996436,
+      2007448,
+      2010085,
+      2011166,
+      2015213
+    ],
+    "protocol": {
+      "stage": "design",
+      "fingerprint": "83630615f86297318d519692a0b2ace271a00b485913540eceb285a56cb5b1aa",
+      "content_sha256": "4a9edf1b51fc1bfe53e9e13cfe16f032cd3d2058fb570ecdee40f8dcac1a5b77"
+    },
+    "probe_section_sha256": "f3748febf192b77759d1fb2781dec4055b307ee8821419a1d430af47db68086d",
+    "seed": 20261009,
+    "seed_streams": {
+      "effect": 5,
+      "classes": 6,
+      "run_leg_overlap": 7,
+      "how": "each permutation draws from the child [seed, stream, subtype index, quantity index] (classes: [seed, stream, class index]), so the loops' order moves nothing"
+    },
+    "inputs": {
+      "primary_quantity": "marker",
+      "secondary_quantity": "line",
+      "subtypes": [
+        "coming_short",
+        "run_ahead_of_the_ball",
+        "support"
+      ],
+      "placebo_sd_marker_m": 2.5226,
+      "placebo_sd_line_m": 1.8267,
+      "line_testability": {
+        "coming_short": "not testable on the line with this sample",
+        "run_ahead_of_the_ball": "testable on the line",
+        "support": "not testable on the line with this sample"
+      }
+    },
+    "what": {
+      "effect": "the marker displacement along the run (the primary quantity), run minus placebo, mean per match and pooled over the half, in metres and in placebo sd, against the bar: same sign in at least 8 of 10 matches and the sign-flip permutation p over the protocol's units at most 0.00135; the line height alongside as the secondary quantity with its testability label, deciding nothing",
+      "pre_trend": "the same statistic with t_c replaced by t_c - W on both legs (the marker nearest at t - W, its velocity over [t - W - V, t - W], its displacement over [t - W, t]), on the pairs whose two legs have it; ratio is its pooled mean over the effect's on the same pairs; M3 when it reaches 0.5",
+      "fully_detected": "the effect on the pairs whose marker is is_detected at every frame from t - V to t + W on both legs; ratio is its pooled mean over the effect's with every pair; M4 when it falls below 0.5 (a sign change is below it)",
+      "class_at_tc": "the class of the run from information up to t_c alone: the runner's velocity over [t_c - V, t_c] against the ball at t_c, the line L(t_c) and the nearer touchline; the subtype's distribution over the eight classes, its modal class and the effect of that class over every pair of the half whatever its subtype (by_class); M3 when that effect has the opposite sign to the subtype's; the subtype's pairs inside and outside the modal class are printed alongside and decide nothing",
+      "run_leg_overlap": "the bar's p with the units coarsened to link, inside the match, runs of a team whose legs [t_c - V, t_c + W] overlap in time, on top of the protocol's keys: the dependence a placebo-against-placebo null cannot see (review of task 49, inherited b); reported, never deciding, the protocol's unit is fixed",
+      "verdict": "a candidate passes the bar on the marker and survives M3 and M4; the line never adds or removes one; zero candidates is M5a: P5 dies and the held-out half is never opened"
+    },
+    "windows": {
+      "effect_s": 2.0,
+      "pre_trend_s": [
+        -2.0,
+        0.0
+      ]
+    },
+    "class_at_tc": {
+      "classes": [
+        "to_ball/to_line/wide",
+        "to_ball/to_line/inside",
+        "to_ball/from_line/wide",
+        "to_ball/from_line/inside",
+        "from_ball/to_line/wide",
+        "from_ball/to_line/inside",
+        "from_ball/from_line/wide",
+        "from_ball/from_line/inside"
+      ],
+      "pairs": 3756,
+      "unclassified": 0,
+      "by_class": [
+        {
+          "class": "to_ball/to_line/wide",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 102,
+              "mean_m": 1.315,
+              "mean_sd": 0.5213,
+              "se_m": 0.3581
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 137,
+              "mean_m": 1.0892,
+              "mean_sd": 0.4318,
+              "se_m": 0.289
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 94,
+              "mean_m": 0.9239,
+              "mean_sd": 0.3662,
+              "se_m": 0.3535
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 101,
+              "mean_m": 0.8338,
+              "mean_sd": 0.3305,
+              "se_m": 0.3379
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 118,
+              "mean_m": 0.6975,
+              "mean_sd": 0.2765,
+              "se_m": 0.3633
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 84,
+              "mean_m": 1.096,
+              "mean_sd": 0.4345,
+              "se_m": 0.3891
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 82,
+              "mean_m": 1.0016,
+              "mean_sd": 0.397,
+              "se_m": 0.3476
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 80,
+              "mean_m": 1.5466,
+              "mean_sd": 0.6131,
+              "se_m": 0.3735
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 62,
+              "mean_m": 1.4256,
+              "mean_sd": 0.5651,
+              "se_m": 0.5194
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 73,
+              "mean_m": 0.9657,
+              "mean_sd": 0.3828,
+              "se_m": 0.4702
+            }
+          ],
+          "pooled": {
+            "pairs": 933,
+            "units": 820,
+            "mean_m": 1.0649,
+            "mean_sd": 0.4221,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        {
+          "class": "to_ball/to_line/inside",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 87,
+              "mean_m": 1.7663,
+              "mean_sd": 0.7002,
+              "se_m": 0.3708
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 93,
+              "mean_m": 1.05,
+              "mean_sd": 0.4162,
+              "se_m": 0.3953
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 78,
+              "mean_m": 1.6418,
+              "mean_sd": 0.6508,
+              "se_m": 0.4315
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 96,
+              "mean_m": 1.6616,
+              "mean_sd": 0.6587,
+              "se_m": 0.4203
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 97,
+              "mean_m": 1.0219,
+              "mean_sd": 0.4051,
+              "se_m": 0.3345
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 85,
+              "mean_m": 1.4022,
+              "mean_sd": 0.5559,
+              "se_m": 0.3744
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 81,
+              "mean_m": 2.0143,
+              "mean_sd": 0.7985,
+              "se_m": 0.4574
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 54,
+              "mean_m": 1.6679,
+              "mean_sd": 0.6612,
+              "se_m": 0.4732
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 65,
+              "mean_m": 3.1253,
+              "mean_sd": 1.2389,
+              "se_m": 0.5253
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 70,
+              "mean_m": 1.7173,
+              "mean_sd": 0.6808,
+              "se_m": 0.5726
+            }
+          ],
+          "pooled": {
+            "pairs": 806,
+            "units": 682,
+            "mean_m": 1.6548,
+            "mean_sd": 0.656,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        {
+          "class": "to_ball/from_line/wide",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 52,
+              "mean_m": 1.5676,
+              "mean_sd": 0.6214,
+              "se_m": 0.4693
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 71,
+              "mean_m": 0.3367,
+              "mean_sd": 0.1335,
+              "se_m": 0.3761
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 49,
+              "mean_m": 0.1092,
+              "mean_sd": 0.0433,
+              "se_m": 0.475
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 39,
+              "mean_m": 0.8725,
+              "mean_sd": 0.3459,
+              "se_m": 0.4914
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 48,
+              "mean_m": 0.5854,
+              "mean_sd": 0.2321,
+              "se_m": 0.4969
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 32,
+              "mean_m": 1.0475,
+              "mean_sd": 0.4153,
+              "se_m": 0.6623
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 48,
+              "mean_m": 2.1333,
+              "mean_sd": 0.8457,
+              "se_m": 0.5681
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 35,
+              "mean_m": 0.4771,
+              "mean_sd": 0.1891,
+              "se_m": 0.6763
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 29,
+              "mean_m": -0.6077,
+              "mean_sd": -0.2409,
+              "se_m": 0.7826
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 54,
+              "mean_m": 1.2121,
+              "mean_sd": 0.4805,
+              "se_m": 0.5554
+            }
+          ],
+          "pooled": {
+            "pairs": 457,
+            "units": 418,
+            "mean_m": 0.8169,
+            "mean_sd": 0.3239,
+            "same_sign_matches": 9,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        {
+          "class": "to_ball/from_line/inside",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 29,
+              "mean_m": 0.8192,
+              "mean_sd": 0.3247,
+              "se_m": 0.6281
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 43,
+              "mean_m": 0.9539,
+              "mean_sd": 0.3781,
+              "se_m": 0.4749
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 34,
+              "mean_m": 1.3617,
+              "mean_sd": 0.5398,
+              "se_m": 0.6069
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 25,
+              "mean_m": 0.9474,
+              "mean_sd": 0.3756,
+              "se_m": 0.777
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 36,
+              "mean_m": 1.1485,
+              "mean_sd": 0.4553,
+              "se_m": 0.5754
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 25,
+              "mean_m": 1.1135,
+              "mean_sd": 0.4414,
+              "se_m": 0.6133
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 30,
+              "mean_m": 0.5063,
+              "mean_sd": 0.2007,
+              "se_m": 0.6442
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 30,
+              "mean_m": 0.7889,
+              "mean_sd": 0.3127,
+              "se_m": 0.6211
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 29,
+              "mean_m": 1.3319,
+              "mean_sd": 0.528,
+              "se_m": 0.8097
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 48,
+              "mean_m": 0.9699,
+              "mean_sd": 0.3845,
+              "se_m": 0.5502
+            }
+          ],
+          "pooled": {
+            "pairs": 329,
+            "units": 299,
+            "mean_m": 0.9969,
+            "mean_sd": 0.3952,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        {
+          "class": "from_ball/to_line/wide",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 72,
+              "mean_m": 1.131,
+              "mean_sd": 0.4484,
+              "se_m": 0.3593
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 66,
+              "mean_m": 1.4489,
+              "mean_sd": 0.5744,
+              "se_m": 0.397
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 67,
+              "mean_m": 1.7754,
+              "mean_sd": 0.7038,
+              "se_m": 0.3613
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 47,
+              "mean_m": 2.7447,
+              "mean_sd": 1.088,
+              "se_m": 0.5739
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 67,
+              "mean_m": 1.4909,
+              "mean_sd": 0.591,
+              "se_m": 0.5001
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 61,
+              "mean_m": 1.7653,
+              "mean_sd": 0.6998,
+              "se_m": 0.4033
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 59,
+              "mean_m": 2.0535,
+              "mean_sd": 0.814,
+              "se_m": 0.5142
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 48,
+              "mean_m": 2.8769,
+              "mean_sd": 1.1404,
+              "se_m": 0.4561
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 51,
+              "mean_m": 2.3133,
+              "mean_sd": 0.917,
+              "se_m": 0.5343
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 59,
+              "mean_m": 2.3178,
+              "mean_sd": 0.9188,
+              "se_m": 0.4824
+            }
+          ],
+          "pooled": {
+            "pairs": 597,
+            "units": 550,
+            "mean_m": 1.9205,
+            "mean_sd": 0.7613,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        {
+          "class": "from_ball/to_line/inside",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 45,
+              "mean_m": 1.3262,
+              "mean_sd": 0.5257,
+              "se_m": 0.5146
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 31,
+              "mean_m": 1.7584,
+              "mean_sd": 0.6971,
+              "se_m": 0.502
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 36,
+              "mean_m": 1.9338,
+              "mean_sd": 0.7666,
+              "se_m": 0.4832
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 38,
+              "mean_m": 0.6413,
+              "mean_sd": 0.2542,
+              "se_m": 0.603
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 41,
+              "mean_m": 2.1493,
+              "mean_sd": 0.852,
+              "se_m": 0.5521
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 28,
+              "mean_m": 1.0425,
+              "mean_sd": 0.4133,
+              "se_m": 0.9601
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 20,
+              "mean_m": 1.0187,
+              "mean_sd": 0.4038,
+              "se_m": 0.6349
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 23,
+              "mean_m": 1.5313,
+              "mean_sd": 0.607,
+              "se_m": 0.615
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 39,
+              "mean_m": 2.1465,
+              "mean_sd": 0.8509,
+              "se_m": 0.487
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 32,
+              "mean_m": 2.5623,
+              "mean_sd": 1.0158,
+              "se_m": 0.7129
+            }
+          ],
+          "pooled": {
+            "pairs": 333,
+            "units": 306,
+            "mean_m": 1.642,
+            "mean_sd": 0.6509,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        {
+          "class": "from_ball/from_line/wide",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 16,
+              "mean_m": 2.8743,
+              "mean_sd": 1.1394,
+              "se_m": 0.6577
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 25,
+              "mean_m": 2.3116,
+              "mean_sd": 0.9164,
+              "se_m": 0.5595
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 23,
+              "mean_m": 2.5949,
+              "mean_sd": 1.0287,
+              "se_m": 0.6559
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 24,
+              "mean_m": 2.4159,
+              "mean_sd": 0.9577,
+              "se_m": 0.851
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 16,
+              "mean_m": 1.8752,
+              "mean_sd": 0.7434,
+              "se_m": 1.1685
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 8,
+              "mean_m": 1.2822,
+              "mean_sd": 0.5083,
+              "se_m": 1.345
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 24,
+              "mean_m": 1.3325,
+              "mean_sd": 0.5282,
+              "se_m": 0.7462
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 24,
+              "mean_m": 2.1538,
+              "mean_sd": 0.8538,
+              "se_m": 0.6813
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 13,
+              "mean_m": 2.0519,
+              "mean_sd": 0.8134,
+              "se_m": 1.2219
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 33,
+              "mean_m": 1.6364,
+              "mean_sd": 0.6487,
+              "se_m": 0.7841
+            }
+          ],
+          "pooled": {
+            "pairs": 206,
+            "units": 202,
+            "mean_m": 2.0682,
+            "mean_sd": 0.8199,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        {
+          "class": "from_ball/from_line/inside",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 6,
+              "mean_m": 3.4133,
+              "mean_sd": 1.3531,
+              "se_m": 2.1373
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 12,
+              "mean_m": 2.8134,
+              "mean_sd": 1.1153,
+              "se_m": 1.3035
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 10,
+              "mean_m": 0.6378,
+              "mean_sd": 0.2528,
+              "se_m": 1.3369
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 3,
+              "mean_m": 2.1676,
+              "mean_sd": 0.8593,
+              "se_m": 2.7694
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 10,
+              "mean_m": 2.5005,
+              "mean_sd": 0.9912,
+              "se_m": 0.9902
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 9,
+              "mean_m": 0.5087,
+              "mean_sd": 0.2016,
+              "se_m": 1.2864
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 12,
+              "mean_m": 1.5376,
+              "mean_sd": 0.6095,
+              "se_m": 0.7596
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 14,
+              "mean_m": 1.5843,
+              "mean_sd": 0.628,
+              "se_m": 0.7387
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 10,
+              "mean_m": 3.3546,
+              "mean_sd": 1.3298,
+              "se_m": 1.4726
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 9,
+              "mean_m": 2.8867,
+              "mean_sd": 1.1443,
+              "se_m": 1.1772
+            }
+          ],
+          "pooled": {
+            "pairs": 95,
+            "units": 91,
+            "mean_m": 2.0722,
+            "mean_sd": 0.8215,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        }
+      ]
+    },
+    "per_subtype": [
+      {
+        "subtype": "coming_short",
+        "pairs": 476,
+        "marker": {
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 49,
+              "mean_m": 0.9858,
+              "mean_sd": 0.3908,
+              "se_m": 0.3601
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 67,
+              "mean_m": -0.0,
+              "mean_sd": -0.0,
+              "se_m": 0.3987
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 57,
+              "mean_m": 0.7455,
+              "mean_sd": 0.2955,
+              "se_m": 0.4374
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 37,
+              "mean_m": -0.1794,
+              "mean_sd": -0.0711,
+              "se_m": 0.4634
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 53,
+              "mean_m": 0.849,
+              "mean_sd": 0.3366,
+              "se_m": 0.4109
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 26,
+              "mean_m": 1.0312,
+              "mean_sd": 0.4088,
+              "se_m": 0.7651
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 46,
+              "mean_m": 0.3415,
+              "mean_sd": 0.1354,
+              "se_m": 0.4164
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 44,
+              "mean_m": 0.6254,
+              "mean_sd": 0.2479,
+              "se_m": 0.5336
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 30,
+              "mean_m": -0.6026,
+              "mean_sd": -0.2389,
+              "se_m": 0.6706
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 67,
+              "mean_m": 0.0871,
+              "mean_sd": 0.0345,
+              "se_m": 0.4213
+            }
+          ],
+          "pooled": {
+            "pairs": 476,
+            "units": 442,
+            "mean_m": 0.3928,
+            "mean_sd": 0.1557,
+            "same_sign_matches": 7,
+            "of_matches": 10,
+            "p": 0.0055,
+            "passes_bar": false
+          }
+        },
+        "line": {
+          "testability": "not testable on the line with this sample",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 49,
+              "mean_m": -0.0208,
+              "mean_sd": -0.0114,
+              "se_m": 0.2679
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 67,
+              "mean_m": 0.0116,
+              "mean_sd": 0.0063,
+              "se_m": 0.2664
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 57,
+              "mean_m": 0.4415,
+              "mean_sd": 0.2417,
+              "se_m": 0.3029
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 37,
+              "mean_m": 0.0527,
+              "mean_sd": 0.0289,
+              "se_m": 0.4074
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 53,
+              "mean_m": 0.7217,
+              "mean_sd": 0.3951,
+              "se_m": 0.3024
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 26,
+              "mean_m": -0.4756,
+              "mean_sd": -0.2603,
+              "se_m": 0.3565
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 46,
+              "mean_m": 1.1343,
+              "mean_sd": 0.621,
+              "se_m": 0.3227
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 44,
+              "mean_m": 0.1141,
+              "mean_sd": 0.0625,
+              "se_m": 0.3207
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 30,
+              "mean_m": 0.1808,
+              "mean_sd": 0.099,
+              "se_m": 0.378
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 67,
+              "mean_m": 0.7262,
+              "mean_sd": 0.3975,
+              "se_m": 0.3611
+            }
+          ],
+          "pooled": {
+            "pairs": 476,
+            "units": 442,
+            "mean_m": 0.3446,
+            "mean_sd": 0.1887,
+            "same_sign_matches": 8,
+            "of_matches": 10,
+            "p": 0.0015,
+            "passes_bar": false
+          }
+        },
+        "pre_trend": {
+          "pairs": 459,
+          "of_pairs": 476,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 49,
+              "pre_trend_mean_m": 1.463,
+              "effect_mean_m": 0.9858
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 64,
+              "pre_trend_mean_m": 1.5267,
+              "effect_mean_m": -0.082
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 56,
+              "pre_trend_mean_m": 2.1358,
+              "effect_mean_m": 0.8102
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 35,
+              "pre_trend_mean_m": 1.9978,
+              "effect_mean_m": -0.2818
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 52,
+              "pre_trend_mean_m": 1.7052,
+              "effect_mean_m": 0.7416
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 26,
+              "pre_trend_mean_m": 2.2227,
+              "effect_mean_m": 1.0312
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 43,
+              "pre_trend_mean_m": 1.5648,
+              "effect_mean_m": 0.3361
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 44,
+              "pre_trend_mean_m": 1.6448,
+              "effect_mean_m": 0.6254
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 27,
+              "pre_trend_mean_m": 2.4704,
+              "effect_mean_m": -0.6592
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 63,
+              "pre_trend_mean_m": 2.1149,
+              "effect_mean_m": 0.1176
+            }
+          ],
+          "pooled": {
+            "pairs": 459,
+            "pre_trend_mean_m": 1.8409,
+            "pre_trend_mean_sd": 0.7298,
+            "effect_mean_m": 0.3824,
+            "ratio": 4.8141
+          }
+        },
+        "fully_detected": {
+          "pairs": 335,
+          "of_pairs": 476,
+          "fraction": 0.7038,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 35,
+              "mean_m": 1.0479,
+              "mean_sd": 0.4154,
+              "se_m": 0.4848
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 52,
+              "mean_m": -0.1266,
+              "mean_sd": -0.0502,
+              "se_m": 0.4567
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 37,
+              "mean_m": 0.4191,
+              "mean_sd": 0.1661,
+              "se_m": 0.5413
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 30,
+              "mean_m": -0.2162,
+              "mean_sd": -0.0857,
+              "se_m": 0.5079
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 44,
+              "mean_m": 0.7742,
+              "mean_sd": 0.3069,
+              "se_m": 0.473
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 16,
+              "mean_m": 0.539,
+              "mean_sd": 0.2137,
+              "se_m": 1.0873
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 29,
+              "mean_m": 0.1169,
+              "mean_sd": 0.0464,
+              "se_m": 0.5309
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 30,
+              "mean_m": 0.2306,
+              "mean_sd": 0.0914,
+              "se_m": 0.6704
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 24,
+              "mean_m": -0.9747,
+              "mean_sd": -0.3864,
+              "se_m": 0.7907
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 38,
+              "mean_m": -0.0928,
+              "mean_sd": -0.0368,
+              "se_m": 0.5642
+            }
+          ],
+          "pooled": {
+            "pairs": 335,
+            "mean_m": 0.1946,
+            "mean_sd": 0.0771,
+            "same_sign_matches": 6,
+            "of_matches": 10,
+            "effect_mean_m": 0.3928,
+            "ratio": 0.4954
+          }
+        },
+        "class_at_tc": {
+          "classified": 476,
+          "unclassified": 0,
+          "distribution": {
+            "to_ball/to_line/wide": 81,
+            "to_ball/to_line/inside": 30,
+            "to_ball/from_line/wide": 184,
+            "to_ball/from_line/inside": 174,
+            "from_ball/to_line/wide": 1,
+            "from_ball/to_line/inside": 1,
+            "from_ball/from_line/wide": 2,
+            "from_ball/from_line/inside": 3
+          },
+          "modal_class": "to_ball/from_line/wide",
+          "modal_share": 0.3866,
+          "modal_class_effect": {
+            "pairs": 457,
+            "units": 418,
+            "mean_m": 0.8169,
+            "mean_sd": 0.3239,
+            "same_sign_matches": 9,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          },
+          "subtype_effect_mean_m": 0.3928,
+          "opposite_sign": false,
+          "subtype_pairs_in_modal_class": {
+            "pairs": 184,
+            "mean_m": 0.3765
+          },
+          "subtype_pairs_outside_modal_class": {
+            "pairs": 292,
+            "mean_m": 0.403
+          }
+        },
+        "run_leg_overlap": {
+          "units": 410,
+          "largest_unit": 4,
+          "protocol_units": 442,
+          "p": 0.0075,
+          "same_sign_matches": 7,
+          "passes_bar": false
+        },
+        "verdict": {
+          "passes_bar": false,
+          "M3": {
+            "pre_trend_ratio": 4.8141,
+            "pre_trend_reaches_share": true,
+            "class_at_tc_opposite_sign": false,
+            "leaves": true
+          },
+          "M4": {
+            "detected_ratio": 0.4954,
+            "leaves": true
+          },
+          "candidate": false
+        }
+      },
+      {
+        "subtype": "run_ahead_of_the_ball",
+        "pairs": 1074,
+        "marker": {
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 116,
+              "mean_m": 1.2117,
+              "mean_sd": 0.4803,
+              "se_m": 0.2712
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 114,
+              "mean_m": 1.3769,
+              "mean_sd": 0.5458,
+              "se_m": 0.3106
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 131,
+              "mean_m": 1.8479,
+              "mean_sd": 0.7325,
+              "se_m": 0.2892
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 118,
+              "mean_m": 1.8217,
+              "mean_sd": 0.7222,
+              "se_m": 0.3971
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 122,
+              "mean_m": 1.2249,
+              "mean_sd": 0.4856,
+              "se_m": 0.3391
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 98,
+              "mean_m": 1.1442,
+              "mean_sd": 0.4536,
+              "se_m": 0.3724
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 77,
+              "mean_m": 2.3039,
+              "mean_sd": 0.9133,
+              "se_m": 0.4236
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 73,
+              "mean_m": 1.5927,
+              "mean_sd": 0.6314,
+              "se_m": 0.3255
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 112,
+              "mean_m": 2.1863,
+              "mean_sd": 0.8667,
+              "se_m": 0.4029
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 113,
+              "mean_m": 1.8836,
+              "mean_sd": 0.7467,
+              "se_m": 0.4296
+            }
+          ],
+          "pooled": {
+            "pairs": 1074,
+            "units": 899,
+            "mean_m": 1.6457,
+            "mean_sd": 0.6524,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        "line": {
+          "testability": "testable on the line",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 116,
+              "mean_m": 1.114,
+              "mean_sd": 0.6098,
+              "se_m": 0.215
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 114,
+              "mean_m": 1.5482,
+              "mean_sd": 0.8475,
+              "se_m": 0.2251
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 131,
+              "mean_m": 1.0577,
+              "mean_sd": 0.579,
+              "se_m": 0.2376
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 118,
+              "mean_m": 1.659,
+              "mean_sd": 0.9082,
+              "se_m": 0.2311
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 122,
+              "mean_m": 1.2532,
+              "mean_sd": 0.6861,
+              "se_m": 0.2887
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 98,
+              "mean_m": 0.7194,
+              "mean_sd": 0.3938,
+              "se_m": 0.2804
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 77,
+              "mean_m": 1.7481,
+              "mean_sd": 0.957,
+              "se_m": 0.2979
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 73,
+              "mean_m": 1.2581,
+              "mean_sd": 0.6887,
+              "se_m": 0.2857
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 112,
+              "mean_m": 1.7374,
+              "mean_sd": 0.9511,
+              "se_m": 0.2693
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 113,
+              "mean_m": 1.3744,
+              "mean_sd": 0.7524,
+              "se_m": 0.2729
+            }
+          ],
+          "pooled": {
+            "pairs": 1074,
+            "units": 899,
+            "mean_m": 1.3406,
+            "mean_sd": 0.7339,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        "pre_trend": {
+          "pairs": 1031,
+          "of_pairs": 1074,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 109,
+              "pre_trend_mean_m": 2.5357,
+              "effect_mean_m": 1.0831
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 109,
+              "pre_trend_mean_m": 2.8634,
+              "effect_mean_m": 1.2596
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 129,
+              "pre_trend_mean_m": 2.536,
+              "effect_mean_m": 1.8255
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 115,
+              "pre_trend_mean_m": 2.2736,
+              "effect_mean_m": 1.7665
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 121,
+              "pre_trend_mean_m": 2.3559,
+              "effect_mean_m": 1.271
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 94,
+              "pre_trend_mean_m": 1.6471,
+              "effect_mean_m": 1.1029
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 76,
+              "pre_trend_mean_m": 1.6075,
+              "effect_mean_m": 2.3058
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 71,
+              "pre_trend_mean_m": 3.0482,
+              "effect_mean_m": 1.5666
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 96,
+              "pre_trend_mean_m": 2.8205,
+              "effect_mean_m": 2.2436
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 111,
+              "pre_trend_mean_m": 2.6964,
+              "effect_mean_m": 1.8233
+            }
+          ],
+          "pooled": {
+            "pairs": 1031,
+            "pre_trend_mean_m": 2.4497,
+            "pre_trend_mean_sd": 0.9711,
+            "effect_mean_m": 1.6059,
+            "ratio": 1.5254
+          }
+        },
+        "fully_detected": {
+          "pairs": 764,
+          "of_pairs": 1074,
+          "fraction": 0.7114,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 77,
+              "mean_m": 1.1605,
+              "mean_sd": 0.46,
+              "se_m": 0.3398
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 81,
+              "mean_m": 1.2388,
+              "mean_sd": 0.4911,
+              "se_m": 0.3671
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 91,
+              "mean_m": 1.6545,
+              "mean_sd": 0.6559,
+              "se_m": 0.3708
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 94,
+              "mean_m": 1.7928,
+              "mean_sd": 0.7107,
+              "se_m": 0.4542
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 104,
+              "mean_m": 1.2562,
+              "mean_sd": 0.498,
+              "se_m": 0.3752
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 76,
+              "mean_m": 1.294,
+              "mean_sd": 0.513,
+              "se_m": 0.4113
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 54,
+              "mean_m": 2.3229,
+              "mean_sd": 0.9209,
+              "se_m": 0.494
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 47,
+              "mean_m": 1.6196,
+              "mean_sd": 0.642,
+              "se_m": 0.4257
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 71,
+              "mean_m": 2.1159,
+              "mean_sd": 0.8388,
+              "se_m": 0.5205
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 69,
+              "mean_m": 1.7092,
+              "mean_sd": 0.6775,
+              "se_m": 0.5335
+            }
+          ],
+          "pooled": {
+            "pairs": 764,
+            "mean_m": 1.5805,
+            "mean_sd": 0.6265,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "effect_mean_m": 1.6457,
+            "ratio": 0.9604
+          }
+        },
+        "class_at_tc": {
+          "classified": 1074,
+          "unclassified": 0,
+          "distribution": {
+            "to_ball/to_line/wide": 264,
+            "to_ball/to_line/inside": 232,
+            "to_ball/from_line/wide": 22,
+            "to_ball/from_line/inside": 31,
+            "from_ball/to_line/wide": 333,
+            "from_ball/to_line/inside": 179,
+            "from_ball/from_line/wide": 8,
+            "from_ball/from_line/inside": 5
+          },
+          "modal_class": "from_ball/to_line/wide",
+          "modal_share": 0.3101,
+          "modal_class_effect": {
+            "pairs": 597,
+            "units": 550,
+            "mean_m": 1.9205,
+            "mean_sd": 0.7613,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          },
+          "subtype_effect_mean_m": 1.6457,
+          "opposite_sign": false,
+          "subtype_pairs_in_modal_class": {
+            "pairs": 333,
+            "mean_m": 1.7659
+          },
+          "subtype_pairs_outside_modal_class": {
+            "pairs": 741,
+            "mean_m": 1.5917
+          }
+        },
+        "run_leg_overlap": {
+          "units": 776,
+          "largest_unit": 7,
+          "protocol_units": 899,
+          "p": 0.0005,
+          "same_sign_matches": 10,
+          "passes_bar": true
+        },
+        "verdict": {
+          "passes_bar": true,
+          "M3": {
+            "pre_trend_ratio": 1.5254,
+            "pre_trend_reaches_share": true,
+            "class_at_tc_opposite_sign": false,
+            "leaves": true
+          },
+          "M4": {
+            "detected_ratio": 0.9604,
+            "leaves": false
+          },
+          "candidate": false
+        }
+      },
+      {
+        "subtype": "support",
+        "pairs": 625,
+        "marker": {
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 57,
+              "mean_m": 1.2042,
+              "mean_sd": 0.4774,
+              "se_m": 0.4802
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 74,
+              "mean_m": 1.0125,
+              "mean_sd": 0.4014,
+              "se_m": 0.4236
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 54,
+              "mean_m": 1.1032,
+              "mean_sd": 0.4373,
+              "se_m": 0.4989
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 77,
+              "mean_m": 1.8588,
+              "mean_sd": 0.7369,
+              "se_m": 0.3929
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 90,
+              "mean_m": 0.6361,
+              "mean_sd": 0.2522,
+              "se_m": 0.4297
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 62,
+              "mean_m": 1.5013,
+              "mean_sd": 0.5951,
+              "se_m": 0.4712
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 78,
+              "mean_m": 1.3459,
+              "mean_sd": 0.5335,
+              "se_m": 0.426
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 42,
+              "mean_m": 1.972,
+              "mean_sd": 0.7817,
+              "se_m": 0.5518
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 43,
+              "mean_m": 1.9188,
+              "mean_sd": 0.7606,
+              "se_m": 0.5639
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 48,
+              "mean_m": 1.0631,
+              "mean_sd": 0.4214,
+              "se_m": 0.626
+            }
+          ],
+          "pooled": {
+            "pairs": 625,
+            "units": 556,
+            "mean_m": 1.3087,
+            "mean_sd": 0.5188,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        "line": {
+          "testability": "not testable on the line with this sample",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 57,
+              "mean_m": 0.4225,
+              "mean_sd": 0.2313,
+              "se_m": 0.4774
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 74,
+              "mean_m": 0.588,
+              "mean_sd": 0.3219,
+              "se_m": 0.3326
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 54,
+              "mean_m": 0.6746,
+              "mean_sd": 0.3693,
+              "se_m": 0.355
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 77,
+              "mean_m": 0.8007,
+              "mean_sd": 0.4383,
+              "se_m": 0.3355
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 90,
+              "mean_m": 0.1893,
+              "mean_sd": 0.1036,
+              "se_m": 0.3425
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 62,
+              "mean_m": 0.3565,
+              "mean_sd": 0.1951,
+              "se_m": 0.3549
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 78,
+              "mean_m": 1.2228,
+              "mean_sd": 0.6694,
+              "se_m": 0.3581
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 42,
+              "mean_m": 1.209,
+              "mean_sd": 0.6619,
+              "se_m": 0.4248
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 43,
+              "mean_m": 0.8337,
+              "mean_sd": 0.4564,
+              "se_m": 0.3769
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 48,
+              "mean_m": 0.905,
+              "mean_sd": 0.4954,
+              "se_m": 0.4019
+            }
+          ],
+          "pooled": {
+            "pairs": 625,
+            "units": 556,
+            "mean_m": 0.6884,
+            "mean_sd": 0.3769,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          }
+        },
+        "pre_trend": {
+          "pairs": 595,
+          "of_pairs": 625,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 56,
+              "pre_trend_mean_m": 2.3493,
+              "effect_mean_m": 1.1628
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 68,
+              "pre_trend_mean_m": 2.4487,
+              "effect_mean_m": 1.1544
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 53,
+              "pre_trend_mean_m": 2.8328,
+              "effect_mean_m": 1.1115
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 77,
+              "pre_trend_mean_m": 3.308,
+              "effect_mean_m": 1.8588
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 86,
+              "pre_trend_mean_m": 3.2184,
+              "effect_mean_m": 0.6632
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 56,
+              "pre_trend_mean_m": 2.6164,
+              "effect_mean_m": 1.0084
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 76,
+              "pre_trend_mean_m": 2.9038,
+              "effect_mean_m": 1.4814
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 40,
+              "pre_trend_mean_m": 2.81,
+              "effect_mean_m": 1.988
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 36,
+              "pre_trend_mean_m": 3.5254,
+              "effect_mean_m": 1.4598
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 47,
+              "pre_trend_mean_m": 3.1785,
+              "effect_mean_m": 0.842
+            }
+          ],
+          "pooled": {
+            "pairs": 595,
+            "pre_trend_mean_m": 2.917,
+            "pre_trend_mean_sd": 1.1563,
+            "effect_mean_m": 1.2494,
+            "ratio": 2.3347
+          }
+        },
+        "fully_detected": {
+          "pairs": 479,
+          "of_pairs": 625,
+          "fraction": 0.7664,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 49,
+              "mean_m": 0.9371,
+              "mean_sd": 0.3715,
+              "se_m": 0.5426
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 60,
+              "mean_m": 1.0454,
+              "mean_sd": 0.4144,
+              "se_m": 0.492
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 41,
+              "mean_m": 0.8062,
+              "mean_sd": 0.3196,
+              "se_m": 0.5856
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 59,
+              "mean_m": 1.6078,
+              "mean_sd": 0.6374,
+              "se_m": 0.4665
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 72,
+              "mean_m": 0.5394,
+              "mean_sd": 0.2138,
+              "se_m": 0.49
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 46,
+              "mean_m": 1.2379,
+              "mean_sd": 0.4907,
+              "se_m": 0.5861
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 59,
+              "mean_m": 1.7635,
+              "mean_sd": 0.6991,
+              "se_m": 0.5196
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 33,
+              "mean_m": 1.8593,
+              "mean_sd": 0.7371,
+              "se_m": 0.5935
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 26,
+              "mean_m": 2.009,
+              "mean_sd": 0.7964,
+              "se_m": 0.6402
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 34,
+              "mean_m": 1.1814,
+              "mean_sd": 0.4683,
+              "se_m": 0.7594
+            }
+          ],
+          "pooled": {
+            "pairs": 479,
+            "mean_m": 1.232,
+            "mean_sd": 0.4884,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "effect_mean_m": 1.3087,
+            "ratio": 0.9414
+          }
+        },
+        "class_at_tc": {
+          "classified": 625,
+          "unclassified": 0,
+          "distribution": {
+            "to_ball/to_line/wide": 267,
+            "to_ball/to_line/inside": 230,
+            "to_ball/from_line/wide": 12,
+            "to_ball/from_line/inside": 20,
+            "from_ball/to_line/wide": 58,
+            "from_ball/to_line/inside": 27,
+            "from_ball/from_line/wide": 6,
+            "from_ball/from_line/inside": 5
+          },
+          "modal_class": "to_ball/to_line/wide",
+          "modal_share": 0.4272,
+          "modal_class_effect": {
+            "pairs": 933,
+            "units": 820,
+            "mean_m": 1.0649,
+            "mean_sd": 0.4221,
+            "same_sign_matches": 10,
+            "of_matches": 10,
+            "p": 0.0005,
+            "passes_bar": true
+          },
+          "subtype_effect_mean_m": 1.3087,
+          "opposite_sign": false,
+          "subtype_pairs_in_modal_class": {
+            "pairs": 267,
+            "mean_m": 0.9773
+          },
+          "subtype_pairs_outside_modal_class": {
+            "pairs": 358,
+            "mean_m": 1.5558
+          }
+        },
+        "run_leg_overlap": {
+          "units": 510,
+          "largest_unit": 5,
+          "protocol_units": 556,
+          "p": 0.0005,
+          "same_sign_matches": 10,
+          "passes_bar": true
+        },
+        "verdict": {
+          "passes_bar": true,
+          "M3": {
+            "pre_trend_ratio": 2.3347,
+            "pre_trend_reaches_share": true,
+            "class_at_tc_opposite_sign": false,
+            "leaves": true
+          },
+          "M4": {
+            "detected_ratio": 0.9414,
+            "leaves": false
+          },
+          "candidate": false
+        }
+      }
+    ],
+    "kinematics": {
+      "post_hoc": true,
+      "what": "a post hoc diagnostic, written after the verdict (2026-10-11) when the review of task 50 asked what M3 measured; it decides nothing: M3, M4 and M5a stand as computed, and the thresholds below are descriptive and live outside the protocol. Per probable subtype, per match and pooled: the runner's speed (|p(t + 0.1 s) - p(t - 0.1 s)| / 0.2 s) at t_c and at t' (median), the share of runners at or above 4.0 m/s at t_c and 0.5 s before it; the onset, the last frame at or before t_c with the speed below 3.0 m/s looked for over 10.0 s (median in seconds relative to t_c, the share inside the pre-trend window [t_c - W, t_c] and the share before it); the M3 statistic applied to the runner himself (his residual along d at t - W and at t, run minus placebo, on the pairs with both) and its ratio; and the marker's along-d onset (last frame at or before t_c with the velocity along d below 1.0 m/s) minus the runner's, on the run leg: positive when the marker starts after the runner",
+      "thresholds": {
+        "running_m_s": 4.0,
+        "onset_m_s": 3.0,
+        "along_onset_m_s": 1.0,
+        "onset_search_s": 10.0,
+        "speed_span_s": 0.2
+      },
+      "per_subtype": [
+        {
+          "subtype": "coming_short",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 49,
+              "runner_speed_at_tc_median_m_s": 4.264,
+              "runner_speed_at_placebo_median_m_s": 1.635,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.3061,
+              "onset_found_share": 1.0,
+              "onset_median_s": -1.2,
+              "onset_inside_pre_trend_window_share": 0.6531,
+              "onset_before_pre_trend_window_share": 0.3469,
+              "runner_own_pairs": 49,
+              "runner_own_pre_trend_m": 2.8375,
+              "runner_own_effect_m": 1.3869,
+              "runner_own_pre_trend_ratio": 2.0459,
+              "pairs_with_both_onsets": 48,
+              "marker_onset_lag_median_s": 0.0,
+              "marker_after_runner_share": 0.4792,
+              "marker_before_runner_share": 0.4375
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 67,
+              "runner_speed_at_tc_median_m_s": 4.296,
+              "runner_speed_at_placebo_median_m_s": 1.739,
+              "runner_running_at_tc_share": 0.9851,
+              "runner_running_half_second_before_share": 0.4328,
+              "onset_found_share": 0.9403,
+              "onset_median_s": -2.0,
+              "onset_inside_pre_trend_window_share": 0.5079,
+              "onset_before_pre_trend_window_share": 0.4921,
+              "runner_own_pairs": 64,
+              "runner_own_pre_trend_m": 2.3287,
+              "runner_own_effect_m": 0.5337,
+              "runner_own_pre_trend_ratio": 4.3633,
+              "pairs_with_both_onsets": 62,
+              "marker_onset_lag_median_s": -0.25,
+              "marker_after_runner_share": 0.4032,
+              "marker_before_runner_share": 0.5161
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 57,
+              "runner_speed_at_tc_median_m_s": 4.272,
+              "runner_speed_at_placebo_median_m_s": 2.062,
+              "runner_running_at_tc_share": 0.9825,
+              "runner_running_half_second_before_share": 0.2982,
+              "onset_found_share": 1.0,
+              "onset_median_s": -1.7,
+              "onset_inside_pre_trend_window_share": 0.5789,
+              "onset_before_pre_trend_window_share": 0.4211,
+              "runner_own_pairs": 56,
+              "runner_own_pre_trend_m": 2.767,
+              "runner_own_effect_m": 1.079,
+              "runner_own_pre_trend_ratio": 2.5644,
+              "pairs_with_both_onsets": 56,
+              "marker_onset_lag_median_s": -0.2,
+              "marker_after_runner_share": 0.375,
+              "marker_before_runner_share": 0.6071
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 37,
+              "runner_speed_at_tc_median_m_s": 4.252,
+              "runner_speed_at_placebo_median_m_s": 1.565,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.3514,
+              "onset_found_share": 1.0,
+              "onset_median_s": -2.0,
+              "onset_inside_pre_trend_window_share": 0.5135,
+              "onset_before_pre_trend_window_share": 0.4865,
+              "runner_own_pairs": 35,
+              "runner_own_pre_trend_m": 2.7474,
+              "runner_own_effect_m": 1.0163,
+              "runner_own_pre_trend_ratio": 2.7033,
+              "pairs_with_both_onsets": 36,
+              "marker_onset_lag_median_s": -0.05,
+              "marker_after_runner_share": 0.4722,
+              "marker_before_runner_share": 0.5
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 53,
+              "runner_speed_at_tc_median_m_s": 4.306,
+              "runner_speed_at_placebo_median_m_s": 1.803,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.2453,
+              "onset_found_share": 0.9811,
+              "onset_median_s": -1.0,
+              "onset_inside_pre_trend_window_share": 0.6731,
+              "onset_before_pre_trend_window_share": 0.3269,
+              "runner_own_pairs": 52,
+              "runner_own_pre_trend_m": 2.8044,
+              "runner_own_effect_m": 0.5714,
+              "runner_own_pre_trend_ratio": 4.9079,
+              "pairs_with_both_onsets": 46,
+              "marker_onset_lag_median_s": 0.6,
+              "marker_after_runner_share": 0.6087,
+              "marker_before_runner_share": 0.3696
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 26,
+              "runner_speed_at_tc_median_m_s": 4.274,
+              "runner_speed_at_placebo_median_m_s": 1.874,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.4615,
+              "onset_found_share": 1.0,
+              "onset_median_s": -2.2,
+              "onset_inside_pre_trend_window_share": 0.4615,
+              "onset_before_pre_trend_window_share": 0.5385,
+              "runner_own_pairs": 26,
+              "runner_own_pre_trend_m": 2.8216,
+              "runner_own_effect_m": 1.2308,
+              "runner_own_pre_trend_ratio": 2.2925,
+              "pairs_with_both_onsets": 26,
+              "marker_onset_lag_median_s": 0.45,
+              "marker_after_runner_share": 0.6154,
+              "marker_before_runner_share": 0.3077
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 46,
+              "runner_speed_at_tc_median_m_s": 4.271,
+              "runner_speed_at_placebo_median_m_s": 1.768,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.2609,
+              "onset_found_share": 0.9783,
+              "onset_median_s": -1.4,
+              "onset_inside_pre_trend_window_share": 0.6444,
+              "onset_before_pre_trend_window_share": 0.3556,
+              "runner_own_pairs": 43,
+              "runner_own_pre_trend_m": 2.8141,
+              "runner_own_effect_m": 0.5175,
+              "runner_own_pre_trend_ratio": 5.4379,
+              "pairs_with_both_onsets": 41,
+              "marker_onset_lag_median_s": -0.1,
+              "marker_after_runner_share": 0.4146,
+              "marker_before_runner_share": 0.561
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 44,
+              "runner_speed_at_tc_median_m_s": 4.234,
+              "runner_speed_at_placebo_median_m_s": 2.396,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.2727,
+              "onset_found_share": 1.0,
+              "onset_median_s": -1.55,
+              "onset_inside_pre_trend_window_share": 0.5227,
+              "onset_before_pre_trend_window_share": 0.4773,
+              "runner_own_pairs": 44,
+              "runner_own_pre_trend_m": 2.6757,
+              "runner_own_effect_m": 0.8061,
+              "runner_own_pre_trend_ratio": 3.3193,
+              "pairs_with_both_onsets": 44,
+              "marker_onset_lag_median_s": 0.2,
+              "marker_after_runner_share": 0.6136,
+              "marker_before_runner_share": 0.3409
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 30,
+              "runner_speed_at_tc_median_m_s": 4.266,
+              "runner_speed_at_placebo_median_m_s": 1.7,
+              "runner_running_at_tc_share": 0.9333,
+              "runner_running_half_second_before_share": 0.2333,
+              "onset_found_share": 1.0,
+              "onset_median_s": -1.5,
+              "onset_inside_pre_trend_window_share": 0.5333,
+              "onset_before_pre_trend_window_share": 0.4667,
+              "runner_own_pairs": 27,
+              "runner_own_pre_trend_m": 3.4557,
+              "runner_own_effect_m": 1.197,
+              "runner_own_pre_trend_ratio": 2.887,
+              "pairs_with_both_onsets": 28,
+              "marker_onset_lag_median_s": -0.2,
+              "marker_after_runner_share": 0.3929,
+              "marker_before_runner_share": 0.5357
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 67,
+              "runner_speed_at_tc_median_m_s": 4.323,
+              "runner_speed_at_placebo_median_m_s": 1.851,
+              "runner_running_at_tc_share": 0.9701,
+              "runner_running_half_second_before_share": 0.3433,
+              "onset_found_share": 0.9104,
+              "onset_median_s": -1.6,
+              "onset_inside_pre_trend_window_share": 0.5738,
+              "onset_before_pre_trend_window_share": 0.4262,
+              "runner_own_pairs": 63,
+              "runner_own_pre_trend_m": 2.5098,
+              "runner_own_effect_m": 1.0617,
+              "runner_own_pre_trend_ratio": 2.3639,
+              "pairs_with_both_onsets": 59,
+              "marker_onset_lag_median_s": -0.1,
+              "marker_after_runner_share": 0.4068,
+              "marker_before_runner_share": 0.5085
+            }
+          ],
+          "pooled": {
+            "pairs": 476,
+            "runner_speed_at_tc_median_m_s": 4.271,
+            "runner_speed_at_placebo_median_m_s": 1.837,
+            "runner_running_at_tc_share": 0.9874,
+            "runner_running_half_second_before_share": 0.3214,
+            "onset_found_share": 0.9748,
+            "onset_median_s": -1.65,
+            "onset_inside_pre_trend_window_share": 0.5733,
+            "onset_before_pre_trend_window_share": 0.4267,
+            "runner_own_pairs": 459,
+            "runner_own_pre_trend_m": 2.7201,
+            "runner_own_effect_m": 0.908,
+            "runner_own_pre_trend_ratio": 2.9957,
+            "pairs_with_both_onsets": 446,
+            "marker_onset_lag_median_s": 0.0,
+            "marker_after_runner_share": 0.4686,
+            "marker_before_runner_share": 0.4776
+          }
+        },
+        {
+          "subtype": "run_ahead_of_the_ball",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 116,
+              "runner_speed_at_tc_median_m_s": 4.292,
+              "runner_speed_at_placebo_median_m_s": 1.563,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.2069,
+              "onset_found_share": 0.9828,
+              "onset_median_s": -1.1,
+              "onset_inside_pre_trend_window_share": 0.7456,
+              "onset_before_pre_trend_window_share": 0.2544,
+              "runner_own_pairs": 109,
+              "runner_own_pre_trend_m": 2.8729,
+              "runner_own_effect_m": 1.8096,
+              "runner_own_pre_trend_ratio": 1.5876,
+              "pairs_with_both_onsets": 105,
+              "marker_onset_lag_median_s": 0.0,
+              "marker_after_runner_share": 0.4667,
+              "marker_before_runner_share": 0.4952
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 114,
+              "runner_speed_at_tc_median_m_s": 4.319,
+              "runner_speed_at_placebo_median_m_s": 1.683,
+              "runner_running_at_tc_share": 0.9737,
+              "runner_running_half_second_before_share": 0.2368,
+              "onset_found_share": 1.0,
+              "onset_median_s": -0.9,
+              "onset_inside_pre_trend_window_share": 0.7281,
+              "onset_before_pre_trend_window_share": 0.2719,
+              "runner_own_pairs": 109,
+              "runner_own_pre_trend_m": 3.6193,
+              "runner_own_effect_m": 1.5292,
+              "runner_own_pre_trend_ratio": 2.3668,
+              "pairs_with_both_onsets": 112,
+              "marker_onset_lag_median_s": 0.3,
+              "marker_after_runner_share": 0.6071,
+              "marker_before_runner_share": 0.3482
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 131,
+              "runner_speed_at_tc_median_m_s": 4.29,
+              "runner_speed_at_placebo_median_m_s": 1.54,
+              "runner_running_at_tc_share": 0.9695,
+              "runner_running_half_second_before_share": 0.2137,
+              "onset_found_share": 1.0,
+              "onset_median_s": -1.1,
+              "onset_inside_pre_trend_window_share": 0.7023,
+              "onset_before_pre_trend_window_share": 0.2977,
+              "runner_own_pairs": 129,
+              "runner_own_pre_trend_m": 3.1509,
+              "runner_own_effect_m": 1.863,
+              "runner_own_pre_trend_ratio": 1.6913,
+              "pairs_with_both_onsets": 123,
+              "marker_onset_lag_median_s": 0.3,
+              "marker_after_runner_share": 0.6179,
+              "marker_before_runner_share": 0.3415
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 118,
+              "runner_speed_at_tc_median_m_s": 4.301,
+              "runner_speed_at_placebo_median_m_s": 1.546,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.2881,
+              "onset_found_share": 0.9915,
+              "onset_median_s": -1.1,
+              "onset_inside_pre_trend_window_share": 0.7094,
+              "onset_before_pre_trend_window_share": 0.2906,
+              "runner_own_pairs": 115,
+              "runner_own_pre_trend_m": 3.1084,
+              "runner_own_effect_m": 1.8067,
+              "runner_own_pre_trend_ratio": 1.7205,
+              "pairs_with_both_onsets": 111,
+              "marker_onset_lag_median_s": 0.2,
+              "marker_after_runner_share": 0.5946,
+              "marker_before_runner_share": 0.3784
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 122,
+              "runner_speed_at_tc_median_m_s": 4.28,
+              "runner_speed_at_placebo_median_m_s": 1.796,
+              "runner_running_at_tc_share": 0.9836,
+              "runner_running_half_second_before_share": 0.2131,
+              "onset_found_share": 1.0,
+              "onset_median_s": -1.1,
+              "onset_inside_pre_trend_window_share": 0.6885,
+              "onset_before_pre_trend_window_share": 0.3115,
+              "runner_own_pairs": 121,
+              "runner_own_pre_trend_m": 3.2069,
+              "runner_own_effect_m": 2.3093,
+              "runner_own_pre_trend_ratio": 1.3887,
+              "pairs_with_both_onsets": 115,
+              "marker_onset_lag_median_s": 0.2,
+              "marker_after_runner_share": 0.6,
+              "marker_before_runner_share": 0.3565
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 98,
+              "runner_speed_at_tc_median_m_s": 4.267,
+              "runner_speed_at_placebo_median_m_s": 1.505,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.2449,
+              "onset_found_share": 1.0,
+              "onset_median_s": -0.95,
+              "onset_inside_pre_trend_window_share": 0.7347,
+              "onset_before_pre_trend_window_share": 0.2653,
+              "runner_own_pairs": 94,
+              "runner_own_pre_trend_m": 2.9176,
+              "runner_own_effect_m": 1.6393,
+              "runner_own_pre_trend_ratio": 1.7798,
+              "pairs_with_both_onsets": 89,
+              "marker_onset_lag_median_s": 0.3,
+              "marker_after_runner_share": 0.5955,
+              "marker_before_runner_share": 0.3483
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 77,
+              "runner_speed_at_tc_median_m_s": 4.253,
+              "runner_speed_at_placebo_median_m_s": 2.22,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.1818,
+              "onset_found_share": 1.0,
+              "onset_median_s": -0.9,
+              "onset_inside_pre_trend_window_share": 0.7532,
+              "onset_before_pre_trend_window_share": 0.2468,
+              "runner_own_pairs": 76,
+              "runner_own_pre_trend_m": 3.2047,
+              "runner_own_effect_m": 2.0863,
+              "runner_own_pre_trend_ratio": 1.5361,
+              "pairs_with_both_onsets": 76,
+              "marker_onset_lag_median_s": 0.3,
+              "marker_after_runner_share": 0.5526,
+              "marker_before_runner_share": 0.4079
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 73,
+              "runner_speed_at_tc_median_m_s": 4.255,
+              "runner_speed_at_placebo_median_m_s": 1.54,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.1233,
+              "onset_found_share": 1.0,
+              "onset_median_s": -0.8,
+              "onset_inside_pre_trend_window_share": 0.7671,
+              "onset_before_pre_trend_window_share": 0.2329,
+              "runner_own_pairs": 71,
+              "runner_own_pre_trend_m": 3.9035,
+              "runner_own_effect_m": 1.4612,
+              "runner_own_pre_trend_ratio": 2.6714,
+              "pairs_with_both_onsets": 73,
+              "marker_onset_lag_median_s": 0.2,
+              "marker_after_runner_share": 0.589,
+              "marker_before_runner_share": 0.3699
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 112,
+              "runner_speed_at_tc_median_m_s": 4.323,
+              "runner_speed_at_placebo_median_m_s": 1.737,
+              "runner_running_at_tc_share": 0.9911,
+              "runner_running_half_second_before_share": 0.2589,
+              "onset_found_share": 0.9911,
+              "onset_median_s": -0.8,
+              "onset_inside_pre_trend_window_share": 0.7387,
+              "onset_before_pre_trend_window_share": 0.2613,
+              "runner_own_pairs": 96,
+              "runner_own_pre_trend_m": 3.4077,
+              "runner_own_effect_m": 2.1076,
+              "runner_own_pre_trend_ratio": 1.6169,
+              "pairs_with_both_onsets": 107,
+              "marker_onset_lag_median_s": 0.0,
+              "marker_after_runner_share": 0.4766,
+              "marker_before_runner_share": 0.4673
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 113,
+              "runner_speed_at_tc_median_m_s": 4.293,
+              "runner_speed_at_placebo_median_m_s": 1.619,
+              "runner_running_at_tc_share": 0.9646,
+              "runner_running_half_second_before_share": 0.2212,
+              "onset_found_share": 1.0,
+              "onset_median_s": -0.8,
+              "onset_inside_pre_trend_window_share": 0.7611,
+              "onset_before_pre_trend_window_share": 0.2389,
+              "runner_own_pairs": 111,
+              "runner_own_pre_trend_m": 3.5187,
+              "runner_own_effect_m": 1.9722,
+              "runner_own_pre_trend_ratio": 1.7841,
+              "pairs_with_both_onsets": 110,
+              "marker_onset_lag_median_s": 0.05,
+              "marker_after_runner_share": 0.5,
+              "marker_before_runner_share": 0.4
+            }
+          ],
+          "pooled": {
+            "pairs": 1074,
+            "runner_speed_at_tc_median_m_s": 4.29,
+            "runner_speed_at_placebo_median_m_s": 1.632,
+            "runner_running_at_tc_share": 0.987,
+            "runner_running_half_second_before_share": 0.2235,
+            "onset_found_share": 0.9963,
+            "onset_median_s": -0.95,
+            "onset_inside_pre_trend_window_share": 0.7299,
+            "onset_before_pre_trend_window_share": 0.2701,
+            "runner_own_pairs": 1031,
+            "runner_own_pre_trend_m": 3.2709,
+            "runner_own_effect_m": 1.8711,
+            "runner_own_pre_trend_ratio": 1.7481,
+            "pairs_with_both_onsets": 1021,
+            "marker_onset_lag_median_s": 0.2,
+            "marker_after_runner_share": 0.5602,
+            "marker_before_runner_share": 0.3908
+          }
+        },
+        {
+          "subtype": "support",
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 57,
+              "runner_speed_at_tc_median_m_s": 4.244,
+              "runner_speed_at_placebo_median_m_s": 1.885,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.3158,
+              "onset_found_share": 0.9649,
+              "onset_median_s": -1.2,
+              "onset_inside_pre_trend_window_share": 0.6182,
+              "onset_before_pre_trend_window_share": 0.3818,
+              "runner_own_pairs": 56,
+              "runner_own_pre_trend_m": 2.5874,
+              "runner_own_effect_m": 1.8101,
+              "runner_own_pre_trend_ratio": 1.4294,
+              "pairs_with_both_onsets": 50,
+              "marker_onset_lag_median_s": 0.15,
+              "marker_after_runner_share": 0.52,
+              "marker_before_runner_share": 0.44
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 74,
+              "runner_speed_at_tc_median_m_s": 4.255,
+              "runner_speed_at_placebo_median_m_s": 1.47,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.3378,
+              "onset_found_share": 1.0,
+              "onset_median_s": -1.4,
+              "onset_inside_pre_trend_window_share": 0.6351,
+              "onset_before_pre_trend_window_share": 0.3649,
+              "runner_own_pairs": 68,
+              "runner_own_pre_trend_m": 2.4492,
+              "runner_own_effect_m": 1.3273,
+              "runner_own_pre_trend_ratio": 1.8452,
+              "pairs_with_both_onsets": 66,
+              "marker_onset_lag_median_s": 0.4,
+              "marker_after_runner_share": 0.5909,
+              "marker_before_runner_share": 0.3333
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 54,
+              "runner_speed_at_tc_median_m_s": 4.33,
+              "runner_speed_at_placebo_median_m_s": 1.761,
+              "runner_running_at_tc_share": 0.963,
+              "runner_running_half_second_before_share": 0.4074,
+              "onset_found_share": 0.963,
+              "onset_median_s": -1.25,
+              "onset_inside_pre_trend_window_share": 0.6731,
+              "onset_before_pre_trend_window_share": 0.3269,
+              "runner_own_pairs": 53,
+              "runner_own_pre_trend_m": 4.6487,
+              "runner_own_effect_m": 1.05,
+              "runner_own_pre_trend_ratio": 4.4273,
+              "pairs_with_both_onsets": 50,
+              "marker_onset_lag_median_s": 0.2,
+              "marker_after_runner_share": 0.64,
+              "marker_before_runner_share": 0.32
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 77,
+              "runner_speed_at_tc_median_m_s": 4.258,
+              "runner_speed_at_placebo_median_m_s": 1.471,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.2987,
+              "onset_found_share": 0.974,
+              "onset_median_s": -1.0,
+              "onset_inside_pre_trend_window_share": 0.72,
+              "onset_before_pre_trend_window_share": 0.28,
+              "runner_own_pairs": 77,
+              "runner_own_pre_trend_m": 3.1259,
+              "runner_own_effect_m": 1.358,
+              "runner_own_pre_trend_ratio": 2.3018,
+              "pairs_with_both_onsets": 75,
+              "marker_onset_lag_median_s": 0.3,
+              "marker_after_runner_share": 0.64,
+              "marker_before_runner_share": 0.3067
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 90,
+              "runner_speed_at_tc_median_m_s": 4.319,
+              "runner_speed_at_placebo_median_m_s": 1.579,
+              "runner_running_at_tc_share": 0.9889,
+              "runner_running_half_second_before_share": 0.3,
+              "onset_found_share": 0.9667,
+              "onset_median_s": -1.3,
+              "onset_inside_pre_trend_window_share": 0.6897,
+              "onset_before_pre_trend_window_share": 0.3103,
+              "runner_own_pairs": 86,
+              "runner_own_pre_trend_m": 3.9654,
+              "runner_own_effect_m": 1.278,
+              "runner_own_pre_trend_ratio": 3.1028,
+              "pairs_with_both_onsets": 84,
+              "marker_onset_lag_median_s": 0.1,
+              "marker_after_runner_share": 0.5476,
+              "marker_before_runner_share": 0.381
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 62,
+              "runner_speed_at_tc_median_m_s": 4.297,
+              "runner_speed_at_placebo_median_m_s": 1.645,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.3387,
+              "onset_found_share": 0.9839,
+              "onset_median_s": -1.1,
+              "onset_inside_pre_trend_window_share": 0.623,
+              "onset_before_pre_trend_window_share": 0.377,
+              "runner_own_pairs": 56,
+              "runner_own_pre_trend_m": 3.0617,
+              "runner_own_effect_m": 1.0877,
+              "runner_own_pre_trend_ratio": 2.8148,
+              "pairs_with_both_onsets": 55,
+              "marker_onset_lag_median_s": 0.2,
+              "marker_after_runner_share": 0.5455,
+              "marker_before_runner_share": 0.3818
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 78,
+              "runner_speed_at_tc_median_m_s": 4.311,
+              "runner_speed_at_placebo_median_m_s": 1.701,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.4103,
+              "onset_found_share": 0.9744,
+              "onset_median_s": -1.3,
+              "onset_inside_pre_trend_window_share": 0.6316,
+              "onset_before_pre_trend_window_share": 0.3684,
+              "runner_own_pairs": 76,
+              "runner_own_pre_trend_m": 3.5195,
+              "runner_own_effect_m": 0.6939,
+              "runner_own_pre_trend_ratio": 5.0721,
+              "pairs_with_both_onsets": 70,
+              "marker_onset_lag_median_s": 0.25,
+              "marker_after_runner_share": 0.5571,
+              "marker_before_runner_share": 0.4143
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 42,
+              "runner_speed_at_tc_median_m_s": 4.293,
+              "runner_speed_at_placebo_median_m_s": 2.025,
+              "runner_running_at_tc_share": 1.0,
+              "runner_running_half_second_before_share": 0.3333,
+              "onset_found_share": 1.0,
+              "onset_median_s": -1.3,
+              "onset_inside_pre_trend_window_share": 0.6667,
+              "onset_before_pre_trend_window_share": 0.3333,
+              "runner_own_pairs": 40,
+              "runner_own_pre_trend_m": 4.3996,
+              "runner_own_effect_m": 1.1287,
+              "runner_own_pre_trend_ratio": 3.8979,
+              "pairs_with_both_onsets": 40,
+              "marker_onset_lag_median_s": 0.55,
+              "marker_after_runner_share": 0.8,
+              "marker_before_runner_share": 0.125
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 43,
+              "runner_speed_at_tc_median_m_s": 4.276,
+              "runner_speed_at_placebo_median_m_s": 1.54,
+              "runner_running_at_tc_share": 0.9767,
+              "runner_running_half_second_before_share": 0.186,
+              "onset_found_share": 0.9767,
+              "onset_median_s": -0.9,
+              "onset_inside_pre_trend_window_share": 0.7381,
+              "onset_before_pre_trend_window_share": 0.2619,
+              "runner_own_pairs": 36,
+              "runner_own_pre_trend_m": 4.0564,
+              "runner_own_effect_m": 1.4154,
+              "runner_own_pre_trend_ratio": 2.8659,
+              "pairs_with_both_onsets": 42,
+              "marker_onset_lag_median_s": 0.3,
+              "marker_after_runner_share": 0.7381,
+              "marker_before_runner_share": 0.2619
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 48,
+              "runner_speed_at_tc_median_m_s": 4.299,
+              "runner_speed_at_placebo_median_m_s": 1.413,
+              "runner_running_at_tc_share": 0.9375,
+              "runner_running_half_second_before_share": 0.3125,
+              "onset_found_share": 0.9792,
+              "onset_median_s": -1.0,
+              "onset_inside_pre_trend_window_share": 0.7234,
+              "onset_before_pre_trend_window_share": 0.2766,
+              "runner_own_pairs": 47,
+              "runner_own_pre_trend_m": 4.0134,
+              "runner_own_effect_m": 1.5069,
+              "runner_own_pre_trend_ratio": 2.6633,
+              "pairs_with_both_onsets": 46,
+              "marker_onset_lag_median_s": 0.1,
+              "marker_after_runner_share": 0.5217,
+              "marker_before_runner_share": 0.3913
+            }
+          ],
+          "pooled": {
+            "pairs": 625,
+            "runner_speed_at_tc_median_m_s": 4.294,
+            "runner_speed_at_placebo_median_m_s": 1.601,
+            "runner_running_at_tc_share": 0.9888,
+            "runner_running_half_second_before_share": 0.328,
+            "onset_found_share": 0.9776,
+            "onset_median_s": -1.2,
+            "onset_inside_pre_trend_window_share": 0.6694,
+            "onset_before_pre_trend_window_share": 0.3306,
+            "runner_own_pairs": 595,
+            "runner_own_pre_trend_m": 3.5111,
+            "runner_own_effect_m": 1.2476,
+            "runner_own_pre_trend_ratio": 2.8143,
+            "pairs_with_both_onsets": 578,
+            "marker_onset_lag_median_s": 0.25,
+            "marker_after_runner_share": 0.6003,
+            "marker_before_runner_share": 0.3443
+          }
+        }
+      ]
+    },
+    "candidates": [],
+    "verdict": {
+      "M5a": {
+        "rule": "zero candidates -> P5 dies, the held-out half is never opened",
+        "candidates": 0,
+        "dies": true
+      },
+      "alive": false
+    }
+  },
+  "content_sha256": "f5a3517db0f39d7d917eb460d15d87928a2419a8521a5e7f1c23293c7d340cc5"
 }
