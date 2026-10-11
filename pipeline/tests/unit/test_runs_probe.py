@@ -859,6 +859,15 @@ def test_consistency_problems_see_a_doctored_verdict_or_protocol(tmp_path: Path)
         "hardening" in s
         for s in consistency_problems(doctored(probe__null__hardening__needed=True))
     )
+    # M1 counted another quantity than the protocol's primary one
+    assert any(
+        "primary quantity" in s
+        for s in consistency_problems(doctored(probe__verdict__M1__primary_quantity="line"))
+    )
+    assert any(
+        "primary quantity" in s
+        for s in consistency_problems(doctored(probe__power__probable__primary_quantity="line"))
+    )
     assert any(
         "protocol.fingerprint" in s
         for s in consistency_problems(doctored(protocol__fingerprint="0" * 64))
@@ -1032,6 +1041,12 @@ def test_the_versioned_verdict_is_pinned() -> None:
     assert p["null"]["at_least_one_pct"] <= NULL_AT_LEAST_ONE_MAX_PCT
     assert p["null"]["pairs_with_second_placebo"] == 3541 and p["null"]["of_pairs"] == 3756
     assert p["null"]["pooled"]["units"] == 2420 and p["null"]["pooled"]["blocks"] == 77
+    # the primary quantity M1 counted is the protocol's (decided 2026-10-11): the marker
+    assert p["verdict"]["M1"]["primary_quantity"] == "marker"
+    assert p["power"]["probable"]["primary_quantity"] == "marker"
+    assert (
+        p["verdict"]["M1"]["probable_subtypes"] == 3 and p["verdict"]["M1"]["probable_by_line"] == 1
+    )
     assert all(r["unflipped"]["passes_bar"] is False for r in p["null"]["per_subtype"])
     assert p["cadence"]["windows"]["changed"] is False
     assert p["run_length"]["changed"] is False

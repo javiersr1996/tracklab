@@ -73,7 +73,9 @@ from tracklab.runs.protocol import (
     MIN_RUN_LENGTH_M,
     N_PERMUTATIONS,
     NULL_AT_LEAST_ONE_MAX_PCT,
+    PRIMARY_QUANTITY,
     SAMPLE_RATE_HZ,
+    SECONDARY_QUANTITY,
     SEED,
     TESTABILITY_MDE80_SD,
     VELOCITY_WINDOW_S,
@@ -597,8 +599,9 @@ def probable_subtypes(
 ) -> dict[str, list[str]]:
     """Per quantity, the subtypes whose MDE80 (keyed by subtype, half and quantity) is at most
     TESTABILITY_MDE80_SD placebo sd in every half; on the 0.05 grid a subtype can land on the
-    threshold exactly, and it counts. M1 counts `marker`, the forced-direction instrument;
-    `both` is the intersection."""
+    threshold exactly, and it counts. M1 counts the protocol's PRIMARY_QUANTITY (the marker,
+    the forced-direction instrument); the secondary quantity's list and the intersection
+    (`both`) are listed alongside and decide nothing."""
     halves = list(halves)
 
     def testable(value: float | None) -> bool:
@@ -607,8 +610,8 @@ def probable_subtypes(
     def probable(quantity: str) -> list[str]:
         return [s for s in SUBTYPES if all(testable(mde[(s, h, quantity)]) for h in halves)]
 
-    lists = {"marker": probable("marker"), "line": probable("line")}
-    lists["both"] = [s for s in lists["marker"] if s in lists["line"]]
+    lists = {q: probable(q) for q in (PRIMARY_QUANTITY, SECONDARY_QUANTITY)}
+    lists["both"] = [s for s in lists[PRIMARY_QUANTITY] if s in lists[SECONDARY_QUANTITY]]
     return lists
 
 
@@ -1280,10 +1283,12 @@ def _power_section(
         "probable": {
             "rule": (
                 f"MDE80 at most {TESTABILITY_MDE80_SD} placebo sd in both halves; M1 counts "
-                "the marker quantity, the forced-direction instrument; the line and the "
-                "intersection are listed alongside"
+                f"the protocol's primary quantity ({PRIMARY_QUANTITY}, the forced-direction "
+                f"instrument); the {SECONDARY_QUANTITY} and the intersection are listed "
+                "alongside and decide nothing"
             ),
             "mde80_sd_at_most": TESTABILITY_MDE80_SD,
+            "primary_quantity": PRIMARY_QUANTITY,
             **lists,
         },
     }
@@ -1323,7 +1328,7 @@ def build_probe(data_dir: Path, head: str, code_tree: str) -> dict[str, Any]:
         pairs, counts, {HALF: calibration, "other": others}, sds
     )
     instrument = _instrument_section(probes, pairs, sds["placebo_sd_marker_m"])
-    m1_dies = len(probable["marker"]) < 2
+    m1_dies = len(probable[PRIMARY_QUANTITY]) < 2
     m2_dies = not instrument["marker"]["pooled"]["passes_bar"]
     protocol = committed_protocol()
     payload = {
@@ -1398,8 +1403,9 @@ def build_probe(data_dir: Path, head: str, code_tree: str) -> dict[str, Any]:
             "verdict": {
                 "M1": {
                     "rule": "fewer than 2 probable subtypes -> P5 dies",
-                    "probable_subtypes": len(probable["marker"]),
-                    "probable_by_line": len(probable["line"]),
+                    "primary_quantity": PRIMARY_QUANTITY,
+                    "probable_subtypes": len(probable[PRIMARY_QUANTITY]),
+                    f"probable_by_{SECONDARY_QUANTITY}": len(probable[SECONDARY_QUANTITY]),
                     "probable_by_both": len(probable["both"]),
                     "needs_at_least": 2,
                     "dies": m1_dies,
@@ -1446,6 +1452,8 @@ def consistency_problems(current: dict[str, Any]) -> list[str]:
         passes = pooled["same_sign_matches"] >= BAR_SAME_SIGN_MATCHES and pooled["p"] <= BAR_P
         if pooled["passes_bar"] != passes:
             problems.append("instrument.marker.pooled.passes_bar does not follow its figures")
+        # M1 counts the primary quantity the committed protocol names, and no other
+        primary = str(protocol["design"]["quantities"]["primary"])
         rows = probe["power"]["rows"]
         halves = sorted({r["half"] for r in rows})
         probable = [
@@ -1455,16 +1463,21 @@ def consistency_problems(current: dict[str, Any]) -> list[str]:
                 any(
                     r["subtype"] == s
                     and r["half"] == h
-                    and r["mde80_marker_sd"] is not None
-                    and r["mde80_marker_sd"] <= TESTABILITY_MDE80_SD
+                    and r[f"mde80_{primary}_sd"] is not None
+                    and r[f"mde80_{primary}_sd"] <= TESTABILITY_MDE80_SD
                     for r in rows
                 )
                 for h in halves
             )
         ]
-        if probe["power"]["probable"]["marker"] != probable:
-            problems.append("power.probable.marker does not follow the rows")
+        if probe["power"]["probable"][primary] != probable:
+            problems.append(f"power.probable.{primary} does not follow the rows")
         verdict = probe["verdict"]
+        if (
+            verdict["M1"]["primary_quantity"] != primary
+            or probe["power"]["probable"]["primary_quantity"] != primary
+        ):
+            problems.append("verdict.M1 does not count the protocol's primary quantity")
         if verdict["M1"]["probable_subtypes"] != len(probable) or verdict["M1"]["dies"] != (
             len(probable) < 2
         ):
