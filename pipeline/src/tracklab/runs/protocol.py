@@ -39,6 +39,7 @@ import hashlib
 import importlib.metadata
 import json
 import math
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -53,6 +54,20 @@ WRITTEN = "2026-10-09"
 REVISED = "2026-10-11"  # the review of task 49: history gains its entry, the stage stays design
 STAGE_DESIGN = "design"
 STAGE_FROZEN = "frozen"
+FREEZE_TASK = 50
+# The provider's ten off-ball run subtypes, the labels every per-subtype table is keyed by.
+SUBTYPES = (
+    "behind",
+    "coming_short",
+    "cross_receiver",
+    "dropping_off",
+    "overlap",
+    "pulling_half_space",
+    "pulling_wide",
+    "run_ahead_of_the_ball",
+    "support",
+    "underlap",
+)
 
 
 def z_two_sided(p: float) -> float:
@@ -668,12 +683,78 @@ def run_runs_protocol(data_dir: Path, reports_dir: Path, *, check: bool = False)
 
 
 FROZEN_KEEPS = ("schema_version", "written", "plan", "fingerprint", "design", "evidence")
+CALIBRATION_IN_REPO = "pipeline/reports/runs_calibration.json"
+# The frozen history entry (task 50): what the freeze records, and the two texts the second
+# review of task 49 left to it, kept in history and not in design because a design edit
+# would move the fingerprint the probe of task 49 answered to.
+FREEZE_NOTE = (
+    "frozen in task 50 with the candidates of reports/runs_calibration.json (section effect: "
+    "the probable subtypes that pass the bar on the primary quantity and survive M3 and M4) "
+    "and the sha of the committed runs/ tree; the design is untouched, same fingerprint. Two "
+    "texts the second review of task 49 left to the freeze, written here and not in design "
+    "so the fingerprint stays: (1) bar.testability.in lost 'with the real null' in 7c74f5b "
+    "because the power simulates the bar's permutation count from the normal approximation "
+    "of the sign-flip null, on the measured dispersion, within-unit correlation and unit "
+    "sizes; the real null (null.real_null_check, placebo 1 minus placebo 2) decides the bar's "
+    "hardening alone, and in task 49 it fired below the threshold, so the bar stayed. (2) "
+    "effect.unit_of_independence links pairs by a shared possession or a shared (runner, "
+    "t'); two runners of the same team sharing t' are not linked, and on the line, a team "
+    "quantity, their placebo legs are identical, so the line's null counts them as two units "
+    "where they are one; the second review of task 49 measured it on the line's real null "
+    "and found no harm (figures in tasks/todo.md), the line is secondary and never adds or "
+    "removes a candidate, and the marker, the primary quantity, is per runner."
+)
+
+
+def freeze_payload(
+    current: dict[str, Any],
+    *,
+    candidates: Sequence[str],
+    code_tree: str,
+    calibration_sha256: str,
+    date: str,
+    note: str = FREEZE_NOTE,
+) -> dict[str, Any]:
+    """The protocol as the freeze commits it (task 50): `stage` frozen, a `frozen` block with
+    the candidates, the sha of the `runs/` tree committed in HEAD (which the freeze commit
+    keeps: it touches no code) and the seal of the calibration file the candidates come
+    from, a frozen entry after the design ones in `history`, the design untouched (its
+    fingerprint is what task 51's `--check` compares), resealed. Refuses a file that is not
+    a sealed design, an empty candidate list or a candidate outside the subtypes."""
+    if current.get("stage") != STAGE_DESIGN:
+        raise ValueError(f"only a protocol in stage {STAGE_DESIGN!r} freezes")
+    if not sealed(current) or current.get("fingerprint") != fingerprint(current["design"]):
+        raise ValueError("the protocol to freeze fails its seal or its fingerprint")
+    if not candidates or any(c not in SUBTYPES for c in candidates):
+        raise ValueError(f"candidates must be a non-empty list of subtypes, got {list(candidates)}")
+    if len(code_tree) != 40:
+        raise ValueError(f"code_tree must be a git tree sha, got {code_tree!r}")
+    entry = {"stage": STAGE_FROZEN, "task": FREEZE_TASK, "date": date, "note": note}
+    body = {k: v for k, v in current.items() if k != "content_sha256"}
+    return seal(
+        {
+            **body,
+            "stage": STAGE_FROZEN,
+            "frozen": {
+                "task": FREEZE_TASK,
+                "date": date,
+                "candidates": [s for s in SUBTYPES if s in candidates],
+                "code_tree_sha": code_tree,
+                "candidates_from": {
+                    "file": CALIBRATION_IN_REPO,
+                    "content_sha256": calibration_sha256,
+                },
+            },
+            "history": [*body["history"], entry],
+        }
+    )
 
 
 def frozen_problems(current: dict[str, Any], expected: dict[str, Any]) -> list[str]:
     """What a frozen file must keep from the design the code writes, and what the freeze must
     leave verifiable: the seal, the design entries opening the history and a frozen one after
-    them. What task 50 adds on top (its candidates, a sha of the code tree) is checked there."""
+    them, and the `frozen` block with the candidates (subtypes, at least one) and the sha of
+    the code tree. Whether that sha is HEAD's is the guard's question (`data`), not a file's."""
     problems: list[str] = []
     if not sealed(current):
         problems.append("content_sha256 does not cover the file")
@@ -686,6 +767,20 @@ def frozen_problems(current: dict[str, Any], expected: dict[str, Any]) -> list[s
         problems.append("history does not open with the design entries")
     if not any(h.get("stage") == STAGE_FROZEN for h in history[len(opening) :]):
         problems.append("history has no frozen entry")
+    frozen = current.get("frozen")
+    if not isinstance(frozen, dict):
+        problems.append("no frozen block")
+        return problems
+    candidates = frozen.get("candidates")
+    if (
+        not isinstance(candidates, list)
+        or not candidates
+        or any(c not in SUBTYPES for c in candidates)
+    ):
+        problems.append("frozen.candidates is not a non-empty list of subtypes")
+    tree = frozen.get("code_tree_sha")
+    if not isinstance(tree, str) or len(tree) != 40:
+        problems.append("frozen.code_tree_sha is not a git tree sha")
     return problems
 
 

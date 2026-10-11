@@ -44,12 +44,17 @@ from tracklab.runs.data import (
 )
 from tracklab.runs.placebo import PlaceboCount, placebo_counts, placebo_instants
 from tracklab.runs.protocol import (
+    CALIBRATION_IN_REPO,
+    FREEZE_NOTE,
+    FREEZE_TASK,
     NUMPY_VERSION,
     STAGE_DESIGN,
     STAGE_FROZEN,
     MatchRow,
     build_protocol,
     fingerprint,
+    freeze_payload,
+    frozen_problems,
     partition_flags,
     read_protocol,
     render,
@@ -121,14 +126,20 @@ def _design() -> dict[str, Any]:
     return _as_design(read_protocol(PROTOCOL))
 
 
-def _freeze(payload: dict[str, Any], note: str | None = None) -> dict[str, Any]:
-    """A freeze as task 50 will commit it: stage, a history entry and the seal recomputed.
-    What else task 50 adds (its candidates, a sha of the code tree) is its spec's."""
-    entry: dict[str, Any] = {"stage": STAGE_FROZEN, "task": 50, "date": "2026-10-09"}
-    if note is not None:
-        entry["note"] = note
-    design = _as_design(payload)
-    return seal({**design, "stage": STAGE_FROZEN, "history": [*design["history"], entry]})
+def _freeze(
+    payload: dict[str, Any], note: str | None = None, code_tree: str = "0" * 40
+) -> dict[str, Any]:
+    """A freeze as task 50 commits it, through the code's own path: stage, the candidates and
+    the sha of the `runs/` tree in `frozen`, a history entry and the seal recomputed. The
+    guard tests pass HEAD's tree of their throwaway repository; a file-only test any sha."""
+    return freeze_payload(
+        _as_design(payload),
+        candidates=["support"],
+        code_tree=code_tree,
+        calibration_sha256="c" * 64,
+        date="2026-10-12",
+        **({} if note is None else {"note": note}),
+    )
 
 
 # --- the split -------------------------------------------------------------------------
@@ -616,8 +627,20 @@ def repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     _git(tmp_path, "config", "user.name", "ci")
     _git(tmp_path, "config", "commit.gpgsign", "false")
     _git(tmp_path, "config", "status.showUntrackedFiles", "no")  # the guard must not care
+    # a code tree at the probe's path, committed first: the freeze records its sha, and the
+    # guard compares HEAD's against it
+    code = tmp_path / data.CODE_IN_REPO / "windows.py"
+    code.parent.mkdir(parents=True)
+    code.write_text("# the code tree of the throwaway repository\n", encoding="utf-8")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-q", "-m", "code")
     monkeypatch.setattr(data, "repo_root", lambda: tmp_path)
     return tmp_path
+
+
+def _frozen_here() -> dict[str, Any]:
+    """The committed design frozen with the `runs/` tree HEAD of the throwaway holds."""
+    return _freeze(read_protocol(PROTOCOL), code_tree=data.code_tree_sha())
 
 
 def _protocol_path(repo: Path) -> Path:
@@ -641,7 +664,7 @@ def test_held_out_is_closed_while_the_committed_protocol_is_in_design(repo: Path
 
 
 def test_held_out_is_closed_in_a_dirty_tree_even_when_frozen(repo: Path) -> None:
-    _commit(repo, _freeze(read_protocol(PROTOCOL)), "frozen")
+    _commit(repo, _frozen_here(), "frozen")
     (repo / "pipeline" / "scratch.py").write_text("x = 1\n", encoding="utf-8")
     with pytest.raises(HeldOutLocked, match="dirty"):
         load_half("held_out")
@@ -650,7 +673,7 @@ def test_held_out_is_closed_in_a_dirty_tree_even_when_frozen(repo: Path) -> None
 def test_held_out_is_closed_when_a_tracked_file_is_edited(repo: Path) -> None:
     (repo / "pipeline" / "code.py").parent.mkdir(parents=True, exist_ok=True)
     (repo / "pipeline" / "code.py").write_text("x = 1\n", encoding="utf-8")
-    _commit(repo, _freeze(read_protocol(PROTOCOL)), "frozen with code")
+    _commit(repo, _frozen_here(), "frozen with code")
     assert load_half("held_out") == HELD_OUT
     (repo / "pipeline" / "code.py").write_text("x = 2\n", encoding="utf-8")
     with pytest.raises(HeldOutLocked, match="dirty"):
@@ -661,7 +684,7 @@ def test_held_out_is_closed_when_head_has_no_protocol(repo: Path) -> None:
     (repo / "README.md").write_text("x\n", encoding="utf-8")
     _git(repo, "add", ".")
     _git(repo, "commit", "-q", "-m", "no protocol yet")
-    _write(_protocol_path(repo), _freeze(read_protocol(PROTOCOL)))  # the working copy only
+    _write(_protocol_path(repo), _frozen_here())  # the working copy only
     with pytest.raises(HeldOutLocked, match="holds no"):
         load_half("held_out")
     with pytest.raises(HeldOutLocked, match="holds no"):
@@ -670,10 +693,123 @@ def test_held_out_is_closed_when_head_has_no_protocol(repo: Path) -> None:
 
 def test_held_out_opens_only_frozen_in_a_clean_tree(repo: Path) -> None:
     """The blob is decoded as UTF-8 whatever the console code page: the note carries an Á."""
-    _commit(repo, _freeze(read_protocol(PROTOCOL), note="congelado: Álvaro"), "frozen")
+    _commit(
+        repo,
+        _freeze(read_protocol(PROTOCOL), note="congelado: Álvaro", code_tree=data.code_tree_sha()),
+        "frozen",
+    )
     assert load_half("held_out") == HELD_OUT
     assert load_half("calibration") == CALIBRATION
     require_readable(HELD_OUT_MATCH)
+
+
+def test_held_out_is_closed_after_a_code_commit_following_the_freeze(repo: Path) -> None:
+    """The plan's mutation for `code_tree_sha` (task 50): the freeze committed and opening,
+    then a change in `runs/windows.py` committed, the tree clean: the `runs/` tree of HEAD is
+    not the one the freeze recorded, and the held-out half closes again. With the sha
+    comparison removed from the guard it stays open and this test fails."""
+    _commit(repo, _frozen_here(), "frozen")
+    assert load_half("held_out") == HELD_OUT
+    code = repo / data.CODE_IN_REPO / "windows.py"
+    code.write_text("# a change after the freeze\n", encoding="utf-8")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-q", "-m", "code after the freeze")
+    assert data.dirty_paths(repo) == []
+    with pytest.raises(HeldOutLocked, match="not the one the freeze recorded"):
+        load_half("held_out")
+    with pytest.raises(HeldOutLocked, match="not the one the freeze recorded"):
+        require_readable(HELD_OUT_MATCH)
+    assert load_half("calibration") == CALIBRATION  # the calibration half needs no freeze
+
+
+def test_held_out_is_closed_when_frozen_has_no_frozen_history_entry(repo: Path) -> None:
+    """The plan's mutation for the history (task 50): `stage: "frozen"` with `history` cut to
+    the design entries, resealed and committed, is refused; so is a frozen entry placed
+    before the design ones. A guard that looks at `stage` alone opens both and this test
+    fails."""
+    frozen = _frozen_here()
+    cut = seal({**frozen, "history": [h for h in frozen["history"] if h["stage"] == STAGE_DESIGN]})
+    _commit(repo, cut, "frozen without the entry")
+    assert data.head_stage() == STAGE_FROZEN
+    with pytest.raises(HeldOutLocked, match="history has no frozen entry"):
+        load_half("held_out")
+    first = seal({**frozen, "history": [frozen["history"][-1], *frozen["history"][:-1]]})
+    _commit(repo, first, "frozen entry before the design ones")
+    with pytest.raises(HeldOutLocked, match="history has no frozen entry"):
+        load_half("held_out")
+    _commit(repo, frozen, "frozen")
+    assert load_half("held_out") == HELD_OUT
+
+
+def test_freeze_payload_keeps_the_design_and_records_what_the_guard_reads() -> None:
+    """The code path of the freeze (task 50, prepared and not run on this repository): the
+    design and its fingerprint untouched, `frozen` with the candidates (in the subtypes'
+    order), the tree sha and the calibration file's seal, a frozen entry after the design
+    ones carrying the two texts the second review of task 49 left to the freeze; it refuses
+    a frozen file, an unsealed one, no candidate or an unknown one; `frozen_problems` sees
+    the block, the candidates and the sha."""
+    design = _design()
+    frozen = freeze_payload(
+        design,
+        candidates=["support", "coming_short"],
+        code_tree="a" * 40,
+        calibration_sha256="b" * 64,
+        date="2026-10-12",
+    )
+    assert frozen["stage"] == STAGE_FROZEN and sealed(frozen)
+    assert frozen["design"] == design["design"] and frozen["fingerprint"] == FINGERPRINT
+    assert frozen["frozen"] == {
+        "task": FREEZE_TASK,
+        "date": "2026-10-12",
+        "candidates": ["coming_short", "support"],
+        "code_tree_sha": "a" * 40,
+        "candidates_from": {"file": CALIBRATION_IN_REPO, "content_sha256": "b" * 64},
+    }
+    assert frozen["history"][:-1] == design["history"]
+    assert frozen["history"][-1] == {
+        "stage": STAGE_FROZEN,
+        "task": FREEZE_TASK,
+        "date": "2026-10-12",
+        "note": FREEZE_NOTE,
+    }
+    assert "with the real null" in FREEZE_NOTE and "same team sharing t'" in FREEZE_NOTE
+    assert [k for k in frozen if k not in design] == ["frozen"]
+    with pytest.raises(ValueError, match="only a protocol in stage"):
+        freeze_payload(
+            frozen,
+            candidates=["support"],
+            code_tree="a" * 40,
+            calibration_sha256="b" * 64,
+            date="d",
+        )
+    with pytest.raises(ValueError, match="candidates"):
+        freeze_payload(
+            design, candidates=[], code_tree="a" * 40, calibration_sha256="b" * 64, date="d"
+        )
+    with pytest.raises(ValueError, match="candidates"):
+        freeze_payload(
+            design, candidates=["nope"], code_tree="a" * 40, calibration_sha256="b" * 64, date="d"
+        )
+    with pytest.raises(ValueError, match="seal"):
+        freeze_payload(
+            {**design, "plan": "edited"},
+            candidates=["support"],
+            code_tree="a" * 40,
+            calibration_sha256="b" * 64,
+            date="d",
+        )
+    with pytest.raises(ValueError, match="tree sha"):
+        freeze_payload(
+            design, candidates=["support"], code_tree="abc", calibration_sha256="b" * 64, date="d"
+        )
+    assert frozen_problems(frozen, design) == []
+    assert "no frozen block" in frozen_problems(
+        seal({k: v for k, v in frozen.items() if k != "frozen"}), design
+    )
+    bad = seal({**frozen, "frozen": {**frozen["frozen"], "candidates": []}})
+    assert any("candidates" in p for p in frozen_problems(bad, design))
+    bad = seal({**frozen, "frozen": {**frozen["frozen"], "code_tree_sha": "x"}})
+    assert any("code_tree_sha" in p for p in frozen_problems(bad, design))
 
 
 def test_held_out_is_closed_when_frozen_was_flipped_by_hand(repo: Path) -> None:
@@ -687,7 +823,7 @@ def test_held_out_is_closed_when_frozen_was_flipped_by_hand(repo: Path) -> None:
 def test_held_out_is_closed_when_the_committed_lists_disagree_with_the_rows(repo: Path) -> None:
     """The lists are regenerated from the rows and never trusted: a held-out id moved into the
     committed calibration list, fingerprint and seal recomputed, is refused for both halves."""
-    payload = _freeze(read_protocol(PROTOCOL))
+    payload = _frozen_here()
     split = payload["design"]["split"]
     split["held_out"].remove(HELD_OUT_MATCH)
     split["calibration"] = sorted([*split["calibration"], HELD_OUT_MATCH])

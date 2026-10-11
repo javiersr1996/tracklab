@@ -30,6 +30,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from tracklab.runs.protocol import (
+    STAGE_DESIGN,
     STAGE_FROZEN,
     fingerprint,
     rows_from_protocol,
@@ -151,11 +152,36 @@ def dirty_paths(repo: Path) -> list[str]:
 
 
 def assert_held_out_open() -> None:
-    stage = committed_protocol().get("stage")
+    """The four conditions the held-out half opens on, all read from HEAD (task 47, hardened
+    in task 50): the committed protocol is in stage frozen; its history has a frozen entry
+    after the design ones (a stage string alone opens nothing, sealed or not); the `runs/`
+    tree committed in HEAD is the one the freeze recorded (a code commit after the freeze
+    opens nothing); and the working tree is clean."""
+    payload = committed_protocol()
+    stage = payload.get("stage")
     if stage != STAGE_FROZEN:
         raise HeldOutLocked(
             f"the protocol committed in HEAD is in stage {stage!r}, not {STAGE_FROZEN!r}: "
             "the held-out half stays closed"
+        )
+    history = payload.get("history") or []
+    frozen_at = next((i for i, h in enumerate(history) if h.get("stage") == STAGE_FROZEN), None)
+    if (
+        frozen_at is None
+        or frozen_at == 0
+        or any(h.get("stage") != STAGE_DESIGN for h in history[:frozen_at])
+    ):
+        raise HeldOutLocked(
+            "the protocol committed in HEAD says frozen but its history has no frozen entry "
+            "after the design ones: the stage was set without the freeze"
+        )
+    recorded = (payload.get("frozen") or {}).get("code_tree_sha")
+    tree = code_tree_sha()
+    if recorded != tree:
+        raise HeldOutLocked(
+            f"the {CODE_IN_REPO} tree committed in HEAD ({tree[:12]}) is not the one the "
+            f"freeze recorded ({str(recorded)[:12]}): a code commit after the freeze opens "
+            "nothing"
         )
     dirty = dirty_paths(repo_root())
     if dirty:
