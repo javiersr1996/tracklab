@@ -825,7 +825,8 @@ def test_the_versioned_verdict_is_pinned() -> None:
     }
     # the post hoc kinematics, a diagnostic that decides nothing: the runner is already
     # running at frame_start in every subtype, his onset mostly inside the pre-trend
-    # window, his own pre-trend above his own effect, the marker starting after him
+    # window, his own pre-trend above his own effect; the marker's onset does not separate
+    # following from anticipating (the shares below), so it is pinned, not read as a direction
     kin = e["kinematics"]
     assert kin["post_hoc"] is True and "decides nothing" in kin["what"]
     assert kin["thresholds"] == {
@@ -845,11 +846,61 @@ def test_the_versioned_verdict_is_pinned() -> None:
         "onset_median_s",
         "onset_inside_pre_trend_window_share",
         "runner_own_pre_trend_ratio",
+        "pairs_with_both_onsets",
+        "marker_not_started_at_tc_share",
+        "runner_not_started_along_d_at_tc_share",
+        "pairs_both_started",
         "marker_onset_lag_median_s",
         "marker_after_runner_share",
+        "marker_before_runner_share",
     )
     assert {s: tuple(p[k] for k in keys) for s, p in pooled.items()} == {
-        "coming_short": (4.271, 1.837, 0.9874, 0.3214, -1.65, 0.5733, 2.9957, 0.0, 0.4686),
-        "run_ahead_of_the_ball": (4.29, 1.632, 0.987, 0.2235, -0.95, 0.7299, 1.7481, 0.2, 0.5602),
-        "support": (4.294, 1.601, 0.9888, 0.328, -1.2, 0.6694, 2.8143, 0.25, 0.6003),
+        "coming_short": (
+            4.271,
+            1.837,
+            0.9874,
+            0.3214,
+            -1.65,
+            0.5733,
+            2.9957,
+            446,
+            0.0673,
+            0.0022,
+            416,
+            -0.1,
+            0.4327,
+            0.512,
+        ),
+        "run_ahead_of_the_ball": (
+            4.29,
+            1.632,
+            0.987,
+            0.2235,
+            -0.95,
+            0.7299,
+            1.7481,
+            1021,
+            0.097,
+            0.002,
+            920,
+            0.1,
+            0.5141,
+            0.4315,
+        ),
+        "support": (
+            4.294,
+            1.601,
+            0.9888,
+            0.328,
+            -1.2,
+            0.6694,
+            2.8143,
+            578,
+            0.0813,
+            0.0069,
+            530,
+            0.2,
+            0.5717,
+            0.3736,
+        ),
     }
