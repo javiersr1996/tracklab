@@ -57,6 +57,7 @@ from tracklab.runs.protocol import (
     BAR_OF_MATCHES,
     BAR_P,
     BAR_SAME_SIGN_MATCHES,
+    BAR_Z,
     EFFECT_WINDOW_S,
     MIN_RUN_LENGTH_M,
     N_PERMUTATIONS,
@@ -108,20 +109,7 @@ class ProbeInputError(RuntimeError):
     (pairs and counts) of one match disagree."""
 
 
-def z_two_sided(p: float) -> float:
-    """The |z| whose two-sided normal tail is `p`, by bisection on `math.erf`: the normal
-    approximation of the sign-flip null the power simulation uses."""
-    lo, hi = 0.0, 10.0
-    for _ in range(200):
-        mid = (lo + hi) / 2
-        if 2.0 * (1.0 - 0.5 * (1.0 + math.erf(mid / math.sqrt(2.0)))) > p:
-            lo = mid
-        else:
-            hi = mid
-    return (lo + hi) / 2
-
-
-Z_TWO_SIDED = z_two_sided(BAR_P)
+Z_TWO_SIDED = BAR_Z  # the protocol's z_equivalent, the normal quantile of its two-sided p
 
 
 # --- (a) cadence --------------------------------------------------------------------------

@@ -59,6 +59,7 @@ from tracklab.runs.protocol import (
     sealed,
     split_matches,
     warehouse_kickoffs,
+    z_two_sided,
 )
 
 PIPELINE = Path(__file__).resolve().parents[2]
@@ -69,9 +70,10 @@ CI_FIXTURE_MATCH = 1874553
 HELD_OUT_MATCH = 1899585
 
 # Decision 3, split A, as Javier confirmed it on 2026-10-09, and the fingerprint of the design
-# regenerated in the second review of tasks 47-48 (the frame of a placebo is turned by the
-# sign of its own period). A change of either is a change of the preregistration and must
-# show as a diff of this file, never only of the JSON.
+# regenerated in the review of task 49 (the unit of the null, the real-null check, the power
+# simulating the bar and z_equivalent derived; before it, the second review of tasks 47-48).
+# A change of either is a change of the preregistration and must show as a diff of this
+# file, never only of the JSON.
 CALIBRATION = [
     1874553,
     1886347,
@@ -96,7 +98,7 @@ HELD_OUT = [
     2016236,
     2017461,
 ]
-FINGERPRINT = "1ac2cae0957c7cc9c8e8f4282e5df39ed8684133bf6fbef0dff665315c345155"
+FINGERPRINT = "6941c77cbc3e2b0217f4330394fee4b3920be38a39c11e8c08072d5cdca9b810"
 
 
 def _write(path: Path, payload: dict[str, Any]) -> None:
@@ -104,9 +106,15 @@ def _write(path: Path, payload: dict[str, Any]) -> None:
 
 
 def _as_design(payload: dict[str, Any]) -> dict[str, Any]:
-    """The committed protocol as task 47 wrote it, whatever stage it is in now: the tests
-    below start from the design file so that task 50's freeze cannot flip them."""
-    return seal({**payload, "stage": STAGE_DESIGN, "history": payload["history"][:1]})
+    """The committed protocol as tasks 47 and 49 wrote it, whatever stage it is in now: the
+    tests below start from the design file so that task 50's freeze cannot flip them."""
+    return seal(
+        {
+            **payload,
+            "stage": STAGE_DESIGN,
+            "history": [h for h in payload["history"] if h["stage"] == STAGE_DESIGN],
+        }
+    )
 
 
 def _design() -> dict[str, Any]:
@@ -198,9 +206,19 @@ def test_the_protocol_carries_the_plans_bar() -> None:
         "same_sign_matches_at_least": 8,
         "of_matches": 10,
         "p_at_most": 0.00135,
-        "z_equivalent": 3.0,
+        "z_equivalent": round(z_two_sided(0.00135), 4),
     }
+    # the z of the plan's decision 4 (3.0) is the one-sided quantile of 0.00135; the p is
+    # two-sided, so the z it is equivalent to is 3.205 (review of task 49, derived not written)
+    assert bar["calibration"]["z_equivalent"] == pytest.approx(3.2051, abs=1e-3)
     assert bar["testability"]["mde80_sd_at_most"] == 0.3
+    assert "Binomial(n_permutations" in bar["testability"]["in"]
+    null = payload["design"]["null"]
+    assert "per unit (effect.unit_of_independence)" in null["how"]
+    assert "placebo 1 minus placebo 2" in null["real_null_check"]
+    assert "shared placebo instant" in payload["history"][1]["note"]
+    assert [h["task"] for h in payload["history"][:2]] == [47, 49]
+    assert payload["design"]["effect"]["unit_of_independence"].startswith("the unit: the conn")
     assert bar["held_out"]["same_sign_matches_at_least"] == 8
     assert bar["held_out"]["p_at_most"] == 0.01
     assert payload["design"]["null"]["n_permutations"] == 2000

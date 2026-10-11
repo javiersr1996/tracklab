@@ -38,6 +38,7 @@ import csv
 import hashlib
 import importlib.metadata
 import json
+import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -49,8 +50,23 @@ from tracklab.runs import placebo
 PROTOCOL_NAME = "runs_protocol.json"
 SCHEMA_VERSION = 1
 WRITTEN = "2026-10-09"
+REVISED = "2026-10-11"  # the review of task 49: history gains its entry, the stage stays design
 STAGE_DESIGN = "design"
 STAGE_FROZEN = "frozen"
+
+
+def z_two_sided(p: float) -> float:
+    """The |z| whose two-sided normal tail is `p`, by bisection on `math.erf`: the z the bar's
+    p is equivalent to, and the normal approximation of the sign-flip null the power uses."""
+    lo, hi = 0.0, 10.0
+    for _ in range(200):
+        mid = (lo + hi) / 2
+        if 2.0 * (1.0 - 0.5 * (1.0 + math.erf(mid / math.sqrt(2.0)))) > p:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
+
 
 SEED = 20261009
 N_PERMUTATIONS = 2000
@@ -64,7 +80,7 @@ MIN_RUN_LENGTH_M = 1.0
 BAR_SAME_SIGN_MATCHES = 8
 BAR_OF_MATCHES = 10
 BAR_P = 0.00135
-BAR_Z = 3.0
+BAR_Z = z_two_sided(BAR_P)  # derived, never a second literal: 3.205 for a two-sided 0.00135
 TESTABILITY_MDE80_SD = 0.3
 HELD_OUT_P = 0.01
 NULL_AT_LEAST_ONE_MAX_PCT = 5.0
@@ -338,8 +354,10 @@ def design(rows: list[MatchRow]) -> dict[str, Any]:
                 "mean of every pair of the subtype in the half, matches weighted by their pairs"
             ),
             "unit_of_independence": (
-                "the possession: pairs sharing associated_player_possession_event_id move "
-                "together in the null"
+                "the unit: the connected component, inside the match, of the pairs that share "
+                "associated_player_possession_event_id or a placebo instant (same runner, same "
+                "t', so the same placebo quantity); the pairs of a unit move together in the "
+                "null (task 49: the possession alone left the shared instants apart)"
             ),
             "pre_trend": (
                 "the same statistic with t_c replaced by t_c - W, which must stay flat (task 50, "
@@ -357,8 +375,9 @@ def design(rows: list[MatchRow]) -> dict[str, Any]:
         "null": {
             "kind": "permutation inside each match, never across matches",
             "how": (
-                "sign flip of the paired differences per possession cluster inside each match; "
-                "to compare subtypes, subtype labels shuffled inside each match"
+                "sign flip of the paired differences per unit (effect.unit_of_independence) "
+                "inside each match; to compare subtypes, subtype labels shuffled inside each "
+                "match"
             ),
             "n_permutations": N_PERMUTATIONS,
             "seed": SEED,
@@ -366,19 +385,32 @@ def design(rows: list[MatchRow]) -> dict[str, Any]:
                 "two-sided, (1 + count of |stat*| >= |stat|) / (1 + n_permutations), on the "
                 "pooled statistic"
             ),
+            "real_null_check": (
+                "task 49: placebo 1 minus placebo 2 per pair, the second placebo being the next "
+                "nearest admissible instant of the same rule whose window is disjoint from the "
+                "first's, centred per subtype over the calibration half (placebo quantities, "
+                "never an outcome); sign-flipped by blocks that nest the units, the connected "
+                "components of possession, placebo instants and (runner, period) inside the "
+                "match; on every draw the whole bar with its units and its permutation p; how "
+                "often it fires per subtype and for at least one subtype, against bar.hardening"
+            ),
         },
         "bar": {
             "calibration": {
                 "same_sign_matches_at_least": BAR_SAME_SIGN_MATCHES,
                 "of_matches": BAR_OF_MATCHES,
                 "p_at_most": BAR_P,
-                "z_equivalent": BAR_Z,
+                "z_equivalent": round(BAR_Z, 4),
             },
             "testability": {
                 "mde80_sd_at_most": TESTABILITY_MDE80_SD,
                 "in": (
-                    "both halves, with the real null and the design effect measured in task 49; "
-                    "a subtype that fails is said untestable with this sample, never noise"
+                    "both halves, with the design effect measured in task 49 and the bar "
+                    "simulated as it is applied: the sign count over the matches and a "
+                    "permutation count drawn as Binomial(n_permutations, two-sided normal tail "
+                    "of the z of the draw), passing when (1 + count) / (1 + n_permutations) is "
+                    "at most p_at_most; a subtype that fails is said untestable with this "
+                    "sample, never noise"
                 ),
             },
             "held_out": {
@@ -480,7 +512,23 @@ def build_protocol(rows: list[MatchRow], counts: list[placebo.PlaceboCount]) -> 
                 "total": placebo.total(counts),
             }
         },
-        "history": [{"stage": STAGE_DESIGN, "task": 47, "date": WRITTEN}],
+        "history": [
+            {"stage": STAGE_DESIGN, "task": 47, "date": WRITTEN},
+            {
+                "stage": STAGE_DESIGN,
+                "task": 49,
+                "date": REVISED,
+                "note": (
+                    "review of task 49, before any effect per subtype: the unit of the null is "
+                    "the connected component of shared possession or shared placebo instant, "
+                    "not the possession alone; the real-null check is placebo 1 minus placebo "
+                    "2 sign-flipped by blocks that nest the units; the power simulates the "
+                    "bar's permutation count instead of a normal quantile; z_equivalent is "
+                    "derived from p_at_most (3.205 two-sided, where 3.0 was written). No "
+                    "threshold, window, seed or list moved."
+                ),
+            },
+        ],
     }
     # Over everything above: a hand edit of the evidence shows even where `--check` cannot
     # recount it (the CI fixtures hold one match).
@@ -583,8 +631,8 @@ FROZEN_KEEPS = ("schema_version", "written", "plan", "fingerprint", "design", "e
 
 def frozen_problems(current: dict[str, Any], expected: dict[str, Any]) -> list[str]:
     """What a frozen file must keep from the design the code writes, and what the freeze must
-    leave verifiable: the seal, the design entry opening the history and a frozen one after
-    it. What task 50 adds on top (its candidates, a sha of the code tree) is checked there."""
+    leave verifiable: the seal, the design entries opening the history and a frozen one after
+    them. What task 50 adds on top (its candidates, a sha of the code tree) is checked there."""
     problems: list[str] = []
     if not sealed(current):
         problems.append("content_sha256 does not cover the file")
@@ -592,9 +640,10 @@ def frozen_problems(current: dict[str, Any], expected: dict[str, Any]) -> list[s
         if current.get(key) != expected[key]:
             problems.append(f"{key} differs from what the code writes")
     history = current.get("history") or []
-    if not history or history[0] != expected["history"][0]:
-        problems.append("history does not open with the design entry")
-    if not any(h.get("stage") == STAGE_FROZEN for h in history[1:]):
+    opening = expected["history"]
+    if history[: len(opening)] != opening:
+        problems.append("history does not open with the design entries")
+    if not any(h.get("stage") == STAGE_FROZEN for h in history[len(opening) :]):
         problems.append("history has no frozen entry")
     return problems
 

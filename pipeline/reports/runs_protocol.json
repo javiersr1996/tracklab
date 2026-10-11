@@ -3,7 +3,7 @@
   "stage": "design",
   "written": "2026-10-09",
   "plan": "tasks/todo.md, P5 'The run that moves nobody', task 47",
-  "fingerprint": "1ac2cae0957c7cc9c8e8f4282e5df39ed8684133bf6fbef0dff665315c345155",
+  "fingerprint": "6941c77cbc3e2b0217f4330394fee4b3920be38a39c11e8c08072d5cdca9b810",
   "design": {
     "question": "Which off-ball run subtypes displace the defence, measured on the tracking in the window after the run starts, against a placebo of the same runner at another instant of a possession of his team.",
     "outcome": {
@@ -230,28 +230,29 @@
       "pair": "quantity(run) - quantity(placebo), one pair per run",
       "per_match": "mean of the pairs of the subtype in the match: one row per match, ten per half, always before any aggregate",
       "pooled": "mean of every pair of the subtype in the half, matches weighted by their pairs",
-      "unit_of_independence": "the possession: pairs sharing associated_player_possession_event_id move together in the null",
+      "unit_of_independence": "the unit: the connected component, inside the match, of the pairs that share associated_player_possession_event_id or a placebo instant (same runner, same t', so the same placebo quantity); the pairs of a unit move together in the null (task 49: the possession alone left the shared instants apart)",
       "pre_trend": "the same statistic with t_c replaced by t_c - W, which must stay flat (task 50, M3)",
       "grouping": "by provider subtype, and again by a class computed only with information up to t_c (task 50): the label groups, it does not cause",
       "analysis_set": "clean runs (task 48: complete window, runner detected throughout) with an admissible placebo and a direction of at least the minimum length"
     },
     "null": {
       "kind": "permutation inside each match, never across matches",
-      "how": "sign flip of the paired differences per possession cluster inside each match; to compare subtypes, subtype labels shuffled inside each match",
+      "how": "sign flip of the paired differences per unit (effect.unit_of_independence) inside each match; to compare subtypes, subtype labels shuffled inside each match",
       "n_permutations": 2000,
       "seed": 20261009,
-      "p_value": "two-sided, (1 + count of |stat*| >= |stat|) / (1 + n_permutations), on the pooled statistic"
+      "p_value": "two-sided, (1 + count of |stat*| >= |stat|) / (1 + n_permutations), on the pooled statistic",
+      "real_null_check": "task 49: placebo 1 minus placebo 2 per pair, the second placebo being the next nearest admissible instant of the same rule whose window is disjoint from the first's, centred per subtype over the calibration half (placebo quantities, never an outcome); sign-flipped by blocks that nest the units, the connected components of possession, placebo instants and (runner, period) inside the match; on every draw the whole bar with its units and its permutation p; how often it fires per subtype and for at least one subtype, against bar.hardening"
     },
     "bar": {
       "calibration": {
         "same_sign_matches_at_least": 8,
         "of_matches": 10,
         "p_at_most": 0.00135,
-        "z_equivalent": 3.0
+        "z_equivalent": 3.2051
       },
       "testability": {
         "mde80_sd_at_most": 0.3,
-        "in": "both halves, with the real null and the design effect measured in task 49; a subtype that fails is said untestable with this sample, never noise"
+        "in": "both halves, with the design effect measured in task 49 and the bar simulated as it is applied: the sign count over the matches and a permutation count drawn as Binomial(n_permutations, two-sided normal tail of the z of the draw), passing when (1 + count) / (1 + n_permutations) is at most p_at_most; a subtype that fails is said untestable with this sample, never noise"
       },
       "held_out": {
         "same_sign_matches_at_least": 8,
@@ -413,7 +414,13 @@
       "stage": "design",
       "task": 47,
       "date": "2026-10-09"
+    },
+    {
+      "stage": "design",
+      "task": 49,
+      "date": "2026-10-11",
+      "note": "review of task 49, before any effect per subtype: the unit of the null is the connected component of shared possession or shared placebo instant, not the possession alone; the real-null check is placebo 1 minus placebo 2 sign-flipped by blocks that nest the units; the power simulates the bar's permutation count instead of a normal quantile; z_equivalent is derived from p_at_most (3.205 two-sided, where 3.0 was written). No threshold, window, seed or list moved."
     }
   ],
-  "content_sha256": "ef8d7c49d029c1889788cf4621cc7b6d3cbca9e0c37772aec4bdb8d9797bf03d"
+  "content_sha256": "46f04329c92c0fabb8c20393da2ec7f822975b670d4c4d2cb846e3ea3c0f92e4"
 }

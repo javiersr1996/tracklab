@@ -54,17 +54,18 @@ from tracklab.runs.probe import (
     probable_subtypes,
     run_runs_probe,
     unit_sums,
-    z_two_sided,
 )
 from tracklab.runs.protocol import (
     BAR_P,
     BAR_SAME_SIGN_MATCHES,
+    BAR_Z,
     N_PERMUTATIONS,
     NULL_AT_LEAST_ONE_MAX_PCT,
     TESTABILITY_MDE80_SD,
     read_protocol,
     seal,
     sealed,
+    z_two_sided,
 )
 from tracklab.runs.windows import SUBTYPES, PairEffect, unit_labels, units_by_subtype
 
@@ -105,7 +106,11 @@ def test_units_by_subtype_gives_sorted_sizes_per_protocol_subtype() -> None:
 
 def test_z_two_sided_is_the_normal_quantile() -> None:
     assert z_two_sided(0.05) == pytest.approx(1.959964, abs=1e-5)
-    assert Z_TWO_SIDED == z_two_sided(BAR_P) == pytest.approx(3.2051, abs=1e-3)
+    assert Z_TWO_SIDED == BAR_Z == z_two_sided(BAR_P) == pytest.approx(3.2051, abs=1e-3)
+    # the protocol's z_equivalent is this quantile, not the 3.0 of a one-sided 0.00135
+    assert read_protocol(REPORTS / "runs_protocol.json")["design"]["bar"]["calibration"][
+        "z_equivalent"
+    ] == round(BAR_Z, 4)
 
 
 def test_permutation_p_counts_the_two_sided_tail_with_the_plus_one() -> None:

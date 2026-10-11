@@ -975,8 +975,14 @@ def design_repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     _git(repo, "config", "commit.gpgsign", "false")
     protocol = repo / data.PROTOCOL_IN_REPO
     protocol.parent.mkdir(parents=True)
-    committed = read_protocol(PROTOCOL)  # as task 47 wrote it, whatever stage it is in now
-    design = seal({**committed, "stage": STAGE_DESIGN, "history": committed["history"][:1]})
+    committed = read_protocol(PROTOCOL)  # as tasks 47 and 49 wrote it, whatever stage it is in now
+    design = seal(
+        {
+            **committed,
+            "stage": STAGE_DESIGN,
+            "history": [h for h in committed["history"] if h["stage"] == STAGE_DESIGN],
+        }
+    )
     protocol.write_text(render(design), encoding="utf-8", newline="\n")
     _git(repo, "add", ".")
     _git(repo, "commit", "-q", "-m", "design")
@@ -1069,7 +1075,6 @@ READS_NO_FRAMES = {
     "placebo.total",
     "placebo.as_rows",
     "probe.ProbeInputError",
-    "probe.z_two_sided",
     "probe.Cadence",
     "probe.cadence_lag",
     "probe.pooled_autocorrelation",
