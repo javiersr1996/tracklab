@@ -11,6 +11,7 @@ import os
 import sys
 import time
 from collections.abc import Callable, Sequence
+from datetime import date
 from pathlib import Path
 
 from tracklab.bronze.basketball.aggregates import build_aggregates as build_basketball_aggregates
@@ -40,6 +41,7 @@ from tracklab.publish.stats import run_publish_stats
 from tracklab.publish.warehouse import run_publish_warehouse
 from tracklab.publish.warehouse_pg import WHERE, run_publish_warehouse_pg
 from tracklab.quality.run import CHECKS, run_quality
+from tracklab.runs.candidates import run_runs_effect, run_runs_freeze
 from tracklab.runs.coverage import run_runs_coverage
 from tracklab.runs.probe import run_runs_probe
 from tracklab.runs.protocol import run_runs_protocol
@@ -235,6 +237,14 @@ def _cmd_runs_coverage(args: argparse.Namespace) -> int:
 
 def _cmd_runs_probe(args: argparse.Namespace) -> int:
     return run_runs_probe(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_runs_effect(args: argparse.Namespace) -> int:
+    return run_runs_effect(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_runs_freeze(args: argparse.Namespace) -> int:
+    return run_runs_freeze(args.reports_dir, date=args.date)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -763,6 +773,51 @@ def build_parser() -> argparse.ArgumentParser:
         "versioned file, else verify its seal and consistency; write nothing.",
     )
     runs_probe.set_defaults(func=_cmd_runs_probe)
+    runs_effect = runs_sub.add_parser(
+        "effect",
+        help="Write reports/runs_calibration.json, section effect: death probe 2 of P5 on the "
+        "calibration half (effect per probable subtype, pre-trend, fully detected, class at "
+        "t_c), next to the probe's section.",
+    )
+    runs_effect.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver frames and the football bronze events are read from it "
+        "(default: data).",
+    )
+    runs_effect.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where runs_calibration.json lives (default: reports); the split is read from "
+        "the protocol committed in HEAD, never from a file at hand.",
+    )
+    runs_effect.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate the section where the warehouse holds the calibration matches and "
+        "compare with the versioned file, else verify its seal and consistency; write nothing.",
+    )
+    runs_effect.set_defaults(func=_cmd_runs_effect)
+    runs_freeze = runs_sub.add_parser(
+        "freeze",
+        help="Turn reports/runs_protocol.json to stage frozen with the candidates of the "
+        "effect section and the sha of the committed runs/ tree; writes the file, commits "
+        "nothing (the commit is the freeze).",
+    )
+    runs_freeze.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where runs_protocol.json and runs_calibration.json live (default: reports).",
+    )
+    runs_freeze.add_argument(
+        "--date",
+        default=date.today().isoformat(),
+        help="The date of the frozen history entry (default: today).",
+    )
+    runs_freeze.set_defaults(func=_cmd_runs_freeze)
 
     build = subparsers.add_parser(
         "build",

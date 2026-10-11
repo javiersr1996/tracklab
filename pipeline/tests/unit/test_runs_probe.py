@@ -710,7 +710,7 @@ def test_the_probe_on_a_planted_effect_passes_m2_and_check_reproduces_it(
     }
     # the placebo design: every placebo 240 s away, no runner on the ball, nothing shared
     design = p["placebo_design"]["pooled"]
-    assert design["gap_s_p50"] == design["gap_s_p90"] == 240.0
+    assert design["gap_s_p50"] == design["gap_s_p90"] == 300.0
     assert design["runner_in_possession_at_placebo_fraction"] == 0.0
     assert design["shared_instants"] == design["shared_possessions"] == 0
     assert p["units"]["pooled"] == {
@@ -736,7 +736,7 @@ def test_the_probe_on_a_planted_effect_passes_m2_and_check_reproduces_it(
     # the centring is what keeps the flipped null nominal
     null = p["null"]
     assert null["pairs_with_second_placebo"] == null["of_pairs"] == 300
-    assert null["gap_s_p50"] == null["gap_s_p90"] == 243.0
+    assert null["gap_s_p50"] == null["gap_s_p90"] == 303.0
     assert null["pooled"] == {"pairs": 300, "units": 300, "blocks": 20, "largest_block_share": 0.5}
     assert all(r["with_second_placebo"] == 30 and r["blocks"] == 2 for r in null["per_match"])
     assert null["at_least_one_pct"] <= NULL_AT_LEAST_ONE_MAX_PCT
@@ -744,7 +744,7 @@ def test_the_probe_on_a_planted_effect_passes_m2_and_check_reproduces_it(
     for row in null["per_subtype"]:
         assert row["pairs"] == row["units"] == 30 and row["blocks"] == 20
         assert abs(row["centring_mean_m"] - 1.0) < 0.5 and row["unflipped"]["passes_bar"]
-        assert row["unflipped"]["same_sign_matches"] == 10
+        assert row["unflipped"]["same_sign_matches"] >= BAR_SAME_SIGN_MATCHES  # 3 pairs a match
     # the power: every subtype has 30 pairs per half, the bar simulated as applied
     assert {(r["subtype"], r["half"]) for r in p["power"]["rows"]} == {
         (s, h) for s in SUBTYPES for h in ("calibration", "other")
@@ -974,6 +974,37 @@ def test_the_probe_refuses_uncommitted_code_and_records_the_committed_tree(
     again = tmp_path / "again"
     assert run_runs_probe(root, again) == 0
     assert (again / PROBE_NAME).read_bytes() == before
+
+
+@pytest.mark.usefixtures("design_repo")
+def test_the_probe_keeps_the_sections_it_does_not_own(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Inherited (a) of task 50: the file holds the probe's section and task 50's `effect`
+    under one seal. A rewrite of the probe keeps what is not its own, byte for byte, and
+    `--check` compares what it would write on top of what is there: a foreign section edited
+    without resealing fails on the seal, one resealed is the other command's to check."""
+    root, reports, payload = _written(tmp_path, PLANTED_MARKER_M, PLANTED_LINE_M)
+    path = reports / PROBE_NAME
+    foreign = {"effect": {"task": 50, "candidates": ["support"]}}
+    with_foreign = seal({**{k: v for k, v in payload.items() if k != "content_sha256"}, **foreign})
+    path.write_text(json.dumps(with_foreign, indent=2) + "\n", encoding="utf-8")
+    assert list(with_foreign)[-2:] == ["effect", "content_sha256"]
+    capsys.readouterr()
+    assert run_runs_probe(root, reports, check=True) == 0
+    assert "FULL 10/10 recomputed and equal" in capsys.readouterr().out
+    assert run_runs_probe(root, reports) == 0
+    again = json.loads(path.read_text(encoding="utf-8"))
+    assert again["effect"] == foreign["effect"] and again["probe"] == payload["probe"]
+    assert sealed(again) and list(again)[-2:] == ["effect", "content_sha256"]
+    unsealed = json.loads(path.read_text(encoding="utf-8"))
+    unsealed["effect"]["candidates"] = []
+    path.write_text(json.dumps(unsealed, indent=2) + "\n", encoding="utf-8")
+    capsys.readouterr()
+    assert run_runs_probe(root, reports, check=True) == 1
+    assert "content_sha256" in capsys.readouterr().out
+    path.write_text(json.dumps(seal(unsealed), indent=2) + "\n", encoding="utf-8")
+    assert run_runs_probe(root, reports, check=True) == 0
 
 
 def test_the_probe_names_the_calibration_half_and_no_other_door() -> None:

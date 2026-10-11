@@ -53,19 +53,7 @@ from tracklab.runs.protocol import (
     SAMPLE_RATE_HZ,
     VELOCITY_WINDOW_S,
 )
-
-SUBTYPES = (
-    "behind",
-    "coming_short",
-    "cross_receiver",
-    "dropping_off",
-    "overlap",
-    "pulling_half_space",
-    "pulling_wide",
-    "run_ahead_of_the_ball",
-    "support",
-    "underlap",
-)
+from tracklab.runs.protocol import SUBTYPES as SUBTYPES  # re-exported: the tables key by it
 
 
 def whole_frames(seconds: float) -> int:
@@ -130,6 +118,10 @@ class _Tracking:
     is_goalkeeper: Bools
     period_frames: Mapping[int, tuple[int, int]]
     attack_sign: Mapping[tuple[int, str], int]
+    # The ball, venue frame, NaN where it has no row (task 50: the class at t_c reads it);
+    # None when a tracking was built without it, and then no run has a class.
+    ball_x: NDArray[np.float64] | None = None
+    ball_y: NDArray[np.float64] | None = None
 
     @property
     def n_frames(self) -> int:
@@ -229,6 +221,10 @@ def _read_tracking(data_dir: Path, match_id: int) -> _Tracking:
             {"g": frames_glob},
         )
         cols = cur.fetchnumpy()
+        ball = con.execute(
+            "SELECT frame_native, x_m, y_m FROM read_parquet($g) WHERE entity_kind = 'ball'",
+            {"g": frames_glob},
+        ).fetchnumpy()
         periods = con.execute(
             "SELECT period, frame_native_start, frame_native_end "
             "FROM read_parquet($g) WHERE match_id = $m",
@@ -265,6 +261,12 @@ def _read_tracking(data_dir: Path, match_id: int) -> _Tracking:
     for entity, team in zip(cols["entity_id"], cols["team_id"], strict=True):
         team_of.setdefault(str(entity), str(team))
     keeper_ids = {str(k[0]) for k in keepers}
+    ball_x = np.full(n_frames, np.nan)
+    ball_y = np.full(n_frames, np.nan)
+    ball_row = np.asarray(ball["frame_native"], dtype=np.int64) - frame0
+    inside = (ball_row >= 0) & (ball_row < n_frames)  # the players' span bounds the arrays
+    ball_x[ball_row[inside]] = np.asarray(ball["x_m"], dtype=np.float64)[inside]
+    ball_y[ball_row[inside]] = np.asarray(ball["y_m"], dtype=np.float64)[inside]
     return _Tracking(
         match_id=match_id,
         frame0=frame0,
@@ -276,6 +278,8 @@ def _read_tracking(data_dir: Path, match_id: int) -> _Tracking:
         is_goalkeeper=np.array([str(n) in keeper_ids for n in names], dtype=np.bool_),
         period_frames={int(p): (int(a), int(b)) for p, a, b in periods},
         attack_sign={(int(p), str(t)): int(s) for p, t, s in signs},
+        ball_x=ball_x,
+        ball_y=ball_y,
     )
 
 
@@ -370,6 +374,66 @@ def line_height_at(t: MatchTracking, run: Run) -> float | None:
     opponents = _opponents(t, run.team)
     height = effect.line_height(sign * t.x[i, opponents], t.is_goalkeeper[opponents])
     return height if math.isfinite(height) else None
+
+
+CLASS_BALL = ("to_ball", "from_ball")
+CLASS_LINE = ("to_line", "from_line")
+CLASS_FLANK = ("wide", "inside")
+RUN_CLASSES = tuple(
+    f"{b}/{line}/{f}" for b in CLASS_BALL for line in CLASS_LINE for f in CLASS_FLANK
+)
+
+
+def run_class(t: MatchTracking, run: Run) -> str | None:
+    """The run's class from information up to t_c alone (task 50, the circularity control):
+    the runner's velocity u over [t_c - V, t_c] in the attack frame of his team, against the
+    ball at t_c (`to_ball` when u points towards it, else `from_ball`), the line L(t_c) of
+    the protocol (`to_line` when u_x points towards it, else `from_line`) and the nearer
+    touchline (`wide` when u_y points towards it, else `inside`), joined by `/`. The provider
+    assigns the subtype with the whole run, so this class never reads a frame after t_c.
+    None when the runner has no position at t_c - V or t_c, the ball none at t_c, fewer than
+    two outfield opponents have one at t_c, or u is exactly zero (no direction). A value:
+    takes a `MatchTracking`."""
+    runner = t.entity_index(run.runner)
+    sign = t.attack_sign.get((run.period, run.team))
+    a, b = t.row(run.frame_start - VELOCITY_FRAMES), t.row(run.frame_start)
+    if runner is None or sign is None or a is None or b is None or t.ball_x is None:
+        return None
+    assert t.ball_y is not None
+    before, at = (
+        _xy(t, run.frame_start - VELOCITY_FRAMES, runner, sign),
+        _xy(t, run.frame_start, runner, sign),
+    )
+    ball = np.array([sign * t.ball_x[b], sign * t.ball_y[b]])
+    opponents = _opponents(t, run.team)
+    line = effect.line_height(sign * t.x[b, opponents], t.is_goalkeeper[opponents])
+    u = at - before
+    if not (np.isfinite(u).all() and np.isfinite(ball).all() and math.isfinite(line)):
+        return None
+    if u[0] == 0.0 and u[1] == 0.0:
+        return None
+    to_ball = float(u[0] * (ball[0] - at[0]) + u[1] * (ball[1] - at[1])) > 0.0
+    to_line = float(u[0] * (line - at[0])) > 0.0
+    wide = float(u[1] * at[1]) > 0.0
+    return "/".join(
+        (
+            CLASS_BALL[0 if to_ball else 1],
+            CLASS_LINE[0 if to_line else 1],
+            CLASS_FLANK[0 if wide else 1],
+        )
+    )
+
+
+def leg_marker_detected(t: MatchTracking, run: Run, period: int, instant: int) -> bool | None:
+    """Whether the marker of one leg (the opponent nearest to the runner at the instant) is
+    `is_detected` at every frame from t - V to t + W (task 50, M4: the effect repeated with
+    the marker detected in the whole window, extrapolated positions left out). None when the
+    leg has no quantities (`_leg`). A value: takes a `MatchTracking`."""
+    leg = _leg(t, run, period, instant)
+    if leg is None:
+        return None
+    lo, hi = instant - VELOCITY_FRAMES - t.frame0, instant + EFFECT_FRAMES - t.frame0
+    return bool(t.detected[lo : hi + 1, leg.marker].all())
 
 
 @dataclass(frozen=True)

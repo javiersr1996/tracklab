@@ -43,6 +43,7 @@ import pyarrow.parquet as pq
 import pytest
 
 from tracklab.paths import data_root
+from tracklab.runs import candidates as effect_probe
 from tracklab.runs import coverage, data, effect, placebo, probe, protocol, windows
 from tracklab.runs.coverage import COVERAGE_NAME, HEADER, _row, coverage_rows, run_runs_coverage
 from tracklab.runs.data import (
@@ -96,9 +97,11 @@ FIXTURES = PIPELINE / "tests" / "fixtures" / "data"
 CI_FIXTURE_MATCH = 1874553
 HELD_OUT_MATCH = 1899585
 
-BLOCK = 80
-ANCHOR = 20  # offset of t_c inside a scene
+BLOCK = 100
+ANCHOR = 30  # offset of t_c inside a scene: W + V frames before it, for the pre-trend leg
 RUN_FRAMES = 20
+APPROACH_M_PER_FRAME = 0.1  # the runner walks towards t_c along d: a direction at t_c (task 50)
+BALL_BEHIND_M = 8.0  # the ball sits 8 m behind the runner's start, along -x_att
 PLANTED_MARKER_M = 2.0
 PLANTED_LINE_M = 1.0
 # What the defence does anyway, in the run scene and in the placebo scene alike: the placebo
@@ -199,27 +202,39 @@ def test_standardise_and_mean_and_se() -> None:
 
 
 def _scene(
-    rng: np.random.Generator, direction_angle: float, marker_push: float, line_push: float
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    rng: np.random.Generator,
+    direction_angle: float,
+    marker_push: float,
+    line_push: float,
+    pre_push: float = 0.0,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """One scene of BLOCK frames in the attack frame: runner (BLOCK, 2), opponents
-    (BLOCK, 12, 2). Opponent 0 is the marker, 1 and 2 the two deepest outfield players, 3 to 10
-    the rest of the line-up, 11 the goalkeeper. `marker_push` and `line_push` are the whole
-    residual of the scene (planted effect plus baseline)."""
+    (BLOCK, 12, 2), ball (BLOCK, 2). Opponent 0 is the marker, 1 and 2 the two deepest
+    outfield players, 3 to 10 the rest of the line-up, 11 the goalkeeper. `marker_push` and
+    `line_push` are the whole residual of the scene (planted effect plus baseline);
+    `pre_push` moves the marker along d over [t_c - W, t_c], before the runner starts (task
+    50: a planted pre-trend, M3). The runner walks slowly along d before t_c, so his
+    direction at t_c exists, and the ball sits behind him along -x."""
     k = np.arange(BLOCK) - ANCHOR  # frames relative to t_c
     d = np.array([math.cos(direction_angle), math.sin(direction_angle)])
     start = np.array([rng.uniform(-22.0, -14.0), rng.uniform(-3.0, 3.0)])
     run_progress = np.clip(k, 0, RUN_FRAMES) * 0.5  # 5 m/s: 10 m over the run
-    runner = start + run_progress[:, None] * d
+    approach = np.clip(k, None, 0) * APPROACH_M_PER_FRAME  # 1 m/s before t_c, 0 at t_c
+    runner = start + (run_progress + approach)[:, None] * d
+    ball = np.tile(start - np.array([BALL_BEHIND_M, 0.0]), (BLOCK, 1))
 
     opponents = np.zeros((BLOCK, 12, 2))
     ramp = np.clip(k, 0, EFFECT_FRAMES) / EFFECT_FRAMES
+    pre_ramp = (
+        np.clip(k + EFFECT_FRAMES, 0, EFFECT_FRAMES) / EFFECT_FRAMES
+    )  # 0 at t_c - W, 1 at t_c
     # the marker: 2 m from the runner at t_c, its own velocity and acceleration, plus the push
     around = rng.uniform(0, 2 * math.pi)
     at_anchor = start + 2.0 * np.array([math.cos(around), math.sin(around)])
     v0 = rng.normal(0.0, 1.0, 2) / SAMPLE_RATE_HZ
     dv = rng.normal(0.0, 0.25, 2) / SAMPLE_RATE_HZ
     own = at_anchor + np.outer(k, v0) + np.outer(np.clip(k, 0, None), dv)
-    opponents[:, 0] = own + (marker_push * ramp)[:, None] * d
+    opponents[:, 0] = own + (marker_push * ramp + pre_push * pre_ramp)[:, None] * d
     # the rest: static far from the runner, the two deepest at x = 30 and 28, keeper at 50
     rest = [(30.0, 8.0), (28.0, -8.0)] + [
         (rng.uniform(2.0, 20.0), rng.uniform(-25.0, 25.0)) for _ in range(8)
@@ -230,10 +245,14 @@ def _scene(
     opponents[:, 1, 0] += line_push * ramp
     opponents[:, 2, 0] += line_push * ramp
     opponents += rng.normal(0.0, 0.05, opponents.shape)  # measurement jitter
-    return runner, opponents, d
+    return runner, opponents, ball, d
 
 
 Instants = dict[tuple[int, str], list[tuple[int, int]]]
+
+
+def _per_subtype(value: float | Mapping[str, float], subtype: str) -> float:
+    return value if isinstance(value, float | int) else value.get(subtype, 0.0)
 
 
 def _synthetic_raw(
@@ -242,6 +261,10 @@ def _synthetic_raw(
     line_push: float,
     seed: int,
     match_id: int = CI_FIXTURE_MATCH,
+    *,
+    pre_push: float | Mapping[str, float] = 0.0,
+    baseline_sd: float = 0.0,
+    extrapolated: Mapping[str, float] | None = None,
 ) -> tuple[windows._Tracking, list[Run], Instants]:
     """`n_runs` runs, each with one placebo scene, in blocks of BLOCK frames: blocks 0 to
     n - 1 hold the run scenes, n to 2n - 1 the placebo scenes. Period 1 ends after the first
@@ -250,7 +273,15 @@ def _synthetic_raw(
     drift; the run scene carries the planted effect on top. Every run gets four candidates:
     a nearer instant where the runner is undetected, the placebo instant, a farther supported
     instant of the same scene, and the placebo instant labelled with the wrong period.
-    Unguarded, as `count_tracking` sees a match: `_synthetic` wraps it in a `MatchTracking`."""
+    Unguarded, as `count_tracking` sees a match: `_synthetic` wraps it in a `MatchTracking`.
+
+    Task 50's knobs, all off by default: `pre_push` (a float, or per subtype) moves the
+    marker before the runner starts, over [t_c - W, t_c] of the run scene; `baseline_sd`
+    draws a baseline per run, shared by its two scenes, so the placebo sd grows while the
+    pair sd does not (a few pairs become a probable subtype); `extrapolated` replaces the
+    planted push by its value on the second run of each named subtype in the match and
+    flags that run's marker undetected over its window, so the effect of the fully detected
+    pairs is smaller than the effect of every pair (M4)."""
     rng = np.random.default_rng(seed)
     n_blocks = 2 * n_runs
     n_frames = n_blocks * BLOCK
@@ -262,24 +293,36 @@ def _synthetic_raw(
 
     x = np.full((n_frames, 13), np.nan)
     y = np.full((n_frames, 13), np.nan)
+    ball_x = np.full(n_frames, np.nan)
+    ball_y = np.full(n_frames, np.nan)
     detected = np.ones((n_frames, 13), dtype=np.bool_)
     runs: list[Run] = []
     instants: Instants = {}
     for i in range(n_runs):
+        subtype = SUBTYPES[i % len(SUBTYPES)]
         angle = rng.uniform(-math.pi / 3, math.pi / 3)
+        baseline = rng.normal(0.0, baseline_sd) if baseline_sd > 0.0 else 0.0
+        push = marker_push
+        undetected = (extrapolated or {}).get(subtype) is not None and (i // len(SUBTYPES)) % 3 == 1
+        if undetected and extrapolated is not None:
+            push = extrapolated[subtype]
         scenes = (
-            (i, (marker_push + BASELINE_MARKER_M, line_push + BASELINE_LINE_M)),
-            (n_runs + i, (BASELINE_MARKER_M, BASELINE_LINE_M)),
+            (i, (push + BASELINE_MARKER_M + baseline, line_push + BASELINE_LINE_M)),
+            (n_runs + i, (BASELINE_MARKER_M + baseline, BASELINE_LINE_M)),
         )
-        for block, push in scenes:
-            runner, opponents, _ = _scene(rng, angle, *push)
+        for block, (marker, line) in scenes:
+            pre = _per_subtype(pre_push, subtype) if block == i else 0.0
+            runner, opponents, ball, _ = _scene(rng, angle, marker, line, pre)
             sign = SIGN[period_of(block)]
             rows = slice(block * BLOCK, (block + 1) * BLOCK)
             x[rows, 0], y[rows, 0] = (sign * runner).T
             for j in range(12):
                 x[rows, 1 + j], y[rows, 1 + j] = (sign * opponents[:, j]).T
+            ball_x[rows], ball_y[rows] = (sign * ball).T
         t_c = i * BLOCK + ANCHOR
         t_p = (n_runs + i) * BLOCK + ANCHOR
+        if undetected:
+            detected[t_c - VELOCITY_FRAMES : t_c + EFFECT_FRAMES + 1, 1] = False
         run = Run(
             match_id,
             f"r{i}",
@@ -288,7 +331,7 @@ def _synthetic_raw(
             period_of(i),
             t_c,
             t_c + RUN_FRAMES,
-            SUBTYPES[i % len(SUBTYPES)],
+            subtype,
             f"p{i}",
         )
         runs.append(run)
@@ -310,6 +353,8 @@ def _synthetic_raw(
             (1, OTHER): -SIGN[1],
             (2, OTHER): -SIGN[2],
         },
+        ball_x=ball_x,
+        ball_y=ball_y,
     )
     return tracking, runs, instants
 
@@ -391,15 +436,20 @@ def _write_warehouse(
             "is_detected": tracking.detected[rows, cols],
         }
     )
+    if tracking.ball_x is not None and tracking.ball_y is not None:
+        (ball_rows,) = np.nonzero(np.isfinite(tracking.ball_x))
+        ball_xy = (tracking.ball_x[ball_rows], tracking.ball_y[ball_rows])
+    else:  # one ball row, which the player filter must drop
+        ball_rows, ball_xy = np.zeros(1, dtype=np.int64), (np.zeros(1), np.zeros(1))
     ball = pa.table(
         {
-            "frame_native": pa.array([tracking.frame0], pa.int64()),
-            "entity_id": ["ball"],
-            "entity_kind": ["ball"],
-            "team_id": pa.array([None], pa.string()),
-            "x_m": [0.0],
-            "y_m": [0.0],
-            "is_detected": [True],
+            "frame_native": pa.array(tracking.frame0 + ball_rows, pa.int64()),
+            "entity_id": ["fb:ball"] * len(ball_rows),
+            "entity_kind": ["ball"] * len(ball_rows),
+            "team_id": pa.array([None] * len(ball_rows), pa.string()),
+            "x_m": ball_xy[0],
+            "y_m": ball_xy[1],
+            "is_detected": [True] * len(ball_rows),
         }
     )
     _parquet(
@@ -619,6 +669,9 @@ def test_the_loading_path_reproduces_the_synthetic_match(tmp_path: Path) -> None
     np.testing.assert_array_equal(loaded.x[:, order], tracking.x)
     np.testing.assert_array_equal(loaded.y[:, order], tracking.y)
     np.testing.assert_array_equal(loaded.detected[:, order], tracking.detected)
+    assert loaded.ball_x is not None and loaded.ball_y is not None
+    np.testing.assert_array_equal(loaded.ball_x, tracking.ball_x)
+    np.testing.assert_array_equal(loaded.ball_y, tracking.ball_y)
     assert load_runs(tmp_path, CI_FIXTURE_MATCH) == runs
     assert placebo.placebo_instants(tmp_path, [CI_FIXTURE_MATCH], PLACEBO_RULE) == {}
     in_memory = pair_effects(tracking, runs, instants)
@@ -1066,10 +1119,13 @@ REFUSES_A_HELD_OUT_MATCH = {
     "windows.run_length",  # the same
     "windows.line_height_at",  # the same
     "windows.quantities",  # the same
+    "windows.run_class",  # the same (task 50)
+    "windows.leg_marker_detected",  # the same (task 50)
     "windows.pair_effects",  # the same
     "probe.probe_match",  # the same
     "probe.load_provider_lines",  # the same: a provider measure, read only to contrast
     "probe.cadence",  # the same
+    "candidates.effect_match",  # the same (task 50)
     "data.require_readable",
     "data.load_half",
     "data.assert_held_out_open",
@@ -1079,10 +1135,13 @@ TAKES_A_MATCH_TRACKING = {
     "windows.run_length",
     "windows.line_height_at",
     "windows.quantities",
+    "windows.run_class",
+    "windows.leg_marker_detected",
     "windows.pair_effects",
     "probe.probe_match",
     "probe.load_provider_lines",
     "probe.cadence",
+    "candidates.effect_match",
 }
 COUNTS_ONLY = {
     "windows.load_runs",
@@ -1107,6 +1166,8 @@ COUNTS_ONLY = {
 CALIBRATION_ONLY = {
     "probe.build_probe",
     "probe.run_runs_probe",
+    "candidates.build_effect",
+    "candidates.run_runs_effect",
 }
 # No tracking in, none out: the protocol and git (`data`), arithmetic on what the caller
 # passes (`effect`, the null and the power of `probe`), the split and the events
@@ -1156,6 +1217,20 @@ READS_NO_FRAMES = {
     "probe.probable_subtypes",
     "probe.probe_path",
     "probe.consistency_problems",
+    "probe.with_foreign_sections",
+    "probe.protocol_record",
+    "probe.protocol_problems",
+    # task 50: the arithmetic of the effect's tables and verdict, the files and git
+    "candidates.EffectInputError",
+    "candidates.MatchEffects",
+    "candidates.run_leg_overlap_keys",
+    "candidates.subtype_verdict",
+    "candidates.line_testability",
+    "candidates.section_sha256",
+    "candidates.probe_inputs",
+    "candidates.calibration_path",
+    "candidates.consistency_problems",
+    "candidates.run_runs_freeze",
 }
 
 
@@ -1220,7 +1295,14 @@ def _values_inside(obj: object, path: str = "value") -> list[str]:
 
 def test_the_walk_sees_an_array_or_a_float_wherever_it_hides() -> None:
     held, runs, instants = _synthetic_raw(2, 1.0, 0.0, seed=3, match_id=HELD_OUT_MATCH)
-    assert _values_inside(held) == ["value.x", "value.y", "value.detected", "value.is_goalkeeper"]
+    assert _values_inside(held) == [
+        "value.x",
+        "value.y",
+        "value.detected",
+        "value.is_goalkeeper",
+        "value.ball_x",
+        "value.ball_y",
+    ]
     assert _values_inside({"a": [(1, np.float64(2.0))]}) == ["value['a'][0][1]"]
     assert _values_inside([runs[0], 1.5]) == ["value[1]"]
     assert _values_inside(
@@ -1353,6 +1435,11 @@ def test_every_public_name_of_runs_refuses_a_held_out_match_or_returns_counts_on
     with pytest.raises((ValueError, duckdb.IOException)):
         probe.build_probe(root, head="0" * 40, code_tree="0" * 40)
     assert probe.run_runs_probe(root, reports) == 1
+    assert not (reports / probe.PROBE_NAME).exists()
+    # the effect answers to a probe section: without one it refuses before any frame
+    with pytest.raises(effect_probe.EffectInputError):
+        effect_probe.build_effect(root, {}, "0" * 40, "0" * 40)
+    assert effect_probe.run_runs_effect(root, reports) == 1
     assert not (reports / probe.PROBE_NAME).exists()
 
     # the rest reads no frames: the protocol and git, here; arithmetic and events elsewhere

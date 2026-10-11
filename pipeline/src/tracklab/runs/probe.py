@@ -77,6 +77,8 @@ from tracklab.runs.protocol import (
     SAMPLE_RATE_HZ,
     SECONDARY_QUANTITY,
     SEED,
+    STAGE_DESIGN,
+    STAGE_FROZEN,
     TESTABILITY_MDE80_SD,
     VELOCITY_WINDOW_S,
     render,
@@ -1295,11 +1297,15 @@ def _power_section(
     return section, lists
 
 
-def build_probe(data_dir: Path, head: str, code_tree: str) -> dict[str, Any]:
+def build_probe(
+    data_dir: Path, head: str, code_tree: str, protocol: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """The whole file for the warehouse under `data_dir`: values of the calibration half
-    through `MatchTracking`, counts of both halves through `count_tracking`. `head` and
-    `code_tree` are recorded as given: the command passes HEAD and the sha of the committed
-    `runs/` tree, `--check` what the file says."""
+    through `MatchTracking`, counts of both halves through `count_tracking`. `head`,
+    `code_tree` and `protocol` (the stage, fingerprint and seal answered to) are recorded as
+    given: the command passes HEAD, the sha of the committed `runs/` tree and the committed
+    protocol's, `--check` what the file says (`protocol_problems` holds the record against
+    HEAD, so a check after the freeze recomputes the figures and keeps the record)."""
     calibration = load_half(HALF)
     others = [m for m in counting_match_ids() if m not in calibration]
     probes: list[MatchProbe] = []
@@ -1330,15 +1336,10 @@ def build_probe(data_dir: Path, head: str, code_tree: str) -> dict[str, Any]:
     instrument = _instrument_section(probes, pairs, sds["placebo_sd_marker_m"])
     m1_dies = len(probable[PRIMARY_QUANTITY]) < 2
     m2_dies = not instrument["marker"]["pooled"]["passes_bar"]
-    protocol = committed_protocol()
     payload = {
         "schema_version": SCHEMA_VERSION,
         "plan": "tasks/todo.md, P5 'The run that moves nobody'",
-        "protocol": {
-            "stage": protocol["stage"],
-            "fingerprint": protocol["fingerprint"],
-            "content_sha256": protocol["content_sha256"],
-        },
+        "protocol": protocol_record() if protocol is None else dict(protocol),
         "probe": {
             "task": TASK,
             "written": WRITTEN,
@@ -1430,6 +1431,53 @@ def probe_path(reports_dir: Path) -> Path:
     return reports_dir / PROBE_NAME
 
 
+PROBE_OWNS = ("schema_version", "plan", "protocol", "probe")
+
+
+def protocol_record() -> dict[str, Any]:
+    """The stage, fingerprint and seal of the protocol committed in HEAD: what a section
+    records as the protocol it answered to."""
+    protocol = committed_protocol()
+    return {
+        "stage": protocol["stage"],
+        "fingerprint": protocol["fingerprint"],
+        "content_sha256": protocol["content_sha256"],
+    }
+
+
+def with_foreign_sections(own: dict[str, Any], current: dict[str, Any] | None) -> dict[str, Any]:
+    """`own` (a probe payload) with the sections of `current` the probe does not own (task
+    50's `effect`), resealed over everything: re-running the probe erases nothing it did not
+    write, and `--check` compares the file it would write on top of what is there."""
+    foreign = {
+        k: v for k, v in (current or {}).items() if k not in PROBE_OWNS and k != "content_sha256"
+    }
+    return seal({**{k: v for k, v in own.items() if k != "content_sha256"}, **foreign})
+
+
+def protocol_problems(recorded: dict[str, Any], label: str) -> list[str]:
+    """What a section's record of the protocol it answered to must satisfy against the one
+    committed in HEAD: the same design (`fingerprint`) always; the same stage and seal while
+    HEAD is still in design (the design is regenerated, never edited); once HEAD is frozen,
+    the record keeps the stage and seal of the design file it was computed against (task 50
+    freezes without regenerating the figures), so they are only checked for shape."""
+    problems: list[str] = []
+    protocol = committed_protocol()
+    if recorded.get("fingerprint") != protocol["fingerprint"]:
+        problems.append(f"{label}.fingerprint is not the committed protocol's")
+    if protocol["stage"] == STAGE_DESIGN:
+        for key in ("stage", "content_sha256"):
+            if recorded.get(key) != protocol[key]:
+                problems.append(f"{label}.{key} is not the committed protocol's")
+    else:
+        seal_ = recorded.get("content_sha256")
+        if recorded.get("stage") not in (STAGE_DESIGN, STAGE_FROZEN) or not (
+            isinstance(seal_, str) and len(seal_) == 64
+        ):
+            problems.append(f"{label}.stage or {label}.content_sha256 is not a protocol's")
+    return problems
+
+
 def consistency_problems(current: dict[str, Any]) -> list[str]:
     """What a file must satisfy whatever warehouse is at hand: the seal, the protocol it
     answers to (the one committed in HEAD), the match list, and a verdict that follows from
@@ -1437,10 +1485,8 @@ def consistency_problems(current: dict[str, Any]) -> list[str]:
     problems: list[str] = []
     if not sealed(current):
         problems.append("content_sha256 does not cover the file")
+    problems += protocol_problems(current.get("protocol") or {}, "protocol")
     protocol = committed_protocol()
-    for key in ("stage", "fingerprint", "content_sha256"):
-        if current.get("protocol", {}).get(key) != protocol[key]:
-            problems.append(f"protocol.{key} is not the committed protocol's")
     probe = current.get("probe", {})
     if probe.get("matches") != load_half(HALF):
         problems.append("matches are not the calibration half")
@@ -1534,7 +1580,10 @@ def run_runs_probe(data_dir: Path, reports_dir: Path, *, check: bool = False) ->
                 f"{len(every)}); the file is written from all of them or not at all"
             )
             return 1
-        payload = build_probe(data_dir, head=head_commit(), code_tree=code_tree_sha())
+        payload = with_foreign_sections(
+            build_probe(data_dir, head=head_commit(), code_tree=code_tree_sha()),
+            json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None,
+        )
         reports_dir.mkdir(parents=True, exist_ok=True)
         path.write_text(render(payload), encoding="utf-8", newline="\n")
         print(_summary(payload, status=f"FULL {len(calibration)}/{len(calibration)}"))
@@ -1547,10 +1596,14 @@ def run_runs_probe(data_dir: Path, reports_dir: Path, *, check: bool = False) ->
     current = json.loads(text)
     problems = consistency_problems(current)
     if whole and not problems:
-        expected = build_probe(
-            data_dir,
-            head=str(current["probe"]["head"]),
-            code_tree=str(current["probe"]["code_tree_sha"]),
+        expected = with_foreign_sections(
+            build_probe(
+                data_dir,
+                head=str(current["probe"]["head"]),
+                code_tree=str(current["probe"]["code_tree_sha"]),
+                protocol=current["protocol"],
+            ),
+            current,
         )
         if render(expected) != text:
             problems.append("differs from what the code writes")
