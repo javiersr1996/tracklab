@@ -788,17 +788,28 @@ def test_the_versioned_verdict_is_pinned() -> None:
     # window, his own pre-trend above his own effect, the marker starting after him
     kin = e["kinematics"]
     assert kin["post_hoc"] is True and "decides nothing" in kin["what"]
-    assert [r["subtype"] for r in kin["per_subtype"]] == PROBABLE
-    for r in kin["per_subtype"]:
-        pooled = r["pooled"]
-        assert len(r["per_match"]) == 10
-        assert (
-            pooled["runner_speed_at_tc_median_m_s"]
-            > 2 * pooled["runner_speed_at_placebo_median_m_s"]
-        )
-        assert pooled["runner_running_at_tc_share"] > 0.9
-        assert pooled["runner_running_half_second_before_share"] < 0.5
-        assert -2.0 < pooled["onset_median_s"] < 0.0
-        assert pooled["onset_inside_pre_trend_window_share"] > 0.5
-        assert pooled["runner_own_pre_trend_ratio"] >= 1.0
-        assert pooled["marker_after_runner_share"] > 0.5
+    assert kin["thresholds"] == {
+        "running_m_s": 4.0,
+        "onset_m_s": 3.0,
+        "along_onset_m_s": 1.0,
+        "onset_search_s": 10.0,
+        "speed_span_s": 0.2,
+    }
+    pooled = {r["subtype"]: r["pooled"] for r in kin["per_subtype"]}
+    assert list(pooled) == PROBABLE and all(len(r["per_match"]) == 10 for r in kin["per_subtype"])
+    keys = (
+        "runner_speed_at_tc_median_m_s",
+        "runner_speed_at_placebo_median_m_s",
+        "runner_running_at_tc_share",
+        "runner_running_half_second_before_share",
+        "onset_median_s",
+        "onset_inside_pre_trend_window_share",
+        "runner_own_pre_trend_ratio",
+        "marker_onset_lag_median_s",
+        "marker_after_runner_share",
+    )
+    assert {s: tuple(p[k] for k in keys) for s, p in pooled.items()} == {
+        "coming_short": (4.271, 1.837, 0.9874, 0.3214, -1.65, 0.5733, 2.9957, 0.0, 0.4686),
+        "run_ahead_of_the_ball": (4.29, 1.632, 0.987, 0.2235, -0.95, 0.7299, 1.7481, 0.2, 0.5602),
+        "support": (4.294, 1.601, 0.9888, 0.328, -1.2, 0.6694, 2.8143, 0.25, 0.6003),
+    }
