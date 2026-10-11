@@ -14,28 +14,37 @@ death criteria written before anything was looked at (tasks/todo.md, P5, task 49
 (b) the instrument: the quantity whose direction is forced, the marker's displacement along
     the run against the placebo's, every run together, per match and pooled, against the
     protocol's bar; and the line height at t_c against the provider's
-    `last_defensive_line_height_start`, correlation and median difference per match;
-(c) the real null: sign flips of the units inside each match, the whole bar applied to each
-    draw, how often it fires per subtype and at least once over the ten; the hardening rule
-    of the protocol is evaluated and never applied here;
+    `last_defensive_line_x_start`, read as given, correlation and median difference per
+    match, with the provider's own identity x_start + height_start = pitch_length / 2
+    checked per match;
+(c) the real null (review of task 49): placebo 1 minus placebo 2 per pair, the second placebo
+    the next nearest admissible instant with a disjoint window, centred per subtype (placebo
+    quantities, never an outcome); its sign flipped by blocks that nest the units (the
+    components of possession, placebo instants and (runner, period) inside the match), the
+    whole bar with its units applied to each draw, how often it fires per subtype and at
+    least once over the ten; the hardening rule of the protocol is evaluated and never
+    applied here;
 (d) the power: MDE80 per subtype in both halves, in placebo sd and in metres, simulated with
     the measured dispersion, the measured within-unit correlation and the unit sizes of each
-    half; the sizes of the closed half come from `windows.count_tracking`, counts and nothing
-    else.
+    half, the bar applied as it is to real pairs (the sign count and the permutation count,
+    drawn as a Binomial of the normal tail of each draw's z); the sizes of the closed half
+    come from `windows.count_tracking`, counts and nothing else.
 
 No effect per subtype is computed, printed or stored: the pairs live in memory for the
 duration of the command. Every tracking the probe holds is a `windows.MatchTracking`, which
 passed the guard as it was built; the ids are `data.load_half("calibration")` and the other
-half is only counted. `--check` regenerates the file where the warehouse holds the 20
-matches (`FULL`), and otherwise verifies the seal, the protocol it answers to, the match
-list and the verdict against the figures as written (`PARTIAL`).
+half is only counted. Write mode refuses while the code under `runs/` or the protocol has
+uncommitted changes, and records `head` and `code_tree_sha` as the code that ran. `--check`
+regenerates the file where the warehouse holds the 20 matches (`FULL ... recomputed`), and
+otherwise verifies the seal, the protocol it answers to, the match list and the verdict
+against the figures as written, recomputing nothing (`PARTIAL ... 0/10 recomputed`).
 """
 
 from __future__ import annotations
 
 import json
 import math
-from collections.abc import Iterable, Sequence
+from collections.abc import Hashable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -48,8 +57,10 @@ from tracklab.runs import placebo
 from tracklab.runs.coverage import has_frames
 from tracklab.runs.data import (
     Half,
+    code_tree_sha,
     committed_protocol,
     counting_match_ids,
+    dirty_code_paths,
     head_commit,
     load_half,
 )
@@ -76,12 +87,16 @@ from tracklab.runs.windows import (
     MatchCounts,
     MatchTracking,
     PairEffect,
+    choose_second_placebo,
+    components,
     count_tracking,
     line_height_at,
     load_runs,
     load_tracking,
     pair_effects,
     pair_unit_key,
+    quantities,
+    run_direction,
     run_length,
     unit_labels,
     units_by_subtype,
@@ -90,16 +105,17 @@ from tracklab.runs.windows import (
 PROBE_NAME = "runs_calibration.json"
 SCHEMA_VERSION = 1
 TASK = 49
-WRITTEN = "2026-10-10"
+WRITTEN = "2026-10-11"
 HALF: Half = "calibration"
 NULL_DRAWS = N_PERMUTATIONS  # null data sets the bar is applied to, each with its own test
-POWER_REPLICATIONS = 400
+POWER_REPLICATIONS = 2500  # Monte Carlo se of a pass rate of 0.8: sqrt(0.8 * 0.2 / 2500) = 0.008
 POWER_TARGET = 0.8
 MDE_GRID_SD = tuple(round(0.05 * i, 2) for i in range(1, 17))  # 0.05 to 0.80
 CADENCE_MAX_LAG = 30  # frames: 3 s at 10 Hz
 # Seed streams, all children of the protocol's seed: one per use, so adding a use later does
 # not move the others.
 STREAM_INSTRUMENT, STREAM_NULL_OUTER, STREAM_NULL_INNER, STREAM_POWER = 0, 1, 2, 3
+STREAM_NULL_CONTRAST = 4
 
 Array = NDArray[np.float64]
 
@@ -110,6 +126,11 @@ class ProbeInputError(RuntimeError):
 
 
 Z_TWO_SIDED = BAR_Z  # the protocol's z_equivalent, the normal quantile of its two-sided p
+# The bar's permutation p, (1 + count) / (1 + N_PERMUTATIONS), is at most BAR_P when the count
+# of flips as extreme as the statistic is at most this: 1 of 2000.
+BAR_COUNT_AT_MOST = max(
+    c for c in range(N_PERMUTATIONS + 1) if (1 + c) / (1 + N_PERMUTATIONS) <= BAR_P
+)
 
 
 # --- (a) cadence --------------------------------------------------------------------------
@@ -200,11 +221,24 @@ def load_player_possessions(data_dir: Path, match_id: int) -> list[tuple[int, in
     return [(int(p), int(a), int(b)) for p, a, b in rows]
 
 
-def load_provider_lines(t: MatchTracking, data_dir: Path) -> tuple[float, dict[str, float]]:
-    """The pitch length and, per run event_id, the provider's last defensive line at the
-    run's start as an x in the attack frame: pitch_length / 2 - last_defensive_line_height_start
-    (the provider measures the height from the defending goal line). A provider measure, read
-    only to contrast the instrument, and only of a match whose tracking the caller holds."""
+@dataclass(frozen=True)
+class ProviderLines:
+    """The provider's last defensive line at the start of every run of one match, as the x it
+    writes (`last_defensive_line_x_start`, read as given: an x in the attack frame of the
+    running team), with the pitch length and how far the provider's own identity x_start +
+    height_start = pitch_length / 2 holds in the match (the largest |residual| over the runs
+    that carry both), against a fixed 52.5 alongside. A provider measure, read only to
+    contrast the instrument."""
+
+    pitch_length_m: float
+    x_start_by_run: dict[str, float]
+    identity_max_residual_half_length_m: float
+    identity_max_residual_52_5_m: float
+
+
+def load_provider_lines(t: MatchTracking, data_dir: Path) -> ProviderLines:
+    """`ProviderLines` of a match whose tracking the caller holds, from bronze `match` (the
+    pitch length) and `dynamic_events` (the line at every run's start)."""
     football = data_dir / "bronze" / "football"
     con = duckdb.connect()
     try:
@@ -213,31 +247,48 @@ def load_provider_lines(t: MatchTracking, data_dir: Path) -> tuple[float, dict[s
             {"g": (football / "match" / "*.parquet").as_posix(), "m": t.match_id},
         ).fetchone() or (None,)
         rows = con.execute(
-            "SELECT event_id, last_defensive_line_height_start FROM read_parquet($g) "
-            "WHERE match_id = $m AND event_type = 'off_ball_run'",
+            "SELECT event_id, last_defensive_line_x_start, last_defensive_line_height_start "
+            "FROM read_parquet($g) WHERE match_id = $m AND event_type = 'off_ball_run'",
             {"g": (football / "dynamic_events" / "*.parquet").as_posix(), "m": t.match_id},
         ).fetchall()
     finally:
         con.close()
     if length is None:
         raise ProbeInputError(f"no pitch length for match {t.match_id} in bronze match")
-    half = float(length) / 2.0
-    return float(length), {str(e): half - float(h) for e, h in rows if h is not None}
+    both = np.array([[float(x), float(h)] for _, x, h in rows if x is not None and h is not None])
+    total = both.sum(axis=1) if both.size else np.zeros(0)
+    return ProviderLines(
+        pitch_length_m=float(length),
+        x_start_by_run={str(e): float(x) for e, x, _ in rows if x is not None},
+        identity_max_residual_half_length_m=(
+            float(np.abs(total - float(length) / 2.0).max()) if total.size else math.nan
+        ),
+        identity_max_residual_52_5_m=float(np.abs(total - 52.5).max()) if total.size else math.nan,
+    )
 
 
 @dataclass(frozen=True)
 class MatchProbe:
     """What the probe holds of one calibration match while it runs: the pairs (values, never
-    serialised whole), the tracked length and the line height at t_c of every run, the
-    provider's line, whether the runner has the ball at t', and the cadence."""
+    serialised whole), the second placebo of each pair for the real null (its period and
+    instant, -1 when there is none, and its two quantities, NaN then), the period of each
+    pair's run, the tracked length and the line height at t_c of every run, the provider's
+    line and its identity residuals, whether the runner has the ball at t', and the cadence."""
 
     match_id: int
     runs: int
     pairs: tuple[PairEffect, ...]
+    run_period: NDArray[np.int64]
+    placebo2_period: NDArray[np.int64]
+    placebo2_instant: NDArray[np.int64]
+    placebo2_marker_m: Array
+    placebo2_line_m: Array
     length_m: Array
     line_at_tc_m: Array
     provider_line_x_m: Array
     pitch_length_m: float
+    provider_identity_residual_half_length_m: float
+    provider_identity_residual_52_5_m: float
     runner_in_possession_at_placebo: NDArray[np.bool_]
     cadence: Cadence
 
@@ -247,8 +298,9 @@ def probe_match(t: MatchTracking, data_dir: Path) -> MatchProbe:
     runs = load_runs(data_dir, t.match_id)
     instants = placebo.placebo_instants(data_dir, [t.match_id], PLACEBO_RULE)
     pairs = tuple(pair_effects(t, runs, instants))
-    pitch, provider = load_provider_lines(t, data_dir)
+    provider = load_provider_lines(t, data_dir)
     possessions = load_player_possessions(data_dir, t.match_id)
+    by_id = {r.event_id: r for r in runs}
 
     def as_array(values: list[float | None]) -> Array:
         return np.array([math.nan if v is None else v for v in values], dtype=np.float64)
@@ -260,14 +312,37 @@ def probe_match(t: MatchTracking, data_dir: Path) -> MatchProbe:
         ],
         dtype=np.bool_,
     )
+    # the second placebo of each pair: the next candidate by the pair's own rule, with a
+    # window disjoint from the first's, and its quantities along the run's direction
+    second_leg: list[tuple[int, int]] = []
+    second_values: list[tuple[float, float] | None] = []
+    for pair in pairs:
+        run = by_id[pair.run_id]
+        direction = run_direction(t, run)
+        pick = choose_second_placebo(
+            t,
+            run,
+            instants.get((t.match_id, run.event_id), ()),
+            (pair.placebo_period, pair.placebo_instant),
+        )
+        values = None if pick is None or direction is None else quantities(t, run, *pick, direction)
+        second_leg.append(pick if pick is not None and values is not None else (-1, -1))
+        second_values.append(values)
     return MatchProbe(
         match_id=t.match_id,
         runs=len(runs),
         pairs=pairs,
+        run_period=np.array([by_id[p.run_id].period for p in pairs], dtype=np.int64),
+        placebo2_period=np.array([leg[0] for leg in second_leg], dtype=np.int64),
+        placebo2_instant=np.array([leg[1] for leg in second_leg], dtype=np.int64),
+        placebo2_marker_m=as_array([None if v is None else v[0] for v in second_values]),
+        placebo2_line_m=as_array([None if v is None else v[1] for v in second_values]),
         length_m=as_array([run_length(t, r) for r in runs]),
         line_at_tc_m=as_array([line_height_at(t, r) for r in runs]),
-        provider_line_x_m=as_array([provider.get(r.event_id) for r in runs]),
-        pitch_length_m=pitch,
+        provider_line_x_m=as_array([provider.x_start_by_run.get(r.event_id) for r in runs]),
+        pitch_length_m=provider.pitch_length_m,
+        provider_identity_residual_half_length_m=provider.identity_max_residual_half_length_m,
+        provider_identity_residual_52_5_m=provider.identity_max_residual_52_5_m,
         runner_in_possession_at_placebo=holding,
         cadence=cadence(t),
     )
@@ -339,20 +414,18 @@ def bar_verdict(
 
 @dataclass(frozen=True)
 class NullRates:
-    """How often the bar fires on null data sets: per subtype, with the permutation p the
-    protocol names and with its normal approximation (the one the power uses), and at least
-    once over the subtypes."""
+    """How often the bar fires on null data sets: per subtype, and at least once over the
+    subtypes."""
 
     draws: int
     fires_pct: tuple[float, ...]
-    fires_normal_pct: tuple[float, ...]
     at_least_one_pct: float
-    at_least_one_normal_pct: float
 
 
 def null_fire_rates(
     values: Array,
     units: NDArray[np.intp],
+    blocks: NDArray[np.intp],
     match_of_pair: NDArray[np.intp],
     subtype_of_pair: NDArray[np.intp],
     n_subtypes: int,
@@ -361,12 +434,21 @@ def null_fire_rates(
     rng_inner: np.random.Generator,
     draws: int = NULL_DRAWS,
 ) -> NullRates:
-    """`draws` null data sets, each a sign flip of every unit inside its match, shared by the
-    subtypes (a unit may hold pairs of several); on each, per subtype, the whole bar: the
-    sign count over the matches and a fresh permutation p from N_PERMUTATIONS inner flips.
-    The inner flips are one draw of N_PERMUTATIONS sign vectors multiplied by the outer one,
-    so each null data set is tested as the real one is."""
+    """`draws` null data sets, each a sign flip of every block inside its match, shared by the
+    subtypes (a block may hold pairs of several); on each, per subtype, the whole bar as the
+    real test applies it: the sign count over the matches and a permutation p from
+    N_PERMUTATIONS inner flips of the units. The blocks must nest the units (every pair of a
+    unit in one block): coarser than the units, they can carry a dependence the units do not
+    see, and the test on each draw, flipping the units alone, then fires above its nominal
+    rate; with `blocks` equal to `units` the null is nominal by construction. The inner
+    flips are one draw of N_PERMUTATIONS sign vectors over the units multiplied by the outer
+    sign of each unit's block."""
     n_units = int(units.max()) + 1 if units.size else 0
+    n_blocks = int(blocks.max()) + 1 if blocks.size else 0
+    block_of_unit = np.full(n_units, -1, dtype=np.intp)
+    block_of_unit[units] = blocks
+    if n_units and (block_of_unit[units] != blocks).any():
+        raise ProbeInputError("the null's blocks do not nest its units: a unit spans two blocks")
     n_pairs = np.bincount(subtype_of_pair, minlength=n_subtypes)
     sums = np.zeros((n_units, n_subtypes))
     np.add.at(sums, (units, subtype_of_pair), values)
@@ -374,10 +456,9 @@ def null_fire_rates(
     match_of_unit[units] = match_of_pair
     onehot = np.zeros((n_units, n_matches))
     onehot[np.arange(n_units), match_of_unit] = 1.0
-    outer = sign_flips(rng_outer, draws, n_units)
+    outer = sign_flips(rng_outer, draws, n_blocks)[:, block_of_unit]  # (draws, units)
     inner = sign_flips(rng_inner, N_PERMUTATIONS, n_units)
     fires = np.zeros((draws, n_subtypes), dtype=np.bool_)
-    fires_normal = np.zeros((draws, n_subtypes), dtype=np.bool_)
     for k in range(n_subtypes):
         s = sums[:, k]
         if n_pairs[k] == 0:
@@ -390,14 +471,10 @@ def null_fire_rates(
         counts = (np.abs(reference) >= np.abs(total)[None, :]).sum(axis=0)
         p = (1 + counts) / (1 + N_PERMUTATIONS)
         fires[:, k] = sign_ok & (p <= BAR_P)
-        z = total / math.sqrt(float((s * s).sum()))
-        fires_normal[:, k] = sign_ok & (np.abs(z) >= Z_TWO_SIDED)
     return NullRates(
         draws=draws,
         fires_pct=tuple(float(v) for v in fires.mean(axis=0) * 100.0),
-        fires_normal_pct=tuple(float(v) for v in fires_normal.mean(axis=0) * 100.0),
         at_least_one_pct=float(fires.any(axis=1).mean() * 100.0),
-        at_least_one_normal_pct=float(fires_normal.any(axis=1).mean() * 100.0),
     )
 
 
@@ -427,6 +504,32 @@ def design_effect(values: Array, units: NDArray[np.intp]) -> DesignEffect:
     return DesignEffect(rho, int((size >= 2).sum()), pairs_of_pairs)
 
 
+def normal_two_sided_tail(z: Array) -> Array:
+    """2 * Phi(-|z|): the sign-flip p of a data set whose pooled sum over the root of the sum
+    of squared unit sums is z, by the normal approximation of the sign-flip distribution."""
+    return np.array([math.erfc(abs(float(v)) / math.sqrt(2.0)) for v in np.ravel(z)]).reshape(
+        np.shape(z)
+    )
+
+
+def bar_pass_probability(z: Array) -> Array:
+    """How often the bar's permutation p passes on a data set whose sign-flip z is `z`: the
+    count of N_PERMUTATIONS flips as extreme as the statistic is Binomial(N_PERMUTATIONS,
+    2 * Phi(-|z|)), and the p is at most BAR_P when the count is at most BAR_COUNT_AT_MOST.
+    At |z| = Z_TWO_SIDED the expected count is N_PERMUTATIONS * BAR_P (2.7), so the bar
+    passes about a quarter of the time where the normal quantile alone would always pass."""
+    p = np.clip(normal_two_sided_tail(z), 1e-300, 1.0)
+    n = N_PERMUTATIONS
+    with np.errstate(divide="ignore"):
+        log_p, log_q = np.log(p), np.log1p(-p)
+    terms = [
+        np.exp(math.log(math.comb(n, c)) + c * log_p + (n - c) * log_q)
+        for c in range(BAR_COUNT_AT_MOST + 1)
+    ]
+    probability: Array = np.clip(np.sum(terms, axis=0), 0.0, 1.0)
+    return probability
+
+
 @dataclass(frozen=True)
 class Power:
     """Pass rate of the bar at each effect of the grid (in placebo sd), and the smallest
@@ -451,11 +554,13 @@ def mde80(
 ) -> Power:
     """The bar's pass rate when every pair carries an effect of d placebo sd on top of noise
     with the measured sd of the pair values and the measured within-unit correlation (a
-    unit effect plus a pair residual), on the unit sizes of each match of the half. The
-    sign-flip p is taken by its normal approximation (|z| >= Z_TWO_SIDED, z the pooled sum
-    over the root of the sum of squared unit sums) and the sign count as in the bar; common
-    random numbers across the grid, so the curve is monotone. The matches are the half's:
-    `units_per_match` has one entry per match, empty where the subtype has no pair."""
+    unit effect plus a pair residual), on the unit sizes of each match of the half. The bar
+    is applied as it is to real pairs: the sign count over the matches, and the permutation
+    count drawn as Binomial(N_PERMUTATIONS, 2 * Phi(-|z|)) with z the pooled sum over the
+    root of the sum of squared unit sums (`bar_pass_probability`, by inverse transform from
+    one uniform per replication, common across the grid like the noise, so the curve is
+    monotone). The matches are the half's: `units_per_match` has one entry per match, empty
+    where the subtype has no pair."""
     sizes = np.array([s for match in units_per_match for s in match], dtype=np.intp)
     n_units = int(sizes.size)
     n_pairs = int(sizes.sum())
@@ -472,6 +577,7 @@ def mde80(
     unit_effect = rng.normal(0.0, math.sqrt(rho_used) * sd_pair, size=(replications, n_units))
     residual = rng.normal(0.0, math.sqrt(1.0 - rho_used) * sd_pair, size=(replications, n_pairs))
     noise = residual + unit_effect[:, unit_of_pair]
+    uniform = rng.uniform(size=replications)  # the permutation count's draw, one per data set
     rates: list[float] = []
     for d in grid:
         y = noise + d * sd_placebo
@@ -480,7 +586,7 @@ def mde80(
         z = total / np.sqrt((sums * sums).sum(axis=1))
         per_match = sums @ onehot
         agreeing = (np.sign(per_match) == np.sign(total)[:, None]).sum(axis=1)
-        passes = (np.abs(z) >= Z_TWO_SIDED) & (agreeing >= same_sign_at_least)
+        passes = (uniform <= bar_pass_probability(z)) & (agreeing >= same_sign_at_least)
         rates.append(float(passes.mean()))
     mde = next((float(d) for d, r in zip(grid, rates, strict=True) if r >= POWER_TARGET), None)
     return Power(n_pairs, n_units, tuple(rates), mde)
@@ -592,6 +698,74 @@ def _collect(probes: Sequence[MatchProbe]) -> _Pairs:
         largest_unit_per_match=tuple(largest),
         shared_instants_per_match=tuple(n_shared_i),
         shared_possessions_per_match=tuple(n_shared_p),
+    )
+
+
+@dataclass(frozen=True)
+class _NullSet:
+    """The real null's data: the pairs with a second placebo, their placebo 1 minus placebo 2
+    of the marker (raw: the section centres it per subtype), the inner units (components of
+    the null pairs sharing a possession or a placebo instant, t'1 or t'2) and the outer
+    blocks (those keys plus (runner, period of the run)), labelled per match and offset so
+    they never cross matches; per-match counts alongside."""
+
+    match_of_pair: NDArray[np.intp]
+    subtype_of_pair: NDArray[np.intp]
+    units: NDArray[np.intp]
+    blocks: NDArray[np.intp]
+    difference_m: Array
+    gap_s: Array
+    pairs_per_match: tuple[int, ...]
+    units_per_match: tuple[int, ...]
+    blocks_per_match: tuple[int, ...]
+    largest_block_per_match: tuple[int, ...]
+
+
+def _collect_null(probes: Sequence[MatchProbe]) -> _NullSet:
+    match_of, subtype_of, units, blocks, difference, gap = [], [], [], [], [], []
+    per_match_pairs, per_match_units, per_match_blocks, largest = [], [], [], []
+    unit_offset = block_offset = 0
+    for m, probe in enumerate(probes):
+        held = [i for i, p in enumerate(probe.pairs) if probe.placebo2_instant[i] >= 0]
+        inner_keys: list[tuple[Hashable, ...]] = []
+        outer_keys: list[tuple[Hashable, ...]] = []
+        for i in held:
+            pair = probe.pairs[i]
+            keys: tuple[Hashable, ...] = (
+                ("i", (pair.player_id, pair.placebo_instant)),
+                ("i", (pair.player_id, int(probe.placebo2_instant[i]))),
+            )
+            if pair.possession_id is not None:
+                keys += (("p", pair.possession_id),)
+            inner_keys.append(keys)
+            outer_keys.append(keys + (("r", (pair.player_id, int(probe.run_period[i]))),))
+        inner, outer = components(inner_keys), components(outer_keys)
+        for i, u, b in zip(held, inner, outer, strict=True):
+            pair = probe.pairs[i]
+            match_of.append(m)
+            subtype_of.append(SUBTYPES.index(pair.subtype))
+            units.append(unit_offset + u)
+            blocks.append(block_offset + b)
+            difference.append(pair.placebo_marker_m - float(probe.placebo2_marker_m[i]))
+            gap.append(abs(int(probe.placebo2_instant[i]) - pair.t_c) / SAMPLE_RATE_HZ)
+        n_units, n_blocks = len(set(inner)), len(set(outer))
+        unit_offset += n_units
+        block_offset += n_blocks
+        per_match_pairs.append(len(held))
+        per_match_units.append(n_units)
+        per_match_blocks.append(n_blocks)
+        largest.append(int(np.bincount(outer).max()) if outer else 0)
+    return _NullSet(
+        match_of_pair=np.array(match_of, dtype=np.intp),
+        subtype_of_pair=np.array(subtype_of, dtype=np.intp),
+        units=np.array(units, dtype=np.intp),
+        blocks=np.array(blocks, dtype=np.intp),
+        difference_m=np.array(difference, dtype=np.float64),
+        gap_s=np.array(gap, dtype=np.float64),
+        pairs_per_match=tuple(per_match_pairs),
+        units_per_match=tuple(per_match_units),
+        blocks_per_match=tuple(per_match_blocks),
+        largest_block_per_match=tuple(largest),
     )
 
 
@@ -820,6 +994,10 @@ def _instrument_section(
                 "match_id": probe.match_id,
                 "runs_compared": int(ok.sum()),
                 "pitch_length_m": probe.pitch_length_m,
+                "identity_max_residual_half_length_m": _round(
+                    probe.provider_identity_residual_half_length_m, 4
+                ),
+                "identity_max_residual_52_5_m": _round(probe.provider_identity_residual_52_5_m, 4),
                 "pearson_r": _round(_pearson(own, prov), 4),
                 "median_difference_m": _round(_quantile(own[ok] - prov[ok], 0.5), 3),
             }
@@ -855,9 +1033,12 @@ def _instrument_section(
         "line_against_provider": {
             "what": (
                 "the protocol's line height at t_c (mean x_att of the two deepest outfield "
-                "opponents) against the provider's last_defensive_line_height_start, turned "
-                "to an x in the attack frame as pitch_length / 2 - height; a contrast of the "
-                "instrument, never an outcome"
+                "opponents) against the provider's last_defensive_line_x_start read as "
+                "given, an x in the attack frame of the running team; the provider's own "
+                "identity x_start + height_start = pitch_length / 2 is checked per match "
+                "(the largest |residual| over the runs, against the match's half length and "
+                "against a fixed 52.5), so the height needs the match's pitch length to be "
+                "turned into an x; a contrast of the instrument, never an outcome"
             ),
             "per_match": lines,
             "pooled": {
@@ -869,45 +1050,142 @@ def _instrument_section(
     }
 
 
-def _null_section(probes: Sequence[MatchProbe], pairs: _Pairs) -> tuple[dict[str, Any], bool]:
+def _null_section(
+    probes: Sequence[MatchProbe], pairs: _Pairs, null: _NullSet
+) -> tuple[dict[str, Any], bool]:
+    k_of = null.subtype_of_pair
+    n_pairs = np.bincount(k_of, minlength=len(SUBTYPES))
+    centring = np.array(
+        [
+            float(null.difference_m[k_of == k].mean()) if n_pairs[k] else 0.0
+            for k in range(len(SUBTYPES))
+        ]
+    )
+    centred = null.difference_m - centring[k_of]
     rates = null_fire_rates(
-        pairs.marker_m,
-        pairs.units,
-        pairs.match_of_pair,
-        pairs.subtype_of_pair,
+        centred,
+        null.units,
+        null.blocks,
+        null.match_of_pair,
+        k_of,
         len(SUBTYPES),
         len(probes),
         np.random.default_rng([SEED, STREAM_NULL_OUTER]),
         np.random.default_rng([SEED, STREAM_NULL_INNER]),
     )
-    n_pairs = np.bincount(pairs.subtype_of_pair, minlength=len(SUBTYPES))
-    n_units = [
-        len(set(pairs.units[pairs.subtype_of_pair == k].tolist())) for k in range(len(SUBTYPES))
+    contrast_rng = np.random.default_rng([SEED, STREAM_NULL_CONTRAST])
+    per_subtype = []
+    for k, s in enumerate(SUBTYPES):
+        mine = k_of == k
+        row: dict[str, Any] = {
+            "subtype": s,
+            "pairs": int(n_pairs[k]),
+            "units": len(set(null.units[mine].tolist())),
+            "blocks": len(set(null.blocks[mine].tolist())),
+            "centring_mean_m": _round(centring[k], 4) if n_pairs[k] else None,
+            "fires_pct": _round(rates.fires_pct[k], 2),
+        }
+        if n_pairs[k]:
+            units_k = np.unique(null.units[mine], return_inverse=True)[1].astype(np.intp)
+            verdict = bar_verdict(
+                null.difference_m[mine],
+                units_k,
+                null.match_of_pair[mine],
+                len(probes),
+                contrast_rng,
+            )
+            row["unflipped"] = {
+                "p": _round(verdict.p, 5),
+                "same_sign_matches": verdict.same_sign_matches,
+                "passes_bar": verdict.passes,
+            }
+        per_subtype.append(row)
+    per_match = [
+        {
+            "match_id": probe.match_id,
+            "pairs": int((pairs.match_of_pair == m).sum()),
+            "with_second_placebo": null.pairs_per_match[m],
+            "with_second_placebo_fraction": _round(
+                null.pairs_per_match[m] / float((pairs.match_of_pair == m).sum())
+                if (pairs.match_of_pair == m).any()
+                else math.nan,
+                4,
+            ),
+            "gap_s_p50": _round(_quantile(null.gap_s[null.match_of_pair == m], 0.5), 2),
+            "units": null.units_per_match[m],
+            "blocks": null.blocks_per_match[m],
+            "largest_block_share": _round(
+                null.largest_block_per_match[m] / null.pairs_per_match[m], 4
+            )
+            if null.pairs_per_match[m]
+            else None,
+        }
+        for m, probe in enumerate(probes)
     ]
+    n = int(null.difference_m.size)
     needed = rates.at_least_one_pct > NULL_AT_LEAST_ONE_MAX_PCT
     return {
         "what": (
-            "the bar applied to null data sets: each is a sign flip of every unit inside its "
-            "match, shared by the subtypes; per subtype, the sign count over the matches and "
-            "a permutation p from fresh inner flips, as the real test; fires_pct is how often "
-            "the whole bar passes on the marker quantity, fires_normal_pct the same with the "
-            "p replaced by its normal approximation (the one the power simulation uses)"
+            "the bar applied to null data sets built from placebo quantities alone (review of "
+            "task 49): the value of a pair is placebo 1 minus placebo 2 of the marker "
+            "displacement, centred per subtype over the half (centring_mean_m, so a common "
+            "mean cannot make the blocks share a sign); each data set is a sign flip of every "
+            "block inside its match, shared by the subtypes, and on each the whole bar as the "
+            "real test applies it: the sign count over the matches and a permutation p from "
+            "inner flips of the units; fires_pct is how often it passes per subtype, "
+            "at_least_one_pct over the ten; unflipped is the bar on the raw placebo 1 minus "
+            "placebo 2 of the subtype, a placebo-against-placebo contrast (uncentred: on the "
+            "centred values the pooled statistic is zero by construction)"
         ),
-        "quantity": "marker displacement along the run, run minus placebo",
+        "quantity": "marker displacement along the run, placebo 1 minus placebo 2",
+        "second_placebo": (
+            "the candidate choose_placebo would pick next: admissible under the same rule, "
+            "supported by the tracking and with a readable leg, nearest to t_c (ties to the "
+            "earlier), other than the first and with a window disjoint from the first's "
+            f"(another period, or more than {VELOCITY_WINDOW_S + EFFECT_WINDOW_S} s away); a "
+            "pair without one leaves the null set"
+        ),
+        "units": (
+            "the connected component of the null pairs that share a possession or a placebo "
+            "instant, (runner, t'1) or (runner, t'2), inside the match: the inner test flips "
+            "them, as the real test flips its units"
+        ),
+        "blocks": (
+            "the connected component of the null pairs that share a possession, a placebo "
+            "instant or (runner, period of the run), inside the match: the outer flips, "
+            "coarser than the units and nesting them, so a dependence the units do not see "
+            "makes the inner test fire above its nominal rate"
+        ),
+        "pairs_with_second_placebo": n,
+        "of_pairs": int(pairs.units.size),
+        "with_second_placebo_fraction": _round(
+            n / pairs.units.size if pairs.units.size else math.nan, 4
+        ),
+        "gap_s_p50": _round(_quantile(null.gap_s, 0.5), 2),
+        "gap_s_p90": _round(_quantile(null.gap_s, 0.9), 2),
+        "per_match": per_match,
+        "pooled": {
+            "pairs": n,
+            "units": int(sum(null.units_per_match)),
+            "blocks": int(sum(null.blocks_per_match)),
+            "largest_block_share": _round(
+                max(
+                    (
+                        b / p
+                        for b, p in zip(
+                            null.largest_block_per_match, null.pairs_per_match, strict=True
+                        )
+                        if p
+                    ),
+                    default=math.nan,
+                ),
+                4,
+            ),
+        },
         "draws": rates.draws,
         "n_permutations": N_PERMUTATIONS,
-        "per_subtype": [
-            {
-                "subtype": s,
-                "pairs": int(n_pairs[k]),
-                "units": int(n_units[k]),
-                "fires_pct": _round(rates.fires_pct[k], 2),
-                "fires_normal_pct": _round(rates.fires_normal_pct[k], 2),
-            }
-            for k, s in enumerate(SUBTYPES)
-        ],
+        "per_subtype": per_subtype,
         "at_least_one_pct": _round(rates.at_least_one_pct, 2),
-        "at_least_one_normal_pct": _round(rates.at_least_one_normal_pct, 2),
         "hardening": {
             "rule": (
                 f"if at_least_one_pct exceeds {NULL_AT_LEAST_ONE_MAX_PCT} the bar hardens "
@@ -970,12 +1248,26 @@ def _power_section(
             "that passes the bar in at least 80 % of simulated data sets; each pair carries "
             "the effect plus noise with the pooled sd of the pair values and the measured "
             "within-unit correlation, on the unit sizes of the half's matches (the closed "
-            "half contributes counts and nothing else); the p by its normal approximation"
+            "half contributes counts and nothing else); the bar as it is applied to real "
+            "pairs: the sign count over the matches, and the permutation count drawn as "
+            "Binomial(n_permutations, two-sided normal tail of the data set's z), passing "
+            "when (1 + count) / (1 + n_permutations) is at most p_at_most"
         ),
         "grid_sd": list(MDE_GRID_SD),
         "replications": POWER_REPLICATIONS,
+        "pass_rate_se_at_target": _round(
+            math.sqrt(POWER_TARGET * (1.0 - POWER_TARGET) / POWER_REPLICATIONS), 4
+        ),
         "target_pass_rate": POWER_TARGET,
-        "z_two_sided": _round(Z_TWO_SIDED, 4),
+        "bar_simulated": {
+            "n_permutations": N_PERMUTATIONS,
+            "p_at_most": BAR_P,
+            "count_at_most": BAR_COUNT_AT_MOST,
+            "z_two_sided": _round(Z_TWO_SIDED, 4),
+            "pass_probability_at_z_two_sided": _round(
+                float(bar_pass_probability(np.array([Z_TWO_SIDED]))[0]), 4
+            ),
+        },
         "design_effect": {
             quantity: {
                 "rho_within_unit": _round(e.rho, 4),
@@ -998,9 +1290,11 @@ def _power_section(
     return section, lists
 
 
-def build_probe(data_dir: Path, head: str) -> dict[str, Any]:
+def build_probe(data_dir: Path, head: str, code_tree: str) -> dict[str, Any]:
     """The whole file for the warehouse under `data_dir`: values of the calibration half
-    through `MatchTracking`, counts of both halves through `count_tracking`."""
+    through `MatchTracking`, counts of both halves through `count_tracking`. `head` and
+    `code_tree` are recorded as given: the command passes HEAD and the sha of the committed
+    `runs/` tree, `--check` what the file says."""
     calibration = load_half(HALF)
     others = [m for m in counting_match_ids() if m not in calibration]
     probes: list[MatchProbe] = []
@@ -1024,7 +1318,7 @@ def build_probe(data_dir: Path, head: str) -> dict[str, Any]:
         "pair_sd_marker_m": float(pairs.marker_m.std(ddof=1)),
         "pair_sd_line_m": float(pairs.line_m.std(ddof=1)),
     }
-    null_section, hardening_needed = _null_section(probes, pairs)
+    null_section, hardening_needed = _null_section(probes, pairs, _collect_null(probes))
     power_section, probable = _power_section(
         pairs, counts, {HALF: calibration, "other": others}, sds
     )
@@ -1044,6 +1338,7 @@ def build_probe(data_dir: Path, head: str) -> dict[str, Any]:
             "task": TASK,
             "written": WRITTEN,
             "head": head,
+            "code_tree_sha": code_tree,
             "half": HALF,
             "matches": calibration,
             "seed": SEED,
@@ -1052,6 +1347,7 @@ def build_probe(data_dir: Path, head: str) -> dict[str, Any]:
                 "null_outer": STREAM_NULL_OUTER,
                 "null_inner": STREAM_NULL_INNER,
                 "power": STREAM_POWER,
+                "null_contrast": STREAM_NULL_CONTRAST,
             },
             "funnel": {
                 "what": (
@@ -1143,6 +1439,9 @@ def consistency_problems(current: dict[str, Any]) -> list[str]:
     if probe.get("matches") != load_half(HALF):
         problems.append("matches are not the calibration half")
     try:
+        for key in ("head", "code_tree_sha"):
+            if not isinstance(probe[key], str) or len(probe[key]) != 40:
+                problems.append(f"{key} is not a git sha")
         pooled = probe["instrument"]["marker"]["pooled"]
         passes = pooled["same_sign_matches"] >= BAR_SAME_SIGN_MATCHES and pooled["p"] <= BAR_P
         if pooled["passes_bar"] != passes:
@@ -1207,6 +1506,14 @@ def run_runs_probe(data_dir: Path, reports_dir: Path, *, check: bool = False) ->
     whole = all(has_frames(data_dir, m) for m in every)
     path = probe_path(reports_dir)
     if not check:
+        dirty = dirty_code_paths()
+        if dirty:
+            print(
+                f"runs probe: {len(dirty)} path(s) of the code that computes the figures are "
+                f"not committed (e.g. {dirty[0]!r}): commit them first, so head and "
+                "code_tree_sha name the code that ran"
+            )
+            return 1
         if not whole:
             print(
                 f"runs probe: silver frames for {len(at_hand)} of the {len(calibration)} "
@@ -1214,7 +1521,7 @@ def run_runs_probe(data_dir: Path, reports_dir: Path, *, check: bool = False) ->
                 f"{len(every)}); the file is written from all of them or not at all"
             )
             return 1
-        payload = build_probe(data_dir, head=head_commit())
+        payload = build_probe(data_dir, head=head_commit(), code_tree=code_tree_sha())
         reports_dir.mkdir(parents=True, exist_ok=True)
         path.write_text(render(payload), encoding="utf-8", newline="\n")
         print(_summary(payload, status=f"FULL {len(calibration)}/{len(calibration)}"))
@@ -1227,12 +1534,21 @@ def run_runs_probe(data_dir: Path, reports_dir: Path, *, check: bool = False) ->
     current = json.loads(text)
     problems = consistency_problems(current)
     if whole and not problems:
-        expected = build_probe(data_dir, head=str(current["probe"]["head"]))
+        expected = build_probe(
+            data_dir,
+            head=str(current["probe"]["head"]),
+            code_tree=str(current["probe"]["code_tree_sha"]),
+        )
         if render(expected) != text:
             problems.append("differs from what the code writes")
         status = f"FULL {len(calibration)}/{len(calibration)} recomputed and equal"
     else:
-        status = f"PARTIAL {len(at_hand)}/{len(calibration)} (figures as written)"
+        # nothing is recomputed on a partial warehouse: a match at hand is counted, not redone
+        status = (
+            f"PARTIAL {len(at_hand)}/{len(calibration)} at hand, 0/{len(calibration)} "
+            "recomputed: seal, protocol, match list and verdict checked against the figures "
+            "as written"
+        )
     if problems:
         print(f"runs probe --check: {path} " + "; ".join(problems))
         return 1

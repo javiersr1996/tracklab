@@ -39,6 +39,7 @@ from tracklab.runs.protocol import (
 
 Half = Literal["calibration", "held_out"]
 PROTOCOL_IN_REPO = "pipeline/reports/runs_protocol.json"
+CODE_IN_REPO = "pipeline/src/tracklab/runs"  # the code that computes task 49's figures
 
 
 class HeldOutLocked(RuntimeError):
@@ -68,12 +69,35 @@ def _head_text(root: Path) -> str | None:
 
 
 def head_commit() -> str:
-    """The sha of HEAD of the repository this code lives in: what task 49's probe records as
-    the code that computed its figures."""
+    """The sha of HEAD of the repository this code lives in: with `code_tree_sha`, what task
+    49's probe records as the code that computed its figures, which is true because its
+    write mode refuses to run while `dirty_code_paths` is not empty."""
     out = _git(repo_root(), "rev-parse", "HEAD")
     if out.returncode != 0:
         raise HeldOutLocked(f"git rev-parse HEAD failed: {out.stderr.strip()}")
     return out.stdout.strip()
+
+
+def code_tree_sha() -> str:
+    """The sha of the tree `CODE_IN_REPO` as committed in HEAD: recorded next to `head_commit`
+    by task 49's probe, so the code that computed its figures is named by its own sha and
+    not only by the commit it sat in."""
+    out = _git(repo_root(), "rev-parse", f"HEAD:{CODE_IN_REPO}")
+    if out.returncode != 0:
+        raise HeldOutLocked(f"git rev-parse HEAD:{CODE_IN_REPO} failed: {out.stderr.strip()}")
+    return out.stdout.strip()
+
+
+def dirty_code_paths() -> list[str]:
+    """Of `dirty_paths`, the ones under `CODE_IN_REPO` or at `PROTOCOL_IN_REPO`: the code and
+    the rules that compute the probe's figures. Its write mode refuses while any is listed,
+    so `head_commit` and `code_tree_sha` name the code that ran."""
+    found: list[str] = []
+    for line in dirty_paths(repo_root()):
+        path = line[3:].split(" -> ")[-1].strip('"')
+        if path == PROTOCOL_IN_REPO or path.startswith(CODE_IN_REPO + "/"):
+            found.append(path)
+    return found
 
 
 def head_stage() -> str | None:

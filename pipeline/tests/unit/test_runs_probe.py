@@ -10,7 +10,12 @@ Mutations recorded in tasks/todo.md: units labelled over the pairs of every matc
 (a possession id repeats from match to match, so the null would mix matches) fails the
 two-match test, where that null fires on no effect; one unit per pair (clusters counted as
 independent) fails the clustered test the same way; outer flips drawn per subtype fail the
-shared-flip test; `argmax` for the cadence fails the five-frame slope test.
+shared-flip test; `argmax` for the cadence fails the five-frame slope test. Since the review
+of task 49: outer flips by the units instead of the blocks fail the hidden-blocks test (the
+null then cannot see what the units miss); the power passing on the normal quantile instead
+of the bar's count fails the two permutation tests; the write-mode refusal removed fails the
+uncommitted-code test; a fixed 52.5 in the provider conversion fails the planted test on its
+non-105 m pitches.
 """
 
 from __future__ import annotations
@@ -18,6 +23,7 @@ from __future__ import annotations
 import csv
 import json
 import math
+import subprocess
 from dataclasses import replace
 from pathlib import Path
 
@@ -27,6 +33,7 @@ from test_runs_windows import (  # the synthetic match and the throwaway design 
     CI_FIXTURE_MATCH,
     PLANTED_LINE_M,
     PLANTED_MARKER_M,
+    _git,
     _guarded,
     _synthetic_raw,
     _write_warehouse,
@@ -36,19 +43,23 @@ from test_runs_windows import (  # the synthetic match and the throwaway design 
 
 from tracklab.cli import build_parser
 from tracklab.paths import data_root
-from tracklab.runs import probe, windows
+from tracklab.runs import data, probe, windows
 from tracklab.runs.coverage import COVERAGE_NAME
 from tracklab.runs.data import counting_match_ids, load_half
 from tracklab.runs.probe import (
+    BAR_COUNT_AT_MOST,
     PROBE_NAME,
     Z_TWO_SIDED,
     MatchProbe,
+    ProbeInputError,
+    bar_pass_probability,
     bar_verdict,
     cadence,
     cadence_lag,
     consistency_problems,
     design_effect,
     mde80,
+    normal_two_sided_tail,
     null_fire_rates,
     permutation_p,
     probable_subtypes,
@@ -67,7 +78,13 @@ from tracklab.runs.protocol import (
     sealed,
     z_two_sided,
 )
-from tracklab.runs.windows import SUBTYPES, PairEffect, unit_labels, units_by_subtype
+from tracklab.runs.windows import (
+    SUBTYPES,
+    PairEffect,
+    components,
+    unit_labels,
+    units_by_subtype,
+)
 
 PIPELINE = Path(__file__).resolve().parents[2]
 REPORTS = PIPELINE / "reports"
@@ -90,6 +107,11 @@ def test_unit_labels_link_by_possession_and_by_instant_and_chain() -> None:
     ]
     assert unit_labels(keys) == [0, 0, 0, 1, 2, 2, 3]
     assert unit_labels([]) == []
+    # the union-find beneath it, over any keys: a third key per item links what the two
+    # of the unit do not (the blocks of the real null add (runner, period) this way)
+    assert components([("a",), ("b",), ("c", "a"), ()]) == [0, 1, 0, 2]
+    assert components([("a", "x"), ("b", "x"), ("c",)]) == [0, 0, 1]
+    assert components([]) == []
 
 
 def test_units_by_subtype_gives_sorted_sizes_per_protocol_subtype() -> None:
@@ -159,17 +181,25 @@ def test_bar_verdict_needs_the_sign_in_eight_matches_and_the_p() -> None:
 
 
 def _probe_of(match_id: int, pairs: list[PairEffect]) -> MatchProbe:
-    """A `MatchProbe` with the pairs alone: what `_collect` reads."""
+    """A `MatchProbe` with the pairs alone (no second placebo): what `_collect` reads."""
     empty = np.zeros(0)
+    n = len(pairs)
     return MatchProbe(
         match_id=match_id,
-        runs=len(pairs),
+        runs=n,
         pairs=tuple(pairs),
+        run_period=np.ones(n, dtype=np.int64),
+        placebo2_period=np.full(n, -1, dtype=np.int64),
+        placebo2_instant=np.full(n, -1, dtype=np.int64),
+        placebo2_marker_m=np.full(n, np.nan),
+        placebo2_line_m=np.full(n, np.nan),
         length_m=empty,
         line_at_tc_m=empty,
         provider_line_x_m=empty,
-        pitch_length_m=105.0,
-        runner_in_possession_at_placebo=np.zeros(len(pairs), dtype=np.bool_),
+        pitch_length_m=104.0,
+        provider_identity_residual_half_length_m=0.0,
+        provider_identity_residual_52_5_m=0.5,
+        runner_in_possession_at_placebo=np.zeros(n, dtype=np.bool_),
         cadence=probe.Cadence(0, 0, 0, math.nan, (0.0,) * 30, 0.0),
     )
 
@@ -273,10 +303,11 @@ def _null_pairs(seed: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarr
     )
 
 
-def test_null_fire_rates_are_small_and_the_normal_approximation_agrees() -> None:
+def test_null_fire_rates_are_nominal_when_the_blocks_are_the_units() -> None:
     values, units, matches, subtypes = _null_pairs(7)
     rates = null_fire_rates(
         values,
+        units,
         units,
         matches,
         subtypes,
@@ -290,7 +321,6 @@ def test_null_fire_rates_are_small_and_the_normal_approximation_agrees() -> None
     assert all(0.0 <= r <= 1.0 for r in rates.fires_pct)
     assert rates.at_least_one_pct <= NULL_AT_LEAST_ONE_MAX_PCT
     assert max(rates.fires_pct) <= rates.at_least_one_pct <= sum(rates.fires_pct)
-    assert abs(rates.at_least_one_pct - rates.at_least_one_normal_pct) <= 1.0
 
 
 def test_the_outer_flips_are_shared_by_the_subtypes() -> None:
@@ -300,11 +330,13 @@ def test_the_outer_flips_are_shared_by_the_subtypes() -> None:
     base = rng.normal(0.0, 1.0, 300)
     values = np.concatenate([base, base])
     units = np.concatenate([np.arange(300), np.arange(300)]).astype(np.intp)
+    blocks = units // 3
     matches = np.concatenate([np.repeat(np.arange(10), 30)] * 2).astype(np.intp)
     subtypes = np.concatenate([np.zeros(300), np.ones(300)]).astype(np.intp)
     rates = null_fire_rates(
         values,
         units,
+        blocks,
         matches,
         subtypes,
         2,
@@ -314,7 +346,60 @@ def test_the_outer_flips_are_shared_by_the_subtypes() -> None:
         draws=2000,
     )
     assert rates.fires_pct[0] == rates.fires_pct[1] == rates.at_least_one_pct
-    assert rates.fires_normal_pct[0] == rates.fires_normal_pct[1] == rates.at_least_one_normal_pct
+
+
+def _hidden_blocks(
+    seed: int, correlated: bool
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """The reviewer's breaking case: ten matches of 240 pairs, every pair its own unit (what
+    the labels say), but the true process puts six consecutive pairs in a block of one
+    subtype whose values share a common term (correlation 0.5 inside the block) when
+    `correlated`, and nothing anywhere else. No effect: every value has mean zero."""
+    n_matches, per_match, block, corr = 10, 240, 6, 0.5
+    rng = np.random.default_rng(seed)
+    n = n_matches * per_match
+    block_of = np.arange(n) // block
+    n_blocks = int(block_of.max()) + 1
+    subtypes = rng.integers(0, len(SUBTYPES), n_blocks)[block_of].astype(np.intp)
+    if correlated:
+        common = rng.normal(0.0, math.sqrt(corr), n_blocks)[block_of]
+        values = common + rng.normal(0.0, math.sqrt(1.0 - corr), n)
+    else:
+        values = rng.normal(0.0, 1.0, n)
+    return (
+        values,
+        np.arange(n, dtype=np.intp),
+        block_of.astype(np.intp),
+        np.repeat(np.arange(n_matches), per_match).astype(np.intp),
+        subtypes,
+    )
+
+
+@pytest.mark.parametrize("seed", [1, 2])
+def test_the_null_sees_a_dependence_the_units_miss_when_the_blocks_nest_it(seed: int) -> None:
+    """With the fabricated blocks as the outer flips, the test on each draw (flipping the
+    units alone, as the real test would) fires far above nominal, about 32 % 'at least
+    one', which is what the real bar does on fresh data of that process (the reviewer
+    measured 31.9 % against a 1.0 % the old null reported); without the hidden correlation
+    the same blocks leave it near nominal; and outer flips by the units again (the old null)
+    cannot see it, the mutation this test kills. Blocks that do not nest the units are
+    refused."""
+    values, units, blocks, matches, subtypes = _hidden_blocks(seed, correlated=True)
+    n_subtypes = len(SUBTYPES)
+
+    def rates(v: np.ndarray, u: np.ndarray, b: np.ndarray) -> float:
+        r = null_fire_rates(v, u, b, matches, subtypes, n_subtypes, 10, rng(3), rng(4), draws=500)
+        return r.at_least_one_pct
+
+    def rng(k: int) -> np.random.Generator:
+        return np.random.default_rng([seed, k])
+
+    assert rates(values, units, blocks) > 3 * NULL_AT_LEAST_ONE_MAX_PCT
+    assert rates(values, units, units) <= NULL_AT_LEAST_ONE_MAX_PCT
+    plain, *_ = _hidden_blocks(seed, correlated=False)
+    assert rates(plain, units, blocks) <= NULL_AT_LEAST_ONE_MAX_PCT
+    with pytest.raises(ProbeInputError, match="nest"):
+        rates(values, blocks, units)  # the units coarser than the blocks
 
 
 # --- the power ----------------------------------------------------------------------------
@@ -330,6 +415,75 @@ def test_design_effect_is_the_within_unit_correlation() -> None:
     singletons = design_effect(independent, np.arange(1000, dtype=np.intp))
     assert math.isnan(singletons.rho) and singletons.pairs_of_pairs == 0
     assert design_effect(same, units).units_of_two_or_more == 500
+
+
+def test_bar_pass_probability_is_the_binomial_of_the_normal_tail() -> None:
+    """At |z| = Z_TWO_SIDED the tail is BAR_P exactly, the expected count 2.7 of 2000, and
+    the bar (count at most 1) passes about a quarter of the time; at z = 0 never; far out
+    always; monotone in |z| and even in z."""
+    assert BAR_COUNT_AT_MOST == 1 and (1 + 2) / (1 + N_PERMUTATIONS) > BAR_P
+    assert normal_two_sided_tail(np.array([0.0, Z_TWO_SIDED])) == pytest.approx([1.0, BAR_P])
+    q = 1.0 - BAR_P
+    exact = q**N_PERMUTATIONS + N_PERMUTATIONS * BAR_P * q ** (N_PERMUTATIONS - 1)
+    assert bar_pass_probability(np.array([Z_TWO_SIDED]))[0] == pytest.approx(exact, abs=1e-9)
+    assert 0.2 < exact < 0.3
+    assert bar_pass_probability(np.array([0.0]))[0] == 0.0
+    assert bar_pass_probability(np.array([8.0]))[0] > 0.9999
+    z = np.arange(0.0, 6.01, 0.2)
+    p = bar_pass_probability(z)
+    assert np.array_equal(p, bar_pass_probability(-z)) and (np.diff(p) >= 0).all()
+    assert bar_pass_probability(np.array([3.34]))[0] == pytest.approx(0.5, abs=0.03)
+
+
+def test_bar_pass_probability_matches_the_permutation_count_on_the_same_data_sets() -> None:
+    """3000 data sets of 300 independent pairs with an effect of 0.2 sd (z about 3.5): the
+    bar's permutation p from 2000 fresh flips of each, against the probability the helper
+    assigns from the same z; the quantile alone passes a visible share of data sets whose
+    count is 2 or more (the mutation that puts |z| >= Z_TWO_SIDED back)."""
+    rng = np.random.default_rng(20)
+    reps, n = 3000, 300
+    y = rng.normal(0.0, 1.0, (reps, n)) + 0.2
+    total = y.sum(axis=1)
+    z = total / np.sqrt((y * y).sum(axis=1))
+    passes = np.zeros(reps, dtype=np.bool_)
+    for lo in range(0, reps, 100):
+        flips = rng.integers(0, 2, size=(N_PERMUTATIONS, n)).astype(np.float64) * 2.0 - 1.0
+        reference = flips @ y[lo : lo + 100].T  # (N_PERMUTATIONS, 100)
+        count = (np.abs(reference) >= np.abs(total[lo : lo + 100])[None, :]).sum(axis=0)
+        p = (1 + count) / (1 + N_PERMUTATIONS)
+        assert np.array_equal(p <= BAR_P, count <= BAR_COUNT_AT_MOST)
+        passes[lo : lo + 100] = p <= BAR_P
+    assert 0.35 < passes.mean() < 0.75
+    assert abs(passes.mean() - bar_pass_probability(z).mean()) < 0.025
+    assert (np.abs(z) >= Z_TWO_SIDED).mean() - passes.mean() > 0.03
+
+
+def test_mde80_passes_by_the_bars_count_not_the_normal_quantile() -> None:
+    """Ten matches of 30 independent pairs at 0.2 sd: the pass rate `mde80` reports is the
+    one the bar's count gives (the helper's probability times the sign count, on an
+    independent draw of the same model), and strictly below what the normal quantile alone
+    would give."""
+    sizes = [[1] * 30] * 10
+    power = mde80(
+        sizes,
+        sd_pair=1.0,
+        rho=0.0,
+        sd_placebo=1.0,
+        rng=np.random.default_rng(1),
+        replications=20000,
+    )
+    rate = power.pass_rate_by_effect[probe.MDE_GRID_SD.index(0.2)]
+    rng = np.random.default_rng(2)
+    y = rng.normal(0.0, 1.0, (20000, 300)) + 0.2
+    total = y.sum(axis=1)
+    z = total / np.sqrt((y * y).sum(axis=1))
+    per_match = y.reshape(20000, 10, 30).sum(axis=2)
+    sign_ok = (np.sign(per_match) == np.sign(total)[:, None]).sum(axis=1) >= BAR_SAME_SIGN_MATCHES
+    reference = float((bar_pass_probability(z) * sign_ok).mean())
+    quantile = float(((np.abs(z) >= Z_TWO_SIDED) & sign_ok).mean())
+    assert 0.4 < rate < 0.8
+    assert abs(rate - reference) < 0.02
+    assert quantile - rate > 0.03
 
 
 def test_mde80_falls_with_pairs_and_rises_with_clustering() -> None:
@@ -438,8 +592,23 @@ def _synthetic_warehouse(root: Path, marker: float, line: float) -> list[int]:
     calibration = load_half("calibration")
     for i, match_id in enumerate(counting_match_ids()):
         raw, runs, instants = _synthetic_raw(30, marker, line, seed=100 + i, match_id=match_id)
-        _write_warehouse(root, raw, runs, instants)
+        _write_warehouse(root, raw, runs, instants, pitch_length=_pitch_length(i))
     return calibration
+
+
+def _pitch_length(i: int) -> float:
+    """100, 102, 104 and 106 m around the ids, never 105: a reader converting the provider's
+    height with a fixed 52.5 lands 0.5 to 2.5 m off the x the provider wrote."""
+    return 100.0 + 2.0 * (i % 4)
+
+
+def _keys(node: object) -> set[str]:
+    """Every key of a JSON tree: what a section may hold, whatever its prose says."""
+    if isinstance(node, dict):
+        return set(node) | set().union(*(_keys(v) for v in node.values()))
+    if isinstance(node, list):
+        return set().union(*(_keys(v) for v in node))
+    return set()
 
 
 def _written(tmp_path: Path, marker: float, line: float) -> tuple[Path, Path, dict[str, object]]:
@@ -458,7 +627,7 @@ def test_the_probe_on_a_planted_effect_passes_m2_and_check_reproduces_it(
     assert consistency_problems(payload) == []
     p = payload["probe"]
     assert p["matches"] == load_half("calibration") and p["half"] == "calibration"
-    assert len(p["head"]) == 40
+    assert len(p["head"]) == 40 and len(p["code_tree_sha"]) == 40
     committed = read_protocol(PIPELINE / "reports" / "runs_protocol.json")
     assert payload["protocol"]["fingerprint"] == committed["fingerprint"]
     # the funnel: 30 runs and 30 pairs per match, both halves, three per subtype
@@ -476,10 +645,22 @@ def test_the_probe_on_a_planted_effect_passes_m2_and_check_reproduces_it(
     assert abs(pooled["mean_m"] - PLANTED_MARKER_M) < 0.1
     assert pooled["same_sign_matches"] == 10 and pooled["p"] == round(1 / (1 + N_PERMUTATIONS), 5)
     assert pooled["passes_bar"] and not p["verdict"]["M2"]["dies"]
-    # the line against the provider: the same arrays, so r is 1 and the difference 0
+    # the line against the provider: the provider wrote the x of the same geometry, so r is
+    # 1 and the difference 0 on every pitch length; its identity holds with the match's
+    # half length and misses a fixed 52.5 by |L / 2 - 52.5| (0.5 to 2.5 m: no 105 m pitch)
+    ids = counting_match_ids()
     for row in p["instrument"]["line_against_provider"]["per_match"]:
-        assert row["runs_compared"] == 30 and row["pitch_length_m"] == 105.0
+        length = _pitch_length(ids.index(row["match_id"]))
+        assert row["runs_compared"] == 30 and row["pitch_length_m"] == length != 105.0
+        assert row["identity_max_residual_half_length_m"] == 0.0
+        assert row["identity_max_residual_52_5_m"] == round(abs(length / 2.0 - 52.5), 4) > 0.0
         assert row["pearson_r"] >= 0.999 and row["median_difference_m"] == 0.0
+    assert {r["pitch_length_m"] for r in p["instrument"]["line_against_provider"]["per_match"]} == {
+        100.0,
+        102.0,
+        104.0,
+        106.0,
+    }
     # the placebo design: every placebo 240 s away, no runner on the ball, nothing shared
     design = p["placebo_design"]["pooled"]
     assert design["gap_s_p50"] == design["gap_s_p90"] == 240.0
@@ -500,17 +681,38 @@ def test_the_probe_on_a_planted_effect_passes_m2_and_check_reproduces_it(
         < p["standardisation"]["placebo_sd_marker_m"]
         < p["standardisation"]["pair_sd_marker_m"] * 2
     )
-    # the null and the power: every subtype has 30 pairs per half, the hardening not needed
-    assert p["null"]["at_least_one_pct"] <= NULL_AT_LEAST_ONE_MAX_PCT
-    assert not p["null"]["hardening"]["needed"] and not p["verdict"]["bar_hardening_needed"]
+    # the null: every pair has a second placebo (the farther supported candidate of its
+    # scene, 3 s on), its own unit, and two blocks per match (the runner's two periods).
+    # The generator's placebo scene pushes the marker in the first placebo's window only
+    # (the baseline ramp), so placebo 1 minus placebo 2 is about 1 m everywhere and the
+    # unflipped contrast fires: the generator is no null process for a second placebo, and
+    # the centring is what keeps the flipped null nominal
+    null = p["null"]
+    assert null["pairs_with_second_placebo"] == null["of_pairs"] == 300
+    assert null["gap_s_p50"] == null["gap_s_p90"] == 243.0
+    assert null["pooled"] == {"pairs": 300, "units": 300, "blocks": 20, "largest_block_share": 0.5}
+    assert all(r["with_second_placebo"] == 30 and r["blocks"] == 2 for r in null["per_match"])
+    assert null["at_least_one_pct"] <= NULL_AT_LEAST_ONE_MAX_PCT
+    assert not null["hardening"]["needed"] and not p["verdict"]["bar_hardening_needed"]
+    for row in null["per_subtype"]:
+        assert row["pairs"] == row["units"] == 30 and row["blocks"] == 20
+        assert abs(row["centring_mean_m"] - 1.0) < 0.5 and row["unflipped"]["passes_bar"]
+        assert row["unflipped"]["same_sign_matches"] == 10
+    # the power: every subtype has 30 pairs per half, the bar simulated as applied
     assert {(r["subtype"], r["half"]) for r in p["power"]["rows"]} == {
         (s, h) for s in SUBTYPES for h in ("calibration", "other")
     }
     assert all(r["pairs"] == r["units"] == 30 for r in p["power"]["rows"])
+    assert p["power"]["replications"] == probe.POWER_REPLICATIONS
+    assert p["power"]["pass_rate_se_at_target"] == round(
+        math.sqrt(0.8 * 0.2 / probe.POWER_REPLICATIONS), 4
+    )
+    assert p["power"]["bar_simulated"]["count_at_most"] == BAR_COUNT_AT_MOST == 1
     assert p["verdict"]["M1"]["probable_subtypes"] == len(p["power"]["probable"]["marker"])
     assert p["verdict"]["alive"] == (not p["verdict"]["M1"]["dies"])
     # no effect per subtype anywhere in the file: the per-subtype rows carry counts, rates
-    # and minimum detectable effects, with these keys and no other
+    # and minimum detectable effects, with these keys and no other; the null's centring
+    # mean is placebo 1 minus placebo 2, a placebo quantity
     text = (reports / PROBE_NAME).read_text(encoding="utf-8")
     assert {k for r in p["power"]["rows"] for k in r} == {
         "subtype",
@@ -525,14 +727,22 @@ def test_the_probe_on_a_planted_effect_passes_m2_and_check_reproduces_it(
         "mde80_line_m",
         "pass_rate_by_effect_line",
     }
-    assert {k for r in p["null"]["per_subtype"] for k in r} == {
+    assert {k for r in null["per_subtype"] for k in r} == {
         "subtype",
         "pairs",
         "units",
+        "blocks",
+        "centring_mean_m",
         "fires_pct",
-        "fires_normal_pct",
+        "unflipped",
     }
-    assert "mean" not in json.dumps(p["power"]) and "mean" not in json.dumps(p["null"])
+    assert {k for r in null["per_subtype"] for k in r["unflipped"]} == {
+        "p",
+        "same_sign_matches",
+        "passes_bar",
+    }
+    assert {k for k in _keys(p["power"]) if "mean" in k} == set()
+    assert {k for k in _keys(null) if "mean" in k} == {"centring_mean_m"}
     # --check: the whole warehouse recomputes and agrees; a resealed hand edit differs
     capsys.readouterr()
     assert run_runs_probe(root, reports, check=True) == 0
@@ -548,6 +758,17 @@ def test_the_probe_on_a_planted_effect_passes_m2_and_check_reproduces_it(
     again = tmp_path / "again"
     assert run_runs_probe(root, again) == 0
     assert (again / PROBE_NAME).read_bytes() == text.encode("utf-8")
+    # --check on a partial warehouse (one calibration match's frames gone) recomputes
+    # nothing and says so: what it verified, how many matches it only counted
+    frames = root / "silver" / "frames" / "sport=football"
+    gone = frames / f"native_match_id={load_half('calibration')[-1]}"
+    (gone / "data.parquet").unlink()
+    gone.rmdir()
+    capsys.readouterr()
+    assert run_runs_probe(root, again, check=True) == 0
+    out = capsys.readouterr().out
+    assert "warehouse=PARTIAL 9/10 at hand, 0/10 recomputed" in out
+    assert "figures as written" in out and "FULL" not in out
 
 
 @pytest.mark.usefixtures("design_repo")
@@ -624,10 +845,22 @@ def test_probe_match_takes_a_match_tracking_and_reads_the_provider_through_it(
     assert m.runs == 4 and len(m.pairs) == 4
     assert np.isfinite(m.length_m).all() and (np.abs(m.length_m - 10.0) < 0.2).all()
     assert np.allclose(m.line_at_tc_m, m.provider_line_x_m)
-    assert m.pitch_length_m == 105.0
+    assert m.pitch_length_m == 104.0
+    assert m.provider_identity_residual_half_length_m == pytest.approx(0.0, abs=1e-9)
+    assert m.provider_identity_residual_52_5_m == pytest.approx(0.5)
     assert not m.runner_in_possession_at_placebo.any()
-    pitch, lines = probe.load_provider_lines(t, root)
-    assert pitch == 105.0 and set(lines) == {r.event_id for r in runs}
+    provider = probe.load_provider_lines(t, root)
+    assert provider.pitch_length_m == 104.0
+    assert set(provider.x_start_by_run) == {r.event_id for r in runs}
+    assert provider.identity_max_residual_52_5_m == m.provider_identity_residual_52_5_m
+    # the second placebo of every pair: the farther supported candidate of the scene, in
+    # the placebo's period, 30 frames after the first, with its two quantities; the run's
+    # period travels with the pair for the null's blocks
+    first = np.array([p.placebo_instant for p in m.pairs])
+    assert m.placebo2_instant.tolist() == (first + 30).tolist()
+    assert m.placebo2_period.tolist() == [p.placebo_period for p in m.pairs] == [2] * 4
+    assert np.isfinite(m.placebo2_marker_m).all() and np.isfinite(m.placebo2_line_m).all()
+    assert m.run_period.tolist() == [r.period for r in runs] == [1, 1, 2, 2]
     # the units the counting door reports are the ones the pairs form
     counts = windows.count_tracking(root, CI_FIXTURE_MATCH)
     assert counts.analysis_set == 4
@@ -638,6 +871,53 @@ def test_probe_match_takes_a_match_tracking_and_reads_the_provider_through_it(
     for i, pair in enumerate(m.pairs):
         assert pair.placebo_instant == instants[(CI_FIXTURE_MATCH, f"r{i}")][-1][1]
         assert pair.t_c == runs[i].frame_start and pair.player_id == 7
+
+
+@pytest.mark.usefixtures("design_repo")
+def test_the_probe_refuses_uncommitted_code_and_records_the_committed_tree(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Write mode names the code that ran: `head` and `code_tree_sha` are HEAD's, so it
+    refuses while anything under the `runs/` tree or the protocol is uncommitted (edited,
+    or new and untracked), writes nothing, and `--check` still reads; a change elsewhere
+    in the tree does not stop it."""
+    repo = data.repo_root()  # the throwaway repository the fixture points the guard at
+    root, reports, payload = _written(tmp_path, PLANTED_MARKER_M, PLANTED_LINE_M)
+    tree = subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", f"HEAD:{data.CODE_IN_REPO}"],
+        capture_output=True,
+        encoding="utf-8",
+        check=True,
+    ).stdout.strip()
+    assert payload["probe"]["code_tree_sha"] == tree == data.code_tree_sha() and len(tree) == 40
+    assert payload["probe"]["head"] == data.head_commit() != tree
+    before = (reports / PROBE_NAME).read_bytes()
+    capsys.readouterr()
+    code = repo / data.CODE_IN_REPO / "probe.py"
+    code.write_text("# edited and not committed\n", encoding="utf-8")
+    assert data.dirty_code_paths() == [f"{data.CODE_IN_REPO}/probe.py"]
+    assert run_runs_probe(root, reports) == 1
+    assert "not committed" in capsys.readouterr().out
+    assert (reports / PROBE_NAME).read_bytes() == before
+    assert run_runs_probe(root, reports, check=True) == 0
+    _git(repo, "checkout", "--", data.CODE_IN_REPO)
+    new = repo / data.CODE_IN_REPO / "new.py"
+    new.write_text("x = 1\n", encoding="utf-8")
+    assert data.dirty_code_paths() == [f"{data.CODE_IN_REPO}/new.py"]
+    assert run_runs_probe(root, reports) == 1
+    new.unlink()
+    protocol = repo / data.PROTOCOL_IN_REPO
+    protocol.write_text(protocol.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    assert data.dirty_code_paths() == [data.PROTOCOL_IN_REPO]
+    assert run_runs_probe(root, reports) == 1
+    assert (reports / PROBE_NAME).read_bytes() == before
+    _git(repo, "checkout", "--", data.PROTOCOL_IN_REPO)
+    (repo / "tasks").mkdir()
+    (repo / "tasks" / "todo.md").write_text("plan\n", encoding="utf-8")
+    assert data.dirty_paths(repo) == ["?? tasks/todo.md"] and data.dirty_code_paths() == []
+    again = tmp_path / "again"
+    assert run_runs_probe(root, again) == 0
+    assert (again / PROBE_NAME).read_bytes() == before
 
 
 def test_the_probe_names_the_calibration_half_and_no_other_door() -> None:
@@ -696,13 +976,28 @@ def test_the_versioned_verdict_is_pinned() -> None:
     assert p["verdict"]["M2"]["instrument_passes_bar"] is True
     assert p["verdict"]["bar_hardening_needed"] is False
     assert p["power"]["probable"]["marker"] == ["coming_short", "run_ahead_of_the_ball", "support"]
-    assert p["power"]["probable"]["line"] == p["power"]["probable"]["marker"]
+    # with the bar simulated as applied (review of task 49) the line keeps one of the
+    # three: M1 counts the marker, and the record says the two lists no longer agree
+    assert p["power"]["probable"]["line"] == ["run_ahead_of_the_ball"]
+    assert p["power"]["probable"]["both"] == ["run_ahead_of_the_ball"]
     assert p["instrument"]["marker"]["pooled"]["same_sign_matches"] == 10
     assert p["instrument"]["marker"]["pooled"]["p"] == round(1 / (1 + N_PERMUTATIONS), 5)
     assert p["null"]["at_least_one_pct"] <= NULL_AT_LEAST_ONE_MAX_PCT
+    assert p["null"]["pairs_with_second_placebo"] == 3541 and p["null"]["of_pairs"] == 3756
+    assert p["null"]["pooled"]["units"] == 2420 and p["null"]["pooled"]["blocks"] == 77
+    assert all(r["unflipped"]["passes_bar"] is False for r in p["null"]["per_subtype"])
     assert p["cadence"]["windows"]["changed"] is False
     assert p["run_length"]["changed"] is False
     assert p["power"]["probable"]["mde80_sd_at_most"] == TESTABILITY_MDE80_SD
+    # the provider's identity holds with the half length in eight matches and with a fixed
+    # 52.5 in two of the 106 m ones: the x is read as given, never converted from the height
+    lines = p["instrument"]["line_against_provider"]["per_match"]
+    assert {r["pitch_length_m"] for r in lines} == {104.0, 105.0, 106.0}
+    assert [r["match_id"] for r in lines if r["identity_max_residual_half_length_m"] > 0] == [
+        1959846,
+        2010085,
+    ]
+    assert all(r["pearson_r"] >= 0.995 and -0.7 < r["median_difference_m"] < 0 for r in lines)
 
 
 @needs_the_whole_warehouse

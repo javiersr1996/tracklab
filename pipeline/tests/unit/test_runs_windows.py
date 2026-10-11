@@ -76,6 +76,7 @@ from tracklab.runs.windows import (
     MatchTracking,
     Run,
     choose_placebo,
+    choose_second_placebo,
     count_match,
     count_tracking,
     load_runs,
@@ -339,29 +340,44 @@ def _parquet(path: Path, table: pa.Table) -> None:
     pq.write_table(table, path)
 
 
-def _provider_heights(tracking: windows._Tracking, runs: list[Run]) -> list[float]:
-    """What the provider would write as `last_defensive_line_height_start`: the height from
-    the defending goal line (pitch length 105) of the two deepest outfield opponents' mean
-    x_att at t_c, straight from the arrays (opponents are columns 1 to 11, the keeper 12)."""
-    out = []
+def _provider_lines(
+    tracking: windows._Tracking, runs: list[Run], pitch_length: float
+) -> tuple[list[float], list[float]]:
+    """What the provider would write as `last_defensive_line_x_start` and
+    `last_defensive_line_height_start`: the mean x_att at t_c of the two deepest outfield
+    opponents, straight from the arrays (opponents are columns 1 to 11, the keeper 12), and
+    its height from the defending goal line of a pitch of `pitch_length`. The provider's own
+    identity, x + height = pitch_length / 2, by construction; never 52.5 unless the pitch is
+    105 m, which no fixture match is, so a reader converting the height with a fixed 52.5
+    lands 0.5 m or more off."""
+    xs, heights = [], []
     for run in runs:
         x_att = SIGN[run.period] * tracking.x[run.frame_start, 1:12]
-        out.append(52.5 - float(np.sort(x_att)[-2:].mean()))
-    return out
+        x = float(np.sort(x_att)[-2:].mean())
+        xs.append(x)
+        heights.append(pitch_length / 2.0 - x)
+    return xs, heights
 
 
 def _write_warehouse(
-    root: Path, tracking: windows._Tracking, runs: list[Run], instants: Instants | None = None
+    root: Path,
+    tracking: windows._Tracking,
+    runs: list[Run],
+    instants: Instants | None = None,
+    pitch_length: float = 104.0,
 ) -> None:
     """The synthetic match as the silver and bronze files `load_tracking`, `load_runs`,
     `placebo` and the probe read, in their layout and with their columns: `frames` (plus a
     ball row, which the player filter must drop), `dim_period`, `dim_team_period`,
-    `match_players`, `match` (the pitch length), `dynamic_events` and `phases_of_play`.
-    Without `instants` the events are the runs alone, so no placebo candidate comes from
-    them; with them, each run gets its candidates as the SQL of `placebo.py` produces them
-    (task 49): a teammate's `player_possession` at t' in its own phase, of the run's own
-    phase type, so `placebo_instants` returns exactly the given list per run."""
+    `match_players`, `match` (the pitch length, never 105 m: see `_provider_lines`),
+    `dynamic_events` and `phases_of_play`. Without `instants` the events are the runs alone,
+    so no placebo candidate comes from them; with them, each run gets its candidates as the
+    SQL of `placebo.py` produces them (task 49): a teammate's `player_possession` at t' in
+    its own phase, of the run's own phase type, so `placebo_instants` returns exactly the
+    given list per run."""
+    assert pitch_length != 105.0
     m = tracking.match_id
+    provider_x, provider_height = _provider_lines(tracking, runs, pitch_length)
     present = np.isfinite(tracking.x)
     rows, cols = np.nonzero(present)
     frames = pa.table(
@@ -426,7 +442,7 @@ def _write_warehouse(
     )
     _parquet(
         root / "bronze" / "football" / "match" / f"{m}.parquet",
-        pa.table({"match_id": [m], "pitch_length": [105], "pitch_width": [68]}),
+        pa.table({"match_id": [m], "pitch_length": [pitch_length], "pitch_width": [68.0]}),
     )
     # the events: the runs, each with its phase type and the frame of its own possession,
     # then (with `instants`) a teammate's possession per candidate, in a phase of its own
@@ -446,7 +462,8 @@ def _write_warehouse(
         "associated_player_possession_frame_start": [
             r.frame_start if instants else None for r in runs
         ],
-        "last_defensive_line_height_start": list(_provider_heights(tracking, runs)),
+        "last_defensive_line_x_start": provider_x,
+        "last_defensive_line_height_start": provider_height,
     }
     phases: dict[str, list[object]] = {
         "match_id": [m] * len(tracking.period_frames),
@@ -472,6 +489,7 @@ def _write_warehouse(
             events["phase_index"].append(phase_index)
             events["team_in_possession_phase_type"].append(f"type_{run.event_id}")
             events["associated_player_possession_frame_start"].append(None)
+            events["last_defensive_line_x_start"].append(None)
             events["last_defensive_line_height_start"].append(None)
             phases["match_id"].append(m)
             phases["index"].append(phase_index)
@@ -493,6 +511,7 @@ def _write_warehouse(
             ("phase_index", pa.int64()),
             ("team_in_possession_phase_type", pa.string()),
             ("associated_player_possession_frame_start", pa.int64()),
+            ("last_defensive_line_x_start", pa.float64()),
             ("last_defensive_line_height_start", pa.float64()),
         ]
     )
@@ -748,6 +767,37 @@ def test_the_nearest_supported_instant_wins_and_ties_go_to_the_earlier() -> None
     assert choose_placebo(tracking, run, [(1, 8), (1, 60)]) == (1, 60)  # 8 is unsupported
 
 
+def test_the_second_placebo_is_the_next_by_the_same_rule_with_a_disjoint_window() -> None:
+    """The real null's second placebo (review of task 49): the next candidate the rule would
+    pick, skipping the first and every instant whose window [t' - V, t' + W] overlaps the
+    first's (within V + W = 25 frames in the same period), unsupported instants too."""
+    tracking, run = _passing_by()  # t_c = 40, frames 0 to 99
+    candidates = [(1, 30), (1, 50), (1, 60), (1, 75)]
+    first = choose_placebo(tracking, run, candidates)
+    assert first == (1, 30)
+    # 50 is nearer than 60 but 20 frames from the first: its window overlaps
+    assert choose_second_placebo(tracking, run, candidates, first) == (1, 60)
+    assert choose_second_placebo(tracking, run, [(1, 30), (1, 55), (1, 56)], first) == (1, 56)
+    assert choose_second_placebo(tracking, run, [(1, 30), (1, 55), (1, 2)], first) is None
+    assert choose_second_placebo(tracking, run, [(1, 30)], first) is None
+    # the window test is per period: another period's instant never overlaps
+    two_periods = MatchTracking(
+        **{
+            **{f.name: getattr(tracking, f.name) for f in fields(MatchTracking)},
+            "period_frames": {1: (0, 49), 2: (50, 99)},
+            "attack_sign": {(1, TEAM): 1, (1, OTHER): -1, (2, TEAM): 1, (2, OTHER): -1},
+        }
+    )
+    assert choose_second_placebo(two_periods, run, [(1, 30), (2, 60)], (1, 30)) == (2, 60)
+    # a leg the formulas cannot read (the marker gone at t' + W) is skipped like an
+    # unsupported one
+    holed_x, holed_y = tracking.x.copy(), tracking.y.copy()
+    holed_x[80, 2] = holed_y[80, 2] = np.nan  # B, the nearest opponent at 60, at 60 + W
+    holed = replace(tracking, x=holed_x, y=holed_y)
+    assert placebo_supported(holed, run, 1, 60)
+    assert choose_second_placebo(holed, run, candidates, first) == (1, 75)
+
+
 def test_with_contiguous_periods_a_placebo_hugging_the_period_start_is_refused() -> None:
     """Period 2 starts the frame after period 1 ends, so the frames before its start exist.
     The nearest candidate sits 2 frames into period 2: its t' - V frames are in period 1, and
@@ -984,6 +1034,11 @@ def design_repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         }
     )
     protocol.write_text(render(design), encoding="utf-8", newline="\n")
+    # a code tree at the probe's path, so `code_tree_sha` has a tree to name and a test can
+    # leave it uncommitted
+    code = repo / data.CODE_IN_REPO / "probe.py"
+    code.parent.mkdir(parents=True)
+    code.write_text("# the code tree of the throwaway repository\n", encoding="utf-8")
     _git(repo, "add", ".")
     _git(repo, "commit", "-q", "-m", "design")
     monkeypatch.setattr(data, "repo_root", lambda: repo)
@@ -1034,6 +1089,7 @@ COUNTS_ONLY = {
     "windows.window_bounds",
     "windows.placebo_supported",
     "windows.choose_placebo",
+    "windows.choose_second_placebo",
     "windows.count_match",
     "windows.count_tracking",
     "data.counting_match_ids",
@@ -1060,6 +1116,7 @@ READS_NO_FRAMES = {
     "windows.Run",
     "windows.PairEffect",
     "windows.MatchCounts",
+    "windows.components",
     "windows.unit_labels",
     "windows.units_by_subtype",
     "windows.pair_unit_key",
@@ -1067,7 +1124,9 @@ READS_NO_FRAMES = {
     "data.committed_protocol",
     "data.head_stage",
     "data.head_commit",
+    "data.code_tree_sha",
     "data.dirty_paths",
+    "data.dirty_code_paths",
     "data.repo_root",
     "coverage.render",
     "coverage.has_frames",
@@ -1078,6 +1137,7 @@ READS_NO_FRAMES = {
     "probe.Cadence",
     "probe.cadence_lag",
     "probe.pooled_autocorrelation",
+    "probe.ProviderLines",
     "probe.MatchProbe",
     "probe.sign_flips",
     "probe.unit_sums",
@@ -1089,6 +1149,8 @@ READS_NO_FRAMES = {
     "probe.null_fire_rates",
     "probe.DesignEffect",
     "probe.design_effect",
+    "probe.normal_two_sided_tail",
+    "probe.bar_pass_probability",
     "probe.Power",
     "probe.mde80",
     "probe.probable_subtypes",
@@ -1249,6 +1311,10 @@ def test_every_public_name_of_runs_refuses_a_held_out_match_or_returns_counts_on
     assert counted("windows.placebo_supported", placebo_supported(held, run, *t_placebo)) is True
     candidates = instants[(HELD_OUT_MATCH, run.event_id)]
     assert counted("windows.choose_placebo", choose_placebo(held, run, candidates)) == t_placebo
+    # the next candidate with a disjoint window: the farther supported instant of the scene
+    assert counted(
+        "windows.choose_second_placebo", choose_second_placebo(held, run, candidates, t_placebo)
+    ) == (t_placebo[0], t_placebo[1] + 30)
     counts = counted("windows.count_match", count_match(held, runs, instants))
     assert isinstance(counts, MatchCounts)
     assert counts.runs == counts.clean == counts.placebo_found == counts.analysis_set == 3
@@ -1285,7 +1351,7 @@ def test_every_public_name_of_runs_refuses_a_held_out_match_or_returns_counts_on
     # probe asks for a calibration match's frames, which are not there, and writes nothing
     # (test_runs_probe greps its ids)
     with pytest.raises((ValueError, duckdb.IOException)):
-        probe.build_probe(root, head="0" * 40)
+        probe.build_probe(root, head="0" * 40, code_tree="0" * 40)
     assert probe.run_runs_probe(root, reports) == 1
     assert not (reports / probe.PROBE_NAME).exists()
 

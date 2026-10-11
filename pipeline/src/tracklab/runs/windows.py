@@ -34,7 +34,7 @@ by the sign of its own period, the run's at t_c and the placebo's at t'.
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Hashable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, fields
 from pathlib import Path
 
@@ -477,16 +477,38 @@ def choose_placebo(t: _Tracking, run: Run, candidates: Sequence[Leg]) -> Leg | N
     return min(supported, key=lambda leg: (abs(leg[1] - run.frame_start), leg[1]))
 
 
+def choose_second_placebo(
+    t: _Tracking, run: Run, candidates: Sequence[Leg], first: Leg
+) -> Leg | None:
+    """The second placebo of task 49's real null (its review): among the candidates other
+    than `first`, the one `choose_placebo` would pick next (supported by the tracking, nearest
+    to t_c, ties to the earlier), whose leg the formulas can read (`_leg`, as both legs of a
+    pair must) and whose window [t' - V, t' + W] is disjoint from the first's: in another
+    period, or more than V + W frames from it. Booleans and indices only, like
+    `choose_placebo`, so it runs on the unguarded tracking of either half."""
+    span = VELOCITY_FRAMES + EFFECT_FRAMES
+    admissible = [
+        (period, instant)
+        for period, instant in candidates
+        if (period, instant) != first
+        and (period != first[0] or abs(instant - first[1]) > span)
+        and placebo_supported(t, run, period, instant)
+        and _leg(t, run, period, instant) is not None
+    ]
+    if not admissible:
+        return None
+    return min(admissible, key=lambda leg: (abs(leg[1] - run.frame_start), leg[1]))
+
+
 # --- the unit of the null: pairs that move together ------------------------------------------
 
 UnitKey = tuple[str | None, tuple[int, int]]  # (possession id, (runner player_id, t'))
 
 
-def unit_labels(keys: Sequence[UnitKey]) -> list[int]:
-    """One label per pair, the connected component of the pairs that share a possession
-    (`associated_player_possession_event_id`) or a placebo instant (same runner, same t'),
-    in order of first appearance. The keys of one match only: possession ids and frames repeat
-    across matches, so a caller never mixes matches here (task 49's null never does)."""
+def components(keys: Sequence[Iterable[Hashable]]) -> list[int]:
+    """One label per item, the connected component of the items that share any key, in order
+    of first appearance: union-find over the keys. The unit of the null (`unit_labels`) and
+    the blocks of task 49's real null are both built on it."""
     parent = list(range(len(keys)))
 
     def find(i: int) -> int:
@@ -495,14 +517,27 @@ def unit_labels(keys: Sequence[UnitKey]) -> list[int]:
             i = parent[i]
         return i
 
-    first: dict[object, int] = {}
-    for i, (possession, instant) in enumerate(keys):
-        for key in ((("p", possession),) if possession is not None else ()) + (("i", instant),):
+    first: dict[Hashable, int] = {}
+    for i, own in enumerate(keys):
+        for key in own:
             j = first.setdefault(key, i)
             if j != i:
                 parent[find(i)] = find(j)
     labels: dict[int, int] = {}
     return [labels.setdefault(find(i), len(labels)) for i in range(len(keys))]
+
+
+def unit_labels(keys: Sequence[UnitKey]) -> list[int]:
+    """One label per pair, the connected component of the pairs that share a possession
+    (`associated_player_possession_event_id`) or a placebo instant (same runner, same t'),
+    in order of first appearance. The keys of one match only: possession ids and frames repeat
+    across matches, so a caller never mixes matches here (task 49's null never does)."""
+    return components(
+        [
+            ((("p", possession),) if possession is not None else ()) + (("i", instant),)
+            for possession, instant in keys
+        ]
+    )
 
 
 # --- counts: the door that returns no tracking value ----------------------------------------
