@@ -11,6 +11,11 @@ one rule, so nothing in the slice is chosen by hand:
 - `events_chance_players` has no frame and follows the chances it belongs to;
 - a table with no match column (the aliases) is small and goes whole.
 
+The body pose tables (`bodypose_*`, 25 fps, so 2.5 pose frames per tracking frame) are cut
+by their own rule, because their match is not the football cut's: they keep the cut's window
+in pose frames (ceil(2.5 * lo) to floor(2.5 * hi)) when the cut's match has a pose file, and
+otherwise the first `POSE_FALLBACK_FRAMES` frames that have a pose, of the lowest pose match.
+
 Season aggregates have no match column, so they go whole like the aliases. The
 rows keep the exact bronze schema because they are copied with `SELECT *`, which is what
 lets dbt build on the slice with the same sources it uses on the full bundle. DuckDB
@@ -41,6 +46,8 @@ CUTS = (
     Cut("basketball", 114243, 3642, 3962),  # bb:possessions:possession-114243-1-2
     Cut("football", 1874553, 14055, 14214),  # fb:possession:1874553:51
 )
+POSE_TABLES = ("bodypose_frames", "bodypose_players")
+POSE_FALLBACK_FRAMES = 50
 FRAME_COLUMNS = ("frameIdx", "frame", "startFrame", "frame_start")
 MATCH_COLUMNS = ("match_id", "native_match_id")
 
@@ -89,6 +96,26 @@ def _copy(con: duckdb.DuckDBPyConnection, glob: str, where: str, target: Path) -
     return int(rows[0][0])
 
 
+def _cut_pose(con: duckdb.DuckDBPyConnection, table: Path, cut: Cut, out_dir: Path) -> CutTable:
+    """One body pose table of `table.parent`, cut by the rule in the module docstring."""
+    files = sorted(table.glob("*.parquet"), key=lambda p: int(p.stem))
+    own = table / f"{cut.native_match_id}.parquet"
+    match = cut.native_match_id if own.is_file() else int(files[0].stem)
+    if match == cut.native_match_id:
+        lo, hi = -(-cut.frame_lo * 5 // 2), cut.frame_hi * 5 // 2
+    else:
+        frames = (table.parent / "bodypose_frames" / f"{match}.parquet").as_posix()
+        lo, hi = con.execute(
+            "SELECT min(frame), max(frame) FROM (SELECT frame FROM read_parquet(?) "
+            f"WHERE n_with_pose > 0 ORDER BY frame LIMIT {POSE_FALLBACK_FRAMES})",
+            [frames],
+        ).fetchone() or (0, -1)
+    glob = (table / "*.parquet").as_posix()
+    target = out_dir / "bronze" / cut.sport / table.name / f"{match}.parquet"
+    where = f"match_id = {match} AND frame BETWEEN {lo} AND {hi}"
+    return CutTable(target, _copy(con, glob, where, target))
+
+
 def cut_fixtures(data_dir: Path, out_dir: Path, cuts: tuple[Cut, ...] = CUTS) -> list[CutTable]:
     """Write `out_dir/bronze/...` with the layout of `data_dir/bronze/...`, cut to `cuts`."""
     bronze = data_dir / "bronze"
@@ -96,6 +123,9 @@ def cut_fixtures(data_dir: Path, out_dir: Path, cuts: tuple[Cut, ...] = CUTS) ->
     written: list[CutTable] = []
     for cut in cuts:
         for table in sorted(p for p in (bronze / cut.sport).iterdir() if p.is_dir()):
+            if table.name in POSE_TABLES:
+                written.append(_cut_pose(con, table, cut, out_dir))
+                continue
             glob = (table / "*.parquet").as_posix()
             columns = _columns(con, glob)
             per_match = (table / f"{cut.native_match_id}.parquet").is_file()

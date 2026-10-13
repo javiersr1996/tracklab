@@ -104,3 +104,50 @@ def test_the_versioned_slice_holds_both_sports_under_three_megabytes() -> None:
     print(f"{len(files)} files, {size} bytes")
     assert sports == {"basketball", "football", "common"}
     assert size < MAX_BYTES
+
+
+def _pose_bronze(root: Path) -> Path:
+    """Football with a tracking match (7) and two pose matches (30, 9); pose starts at frame 200."""
+    bronze = root / "bronze"
+    _write(
+        bronze,
+        "football",
+        "tracking_frames",
+        "7.parquet",
+        "SELECT 7 AS match_id, range AS frame FROM range(0, 100)",
+    )
+    for match in (30, 9):
+        # 400 pose frames; the first 200 are outside the periods (no pose), the rest have one.
+        frames = (
+            f"SELECT {match} AS match_id, range AS frame, "
+            "CASE WHEN range < 200 THEN 0 ELSE 1 END AS n_with_pose FROM range(0, 400)"
+        )
+        _write(bronze, "football", "bodypose_frames", f"{match}.parquet", frames)
+        players = f"SELECT {match} AS match_id, range AS frame FROM range(200, 400)"
+        _write(bronze, "football", "bodypose_players", f"{match}.parquet", players)
+    _write(bronze, "common", "orientation", "data.parquet", "SELECT 7 AS native_match_id, 30 AS m")
+    return root
+
+
+def test_pose_tables_of_a_match_without_pose_are_the_first_frames_with_pose_of_the_lowest_one(
+    tmp_path: Path,
+) -> None:
+    data = _pose_bronze(tmp_path / "data")
+    out = tmp_path / "out"
+    cut_fixtures(data, out, (Cut("football", 7, 10, 30),))
+    pose = out / "bronze" / "football"
+    for table in ("bodypose_frames", "bodypose_players"):
+        got = _rows(pose / table / "9.parquet", "SELECT min(frame), max(frame), count(*) FROM t")
+        assert got == [(200, 249, 50)], table
+        assert not (pose / table / "30.parquet").exists()
+
+
+def test_pose_tables_of_a_match_with_pose_follow_the_window_in_pose_frames(tmp_path: Path) -> None:
+    data = _pose_bronze(tmp_path / "data")
+    out = tmp_path / "out"
+    # Tracking frames 90..100 are pose frames 225..250; the cut's match is 30.
+    cut_fixtures(data, out, (Cut("football", 30, 90, 100),))
+    pose = out / "bronze" / "football"
+    got = _rows(pose / "bodypose_players" / "30.parquet", "SELECT min(frame), max(frame) FROM t")
+    assert got == [(225, 250)]
+    assert not (pose / "bodypose_players" / "9.parquet").exists()
