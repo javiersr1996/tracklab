@@ -691,12 +691,14 @@ def _subtype_section(
             "subtype_pairs_in_modal_class": {
                 "pairs": int(in_modal.sum()),
                 "mean_m": _round(float(c.marker_m[in_modal].mean()), 4) if in_modal.any() else None,
+                "per_match": _per_match(c.marker_m, in_modal, c.match_of_pair, match_ids, sd_m),
             },
             "subtype_pairs_outside_modal_class": {
                 "pairs": int(out_modal.sum()),
                 "mean_m": _round(float(c.marker_m[out_modal].mean()), 4)
                 if out_modal.any()
                 else None,
+                "per_match": _per_match(c.marker_m, out_modal, c.match_of_pair, match_ids, sd_m),
             },
         },
         "run_leg_overlap": {

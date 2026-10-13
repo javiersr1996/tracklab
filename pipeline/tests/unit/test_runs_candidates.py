@@ -379,6 +379,11 @@ def test_the_effect_on_planted_subtypes_applies_m3_and_m4_and_check_reproduces_i
         assert cls["modal_class"] in ("from_ball/to_line/wide", "from_ball/to_line/inside")
         assert cls["modal_class_effect"]["mean_m"] > 0 and not cls["opposite_sign"]
         assert not r["verdict"]["M3"]["class_at_tc_opposite_sign"]
+        # the aggregates of the class split come with their rows, one per calibration match
+        for part in ("subtype_pairs_in_modal_class", "subtype_pairs_outside_modal_class"):
+            split = cls[part]
+            assert [row["match_id"] for row in split["per_match"]] == e["matches"]
+            assert sum(row["pairs"] for row in split["per_match"]) == split["pairs"]
         # the run-leg overlap control: legs 10 s apart never overlap, the units stay
         assert r["run_leg_overlap"]["units"] == 30 and r["run_leg_overlap"]["largest_unit"] == 1
         assert r["run_leg_overlap"]["passes_bar"]
