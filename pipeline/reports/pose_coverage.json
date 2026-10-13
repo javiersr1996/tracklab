@@ -1,0 +1,1198 @@
+{
+  "schema_version": 1,
+  "joints": [
+    "nose",
+    "neck",
+    "lEye",
+    "rEye",
+    "lEar",
+    "rEar",
+    "lShoulder",
+    "rShoulder",
+    "lElbow",
+    "rElbow",
+    "lWrist",
+    "rWrist",
+    "lThumb",
+    "rThumb",
+    "lPinky",
+    "rPinky",
+    "midHip",
+    "lHip",
+    "rHip",
+    "lKnee",
+    "rKnee",
+    "lAnkle",
+    "rAnkle",
+    "lHeel",
+    "rHeel",
+    "lBigToe",
+    "rBigToe",
+    "lSmallToe",
+    "rSmallToe"
+  ],
+  "matches": {
+    "1925299": {
+      "periods": {
+        "1": {
+          "frames": 75578,
+          "frames_with_pose": 53992,
+          "player_frames": 2418496,
+          "with_pose": 738555,
+          "with_pose_detected": 738555,
+          "joint_observations": 21418095,
+          "players_per_frame": {
+            "min": 32,
+            "max": 32
+          },
+          "skeletons_per_frame": {
+            "mean_over_frames_with_pose": 13.679,
+            "min_over_frames_with_pose": 2,
+            "max": 21
+          },
+          "share_frames_with_pose": 0.7144,
+          "share_player_frames_with_pose": 0.3054
+        },
+        "2": {
+          "frames": 77627,
+          "frames_with_pose": 52765,
+          "player_frames": 2484064,
+          "with_pose": 802160,
+          "with_pose_detected": 802158,
+          "joint_observations": 23262640,
+          "players_per_frame": {
+            "min": 32,
+            "max": 32
+          },
+          "skeletons_per_frame": {
+            "mean_over_frames_with_pose": 15.2025,
+            "min_over_frames_with_pose": 2,
+            "max": 21
+          },
+          "share_frames_with_pose": 0.6797,
+          "share_player_frames_with_pose": 0.3229
+        },
+        "outside": {
+          "frames": 47,
+          "frames_with_pose": 0,
+          "player_frames": 0,
+          "with_pose": 0,
+          "with_pose_detected": 0,
+          "joint_observations": 0,
+          "players_per_frame": {
+            "min": 0,
+            "max": 0
+          },
+          "skeletons_per_frame": {
+            "mean_over_frames_with_pose": null,
+            "min_over_frames_with_pose": null,
+            "max": 0
+          },
+          "share_frames_with_pose": 0.0,
+          "share_player_frames_with_pose": null
+        },
+        "total": {
+          "frames": 153252,
+          "frames_with_pose": 106757,
+          "player_frames": 4902560,
+          "with_pose": 1540715,
+          "with_pose_detected": 1540713,
+          "joint_observations": 44680735,
+          "players_per_frame": {
+            "min": 32,
+            "max": 32
+          },
+          "skeletons_per_frame": {
+            "mean_over_frames_with_pose": 14.432,
+            "min_over_frames_with_pose": 2,
+            "max": 21
+          },
+          "share_frames_with_pose": 0.6966,
+          "share_player_frames_with_pose": 0.3143
+        }
+      },
+      "players": [
+        {
+          "player_id": 11897,
+          "frames_present": 153205,
+          "with_pose": 66002,
+          "with_pose_detected": 66002,
+          "longest_run": 749,
+          "runs_ge_25": 272,
+          "runs_ge_37": 259,
+          "runs_ge_50": 242
+        },
+        {
+          "player_id": 50982,
+          "frames_present": 153205,
+          "with_pose": 54445,
+          "with_pose_detected": 54445,
+          "longest_run": 749,
+          "runs_ge_25": 247,
+          "runs_ge_37": 237,
+          "runs_ge_50": 214
+        },
+        {
+          "player_id": 50999,
+          "frames_present": 153205,
+          "with_pose": 16644,
+          "with_pose_detected": 16644,
+          "longest_run": 748,
+          "runs_ge_25": 89,
+          "runs_ge_37": 84,
+          "runs_ge_50": 80
+        },
+        {
+          "player_id": 51002,
+          "frames_present": 153205,
+          "with_pose": 93568,
+          "with_pose_detected": 93568,
+          "longest_run": 1121,
+          "runs_ge_25": 254,
+          "runs_ge_37": 248,
+          "runs_ge_50": 239
+        },
+        {
+          "player_id": 51043,
+          "frames_present": 153205,
+          "with_pose": 49936,
+          "with_pose_detected": 49936,
+          "longest_run": 749,
+          "runs_ge_25": 205,
+          "runs_ge_37": 194,
+          "runs_ge_50": 187
+        },
+        {
+          "player_id": 51050,
+          "frames_present": 153205,
+          "with_pose": 18025,
+          "with_pose_detected": 18025,
+          "longest_run": 748,
+          "runs_ge_25": 85,
+          "runs_ge_37": 81,
+          "runs_ge_50": 78
+        },
+        {
+          "player_id": 51694,
+          "frames_present": 153205,
+          "with_pose": 91109,
+          "with_pose_detected": 91109,
+          "longest_run": 749,
+          "runs_ge_25": 274,
+          "runs_ge_37": 264,
+          "runs_ge_50": 260
+        },
+        {
+          "player_id": 51722,
+          "frames_present": 153205,
+          "with_pose": 19912,
+          "with_pose_detected": 19912,
+          "longest_run": 748,
+          "runs_ge_25": 73,
+          "runs_ge_37": 69,
+          "runs_ge_50": 67
+        },
+        {
+          "player_id": 69111,
+          "frames_present": 153205,
+          "with_pose": 37708,
+          "with_pose_detected": 37708,
+          "longest_run": 749,
+          "runs_ge_25": 159,
+          "runs_ge_37": 153,
+          "runs_ge_50": 148
+        },
+        {
+          "player_id": 287934,
+          "frames_present": 153205,
+          "with_pose": 84084,
+          "with_pose_detected": 84084,
+          "longest_run": 896,
+          "runs_ge_25": 253,
+          "runs_ge_37": 247,
+          "runs_ge_50": 239
+        },
+        {
+          "player_id": 333110,
+          "frames_present": 153205,
+          "with_pose": 9995,
+          "with_pose_detected": 9995,
+          "longest_run": 749,
+          "runs_ge_25": 35,
+          "runs_ge_37": 34,
+          "runs_ge_50": 31
+        },
+        {
+          "player_id": 560882,
+          "frames_present": 153205,
+          "with_pose": 55187,
+          "with_pose_detected": 55187,
+          "longest_run": 749,
+          "runs_ge_25": 204,
+          "runs_ge_37": 197,
+          "runs_ge_50": 189
+        },
+        {
+          "player_id": 560983,
+          "frames_present": 153205,
+          "with_pose": 71798,
+          "with_pose_detected": 71798,
+          "longest_run": 749,
+          "runs_ge_25": 275,
+          "runs_ge_37": 263,
+          "runs_ge_50": 252
+        },
+        {
+          "player_id": 560984,
+          "frames_present": 153205,
+          "with_pose": 73008,
+          "with_pose_detected": 73008,
+          "longest_run": 751,
+          "runs_ge_25": 250,
+          "runs_ge_37": 242,
+          "runs_ge_50": 230
+        },
+        {
+          "player_id": 560985,
+          "frames_present": 153205,
+          "with_pose": 28893,
+          "with_pose_detected": 28893,
+          "longest_run": 748,
+          "runs_ge_25": 135,
+          "runs_ge_37": 127,
+          "runs_ge_50": 121
+        },
+        {
+          "player_id": 560986,
+          "frames_present": 153205,
+          "with_pose": 69482,
+          "with_pose_detected": 69482,
+          "longest_run": 749,
+          "runs_ge_25": 232,
+          "runs_ge_37": 224,
+          "runs_ge_50": 214
+        },
+        {
+          "player_id": 560987,
+          "frames_present": 153205,
+          "with_pose": 56508,
+          "with_pose_detected": 56508,
+          "longest_run": 831,
+          "runs_ge_25": 197,
+          "runs_ge_37": 192,
+          "runs_ge_50": 185
+        },
+        {
+          "player_id": 560988,
+          "frames_present": 153205,
+          "with_pose": 25060,
+          "with_pose_detected": 25060,
+          "longest_run": 749,
+          "runs_ge_25": 89,
+          "runs_ge_37": 86,
+          "runs_ge_50": 83
+        },
+        {
+          "player_id": 560989,
+          "frames_present": 153205,
+          "with_pose": 59121,
+          "with_pose_detected": 59120,
+          "longest_run": 749,
+          "runs_ge_25": 253,
+          "runs_ge_37": 235,
+          "runs_ge_50": 216
+        },
+        {
+          "player_id": 795530,
+          "frames_present": 153205,
+          "with_pose": 91950,
+          "with_pose_detected": 91950,
+          "longest_run": 1296,
+          "runs_ge_25": 269,
+          "runs_ge_37": 261,
+          "runs_ge_50": 253
+        },
+        {
+          "player_id": 795533,
+          "frames_present": 153205,
+          "with_pose": 25911,
+          "with_pose_detected": 25910,
+          "longest_run": 749,
+          "runs_ge_25": 98,
+          "runs_ge_37": 91,
+          "runs_ge_50": 86
+        },
+        {
+          "player_id": 795537,
+          "frames_present": 153205,
+          "with_pose": 69885,
+          "with_pose_detected": 69885,
+          "longest_run": 749,
+          "runs_ge_25": 258,
+          "runs_ge_37": 244,
+          "runs_ge_50": 235
+        },
+        {
+          "player_id": 795541,
+          "frames_present": 153205,
+          "with_pose": 24753,
+          "with_pose_detected": 24753,
+          "longest_run": 749,
+          "runs_ge_25": 79,
+          "runs_ge_37": 77,
+          "runs_ge_50": 72
+        },
+        {
+          "player_id": 797298,
+          "frames_present": 153205,
+          "with_pose": 53161,
+          "with_pose_detected": 53161,
+          "longest_run": 749,
+          "runs_ge_25": 199,
+          "runs_ge_37": 186,
+          "runs_ge_50": 178
+        },
+        {
+          "player_id": 809166,
+          "frames_present": 153205,
+          "with_pose": 55691,
+          "with_pose_detected": 55691,
+          "longest_run": 946,
+          "runs_ge_25": 317,
+          "runs_ge_37": 292,
+          "runs_ge_50": 269
+        },
+        {
+          "player_id": 809869,
+          "frames_present": 153205,
+          "with_pose": 15548,
+          "with_pose_detected": 15548,
+          "longest_run": 749,
+          "runs_ge_25": 48,
+          "runs_ge_37": 47,
+          "runs_ge_50": 45
+        },
+        {
+          "player_id": 965697,
+          "frames_present": 153205,
+          "with_pose": 52890,
+          "with_pose_detected": 52890,
+          "longest_run": 749,
+          "runs_ge_25": 256,
+          "runs_ge_37": 245,
+          "runs_ge_50": 230
+        },
+        {
+          "player_id": 965698,
+          "frames_present": 153205,
+          "with_pose": 23202,
+          "with_pose_detected": 23202,
+          "longest_run": 749,
+          "runs_ge_25": 85,
+          "runs_ge_37": 83,
+          "runs_ge_50": 78
+        },
+        {
+          "player_id": 966112,
+          "frames_present": 153205,
+          "with_pose": 59533,
+          "with_pose_detected": 59533,
+          "longest_run": 749,
+          "runs_ge_25": 179,
+          "runs_ge_37": 174,
+          "runs_ge_50": 166
+        },
+        {
+          "player_id": 966113,
+          "frames_present": 153205,
+          "with_pose": 4089,
+          "with_pose_detected": 4089,
+          "longest_run": 749,
+          "runs_ge_25": 7,
+          "runs_ge_37": 7,
+          "runs_ge_50": 7
+        },
+        {
+          "player_id": 966114,
+          "frames_present": 153205,
+          "with_pose": 56004,
+          "with_pose_detected": 56004,
+          "longest_run": 749,
+          "runs_ge_25": 191,
+          "runs_ge_37": 185,
+          "runs_ge_50": 177
+        },
+        {
+          "player_id": 966115,
+          "frames_present": 153205,
+          "with_pose": 27613,
+          "with_pose_detected": 27613,
+          "longest_run": 749,
+          "runs_ge_25": 88,
+          "runs_ge_37": 83,
+          "runs_ge_50": 76
+        }
+      ],
+      "mae_cm": {
+        "all": {
+          "min": 3.97,
+          "p50": 12.12,
+          "p90": 20.71,
+          "max": 43.01
+        },
+        "by_joint": {
+          "nose": {
+            "min": 5.83,
+            "p50": 7.28,
+            "p90": 11.86,
+            "max": 25.73
+          },
+          "neck": {
+            "min": 3.97,
+            "p50": 4.96,
+            "p90": 8.09,
+            "max": 23.37
+          },
+          "lEye": {
+            "min": 5.39,
+            "p50": 6.87,
+            "p90": 10.64,
+            "max": 24.98
+          },
+          "rEye": {
+            "min": 5.3,
+            "p50": 6.84,
+            "p90": 11.32,
+            "max": 24.51
+          },
+          "lEar": {
+            "min": 5.68,
+            "p50": 6.75,
+            "p90": 10.95,
+            "max": 25.88
+          },
+          "rEar": {
+            "min": 5.51,
+            "p50": 6.71,
+            "p90": 10.88,
+            "max": 26.22
+          },
+          "lShoulder": {
+            "min": 5.25,
+            "p50": 5.73,
+            "p90": 8.23,
+            "max": 24.46
+          },
+          "rShoulder": {
+            "min": 5.12,
+            "p50": 5.74,
+            "p90": 8.13,
+            "max": 24.17
+          },
+          "lElbow": {
+            "min": 6.63,
+            "p50": 8.43,
+            "p90": 12.71,
+            "max": 27.58
+          },
+          "rElbow": {
+            "min": 6.15,
+            "p50": 8.44,
+            "p90": 13.01,
+            "max": 27.67
+          },
+          "lWrist": {
+            "min": 7.99,
+            "p50": 13.39,
+            "p90": 23.22,
+            "max": 34.38
+          },
+          "rWrist": {
+            "min": 8.75,
+            "p50": 13.27,
+            "p90": 24.1,
+            "max": 34.03
+          },
+          "lThumb": {
+            "min": 7.46,
+            "p50": 16.53,
+            "p90": 29.47,
+            "max": 38.34
+          },
+          "rThumb": {
+            "min": 7.95,
+            "p50": 16.24,
+            "p90": 29.85,
+            "max": 37.85
+          },
+          "lPinky": {
+            "min": 10.88,
+            "p50": 17.58,
+            "p90": 33.67,
+            "max": 42.48
+          },
+          "rPinky": {
+            "min": 11.58,
+            "p50": 17.19,
+            "p90": 33.92,
+            "max": 43.01
+          },
+          "midHip": {
+            "min": 8.44,
+            "p50": 10.32,
+            "p90": 10.32,
+            "max": 35.32
+          },
+          "lHip": {
+            "min": 6.46,
+            "p50": 7.27,
+            "p90": 11.38,
+            "max": 42.0
+          },
+          "rHip": {
+            "min": 6.43,
+            "p50": 7.22,
+            "p90": 11.46,
+            "max": 41.57
+          },
+          "lKnee": {
+            "min": 7.55,
+            "p50": 10.2,
+            "p90": 16.49,
+            "max": 30.2
+          },
+          "rKnee": {
+            "min": 7.55,
+            "p50": 10.3,
+            "p90": 16.29,
+            "max": 29.99
+          },
+          "lAnkle": {
+            "min": 12.27,
+            "p50": 12.7,
+            "p90": 20.5,
+            "max": 29.3
+          },
+          "rAnkle": {
+            "min": 12.26,
+            "p50": 12.7,
+            "p90": 20.76,
+            "max": 29.27
+          },
+          "lHeel": {
+            "min": 14.92,
+            "p50": 14.93,
+            "p90": 23.78,
+            "max": 31.54
+          },
+          "rHeel": {
+            "min": 15.05,
+            "p50": 15.05,
+            "p90": 23.89,
+            "max": 31.64
+          },
+          "lBigToe": {
+            "min": 11.04,
+            "p50": 15.31,
+            "p90": 25.59,
+            "max": 33.94
+          },
+          "rBigToe": {
+            "min": 11.2,
+            "p50": 15.45,
+            "p90": 25.75,
+            "max": 34.31
+          },
+          "lSmallToe": {
+            "min": 10.49,
+            "p50": 15.21,
+            "p90": 25.1,
+            "max": 33.6
+          },
+          "rSmallToe": {
+            "min": 10.94,
+            "p50": 15.23,
+            "p90": 25.03,
+            "max": 33.92
+          }
+        }
+      },
+      "z_m": {
+        "min": -1.958,
+        "max": 3.132
+      },
+      "joint_key_sets": 1
+    },
+    "1996435": {
+      "periods": {
+        "1": {
+          "frames": 70028,
+          "frames_with_pose": 49637,
+          "player_frames": 2100840,
+          "with_pose": 819897,
+          "with_pose_detected": 819896,
+          "joint_observations": 23777013,
+          "players_per_frame": {
+            "min": 30,
+            "max": 30
+          },
+          "skeletons_per_frame": {
+            "mean_over_frames_with_pose": 16.5179,
+            "min_over_frames_with_pose": 1,
+            "max": 21
+          },
+          "share_frames_with_pose": 0.7088,
+          "share_player_frames_with_pose": 0.3903
+        },
+        "2": {
+          "frames": 73977,
+          "frames_with_pose": 45968,
+          "player_frames": 2219310,
+          "with_pose": 751933,
+          "with_pose_detected": 750577,
+          "joint_observations": 21806057,
+          "players_per_frame": {
+            "min": 30,
+            "max": 30
+          },
+          "skeletons_per_frame": {
+            "mean_over_frames_with_pose": 16.3577,
+            "min_over_frames_with_pose": 1,
+            "max": 21
+          },
+          "share_frames_with_pose": 0.6214,
+          "share_player_frames_with_pose": 0.3388
+        },
+        "outside": {
+          "frames": 47,
+          "frames_with_pose": 0,
+          "player_frames": 0,
+          "with_pose": 0,
+          "with_pose_detected": 0,
+          "joint_observations": 0,
+          "players_per_frame": {
+            "min": 0,
+            "max": 0
+          },
+          "skeletons_per_frame": {
+            "mean_over_frames_with_pose": null,
+            "min_over_frames_with_pose": null,
+            "max": 0
+          },
+          "share_frames_with_pose": 0.0,
+          "share_player_frames_with_pose": null
+        },
+        "total": {
+          "frames": 144052,
+          "frames_with_pose": 95605,
+          "player_frames": 4320150,
+          "with_pose": 1571830,
+          "with_pose_detected": 1570473,
+          "joint_observations": 45583070,
+          "players_per_frame": {
+            "min": 30,
+            "max": 30
+          },
+          "skeletons_per_frame": {
+            "mean_over_frames_with_pose": 16.4409,
+            "min_over_frames_with_pose": 1,
+            "max": 21
+          },
+          "share_frames_with_pose": 0.6637,
+          "share_player_frames_with_pose": 0.3638
+        }
+      },
+      "players": [
+        {
+          "player_id": 2858,
+          "frames_present": 144005,
+          "with_pose": 8410,
+          "with_pose_detected": 8360,
+          "longest_run": 748,
+          "runs_ge_25": 27,
+          "runs_ge_37": 26,
+          "runs_ge_50": 26
+        },
+        {
+          "player_id": 17231,
+          "frames_present": 144005,
+          "with_pose": 63397,
+          "with_pose_detected": 63388,
+          "longest_run": 774,
+          "runs_ge_25": 180,
+          "runs_ge_37": 177,
+          "runs_ge_50": 172
+        },
+        {
+          "player_id": 18573,
+          "frames_present": 144005,
+          "with_pose": 76513,
+          "with_pose_detected": 76454,
+          "longest_run": 749,
+          "runs_ge_25": 212,
+          "runs_ge_37": 209,
+          "runs_ge_50": 204
+        },
+        {
+          "player_id": 25534,
+          "frames_present": 144005,
+          "with_pose": 67890,
+          "with_pose_detected": 67890,
+          "longest_run": 986,
+          "runs_ge_25": 186,
+          "runs_ge_37": 180,
+          "runs_ge_50": 175
+        },
+        {
+          "player_id": 26766,
+          "frames_present": 144005,
+          "with_pose": 65744,
+          "with_pose_detected": 65685,
+          "longest_run": 749,
+          "runs_ge_25": 201,
+          "runs_ge_37": 198,
+          "runs_ge_50": 194
+        },
+        {
+          "player_id": 28293,
+          "frames_present": 144005,
+          "with_pose": 79157,
+          "with_pose_detected": 79098,
+          "longest_run": 749,
+          "runs_ge_25": 213,
+          "runs_ge_37": 210,
+          "runs_ge_50": 207
+        },
+        {
+          "player_id": 42513,
+          "frames_present": 144005,
+          "with_pose": 75149,
+          "with_pose_detected": 75140,
+          "longest_run": 749,
+          "runs_ge_25": 194,
+          "runs_ge_37": 192,
+          "runs_ge_50": 183
+        },
+        {
+          "player_id": 50949,
+          "frames_present": 144005,
+          "with_pose": 54202,
+          "with_pose_detected": 54202,
+          "longest_run": 749,
+          "runs_ge_25": 136,
+          "runs_ge_37": 131,
+          "runs_ge_50": 129
+        },
+        {
+          "player_id": 50959,
+          "frames_present": 144005,
+          "with_pose": 63879,
+          "with_pose_detected": 63879,
+          "longest_run": 749,
+          "runs_ge_25": 161,
+          "runs_ge_37": 159,
+          "runs_ge_50": 154
+        },
+        {
+          "player_id": 50971,
+          "frames_present": 144005,
+          "with_pose": 18951,
+          "with_pose_detected": 18892,
+          "longest_run": 749,
+          "runs_ge_25": 46,
+          "runs_ge_37": 46,
+          "runs_ge_50": 46
+        },
+        {
+          "player_id": 51000,
+          "frames_present": 144005,
+          "with_pose": 81070,
+          "with_pose_detected": 81011,
+          "longest_run": 1141,
+          "runs_ge_25": 219,
+          "runs_ge_37": 213,
+          "runs_ge_50": 209
+        },
+        {
+          "player_id": 51005,
+          "frames_present": 144005,
+          "with_pose": 69911,
+          "with_pose_detected": 69887,
+          "longest_run": 749,
+          "runs_ge_25": 198,
+          "runs_ge_37": 193,
+          "runs_ge_50": 185
+        },
+        {
+          "player_id": 51045,
+          "frames_present": 144005,
+          "with_pose": 88601,
+          "with_pose_detected": 88542,
+          "longest_run": 1218,
+          "runs_ge_25": 214,
+          "runs_ge_37": 214,
+          "runs_ge_50": 209
+        },
+        {
+          "player_id": 51644,
+          "frames_present": 144005,
+          "with_pose": 62772,
+          "with_pose_detected": 62722,
+          "longest_run": 749,
+          "runs_ge_25": 206,
+          "runs_ge_37": 202,
+          "runs_ge_50": 198
+        },
+        {
+          "player_id": 51646,
+          "frames_present": 144005,
+          "with_pose": 72484,
+          "with_pose_detected": 72475,
+          "longest_run": 749,
+          "runs_ge_25": 196,
+          "runs_ge_37": 192,
+          "runs_ge_50": 185
+        },
+        {
+          "player_id": 51686,
+          "frames_present": 144005,
+          "with_pose": 41897,
+          "with_pose_detected": 41897,
+          "longest_run": 1248,
+          "runs_ge_25": 139,
+          "runs_ge_37": 134,
+          "runs_ge_50": 130
+        },
+        {
+          "player_id": 133852,
+          "frames_present": 144005,
+          "with_pose": 83436,
+          "with_pose_detected": 83377,
+          "longest_run": 749,
+          "runs_ge_25": 214,
+          "runs_ge_37": 209,
+          "runs_ge_50": 206
+        },
+        {
+          "player_id": 133853,
+          "frames_present": 144005,
+          "with_pose": 14200,
+          "with_pose_detected": 14150,
+          "longest_run": 749,
+          "runs_ge_25": 35,
+          "runs_ge_37": 35,
+          "runs_ge_50": 34
+        },
+        {
+          "player_id": 133854,
+          "frames_present": 144005,
+          "with_pose": 21976,
+          "with_pose_detected": 21917,
+          "longest_run": 749,
+          "runs_ge_25": 54,
+          "runs_ge_37": 53,
+          "runs_ge_50": 53
+        },
+        {
+          "player_id": 560893,
+          "frames_present": 144005,
+          "with_pose": 86191,
+          "with_pose_detected": 86132,
+          "longest_run": 863,
+          "runs_ge_25": 211,
+          "runs_ge_37": 206,
+          "runs_ge_50": 198
+        },
+        {
+          "player_id": 560895,
+          "frames_present": 144005,
+          "with_pose": 30576,
+          "with_pose_detected": 30517,
+          "longest_run": 749,
+          "runs_ge_25": 80,
+          "runs_ge_37": 77,
+          "runs_ge_50": 74
+        },
+        {
+          "player_id": 795547,
+          "frames_present": 144005,
+          "with_pose": 56974,
+          "with_pose_detected": 56973,
+          "longest_run": 749,
+          "runs_ge_25": 156,
+          "runs_ge_37": 151,
+          "runs_ge_50": 143
+        },
+        {
+          "player_id": 797295,
+          "frames_present": 144005,
+          "with_pose": 24931,
+          "with_pose_detected": 24872,
+          "longest_run": 749,
+          "runs_ge_25": 76,
+          "runs_ge_37": 75,
+          "runs_ge_50": 75
+        },
+        {
+          "player_id": 808608,
+          "frames_present": 144005,
+          "with_pose": 9136,
+          "with_pose_detected": 8972,
+          "longest_run": 749,
+          "runs_ge_25": 25,
+          "runs_ge_37": 24,
+          "runs_ge_50": 24
+        },
+        {
+          "player_id": 809070,
+          "frames_present": 144005,
+          "with_pose": 26305,
+          "with_pose_detected": 26305,
+          "longest_run": 748,
+          "runs_ge_25": 107,
+          "runs_ge_37": 105,
+          "runs_ge_50": 104
+        },
+        {
+          "player_id": 809759,
+          "frames_present": 144005,
+          "with_pose": 62638,
+          "with_pose_detected": 62579,
+          "longest_run": 749,
+          "runs_ge_25": 206,
+          "runs_ge_37": 201,
+          "runs_ge_50": 193
+        },
+        {
+          "player_id": 931987,
+          "frames_present": 144005,
+          "with_pose": 22467,
+          "with_pose_detected": 22458,
+          "longest_run": 748,
+          "runs_ge_25": 107,
+          "runs_ge_37": 105,
+          "runs_ge_50": 103
+        },
+        {
+          "player_id": 962802,
+          "frames_present": 144005,
+          "with_pose": 9541,
+          "with_pose_detected": 9377,
+          "longest_run": 749,
+          "runs_ge_25": 24,
+          "runs_ge_37": 24,
+          "runs_ge_50": 23
+        },
+        {
+          "player_id": 973078,
+          "frames_present": 144005,
+          "with_pose": 73192,
+          "with_pose_detected": 73132,
+          "longest_run": 749,
+          "runs_ge_25": 217,
+          "runs_ge_37": 211,
+          "runs_ge_50": 204
+        },
+        {
+          "player_id": 998256,
+          "frames_present": 144005,
+          "with_pose": 60240,
+          "with_pose_detected": 60190,
+          "longest_run": 749,
+          "runs_ge_25": 200,
+          "runs_ge_37": 193,
+          "runs_ge_50": 187
+        }
+      ],
+      "mae_cm": {
+        "all": {
+          "min": 3.97,
+          "p50": 11.64,
+          "p90": 19.75,
+          "max": 43.01
+        },
+        "by_joint": {
+          "nose": {
+            "min": 5.83,
+            "p50": 7.28,
+            "p90": 10.15,
+            "max": 25.73
+          },
+          "neck": {
+            "min": 3.97,
+            "p50": 4.96,
+            "p90": 8.02,
+            "max": 23.37
+          },
+          "lEye": {
+            "min": 5.39,
+            "p50": 6.87,
+            "p90": 9.72,
+            "max": 24.98
+          },
+          "rEye": {
+            "min": 5.3,
+            "p50": 6.84,
+            "p90": 10.37,
+            "max": 24.51
+          },
+          "lEar": {
+            "min": 5.68,
+            "p50": 6.75,
+            "p90": 10.56,
+            "max": 25.88
+          },
+          "rEar": {
+            "min": 5.51,
+            "p50": 6.71,
+            "p90": 10.33,
+            "max": 26.22
+          },
+          "lShoulder": {
+            "min": 5.25,
+            "p50": 5.6,
+            "p90": 7.77,
+            "max": 24.46
+          },
+          "rShoulder": {
+            "min": 5.12,
+            "p50": 5.67,
+            "p90": 7.72,
+            "max": 24.17
+          },
+          "lElbow": {
+            "min": 6.63,
+            "p50": 8.27,
+            "p90": 11.9,
+            "max": 27.58
+          },
+          "rElbow": {
+            "min": 6.15,
+            "p50": 8.44,
+            "p90": 12.0,
+            "max": 27.67
+          },
+          "lWrist": {
+            "min": 7.99,
+            "p50": 12.8,
+            "p90": 22.01,
+            "max": 34.38
+          },
+          "rWrist": {
+            "min": 8.75,
+            "p50": 13.27,
+            "p90": 22.97,
+            "max": 34.03
+          },
+          "lThumb": {
+            "min": 7.46,
+            "p50": 15.64,
+            "p90": 26.85,
+            "max": 38.34
+          },
+          "rThumb": {
+            "min": 7.95,
+            "p50": 16.24,
+            "p90": 28.34,
+            "max": 37.85
+          },
+          "lPinky": {
+            "min": 10.88,
+            "p50": 17.01,
+            "p90": 31.38,
+            "max": 42.48
+          },
+          "rPinky": {
+            "min": 11.58,
+            "p50": 17.19,
+            "p90": 32.35,
+            "max": 43.01
+          },
+          "midHip": {
+            "min": 8.44,
+            "p50": 10.32,
+            "p90": 10.32,
+            "max": 35.32
+          },
+          "lHip": {
+            "min": 6.46,
+            "p50": 7.27,
+            "p90": 11.38,
+            "max": 42.0
+          },
+          "rHip": {
+            "min": 6.43,
+            "p50": 7.22,
+            "p90": 11.46,
+            "max": 41.57
+          },
+          "lKnee": {
+            "min": 7.55,
+            "p50": 10.0,
+            "p90": 14.84,
+            "max": 30.2
+          },
+          "rKnee": {
+            "min": 7.55,
+            "p50": 9.89,
+            "p90": 14.78,
+            "max": 29.99
+          },
+          "lAnkle": {
+            "min": 12.27,
+            "p50": 12.7,
+            "p90": 19.68,
+            "max": 29.3
+          },
+          "rAnkle": {
+            "min": 12.26,
+            "p50": 12.7,
+            "p90": 19.62,
+            "max": 29.27
+          },
+          "lHeel": {
+            "min": 14.87,
+            "p50": 14.93,
+            "p90": 22.85,
+            "max": 31.54
+          },
+          "rHeel": {
+            "min": 15.05,
+            "p50": 15.05,
+            "p90": 22.56,
+            "max": 31.64
+          },
+          "lBigToe": {
+            "min": 11.04,
+            "p50": 15.31,
+            "p90": 23.82,
+            "max": 33.94
+          },
+          "rBigToe": {
+            "min": 11.2,
+            "p50": 15.41,
+            "p90": 24.78,
+            "max": 34.31
+          },
+          "lSmallToe": {
+            "min": 10.49,
+            "p50": 15.17,
+            "p90": 24.18,
+            "max": 33.6
+          },
+          "rSmallToe": {
+            "min": 10.94,
+            "p50": 15.23,
+            "p90": 24.13,
+            "max": 33.92
+          }
+        }
+      },
+      "z_m": {
+        "min": -0.897,
+        "max": 8.085
+      },
+      "joint_key_sets": 1
+    }
+  }
+}

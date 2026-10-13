@@ -20,6 +20,7 @@ from tracklab.bronze.basketball.meta import build_meta as build_basketball_meta
 from tracklab.bronze.basketball.tracking import build_tracking as build_basketball_tracking
 from tracklab.bronze.common import raw_root_for
 from tracklab.bronze.football.aggregates import build_aggregates as build_football_aggregates
+from tracklab.bronze.football.bodypose import build_bodypose as build_football_bodypose
 from tracklab.bronze.football.events import build_events as build_football_events
 from tracklab.bronze.football.meta import build_meta as build_football_meta
 from tracklab.bronze.football.tracking import build_tracking as build_football_tracking
@@ -32,6 +33,7 @@ from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.load.postgres import run_load_postgres
 from tracklab.paths import data_root
+from tracklab.pose.coverage import run_pose_coverage
 from tracklab.publish.examples import run_publish_examples
 from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.platform import run_publish_platform
@@ -66,7 +68,14 @@ BRONZE_BUILDERS: dict[tuple[str, str], _BronzeBuilder] = {
     ("football", "meta"): build_football_meta,
     ("football", "events"): build_football_events,
     ("football", "aggregates"): build_football_aggregates,
+    ("football", "bodypose"): build_football_bodypose,
 }
+# The source a group reads when it is not the sport's own bundle `opendata-<sport>`.
+BRONZE_SOURCE_IDS: dict[tuple[str, str], str] = {("football", "bodypose"): "opendata-bodypose"}
+
+
+def bronze_source_id(sport: str, group: str) -> str:
+    return BRONZE_SOURCE_IDS.get((sport, group), f"opendata-{sport}")
 
 
 def _source(args: argparse.Namespace) -> Source:
@@ -127,22 +136,19 @@ def _cmd_freeze_schema(args: argparse.Namespace) -> int:
 
 def _cmd_bronze(args: argparse.Namespace) -> int:
     manifest = load_manifest(args.manifest)
-    sources = [s for s in manifest.sources if s.sport == args.sport]
-    if len(sources) != 1:
-        sys.exit(
-            f"tracklab: expected one {args.sport} source in the manifest, found {len(sources)}"
-        )
-    source = sources[0]
     groups = [g for g in args.tables.split(",") if g] if args.tables else None
     known = sorted(g for sport, g in BRONZE_BUILDERS if sport == args.sport)
     if groups is None:
-        groups = known
+        # Without --tables: the sport's own bundle. A group on another source (the body pose's
+        # 2.5 GB of zips) is asked for by name.
+        groups = [g for g in known if (args.sport, g) not in BRONZE_SOURCE_IDS]
     unknown = [g for g in groups if (args.sport, g) not in BRONZE_BUILDERS]
     if unknown:
         sys.exit(f"tracklab: no bronze builder for {args.sport} {unknown} (known: {known})")
-    raw_root = raw_root_for(args.data_dir, source.source_id)
     started = time.perf_counter()
     for group in groups:
+        source = manifest.source(bronze_source_id(args.sport, group))
+        raw_root = raw_root_for(args.data_dir, source.source_id)
         print(f"bronze {args.sport} {group}: {raw_root}")
         BRONZE_BUILDERS[(args.sport, group)](source, raw_root, args.data_dir)
     print(f"total seconds={time.perf_counter() - started:.1f}")
@@ -195,6 +201,10 @@ def _cmd_publish_examples(args: argparse.Namespace) -> int:
 
 def _cmd_publish_runs(args: argparse.Namespace) -> int:
     return run_publish_runs(args.data_dir, args.reports_dir, args.out_dir, check=args.check)
+
+
+def _cmd_pose_coverage(args: argparse.Namespace) -> int:
+    return run_pose_coverage(args.data_dir, args.reports_dir, check=args.check)
 
 
 def _cmd_publish_pose(args: argparse.Namespace) -> int:
@@ -361,7 +371,8 @@ def build_parser() -> argparse.ArgumentParser:
     bronze.add_argument(
         "--tables",
         default=None,
-        help="Comma-separated table groups to build, e.g. tracking (default: every group).",
+        help="Comma-separated table groups to build, e.g. tracking (default: every group of the "
+        "sport's own bundle; `football bodypose` reads other zips and is asked for by name).",
     )
     bronze.add_argument(
         "--manifest",
@@ -781,6 +792,33 @@ def build_parser() -> argparse.ArgumentParser:
         help="Data root the cut lands in (default: tests/fixtures/data).",
     )
     fixtures.set_defaults(func=_cmd_fixtures)
+
+    pose = subparsers.add_parser("pose", help="P6: the Body Pose of the full matches.")
+    pose_sub = pose.add_subparsers(dest="pose_command", required=True)
+    pose_coverage = pose_sub.add_parser(
+        "coverage",
+        help="Write reports/pose_coverage.json: frames, frame-players with pose and joint "
+        "observations per match, period and player, with the denominator of each.",
+    )
+    pose_coverage.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; bronze/football/bodypose_* are read from it (default: data).",
+    )
+    pose_coverage.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where pose_coverage.json goes (default: reports).",
+    )
+    pose_coverage.add_argument(
+        "--check",
+        action="store_true",
+        help="Recount the whole matches at hand and compare with the versioned file; write "
+        "nothing. FULL n/n if every match was recounted, PARTIAL k/n on a slice.",
+    )
+    pose_coverage.set_defaults(func=_cmd_pose_coverage)
 
     runs = subparsers.add_parser(
         "runs", help="P5: off-ball runs against the defence's displacement in the tracking."

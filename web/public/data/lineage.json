@@ -308,6 +308,24 @@
       "schema": "frozen"
     },
     {
+      "key": "bronze_football_bodypose_frames",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_bodypose",
+      "sport": "football",
+      "schema": "code"
+    },
+    {
+      "key": "bronze_football_bodypose_players",
+      "group": "bronze",
+      "kind": "asset",
+      "description": "",
+      "step": "bronze_football_bodypose",
+      "sport": "football",
+      "schema": "code"
+    },
+    {
       "key": "bronze_football_dynamic_events",
       "group": "bronze",
       "kind": "asset",
@@ -649,6 +667,15 @@
       "kind": "asset",
       "description": "opendata-football, every manifest file with the right sha256.",
       "step": "raw_football",
+      "sport": "football",
+      "schema": "none"
+    },
+    {
+      "key": "raw_football_bodypose",
+      "group": "ingest",
+      "kind": "asset",
+      "description": "opendata-bodypose, every manifest file with the right sha256.",
+      "step": "raw_football_bodypose",
       "sport": "football",
       "schema": "none"
     },
@@ -1364,6 +1391,10 @@
     },
     {
       "from": "manifest_sources",
+      "to": "raw_football_bodypose"
+    },
+    {
+      "from": "manifest_sources",
       "to": "silver_dim_match"
     },
     {
@@ -1557,6 +1588,14 @@
     {
       "from": "raw_football",
       "to": "bronze_football_tracking_objects"
+    },
+    {
+      "from": "raw_football_bodypose",
+      "to": "bronze_football_bodypose_frames"
+    },
+    {
+      "from": "raw_football_bodypose",
+      "to": "bronze_football_bodypose_players"
     },
     {
       "from": "reports_orientation_basketball",
