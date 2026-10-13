@@ -384,7 +384,9 @@ def test_the_effect_on_planted_subtypes_applies_m3_and_m4_and_check_reproduces_i
             split = cls[part]
             assert [row["match_id"] for row in split["per_match"]] == e["matches"]
             assert sum(row["pairs"] for row in split["per_match"]) == split["pairs"]
-            weighted = sum(row["pairs"] * row["mean_m"] for row in split["per_match"] if row["pairs"])
+            weighted = sum(
+                row["pairs"] * row["mean_m"] for row in split["per_match"] if row["pairs"]
+            )
             assert abs(weighted / split["pairs"] - split["mean_m"]) < 1e-3
         # the run-leg overlap control: legs 10 s apart never overlap, the units stay
         assert r["run_leg_overlap"]["units"] == 30 and r["run_leg_overlap"]["largest_unit"] == 1
