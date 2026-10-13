@@ -2367,8 +2367,8 @@
   "effect": {
     "task": 50,
     "written": "2026-10-11",
-    "head": "39ea6711039ed2d2e1c72c62a81916806a725b95",
-    "code_tree_sha": "fc24d8e9191ecad995e98065c04f792b2c47e2a8",
+    "head": "573380d5391cdcc0b3cb98d0085f011c6281b561",
+    "code_tree_sha": "ed2f66e23503ad7013bbbd5e8a57ecb6773907e4",
     "half": "calibration",
     "matches": [
       1874553,
@@ -3483,11 +3483,155 @@
           "opposite_sign": false,
           "subtype_pairs_in_modal_class": {
             "pairs": 184,
-            "mean_m": 0.3765
+            "mean_m": 0.3765,
+            "per_match": [
+              {
+                "match_id": 1874553,
+                "pairs": 22,
+                "mean_m": 1.1156,
+                "mean_sd": 0.4423,
+                "se_m": 0.4243
+              },
+              {
+                "match_id": 1886347,
+                "pairs": 30,
+                "mean_m": -0.3332,
+                "mean_sd": -0.1321,
+                "se_m": 0.5404
+              },
+              {
+                "match_id": 1925299,
+                "pairs": 21,
+                "mean_m": 0.6918,
+                "mean_sd": 0.2742,
+                "se_m": 0.6363
+              },
+              {
+                "match_id": 1959846,
+                "pairs": 17,
+                "mean_m": 0.5722,
+                "mean_sd": 0.2268,
+                "se_m": 0.6374
+              },
+              {
+                "match_id": 1996435,
+                "pairs": 24,
+                "mean_m": 0.7689,
+                "mean_sd": 0.3048,
+                "se_m": 0.6056
+              },
+              {
+                "match_id": 1996436,
+                "pairs": 7,
+                "mean_m": 1.6675,
+                "mean_sd": 0.661,
+                "se_m": 1.8916
+              },
+              {
+                "match_id": 2007448,
+                "pairs": 19,
+                "mean_m": 0.6267,
+                "mean_sd": 0.2484,
+                "se_m": 0.6739
+              },
+              {
+                "match_id": 2010085,
+                "pairs": 11,
+                "mean_m": 0.7066,
+                "mean_sd": 0.2801,
+                "se_m": 1.1157
+              },
+              {
+                "match_id": 2011166,
+                "pairs": 11,
+                "mean_m": -1.6479,
+                "mean_sd": -0.6532,
+                "se_m": 1.3295
+              },
+              {
+                "match_id": 2015213,
+                "pairs": 22,
+                "mean_m": -0.055,
+                "mean_sd": -0.0218,
+                "se_m": 0.7644
+              }
+            ]
           },
           "subtype_pairs_outside_modal_class": {
             "pairs": 292,
-            "mean_m": 0.403
+            "mean_m": 0.403,
+            "per_match": [
+              {
+                "match_id": 1874553,
+                "pairs": 27,
+                "mean_m": 0.8801,
+                "mean_sd": 0.3489,
+                "se_m": 0.5613
+              },
+              {
+                "match_id": 1886347,
+                "pairs": 37,
+                "mean_m": 0.2702,
+                "mean_sd": 0.1071,
+                "se_m": 0.5766
+              },
+              {
+                "match_id": 1925299,
+                "pairs": 36,
+                "mean_m": 0.7768,
+                "mean_sd": 0.3079,
+                "se_m": 0.5912
+              },
+              {
+                "match_id": 1959846,
+                "pairs": 20,
+                "mean_m": -0.8183,
+                "mean_sd": -0.3244,
+                "se_m": 0.6444
+              },
+              {
+                "match_id": 1996435,
+                "pairs": 29,
+                "mean_m": 0.9152,
+                "mean_sd": 0.3628,
+                "se_m": 0.5688
+              },
+              {
+                "match_id": 1996436,
+                "pairs": 19,
+                "mean_m": 0.7968,
+                "mean_sd": 0.3158,
+                "se_m": 0.8135
+              },
+              {
+                "match_id": 2007448,
+                "pairs": 27,
+                "mean_m": 0.1409,
+                "mean_sd": 0.0559,
+                "se_m": 0.535
+              },
+              {
+                "match_id": 2010085,
+                "pairs": 33,
+                "mean_m": 0.5984,
+                "mean_sd": 0.2372,
+                "se_m": 0.6167
+              },
+              {
+                "match_id": 2011166,
+                "pairs": 19,
+                "mean_m": 0.0025,
+                "mean_sd": 0.001,
+                "se_m": 0.721
+              },
+              {
+                "match_id": 2015213,
+                "pairs": 45,
+                "mean_m": 0.1566,
+                "mean_sd": 0.0621,
+                "se_m": 0.5096
+              }
+            ]
           }
         },
         "run_leg_overlap": {
@@ -3873,11 +4017,155 @@
           "opposite_sign": false,
           "subtype_pairs_in_modal_class": {
             "pairs": 333,
-            "mean_m": 1.7659
+            "mean_m": 1.7659,
+            "per_match": [
+              {
+                "match_id": 1874553,
+                "pairs": 40,
+                "mean_m": 0.7181,
+                "mean_sd": 0.2846,
+                "se_m": 0.3824
+              },
+              {
+                "match_id": 1886347,
+                "pairs": 29,
+                "mean_m": 0.9325,
+                "mean_sd": 0.3696,
+                "se_m": 0.6457
+              },
+              {
+                "match_id": 1925299,
+                "pairs": 42,
+                "mean_m": 2.1379,
+                "mean_sd": 0.8475,
+                "se_m": 0.472
+              },
+              {
+                "match_id": 1959846,
+                "pairs": 28,
+                "mean_m": 3.0471,
+                "mean_sd": 1.2079,
+                "se_m": 0.6459
+              },
+              {
+                "match_id": 1996435,
+                "pairs": 38,
+                "mean_m": 1.3873,
+                "mean_sd": 0.5499,
+                "se_m": 0.601
+              },
+              {
+                "match_id": 1996436,
+                "pairs": 32,
+                "mean_m": 1.8748,
+                "mean_sd": 0.7432,
+                "se_m": 0.594
+              },
+              {
+                "match_id": 2007448,
+                "pairs": 28,
+                "mean_m": 2.5658,
+                "mean_sd": 1.0171,
+                "se_m": 0.7281
+              },
+              {
+                "match_id": 2010085,
+                "pairs": 24,
+                "mean_m": 2.0289,
+                "mean_sd": 0.8043,
+                "se_m": 0.4998
+              },
+              {
+                "match_id": 2011166,
+                "pairs": 30,
+                "mean_m": 1.3941,
+                "mean_sd": 0.5527,
+                "se_m": 0.7251
+              },
+              {
+                "match_id": 2015213,
+                "pairs": 42,
+                "mean_m": 1.955,
+                "mean_sd": 0.775,
+                "se_m": 0.6058
+              }
+            ]
           },
           "subtype_pairs_outside_modal_class": {
             "pairs": 741,
-            "mean_m": 1.5917
+            "mean_m": 1.5917,
+            "per_match": [
+              {
+                "match_id": 1874553,
+                "pairs": 76,
+                "mean_m": 1.4715,
+                "mean_sd": 0.5833,
+                "se_m": 0.3598
+              },
+              {
+                "match_id": 1886347,
+                "pairs": 85,
+                "mean_m": 1.5285,
+                "mean_sd": 0.6059,
+                "se_m": 0.3544
+              },
+              {
+                "match_id": 1925299,
+                "pairs": 89,
+                "mean_m": 1.711,
+                "mean_sd": 0.6783,
+                "se_m": 0.3637
+              },
+              {
+                "match_id": 1959846,
+                "pairs": 90,
+                "mean_m": 1.4405,
+                "mean_sd": 0.571,
+                "se_m": 0.4749
+              },
+              {
+                "match_id": 1996435,
+                "pairs": 84,
+                "mean_m": 1.1515,
+                "mean_sd": 0.4565,
+                "se_m": 0.4129
+              },
+              {
+                "match_id": 1996436,
+                "pairs": 66,
+                "mean_m": 0.79,
+                "mean_sd": 0.3132,
+                "se_m": 0.4688
+              },
+              {
+                "match_id": 2007448,
+                "pairs": 49,
+                "mean_m": 2.1542,
+                "mean_sd": 0.854,
+                "se_m": 0.5242
+              },
+              {
+                "match_id": 2010085,
+                "pairs": 49,
+                "mean_m": 1.3791,
+                "mean_sd": 0.5467,
+                "se_m": 0.4187
+              },
+              {
+                "match_id": 2011166,
+                "pairs": 82,
+                "mean_m": 2.4761,
+                "mean_sd": 0.9816,
+                "se_m": 0.4807
+              },
+              {
+                "match_id": 2015213,
+                "pairs": 71,
+                "mean_m": 1.8414,
+                "mean_sd": 0.73,
+                "se_m": 0.5855
+              }
+            ]
           }
         },
         "run_leg_overlap": {
@@ -4263,11 +4551,155 @@
           "opposite_sign": false,
           "subtype_pairs_in_modal_class": {
             "pairs": 267,
-            "mean_m": 0.9773
+            "mean_m": 0.9773,
+            "per_match": [
+              {
+                "match_id": 1874553,
+                "pairs": 27,
+                "mean_m": 1.1507,
+                "mean_sd": 0.4562,
+                "se_m": 0.6243
+              },
+              {
+                "match_id": 1886347,
+                "pairs": 34,
+                "mean_m": 0.6688,
+                "mean_sd": 0.2651,
+                "se_m": 0.4972
+              },
+              {
+                "match_id": 1925299,
+                "pairs": 21,
+                "mean_m": 1.146,
+                "mean_sd": 0.4543,
+                "se_m": 0.902
+              },
+              {
+                "match_id": 1959846,
+                "pairs": 32,
+                "mean_m": 1.3259,
+                "mean_sd": 0.5256,
+                "se_m": 0.5199
+              },
+              {
+                "match_id": 1996435,
+                "pairs": 43,
+                "mean_m": 0.6542,
+                "mean_sd": 0.2593,
+                "se_m": 0.6194
+              },
+              {
+                "match_id": 1996436,
+                "pairs": 28,
+                "mean_m": 0.8028,
+                "mean_sd": 0.3183,
+                "se_m": 0.83
+              },
+              {
+                "match_id": 2007448,
+                "pairs": 30,
+                "mean_m": 0.5761,
+                "mean_sd": 0.2284,
+                "se_m": 0.506
+              },
+              {
+                "match_id": 2010085,
+                "pairs": 19,
+                "mean_m": 1.8655,
+                "mean_sd": 0.7395,
+                "se_m": 0.8331
+              },
+              {
+                "match_id": 2011166,
+                "pairs": 13,
+                "mean_m": 2.2535,
+                "mean_sd": 0.8933,
+                "se_m": 1.1468
+              },
+              {
+                "match_id": 2015213,
+                "pairs": 20,
+                "mean_m": 0.4006,
+                "mean_sd": 0.1588,
+                "se_m": 0.8901
+              }
+            ]
           },
           "subtype_pairs_outside_modal_class": {
             "pairs": 358,
-            "mean_m": 1.5558
+            "mean_m": 1.5558,
+            "per_match": [
+              {
+                "match_id": 1874553,
+                "pairs": 30,
+                "mean_m": 1.2524,
+                "mean_sd": 0.4965,
+                "se_m": 0.7289
+              },
+              {
+                "match_id": 1886347,
+                "pairs": 40,
+                "mean_m": 1.3046,
+                "mean_sd": 0.5172,
+                "se_m": 0.6624
+              },
+              {
+                "match_id": 1925299,
+                "pairs": 33,
+                "mean_m": 1.076,
+                "mean_sd": 0.4265,
+                "se_m": 0.5924
+              },
+              {
+                "match_id": 1959846,
+                "pairs": 45,
+                "mean_m": 2.2378,
+                "mean_sd": 0.8871,
+                "se_m": 0.5595
+              },
+              {
+                "match_id": 1996435,
+                "pairs": 47,
+                "mean_m": 0.6196,
+                "mean_sd": 0.2456,
+                "se_m": 0.6029
+              },
+              {
+                "match_id": 1996436,
+                "pairs": 34,
+                "mean_m": 2.0765,
+                "mean_sd": 0.8232,
+                "se_m": 0.5118
+              },
+              {
+                "match_id": 2007448,
+                "pairs": 48,
+                "mean_m": 1.827,
+                "mean_sd": 0.7243,
+                "se_m": 0.6095
+              },
+              {
+                "match_id": 2010085,
+                "pairs": 23,
+                "mean_m": 2.0599,
+                "mean_sd": 0.8166,
+                "se_m": 0.7524
+              },
+              {
+                "match_id": 2011166,
+                "pairs": 30,
+                "mean_m": 1.7737,
+                "mean_sd": 0.7031,
+                "se_m": 0.6494
+              },
+              {
+                "match_id": 2015213,
+                "pairs": 28,
+                "mean_m": 1.5362,
+                "mean_sd": 0.609,
+                "se_m": 0.8667
+              }
+            ]
           }
         },
         "run_leg_overlap": {
@@ -5088,5 +5520,5 @@
       "alive": false
     }
   },
-  "content_sha256": "ca91df76efa6fdfa3b4dbee268a676072f689c9e17ecdb169a0f292b9a91eae4"
+  "content_sha256": "d2c495d104b5663f6ec5333079505cf2dff586bd198332d37affef03e68fd3f5"
 }
