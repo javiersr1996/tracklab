@@ -13,6 +13,7 @@
     "frame_hi",
     "fps",
     "tracking_frame_factor",
+    "surface",
     "source",
     "units",
     "joints",
@@ -31,6 +32,16 @@
     "frame_hi": { "type": "integer" },
     "fps": { "const": 25 },
     "tracking_frame_factor": { "const": 2.5 },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec", "length_m", "width_m"],
+      "properties": {
+        "spec": { "type": "string", "pattern": "^provider_[0-9]+x[0-9]+$" },
+        "length_m": { "type": "number", "exclusiveMinimum": 0 },
+        "width_m": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
     "source": {
       "type": "object",
       "additionalProperties": false,

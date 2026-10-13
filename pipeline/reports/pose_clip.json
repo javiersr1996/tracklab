@@ -2,8 +2,8 @@
   "schema_version": 1,
   "clip": {
     "file": "web/public/data/pose/1925299_phase406.json",
-    "bytes": 2410863,
-    "sha256": "da8570ccde4e9a12b5960dd4a3a4c716b823943fecbf551958620c283a2b017d",
+    "bytes": 2410928,
+    "sha256": "58a2d2332aeb7f2e5fa6ed7012bbeaf502e1812f453386539d32ffb69710983c",
     "max_bytes_hypothesis": 3000000,
     "within_hypothesis": true
   },

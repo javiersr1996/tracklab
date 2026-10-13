@@ -138,10 +138,11 @@ PLAYERS = [
     {"player_id": 8, "team_id": 2, "number": 4},
 ]
 TEAMS = [{"team_id": 1, "side": "home"}, {"team_id": 2, "side": "away"}]
+SURFACE = {"spec": "provider_105x68", "length_m": 105, "width_m": 68}
 
 
 def synthetic() -> dict[str, Any]:
-    return build_clip(_frames(), ENTRY, PLAYERS, TEAMS)
+    return build_clip(_frames(), ENTRY, PLAYERS, TEAMS, SURFACE)
 
 
 def test_the_synthetic_clip_validates_against_the_schema() -> None:
@@ -193,7 +194,7 @@ def test_shuffling_the_declared_order_changes_the_order_and_nothing_else(
     order = list(JOINTS)
     random.Random(1).shuffle(order)
     monkeypatch.setattr(jsonl, "JOINTS", tuple(order))
-    other = build_clip(_frames(), ENTRY, PLAYERS, TEAMS)
+    other = build_clip(_frames(), ENTRY, PLAYERS, TEAMS, SURFACE)
     assert other["joints"] == order and other["joints"] != base["joints"]
     assert json.dumps(other) != json.dumps(base)  # the bytes did change ...
     base_at = {n: i for i, n in enumerate(base["joints"])}
@@ -239,6 +240,7 @@ DAMAGES: list[Callable[[dict[str, Any]], object]] = [
     lambda c: c["limits"].pop(),
     lambda c: c["source"].__setitem__("sha256", "xyz"),
     lambda c: _first_skeleton(c)[4][0].pop(),
+    lambda c: c.pop("surface"),
 ]
 
 
@@ -274,6 +276,16 @@ def test_the_header_holds_the_three_limits_of_the_readme_and_the_joint_order(
     assert (clip["frame_lo"], clip["frame_hi"], clip["fps"]) == (124487, 124795, 25)
     assert clip["tracking_frame_factor"] == 2.5
     assert len(clip["frames"]) == clip["frame_hi"] - clip["frame_lo"] + 1
+
+
+def test_the_pitch_is_the_one_the_possessions_of_the_same_match_are_drawn_on(
+    clip: dict[str, Any],
+) -> None:
+    index = _json(WEB_DATA / "index.json")
+    same = [p for p in index["possessions"] if p["match_id"] == f"fb:{clip['match_id']}"]
+    assert same, "no published possession of the match to compare the pitch with"
+    for entry in same:
+        assert clip["surface"] == _json(WEB_DATA / entry["file"])["surface"]
 
 
 def test_every_midhip_is_at_the_body_origin_to_within_the_measured_bound(

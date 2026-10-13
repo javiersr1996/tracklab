@@ -8,6 +8,8 @@ tasks/todo.md, P6).
   `(x, y, 0)` (z is already relative to the centroid and is kept as the file has it), then the
   29 `p90_mae_cm` in whole millimetres. A player whose `joints` is null stays null: nothing is
   interpolated, carried over or invented.
+  The header carries the pitch (`surface`, from the bronze of the match, named as `dim_match`
+  names it) so the viewer draws the replay's markings without a size typed into the web.
 * **The record** `pipeline/reports/pose_clip.json`: the bytes and sha256 of the clip, the
   coverage of the sample read from the file, and what the code measured (distance of `midHip`
   to the body origin, quantisation error, alignment with the 10 fps tracking). Every number
@@ -166,6 +168,17 @@ def _players_block(
     return players, teams
 
 
+def _surface_block(con: duckdb.DuckDBPyConnection, data_dir: Path) -> dict[str, Any]:
+    """The pitch of the match as `dim_match` names it, `provider_<length>x<width>` (task 56:
+    the viewer draws the replay's markings with it)."""
+    row = con.execute(
+        "select pitch_length, pitch_width from read_parquet(?)", [_bronze(data_dir, "match")]
+    ).fetchone()
+    assert row is not None
+    length, width = int(row[0]), int(row[1])
+    return {"spec": f"provider_{length}x{width}", "length_m": length, "width_m": width}
+
+
 def coverage(frames: list[PoseFrame]) -> dict[str, Any]:
     """What the sample holds, read from the frames as parsed (full precision, not the clip)."""
     per_frame = [sum(p.xyz is not None for p in f.players) for f in frames]
@@ -197,6 +210,7 @@ def build_clip(
     entry: FileEntry,
     players: list[dict[str, Any]],
     teams: list[dict[str, Any]],
+    surface: dict[str, Any],
 ) -> dict[str, Any]:
     order = jsonl.JOINTS
     index = _player_index(players)
@@ -234,6 +248,7 @@ def build_clip(
         "frame_hi": frames[-1].frame,
         "fps": FPS,
         "tracking_frame_factor": TRACKING_FRAME_FACTOR,
+        "surface": surface,
         "source": {"file": entry.path, "bytes": entry.bytes, "sha256": entry.sha256},
         "units": {"xy": "cm", "joints": "cm, from the player's own (x, y, 0)", "mae": "mm"},
         "joints": list(order),
@@ -348,7 +363,7 @@ def build(data_dir: Path, manifest_path: Path) -> tuple[str, dict[str, Any]]:
     con = duckdb.connect()
     ids = {p.player_id for f in frames for p in f.players}
     players, teams = _players_block(con, data_dir, ids)
-    clip = build_clip(frames, entry, players, teams)
+    clip = build_clip(frames, entry, players, teams, _surface_block(con, data_dir))
     text = _write_text(clip)
     data = text.encode("utf-8")
     slots = Counter(sum(p[4] is not None for p in f["p"]) for f in clip["frames"])
