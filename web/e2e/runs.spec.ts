@@ -119,7 +119,11 @@ test("the dead branch: the status line, the stage that died and every figure of 
     await expect(row.locator(`[data-fig="effect_by_subtype.${j}.verdict.M3.pre_trend_ratio"]`)).toBeVisible();
   }
 
-  await expect(page.locator('[data-note="line-not-candidate"]')).toContainText("never went through M3 or M4");
+  const negative = page.locator('section[data-section="negative"]');
+  const note = negative.locator('[data-note="line-not-candidate"]');
+  await expect(note).toContainText(runs.protocol.quantities.secondary_rule);
+  await expect(note).toContainText("M3 and M4 were computed on the marker only");
+  await expect(negative).not.toContainText("instrument contrast");
   await expect(page.locator('section[data-section="negative"] thead th').filter({ hasText: "(marker)" })).toHaveCount(4);
 
   // M1 prints all three counts of the probable lists, not only the one it decides on.

@@ -170,7 +170,7 @@ function Negative({ runs }: { runs: Runs }) {
             <th scope="col">passed the bar</th>
             <th scope="col">line label</th>
             <th scope="col">line mean (m)</th>
-            <th scope="col">line passed the bar (instrument contrast)</th>
+            <th scope="col">line passed the bar (secondary)</th>
             <th scope="col">M3 pre-trend ratio (marker)</th>
             <th scope="col">M3 (marker)</th>
             <th scope="col">M4 detected ratio (marker)</th>
@@ -220,8 +220,9 @@ function Negative({ runs }: { runs: Runs }) {
         </tbody>
       </Scroll>
       <p data-note="line-not-candidate">
-        M3 and M4 were computed on the marker only. The line never went through M3 or M4: its
-        columns are the contrast of the instrument, not a candidacy, and carry no verdict.
+        The line is the protocol&apos;s secondary quantity, run minus placebo. Its rule:{" "}
+        <F runs={runs} p="protocol.quantities.secondary_rule" />. M3 and M4 were computed on the
+        marker only.
       </p>
     </section>
   );

@@ -96,6 +96,7 @@ export interface Runs {
     history: { stage: string; task: number; date: string; note?: string }[];
     question: string;
     windows: { velocity_s: number };
+    quantities: { secondary_rule: string };
     bar: {
       calibration: { same_sign_matches_at_least: number; of_matches: number; p_at_most: number };
       held_out: { same_sign_matches_at_least: number; of_matches: number; p_at_most: number };
