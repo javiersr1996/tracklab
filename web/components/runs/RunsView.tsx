@@ -15,6 +15,9 @@ function Td({ runs, p }: { runs: Runs; p: string }) {
   return <td data-fig={p}>{String(at(runs, p))}</td>;
 }
 
+// The label `line_testability` gives a subtype the line can test (pipeline/src/tracklab/runs/candidates.py).
+const TESTABLE_ON_LINE = "testable on the line";
+
 const yes = (flag: boolean) => (flag ? "yes" : "no");
 
 function Scroll({ children }: { children: ReactNode }) {
@@ -31,8 +34,10 @@ function StageFigures({ runs, stage }: { runs: Runs; stage: Stage }) {
   if (stage === "M1" && "probable_subtypes" in figures) {
     return (
       <>
-        probable subtypes <F runs={runs} p={`${base}.probable_subtypes`} /> (at least{" "}
-        <F runs={runs} p={`${base}.needs_at_least`} /> needed)
+        probable subtypes <F runs={runs} p={`${base}.probable_subtypes`} /> by the marker,{" "}
+        <F runs={runs} p={`${base}.probable_by_line`} /> by the line,{" "}
+        <F runs={runs} p={`${base}.probable_by_both`} /> by both (at least{" "}
+        <F runs={runs} p={`${base}.needs_at_least`} /> needed on the marker)
       </>
     );
   }
@@ -165,11 +170,11 @@ function Negative({ runs }: { runs: Runs }) {
             <th scope="col">passed the bar</th>
             <th scope="col">line label</th>
             <th scope="col">line mean (m)</th>
-            <th scope="col">line passed the bar</th>
-            <th scope="col">M3 pre-trend ratio</th>
-            <th scope="col">M3</th>
-            <th scope="col">M4 detected ratio</th>
-            <th scope="col">M4</th>
+            <th scope="col">line passed the bar (instrument contrast)</th>
+            <th scope="col">M3 pre-trend ratio (marker)</th>
+            <th scope="col">M3 (marker)</th>
+            <th scope="col">M4 detected ratio (marker)</th>
+            <th scope="col">M4 (marker)</th>
             <th scope="col">candidate</th>
           </tr>
         </thead>
@@ -199,7 +204,11 @@ function Negative({ runs }: { runs: Runs }) {
                   {s.line.testability}
                 </td>
                 <Td runs={runs} p={`${b}.line.pooled.mean_m`} />
-                <td>{yes(s.line.pooled.passes_bar)}</td>
+                <td data-cell="line-passes">
+                  {s.line.testability === TESTABLE_ON_LINE
+                    ? yes(s.line.pooled.passes_bar)
+                    : "not testable"}
+                </td>
                 <Td runs={runs} p={`${b}.verdict.M3.pre_trend_ratio`} />
                 <td>{s.verdict.M3.leaves ? "leaves" : "stays"}</td>
                 <Td runs={runs} p={`${b}.verdict.M4.detected_ratio`} />
@@ -210,6 +219,10 @@ function Negative({ runs }: { runs: Runs }) {
           })}
         </tbody>
       </Scroll>
+      <p data-note="line-not-candidate">
+        M3 and M4 were computed on the marker only. The line never went through M3 or M4: its
+        columns are the contrast of the instrument, not a candidacy, and carry no verdict.
+      </p>
     </section>
   );
 }

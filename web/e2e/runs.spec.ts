@@ -111,8 +111,21 @@ test("the dead branch: the status line, the stage that died and every figure of 
     await expect(row).toHaveAttribute("data-subtype", s.subtype);
     // The line's secondary label sits in the row of the marker figure it qualifies.
     await expect(row).toContainText(s.line.testability);
+    // The line was never read by M3 or M4: a subtype it cannot test gets no verdict in its cell.
+    const lineCell = row.locator('[data-cell="line-passes"]');
+    if (s.line.testability.startsWith("not testable")) await expect(lineCell).toHaveText("not testable");
+    else await expect(lineCell).toHaveText(s.line.pooled.passes_bar ? "yes" : "no");
     await expect(row.locator(`[data-fig="effect_by_subtype.${j}.marker.pooled.mean_m"]`)).toBeVisible();
     await expect(row.locator(`[data-fig="effect_by_subtype.${j}.verdict.M3.pre_trend_ratio"]`)).toBeVisible();
+  }
+
+  await expect(page.locator('[data-note="line-not-candidate"]')).toContainText("never went through M3 or M4");
+  await expect(page.locator('section[data-section="negative"] thead th').filter({ hasText: "(marker)" })).toHaveCount(4);
+
+  // M1 prints all three counts of the probable lists, not only the one it decides on.
+  const m1 = page.locator('tr[data-stage="M1"]');
+  for (const k of ["probable_subtypes", "probable_by_line", "probable_by_both", "needs_at_least"]) {
+    await expect(m1.locator(`[data-fig="stages.M1.figures.${k}"]`)).toHaveText(String(runs.stages.M1.figures[k]));
   }
 
   // The held-out half: counts, for exactly the matches the file lists, and nothing else.
