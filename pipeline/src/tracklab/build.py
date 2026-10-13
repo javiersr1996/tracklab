@@ -39,6 +39,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import zipfile
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
@@ -220,8 +221,12 @@ def steps_from_events(
 
 
 def bytes_read(path: Path) -> int:
-    """What a reader of `path` gets: the decompressed bytes of a `.gz`, the size
-    on disk of anything else."""
+    """What a reader of `path` gets: the decompressed bytes of a `.gz` or a `.zip`
+    (the zip's from its central directory, nothing inflated), the size on disk of
+    anything else."""
+    if path.suffix == ".zip":
+        with zipfile.ZipFile(path) as archive:
+            return sum(member.file_size for member in archive.infolist())
     if path.suffix != ".gz":
         return path.stat().st_size
     total = 0

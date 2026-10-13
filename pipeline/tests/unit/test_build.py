@@ -211,7 +211,7 @@ def test_the_record_reads_the_receipt_but_never_writes_source_path(
     assert isinstance(disk, dict)
     raw = disk["raw"]
     assert (raw["receipts"], raw["verified"], raw["downloaded"]) == (1, 35, 0)
-    assert raw["files"] == 120 and raw["files_read"] == 0
+    assert raw["files"] == 122 and raw["files_read"] == 0
 
 
 def test_publish_leaves_out_the_files_written_from_a_record(tmp_path: Path) -> None:

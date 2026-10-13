@@ -986,6 +986,35 @@
           "match_id": null
         }
       ]
+    },
+    {
+      "source_id": "opendata-bodypose",
+      "sport": "football",
+      "kind": "huggingface",
+      "repo": "SkillCorner/opendata-bodypose",
+      "ref": "main",
+      "commit": "a62e1ec1e3b82952042a7f7fa9dafd77c0e0822a",
+      "license": "MIT",
+      "raw_url": "https://huggingface.co/datasets/SkillCorner/opendata-bodypose/resolve/{commit}/",
+      "lfs_url": "https://huggingface.co/datasets/SkillCorner/opendata-bodypose/resolve/{commit}/",
+      "files": [
+        {
+          "path": "raw/1925299.jsonl.zip",
+          "bytes": 623408231,
+          "sha256": "0415665098d594fb5681815000f7a6312037788a3237910a9f41bb8de5c336a0",
+          "lfs": true,
+          "role": "bodypose_zip",
+          "match_id": 1925299
+        },
+        {
+          "path": "raw/1996435.jsonl.zip",
+          "bytes": 644327811,
+          "sha256": "64bcab2be9776172d062521d9a97e0e6f391fc9cacb331f9e42a6fe88cf8434b",
+          "lfs": true,
+          "role": "bodypose_zip",
+          "match_id": 1996435
+        }
+      ]
     }
   ]
 }

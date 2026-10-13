@@ -23,6 +23,7 @@ from tracklab.ingest.verify import CHUNK_BYTES, sha256_file
 
 API_URL = "https://api.github.com"
 API_HEADERS = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
+HF_API_URL = "https://huggingface.co/api/datasets"
 RECEIPT_NAME = "_receipt.json"
 ATTEMPTS = 3  # per file, on transport errors only
 
@@ -33,13 +34,25 @@ class IntegrityError(Exception):
     """Downloaded bytes do not match the manifest."""
 
 
+def _keep_token_on_github(request: httpx.Request) -> None:
+    """GITHUB_TOKEN goes to GitHub hosts only; HuggingFace is public and gets no credential."""
+    if not request.url.host.endswith("github.com") and not request.url.host.endswith(
+        "githubusercontent.com"
+    ):
+        request.headers.pop("Authorization", None)
+
+
 def make_client(transport: httpx.BaseTransport | None = None) -> httpx.Client:
     headers = {"User-Agent": "tracklab-ingest"}
     token = os.environ.get("GITHUB_TOKEN")
     if token:
         headers["Authorization"] = f"Bearer {token}"
     return httpx.Client(
-        transport=transport, headers=headers, follow_redirects=True, timeout=httpx.Timeout(60.0)
+        transport=transport,
+        headers=headers,
+        follow_redirects=True,
+        timeout=httpx.Timeout(60.0),
+        event_hooks={"request": [_keep_token_on_github]},
     )
 
 
@@ -69,6 +82,34 @@ def list_tree(client: httpx.Client, repo: str, commit: str) -> list[TreeEntry]:
     if body.get("truncated"):
         raise RuntimeError(f"GitHub truncated the tree of {repo}@{commit}; refusing to freeze it")
     return [TreeEntry(e["path"], int(e["size"])) for e in body["tree"] if e["type"] == "blob"]
+
+
+@dataclass(frozen=True)
+class HfEntry:
+    path: str
+    size: int
+    sha256: str | None  # the LFS oid; None for a file stored in git proper
+
+
+def resolve_hf_revision(client: httpx.Client, repo: str, ref: str) -> str:
+    response = client.get(f"{HF_API_URL}/{repo}/revision/{ref}")
+    response.raise_for_status()
+    return str(response.json()["sha"])
+
+
+def list_hf_tree(client: httpx.Client, repo: str, revision: str) -> list[HfEntry]:
+    """Every file of the revision with its size and LFS oid (= sha256), without fetching a byte."""
+    entries: list[HfEntry] = []
+    url: str | None = f"{HF_API_URL}/{repo}/tree/{revision}?recursive=1"
+    while url is not None:
+        response = client.get(url)
+        response.raise_for_status()
+        for e in response.json():
+            if e["type"] == "file":
+                lfs = e.get("lfs")
+                entries.append(HfEntry(e["path"], int(e["size"]), lfs["oid"] if lfs else None))
+        url = response.links.get("next", {}).get("url")
+    return entries
 
 
 # --- Streaming downloads ------------------------------------------------------------
@@ -141,6 +182,8 @@ def freeze_source(client: httpx.Client, source: Source, log: Log = print) -> Sou
     LFS files are recognised by their pointer and cost one tiny request; the rest
     are streamed once to compute their sha256. Nothing is written to ``data/``.
     """
+    if source.kind == "huggingface":
+        return freeze_hf(client, source, log)
     commit = resolve_commit(client, source.repo, source.ref)
     frozen = replace(source, commit=commit, files=[])
     files: list[FileEntry] = []
@@ -157,6 +200,27 @@ def freeze_source(client: httpx.Client, source: Source, log: Log = print) -> Sou
         if pointer is not None:
             files.append(FileEntry(entry.path, pointer.size, pointer.oid, True, role, match_id))
         else:
+            files.append(FileEntry(entry.path, digest.size, digest.sha256, False, role, match_id))
+    frozen.files = sorted(files, key=lambda f: f.path)
+    return frozen
+
+
+def freeze_hf(client: httpx.Client, source: Source, log: Log = print) -> Source:
+    """Pin a HuggingFace dataset to its revision. Sizes and sha256 come from the tree
+    API (the LFS oid is the sha256); a file with a role but no LFS oid is streamed once."""
+    commit = resolve_hf_revision(client, source.repo, source.ref)
+    frozen = replace(source, commit=commit, files=[])
+    files: list[FileEntry] = []
+    for entry in list_hf_tree(client, source.repo, commit):
+        role = role_for(entry.path)
+        if role is None:
+            log(f"skipped: {entry.path} (no role in the bundle)")
+            continue
+        match_id = match_id_for(entry.path)
+        if entry.sha256 is not None:
+            files.append(FileEntry(entry.path, entry.size, entry.sha256, True, role, match_id))
+        else:
+            digest = stream_sha256(client, frozen.raw_url_for(entry.path))
             files.append(FileEntry(entry.path, digest.size, digest.sha256, False, role, match_id))
     frozen.files = sorted(files, key=lambda f: f.path)
     return frozen

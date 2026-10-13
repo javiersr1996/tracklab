@@ -34,9 +34,16 @@ def _previous_source_path(receipt_root: Path) -> Path | None:
     return Path(source_path) if source_path else None
 
 
+def _asset_name(source: Source) -> str:
+    """`raw_<sport>` for the sport's main bundle, `raw_<sport>_<suffix>` for any other
+    source of the same sport (opendata-bodypose is `raw_football_bodypose`)."""
+    suffix = source.source_id.removeprefix("opendata-")
+    return f"raw_{source.sport}" if suffix == source.sport else f"raw_{source.sport}_{suffix}"
+
+
 def _raw_asset(source: Source) -> AssetsDefinition:
     @asset(
-        name=f"raw_{source.sport}",
+        name=_asset_name(source),
         group_name="ingest",
         deps=[manifest_sources],
         description=f"{source.source_id}, every manifest file with the right sha256.",
