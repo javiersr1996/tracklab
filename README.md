@@ -96,7 +96,7 @@ title: 2.3 GB in, 3.5 MB out
 subtitle: 1.5 MB to watch, 2.1 MB to query
 ```
 
-`uv run dagster asset list -m tracklab.dagster_defs` lists `81` assets, the graph
+`uv run dagster asset list -m tracklab.dagster_defs` lists `84` assets, the graph
 `web/public/data/lineage.json` exports for the page.
 
 ## The run that moves nobody
