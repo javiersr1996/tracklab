@@ -919,3 +919,11 @@ def test_pre_trend_window_is_the_frames_the_calculation_shifts_by() -> None:
     today; if one moves without the other, the fingerprint names a window the figures were
     not computed over."""
     assert windows.whole_frames(protocol.PRE_TREND_WINDOW_S) == windows.EFFECT_FRAMES
+
+
+def test_the_calibration_report_shifts_by_the_protocols_pre_trend_window() -> None:
+    """The alarm above guards the constants; this one guards the artifact: the pre-trend window
+    the report was computed over is the one the frozen protocol declares."""
+    effect = json.loads((REPORTS / "runs_calibration.json").read_text(encoding="utf-8"))["effect"]
+    design = json.loads((REPORTS / "runs_protocol.json").read_text(encoding="utf-8"))["design"]
+    assert effect["windows"]["pre_trend_s"] == design["windows"]["pre_trend_s"]
