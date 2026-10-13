@@ -230,7 +230,7 @@ function Negative({ runs }: { runs: Runs }) {
 interface Group {
   label: string;
   path: string; // dotted path of a per_match array
-  fields: { key: string; label: string }[];
+  fields: { key: string; label: ReactNode }[];
 }
 
 // One row per match, one column group per source: the table that backs a pooled figure.
@@ -377,7 +377,10 @@ function Calibration({ runs }: { runs: Runs }) {
           ))}
         </tbody>
       </Scroll>
-      <h3>Power: the smallest effect seen in 80 % of simulated data sets, per subtype</h3>
+      <h3>
+        Power: the smallest effect that passes the bar in a share{" "}
+        <F runs={runs} p="power.target_pass_rate" /> of simulated data sets, per subtype
+      </h3>
       <Scroll>
         <thead>
           <tr>
@@ -485,14 +488,27 @@ function Held({ runs }: { runs: Runs }) {
   );
 }
 
-const FINDINGS = [
+// The half second is the protocol's velocity window, the span the code shifts by; read, not typed.
+const findings = (runs: Runs) => [
   {
     id: "frame-start",
     title: "The runner is already running when the provider's run begins",
-    text: "The provider's frame_start is t_c. The columns compare the runner's speed at t_c with half a second earlier.",
+    text: (
+      <>
+        The provider&apos;s frame_start is t_c. The columns compare the runner&apos;s speed at t_c
+        with <F runs={runs} p="protocol.windows.velocity_s" /> s earlier.
+      </>
+    ),
     fields: [
       { key: "runner_running_at_tc_share", label: "running at t_c (share)" },
-      { key: "runner_running_half_second_before_share", label: "running 0.5 s before (share)" },
+      {
+        key: "runner_running_half_second_before_share",
+        label: (
+          <>
+            running <F runs={runs} p="protocol.windows.velocity_s" /> s before (share)
+          </>
+        ),
+      },
       { key: "runner_speed_at_tc_median_m_s", label: "speed at t_c (m/s)" },
       { key: "runner_speed_at_placebo_median_m_s", label: "speed at t' (m/s)" },
     ],
@@ -540,7 +556,7 @@ function Reason({ runs }: { runs: Runs }) {
         <F runs={runs} p="post_hoc_kinematics.thresholds.running_m_s" /> m/s; an onset is the last
         frame below <F runs={runs} p="post_hoc_kinematics.thresholds.onset_m_s" /> m/s.
       </p>
-      {FINDINGS.map((finding) => (
+      {findings(runs).map((finding) => (
         <div key={finding.id} data-finding={finding.id}>
           <h3>{finding.title}</h3>
           <p>{finding.text}</p>

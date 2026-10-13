@@ -188,6 +188,18 @@ test("the dead branch: the status line, the stage that died and every figure of 
   const scope = page.locator('[data-section="scope"]');
   await expect(scope.locator('[data-scope="matches"]')).toHaveText(String(runs.funnel.coverage.length));
 
+  // The 80 % and the half second come from the file (the protocol's windows, the power
+  // target), as figures the cross-check above compared; none is typed into the prose.
+  for (const p of ["protocol.windows.velocity_s", "power.target_pass_rate"]) {
+    await expect(page.locator(`[data-fig="${p}"]`).first(), p).toBeVisible();
+  }
+  const typed = await page.evaluate(() => {
+    const main = document.querySelector("main")!.cloneNode(true) as HTMLElement;
+    main.querySelectorAll("[data-fig]").forEach((e) => e.remove());
+    return (main.textContent ?? "").match(/half a second|80 %|\b0\.5\b/g);
+  });
+  expect(typed, "a figure typed into the prose").toBeNull();
+
   const compared = await expectFiguresOf(page, runs);
   console.log(`/runs (dead): ${compared} figures checked against runs.json`);
 

@@ -1337,17 +1337,233 @@
           "same_sign_matches": 9,
           "of_matches": 10,
           "p": 0.0005,
-          "passes_bar": true
+          "passes_bar": true,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 52,
+              "mean_m": 1.5676,
+              "mean_sd": 0.6214,
+              "se_m": 0.4693
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 71,
+              "mean_m": 0.3367,
+              "mean_sd": 0.1335,
+              "se_m": 0.3761
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 49,
+              "mean_m": 0.1092,
+              "mean_sd": 0.0433,
+              "se_m": 0.475
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 39,
+              "mean_m": 0.8725,
+              "mean_sd": 0.3459,
+              "se_m": 0.4914
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 48,
+              "mean_m": 0.5854,
+              "mean_sd": 0.2321,
+              "se_m": 0.4969
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 32,
+              "mean_m": 1.0475,
+              "mean_sd": 0.4153,
+              "se_m": 0.6623
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 48,
+              "mean_m": 2.1333,
+              "mean_sd": 0.8457,
+              "se_m": 0.5681
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 35,
+              "mean_m": 0.4771,
+              "mean_sd": 0.1891,
+              "se_m": 0.6763
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 29,
+              "mean_m": -0.6077,
+              "mean_sd": -0.2409,
+              "se_m": 0.7826
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 54,
+              "mean_m": 1.2121,
+              "mean_sd": 0.4805,
+              "se_m": 0.5554
+            }
+          ]
         },
         "subtype_effect_mean_m": 0.3928,
         "opposite_sign": false,
         "subtype_pairs_in_modal_class": {
           "pairs": 184,
-          "mean_m": 0.3765
+          "mean_m": 0.3765,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 22,
+              "mean_m": 1.1156,
+              "mean_sd": 0.4423,
+              "se_m": 0.4243
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 30,
+              "mean_m": -0.3332,
+              "mean_sd": -0.1321,
+              "se_m": 0.5404
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 21,
+              "mean_m": 0.6918,
+              "mean_sd": 0.2742,
+              "se_m": 0.6363
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 17,
+              "mean_m": 0.5722,
+              "mean_sd": 0.2268,
+              "se_m": 0.6374
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 24,
+              "mean_m": 0.7689,
+              "mean_sd": 0.3048,
+              "se_m": 0.6056
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 7,
+              "mean_m": 1.6675,
+              "mean_sd": 0.661,
+              "se_m": 1.8916
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 19,
+              "mean_m": 0.6267,
+              "mean_sd": 0.2484,
+              "se_m": 0.6739
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 11,
+              "mean_m": 0.7066,
+              "mean_sd": 0.2801,
+              "se_m": 1.1157
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 11,
+              "mean_m": -1.6479,
+              "mean_sd": -0.6532,
+              "se_m": 1.3295
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 22,
+              "mean_m": -0.055,
+              "mean_sd": -0.0218,
+              "se_m": 0.7644
+            }
+          ]
         },
         "subtype_pairs_outside_modal_class": {
           "pairs": 292,
-          "mean_m": 0.403
+          "mean_m": 0.403,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 27,
+              "mean_m": 0.8801,
+              "mean_sd": 0.3489,
+              "se_m": 0.5613
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 37,
+              "mean_m": 0.2702,
+              "mean_sd": 0.1071,
+              "se_m": 0.5766
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 36,
+              "mean_m": 0.7768,
+              "mean_sd": 0.3079,
+              "se_m": 0.5912
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 20,
+              "mean_m": -0.8183,
+              "mean_sd": -0.3244,
+              "se_m": 0.6444
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 29,
+              "mean_m": 0.9152,
+              "mean_sd": 0.3628,
+              "se_m": 0.5688
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 19,
+              "mean_m": 0.7968,
+              "mean_sd": 0.3158,
+              "se_m": 0.8135
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 27,
+              "mean_m": 0.1409,
+              "mean_sd": 0.0559,
+              "se_m": 0.535
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 33,
+              "mean_m": 0.5984,
+              "mean_sd": 0.2372,
+              "se_m": 0.6167
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 19,
+              "mean_m": 0.0025,
+              "mean_sd": 0.001,
+              "se_m": 0.721
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 45,
+              "mean_m": 0.1566,
+              "mean_sd": 0.0621,
+              "se_m": 0.5096
+            }
+          ]
         }
       },
       "run_leg_overlap": {
@@ -1727,17 +1943,233 @@
           "same_sign_matches": 10,
           "of_matches": 10,
           "p": 0.0005,
-          "passes_bar": true
+          "passes_bar": true,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 72,
+              "mean_m": 1.131,
+              "mean_sd": 0.4484,
+              "se_m": 0.3593
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 66,
+              "mean_m": 1.4489,
+              "mean_sd": 0.5744,
+              "se_m": 0.397
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 67,
+              "mean_m": 1.7754,
+              "mean_sd": 0.7038,
+              "se_m": 0.3613
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 47,
+              "mean_m": 2.7447,
+              "mean_sd": 1.088,
+              "se_m": 0.5739
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 67,
+              "mean_m": 1.4909,
+              "mean_sd": 0.591,
+              "se_m": 0.5001
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 61,
+              "mean_m": 1.7653,
+              "mean_sd": 0.6998,
+              "se_m": 0.4033
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 59,
+              "mean_m": 2.0535,
+              "mean_sd": 0.814,
+              "se_m": 0.5142
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 48,
+              "mean_m": 2.8769,
+              "mean_sd": 1.1404,
+              "se_m": 0.4561
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 51,
+              "mean_m": 2.3133,
+              "mean_sd": 0.917,
+              "se_m": 0.5343
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 59,
+              "mean_m": 2.3178,
+              "mean_sd": 0.9188,
+              "se_m": 0.4824
+            }
+          ]
         },
         "subtype_effect_mean_m": 1.6457,
         "opposite_sign": false,
         "subtype_pairs_in_modal_class": {
           "pairs": 333,
-          "mean_m": 1.7659
+          "mean_m": 1.7659,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 40,
+              "mean_m": 0.7181,
+              "mean_sd": 0.2846,
+              "se_m": 0.3824
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 29,
+              "mean_m": 0.9325,
+              "mean_sd": 0.3696,
+              "se_m": 0.6457
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 42,
+              "mean_m": 2.1379,
+              "mean_sd": 0.8475,
+              "se_m": 0.472
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 28,
+              "mean_m": 3.0471,
+              "mean_sd": 1.2079,
+              "se_m": 0.6459
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 38,
+              "mean_m": 1.3873,
+              "mean_sd": 0.5499,
+              "se_m": 0.601
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 32,
+              "mean_m": 1.8748,
+              "mean_sd": 0.7432,
+              "se_m": 0.594
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 28,
+              "mean_m": 2.5658,
+              "mean_sd": 1.0171,
+              "se_m": 0.7281
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 24,
+              "mean_m": 2.0289,
+              "mean_sd": 0.8043,
+              "se_m": 0.4998
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 30,
+              "mean_m": 1.3941,
+              "mean_sd": 0.5527,
+              "se_m": 0.7251
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 42,
+              "mean_m": 1.955,
+              "mean_sd": 0.775,
+              "se_m": 0.6058
+            }
+          ]
         },
         "subtype_pairs_outside_modal_class": {
           "pairs": 741,
-          "mean_m": 1.5917
+          "mean_m": 1.5917,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 76,
+              "mean_m": 1.4715,
+              "mean_sd": 0.5833,
+              "se_m": 0.3598
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 85,
+              "mean_m": 1.5285,
+              "mean_sd": 0.6059,
+              "se_m": 0.3544
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 89,
+              "mean_m": 1.711,
+              "mean_sd": 0.6783,
+              "se_m": 0.3637
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 90,
+              "mean_m": 1.4405,
+              "mean_sd": 0.571,
+              "se_m": 0.4749
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 84,
+              "mean_m": 1.1515,
+              "mean_sd": 0.4565,
+              "se_m": 0.4129
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 66,
+              "mean_m": 0.79,
+              "mean_sd": 0.3132,
+              "se_m": 0.4688
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 49,
+              "mean_m": 2.1542,
+              "mean_sd": 0.854,
+              "se_m": 0.5242
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 49,
+              "mean_m": 1.3791,
+              "mean_sd": 0.5467,
+              "se_m": 0.4187
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 82,
+              "mean_m": 2.4761,
+              "mean_sd": 0.9816,
+              "se_m": 0.4807
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 71,
+              "mean_m": 1.8414,
+              "mean_sd": 0.73,
+              "se_m": 0.5855
+            }
+          ]
         }
       },
       "run_leg_overlap": {
@@ -2117,17 +2549,233 @@
           "same_sign_matches": 10,
           "of_matches": 10,
           "p": 0.0005,
-          "passes_bar": true
+          "passes_bar": true,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 102,
+              "mean_m": 1.315,
+              "mean_sd": 0.5213,
+              "se_m": 0.3581
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 137,
+              "mean_m": 1.0892,
+              "mean_sd": 0.4318,
+              "se_m": 0.289
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 94,
+              "mean_m": 0.9239,
+              "mean_sd": 0.3662,
+              "se_m": 0.3535
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 101,
+              "mean_m": 0.8338,
+              "mean_sd": 0.3305,
+              "se_m": 0.3379
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 118,
+              "mean_m": 0.6975,
+              "mean_sd": 0.2765,
+              "se_m": 0.3633
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 84,
+              "mean_m": 1.096,
+              "mean_sd": 0.4345,
+              "se_m": 0.3891
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 82,
+              "mean_m": 1.0016,
+              "mean_sd": 0.397,
+              "se_m": 0.3476
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 80,
+              "mean_m": 1.5466,
+              "mean_sd": 0.6131,
+              "se_m": 0.3735
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 62,
+              "mean_m": 1.4256,
+              "mean_sd": 0.5651,
+              "se_m": 0.5194
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 73,
+              "mean_m": 0.9657,
+              "mean_sd": 0.3828,
+              "se_m": 0.4702
+            }
+          ]
         },
         "subtype_effect_mean_m": 1.3087,
         "opposite_sign": false,
         "subtype_pairs_in_modal_class": {
           "pairs": 267,
-          "mean_m": 0.9773
+          "mean_m": 0.9773,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 27,
+              "mean_m": 1.1507,
+              "mean_sd": 0.4562,
+              "se_m": 0.6243
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 34,
+              "mean_m": 0.6688,
+              "mean_sd": 0.2651,
+              "se_m": 0.4972
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 21,
+              "mean_m": 1.146,
+              "mean_sd": 0.4543,
+              "se_m": 0.902
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 32,
+              "mean_m": 1.3259,
+              "mean_sd": 0.5256,
+              "se_m": 0.5199
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 43,
+              "mean_m": 0.6542,
+              "mean_sd": 0.2593,
+              "se_m": 0.6194
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 28,
+              "mean_m": 0.8028,
+              "mean_sd": 0.3183,
+              "se_m": 0.83
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 30,
+              "mean_m": 0.5761,
+              "mean_sd": 0.2284,
+              "se_m": 0.506
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 19,
+              "mean_m": 1.8655,
+              "mean_sd": 0.7395,
+              "se_m": 0.8331
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 13,
+              "mean_m": 2.2535,
+              "mean_sd": 0.8933,
+              "se_m": 1.1468
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 20,
+              "mean_m": 0.4006,
+              "mean_sd": 0.1588,
+              "se_m": 0.8901
+            }
+          ]
         },
         "subtype_pairs_outside_modal_class": {
           "pairs": 358,
-          "mean_m": 1.5558
+          "mean_m": 1.5558,
+          "per_match": [
+            {
+              "match_id": 1874553,
+              "pairs": 30,
+              "mean_m": 1.2524,
+              "mean_sd": 0.4965,
+              "se_m": 0.7289
+            },
+            {
+              "match_id": 1886347,
+              "pairs": 40,
+              "mean_m": 1.3046,
+              "mean_sd": 0.5172,
+              "se_m": 0.6624
+            },
+            {
+              "match_id": 1925299,
+              "pairs": 33,
+              "mean_m": 1.076,
+              "mean_sd": 0.4265,
+              "se_m": 0.5924
+            },
+            {
+              "match_id": 1959846,
+              "pairs": 45,
+              "mean_m": 2.2378,
+              "mean_sd": 0.8871,
+              "se_m": 0.5595
+            },
+            {
+              "match_id": 1996435,
+              "pairs": 47,
+              "mean_m": 0.6196,
+              "mean_sd": 0.2456,
+              "se_m": 0.6029
+            },
+            {
+              "match_id": 1996436,
+              "pairs": 34,
+              "mean_m": 2.0765,
+              "mean_sd": 0.8232,
+              "se_m": 0.5118
+            },
+            {
+              "match_id": 2007448,
+              "pairs": 48,
+              "mean_m": 1.827,
+              "mean_sd": 0.7243,
+              "se_m": 0.6095
+            },
+            {
+              "match_id": 2010085,
+              "pairs": 23,
+              "mean_m": 2.0599,
+              "mean_sd": 0.8166,
+              "se_m": 0.7524
+            },
+            {
+              "match_id": 2011166,
+              "pairs": 30,
+              "mean_m": 1.7737,
+              "mean_sd": 0.7031,
+              "se_m": 0.6494
+            },
+            {
+              "match_id": 2015213,
+              "pairs": 28,
+              "mean_m": 1.5362,
+              "mean_sd": 0.609,
+              "se_m": 0.8667
+            }
+          ]
         }
       },
       "run_leg_overlap": {
@@ -4906,7 +5554,7 @@
         "note": "primary quantity: marker (design.quantities), for M1, the tests of task 50 and the held-out bar of task 51; line secondary, published with its testability label and never a candidate. Decided by Javier in the review of task 49 after the corrected power split the probable lists (marker 3, line 1, intersection 1): chosen on power and instrument, before any per-subtype effect exists."
       }
     ],
-    "calibration_sha256": "ca91df76efa6fdfa3b4dbee268a676072f689c9e17ecdb169a0f292b9a91eae4",
+    "calibration_sha256": "d2c495d104b5663f6ec5333079505cf2dff586bd198332d37affef03e68fd3f5",
     "question": "Which off-ball run subtypes displace the defence, measured on the tracking in the window after the run starts, against a placebo of the same runner at another instant of a possession of his team.",
     "quantities": {
       "primary": "marker",
@@ -4933,6 +5581,25 @@
         "multiplicity": "Holm over the candidates frozen in task 50"
       },
       "hardening": "if the real null fires 'at least one subtype' above 5.0 %, the bar hardens once, in task 49, with the figure written in history; it never loosens (D13)"
+    },
+    "windows": {
+      "sample_rate_hz": 10,
+      "effect_s": [
+        0.0,
+        2.0
+      ],
+      "velocity_s": 0.5,
+      "pre_trend_s": [
+        -2.0,
+        0.0
+      ],
+      "coverage_s": {
+        "before_frame_start": 1.0,
+        "after_frame_end": 3.0,
+        "clipped_to": "the period"
+      },
+      "effect_window_rule": "2.0 s is a hypothesis until task 49 measures the cadence of the football tracking; 49 may replace it only by the minimum window that cadence admits, once, before any per-subtype effect, and writes the change in history",
+      "velocity_window_rule": "0.5 s has no measured source: a hypothesis, like W, until task 49 measures the cadence; 49 may replace it once, before any per-subtype effect, and writes the change in history"
     }
   },
   "never_opened": {

@@ -121,7 +121,8 @@
         "calibration_sha256",
         "question",
         "quantities",
-        "bar"
+        "bar",
+        "windows"
       ],
       "properties": {
         "stage": { "enum": ["design", "frozen"] },
@@ -137,7 +138,8 @@
         "calibration_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "question": { "type": "string" },
         "quantities": { "type": "object" },
-        "bar": { "type": "object" }
+        "bar": { "type": "object" },
+        "windows": { "type": "object", "required": ["velocity_s"] }
       }
     },
     "never_opened": {

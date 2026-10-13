@@ -75,6 +75,39 @@ def _numbers(value: Any) -> set[float]:
     }
 
 
+def _without_modal_rows(subtypes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The published subtypes as the report holds them: the modal-class effect's rows are the
+    ones the publisher joins from `by_class`, the one thing the document adds to the section."""
+    out = copy.deepcopy(subtypes)
+    for subtype in out:
+        modal = subtype["class_at_tc"]["modal_class_effect"]
+        if modal is not None:
+            del modal["per_match"]
+    return out
+
+
+def _aggregates_without_rows(node: Any, path: str, rows: Any = None) -> list[str]:
+    """Paths of the aggregates under `node` that have no per-match rows: a `pooled` block
+    whose parent has no `per_match`, and any other block of `pairs` and `mean_m` (not itself a
+    row) that has none of its own."""
+    if isinstance(node, list):
+        return [
+            p for i, item in enumerate(node) for p in _aggregates_without_rows(item, f"{path}/{i}")
+        ]
+    if not isinstance(node, dict):
+        return []
+    found: list[str] = []
+    own = node.get("per_match")
+    is_aggregate = "match_id" not in node and "pairs" in node and "mean_m" in node
+    if is_aggregate and not own and not rows:
+        found.append(path)
+    for key, item in node.items():
+        if key == "pooled" and not own:
+            found.append(f"{path}/pooled")
+        found += _aggregates_without_rows(item, f"{path}/{key}", own if key == "pooled" else None)
+    return found
+
+
 @pytest.fixture(scope="module")
 def published() -> dict[str, Any]:
     return _json(WEB_DATA / "runs.json")  # type: ignore[no-any-return]
@@ -155,7 +188,7 @@ def test_each_section_of_runs_json_equals_its_place_in_the_reports(
     probe, effect = calibration["probe"], calibration["effect"]
     pairs = [
         (published["funnel"]["probe"], probe["funnel"]),
-        (published["effect_by_subtype"], effect["per_subtype"]),
+        (_without_modal_rows(published["effect_by_subtype"]), effect["per_subtype"]),
         (published["instrument"], probe["instrument"]),
         (published["power"], probe["power"]),
         (published["null"], probe["null"]),
@@ -171,10 +204,44 @@ def test_each_section_of_runs_json_equals_its_place_in_the_reports(
         (published["protocol"]["history"], protocol["history"]),
         (published["protocol"]["bar"], protocol["design"]["bar"]),
         (published["protocol"]["quantities"], protocol["design"]["quantities"]),
+        (published["protocol"]["windows"], protocol["design"]["windows"]),
         (published["never_opened"]["match_ids"], protocol["design"]["split"]["held_out"]),
     ]
     for got, expected in pairs:
         assert _differences(got, expected) == []
+
+
+def test_every_aggregate_effect_is_published_with_its_rows_per_match(
+    published: dict[str, Any], calibration: dict[str, Any]
+) -> None:
+    """Review of task 54: the modal-class effect lost its rows and the in/outside split never
+    had any. Checked on the file and on what the code writes, so a publisher that drops the
+    join fails even while the file on disk is stale."""
+    matches = calibration["effect"]["matches"]
+    for document in (published, figures(REPORTS)):
+        section = {"effect_by_subtype": document["effect_by_subtype"]}
+        assert _aggregates_without_rows(section, "") == []
+        for subtype in document["effect_by_subtype"]:
+            at_tc = subtype["class_at_tc"]
+            for part in (
+                "modal_class_effect",
+                "subtype_pairs_in_modal_class",
+                "subtype_pairs_outside_modal_class",
+            ):
+                rows = at_tc[part]["per_match"]
+                assert [r["match_id"] for r in rows] == matches
+                assert sum(r["pairs"] for r in rows) == at_tc[part]["pairs"]
+
+
+def test_the_modal_class_rows_are_the_reports_by_class_rows(
+    published: dict[str, Any], calibration: dict[str, Any]
+) -> None:
+    by_class = {r["class"]: r for r in calibration["effect"]["class_at_tc"]["by_class"]}
+    for subtype in published["effect_by_subtype"]:
+        at_tc = subtype["class_at_tc"]
+        assert (
+            at_tc["modal_class_effect"]["per_match"] == by_class[at_tc["modal_class"]]["per_match"]
+        )
 
 
 def test_the_stages_carry_the_reports_figures_and_the_protocols_rules(

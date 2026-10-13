@@ -75,7 +75,7 @@ export interface Runs {
     marker: { per_match: PerMatchRow[]; pooled: Pooled };
   };
   design_checks: { cadence: { windows: { effect_s: number } } };
-  power: { rows: PerMatchRow[] };
+  power: { rows: PerMatchRow[]; target_pass_rate: number };
   null: {
     per_match: PerMatchRow[];
     per_subtype: { subtype: string; pairs: number; fires_pct: number }[];
@@ -95,6 +95,7 @@ export interface Runs {
     calibration_sha256: string;
     history: { stage: string; task: number; date: string; note?: string }[];
     question: string;
+    windows: { velocity_s: number };
     bar: {
       calibration: { same_sign_matches_at_least: number; of_matches: number; p_at_most: number };
       held_out: { same_sign_matches_at_least: number; of_matches: number; p_at_most: number };

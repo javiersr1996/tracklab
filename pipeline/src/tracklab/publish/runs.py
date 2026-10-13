@@ -150,6 +150,20 @@ def dead_at(stages: dict[str, dict[str, Any]]) -> str:
     )
 
 
+def effect_by_subtype(effect_section: dict[str, Any]) -> list[dict[str, Any]]:
+    """The effect section's subtypes, each modal-class effect with the per-match rows the
+    report keeps in `class_at_tc.by_class`: an aggregate is published with its rows."""
+    by_class = {r["class"]: r for r in effect_section["class_at_tc"]["by_class"]}
+    out = []
+    for subtype in effect_section["per_subtype"]:
+        at_tc = subtype["class_at_tc"]
+        modal = at_tc["modal_class_effect"]
+        if modal is not None:
+            modal = {**modal, "per_match": by_class[at_tc["modal_class"]]["per_match"]}
+        out.append({**subtype, "class_at_tc": {**at_tc, "modal_class_effect": modal}})
+    return out
+
+
 def figures(reports_dir: Path) -> dict[str, Any]:
     """Everything `runs.json` holds except the hook, from the three reports alone."""
     protocol = _load(reports_dir / PROTOCOL_FILE)
@@ -192,7 +206,7 @@ def figures(reports_dir: Path) -> dict[str, Any]:
         "dead_at": dead,
         "stages": stages,
         "funnel": {"probe": probe["funnel"], "coverage": coverage},
-        "effect_by_subtype": effect_section["per_subtype"],
+        "effect_by_subtype": effect_by_subtype(effect_section),
         "instrument": probe["instrument"],
         "design_checks": {k: probe[k] for k in ("cadence", "run_length", "placebo_design", "units")}
         | {"standardisation": probe["standardisation"]},
@@ -210,6 +224,7 @@ def figures(reports_dir: Path) -> dict[str, Any]:
             "question": protocol["design"]["question"],
             "quantities": protocol["design"]["quantities"],
             "bar": protocol["design"]["bar"],
+            "windows": protocol["design"]["windows"],
         },
         "never_opened": {
             "half": names.pop(),
