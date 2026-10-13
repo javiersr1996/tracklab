@@ -433,6 +433,20 @@
           "runs_ge_50": 76
         }
       ],
+      "common_run_lengths": [
+        {
+          "length": 748,
+          "count": 299
+        },
+        {
+          "length": 749,
+          "count": 171
+        },
+        {
+          "length": 66,
+          "count": 67
+        }
+      ],
       "mae_cm": {
         "all": {
           "min": 3.97,
@@ -1002,6 +1016,20 @@
           "runs_ge_25": 200,
           "runs_ge_37": 193,
           "runs_ge_50": 187
+        }
+      ],
+      "common_run_lengths": [
+        {
+          "length": 748,
+          "count": 436
+        },
+        {
+          "length": 749,
+          "count": 283
+        },
+        {
+          "length": 148,
+          "count": 66
         }
       ],
       "mae_cm": {

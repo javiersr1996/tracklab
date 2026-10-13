@@ -178,6 +178,7 @@ def test_the_coverage_of_the_fabricated_match(built: Path) -> None:
     assert (a["frames_present"], a["with_pose"], a["longest_run"]) == (3, 3, 2)
     assert (by_player[B]["with_pose"], by_player[B]["longest_run"]) == (0, 0)
     assert by_player[C]["longest_run"] == 1
+    assert m["common_run_lengths"] == [{"length": 1, "count": 2}, {"length": 2, "count": 1}]
     assert (m["mae_cm"]["all"]["min"], m["mae_cm"]["all"]["max"]) == (5.0, LAST_MAE)
     assert m["z_m"] == {"min": 0.0, "max": pytest.approx(0.1 * (len(JOINTS) - 1), abs=1e-4)}
 
@@ -260,3 +261,17 @@ def test_the_versioned_fixture_is_a_slice_the_coverage_refuses_to_recount() -> N
     ).fetchone() or (0, 0)
     assert (n, first > 0) == (POSE_FALLBACK_FRAMES, True)
     assert coverage_match(fixtures, 1925299) is None
+
+
+def test_a_stretch_of_consecutive_frames_never_crosses_a_period(tmp_path: Path) -> None:
+    lines = [
+        line(10, 1, "00:45:00.00", [player(A, True)]),
+        line(11, 2, "00:45:00.04", [player(A, True)]),
+        line(12, 2, "00:45:00.08", [player(A, True)]),
+    ]
+    raw, data = tmp_path / "raw", tmp_path / "data"
+    build_bodypose_match(make_zip(raw / "raw" / f"{MATCH}.jsonl.zip", lines), raw, data, "c" * 40)
+    m = coverage_match(data, MATCH)
+    assert m is not None
+    assert m["players"][0]["longest_run"] == 2
+    assert m["common_run_lengths"] == [{"length": 1, "count": 1}, {"length": 2, "count": 1}]

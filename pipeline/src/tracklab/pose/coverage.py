@@ -191,6 +191,23 @@ def _players(con: duckdb.DuckDBPyConnection, frames: str, players: str) -> list[
     return out
 
 
+def _run_lengths(con: duckdb.DuckDBPyConnection, players: str) -> list[dict[str, int]]:
+    """The three commonest lengths of a stretch of consecutive frames with pose, over every
+    player and period: how the pose arrives, which the per-player maxima alone do not say."""
+    rows = con.execute(
+        """
+        with s as (
+          select player_id, period,
+                 frame - row_number() over (partition by player_id, period order by frame) g
+          from read_parquet(?)
+        ), r as (select count(*) len from s group by player_id, period, g)
+        select len, count(*) n from r group by len order by n desc, len limit 3
+        """,
+        [players],
+    ).fetchall()
+    return [{"length": int(length), "count": int(n)} for length, n in rows]
+
+
 def _mae(con: duckdb.DuckDBPyConnection, players: str) -> dict[str, Any]:
     allv = con.execute(
         "select min(m), quantile_cont(m, 0.5), quantile_cont(m, 0.9), max(m) "
@@ -239,6 +256,7 @@ def coverage_match(data_dir: Path, match_id: int) -> dict[str, Any] | None:
     return {
         "periods": _periods(con, frames, players),
         "players": _players(con, frames, players),
+        "common_run_lengths": _run_lengths(con, players),
         "mae_cm": _mae(con, players),
         "z_m": _z(con, players),
         # Any other key set is refused by the reader (`PoseFormatError`): a bronze that exists
