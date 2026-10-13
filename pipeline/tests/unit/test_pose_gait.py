@@ -86,16 +86,36 @@ SWING_OF = np.array([SWING.get(name, 0.0) for name in JOINTS])
 
 
 @pytest.fixture(scope="module")
-def sample() -> tuple[float, Array]:
-    """The clip's fps and the 29 `mae` (cm) of every sample skeleton whose ankles and heels are
-    at or under `CAP_CM`: the noise a window that passes the cap can carry."""
+def clip_mae() -> tuple[float, Array]:
+    """The clip's fps and the 29 `mae` (cm) of every skeleton of the sample."""
     clip = json.loads(CLIP.read_text(encoding="utf-8"))
     assert clip["joints"] == list(JOINTS)
     mae = np.array(
         [p[4][1] for f in clip["frames"] for p in f["p"] if p[4] is not None], dtype=np.float64
     )
-    mae /= 10.0  # the clip has whole millimetres
-    return float(clip["fps"]), mae[np.all(mae[:, gait.FOOT] <= CAP_CM, axis=1)]
+    return float(clip["fps"]), mae / 10.0  # the clip has whole millimetres
+
+
+@pytest.fixture(scope="module")
+def sample(clip_mae: tuple[float, Array]) -> tuple[float, Array]:
+    """The skeletons whose ankles and heels are at or under `CAP_CM`: the noise a window that
+    passes the cap can carry."""
+    fps, mae = clip_mae
+    return fps, mae[np.all(mae[:, gait.FOOT] <= CAP_CM, axis=1)]
+
+
+def test_the_plans_cap_of_15_cm_admits_no_skeleton_of_the_sample(
+    clip_mae: tuple[float, Array],
+) -> None:
+    _, mae = clip_mae
+    foot = mae[:, gait.FOOT]
+    counts = {cap: int(np.sum(np.all(foot <= cap, axis=1))) for cap in (10.0, 15.0, CAP_CM)}
+    lowest = dict(
+        zip(("lAnkle", "rAnkle", "lHeel", "rHeel"), foot.min(axis=0).tolist(), strict=True)
+    )
+    print(f"\nskeletons {len(mae)}; ankles and heels at or under the cap: {counts}; "
+          f"lowest mae (cm): {lowest}")  # fmt: skip
+    assert counts[15.0] == 0 and counts[CAP_CM] > 0
 
 
 def runner(
