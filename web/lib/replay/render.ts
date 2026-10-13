@@ -27,7 +27,10 @@ export function viewed(snapshot: Snapshot, possession: Possession, normalized: b
 }
 
 // Where the pitch sits on a canvas: pixels per metre and the centre.
-function layout(canvas: { width: number; height: number }, possession: Possession) {
+export function layout(
+  canvas: { width: number; height: number },
+  possession: Pick<Possession, "surface">,
+) {
   const { length_m, width_m } = possession.surface;
   const scale = Math.min(
     canvas.width / (length_m + 2 * MARGIN_M),
@@ -46,12 +49,41 @@ export interface View {
 
 export function viewOf(
   canvas: { width: number; height: number },
-  possession: Possession,
+  possession: Pick<Possession, "surface" | "attack_sign">,
   normalized: boolean,
 ): View {
   const { scale, cx, cy } = layout(canvas, possession);
   const sign = normalized ? possession.attack_sign : 1;
   return { project: (x, y) => [cx + sign * x * scale, cy - sign * y * scale], sign };
+}
+
+// A player as P1 draws him: a disc in his team's colour with his number, faded when he is
+// not detected. The pose viewer draws a player without a pose with the same disc.
+export function drawDisc(
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  py: number,
+  color: string,
+  jersey: string,
+  detected: boolean,
+): void {
+  ctx.globalAlpha = detected ? 1 : 0.45;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(px, py, PLAYER_PX, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.fillStyle = COLORS.text;
+  ctx.fillText(jersey, px, py);
+  ctx.globalAlpha = 1;
+}
+
+// The ball, on top. Its radius grows with the provider's z, uncorrected; a null z (not
+// measured, or not published) draws it flat.
+export function drawBall(ctx: CanvasRenderingContext2D, px: number, py: number, z: number | null): void {
+  ctx.fillStyle = COLORS.ball;
+  ctx.beginPath();
+  ctx.arc(px, py, BALL_PX + BALL_PX_PER_M * Math.max(z ?? 0, 0), 0, 2 * Math.PI);
+  ctx.fill();
 }
 
 export function drawFrame(
@@ -86,22 +118,15 @@ export function drawFrame(
       ball = { x: px, y: py, z: e.z };
       continue;
     }
-    ctx.globalAlpha = e.detected ? 1 : 0.45;
-    ctx.fillStyle =
-      entity?.team_id === possession.team_in_possession ? COLORS.attack : COLORS.defence;
-    ctx.beginPath();
-    ctx.arc(px, py, PLAYER_PX, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillStyle = COLORS.text;
-    ctx.fillText(entity?.jersey ?? "", px, py);
+    drawDisc(
+      ctx,
+      px,
+      py,
+      entity?.team_id === possession.team_in_possession ? COLORS.attack : COLORS.defence,
+      entity?.jersey ?? "",
+      e.detected,
+    );
   }
-  ctx.globalAlpha = 1;
-  // The ball last, on top. Its radius grows with the provider's z, uncorrected;
-  // a null z (not measured) draws it flat.
-  if (ball) {
-    ctx.fillStyle = COLORS.ball;
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, BALL_PX + BALL_PX_PER_M * Math.max(ball.z ?? 0, 0), 0, 2 * Math.PI);
-    ctx.fill();
-  }
+  // The ball last, on top.
+  if (ball) drawBall(ctx, ball.x, ball.y, ball.z);
 }

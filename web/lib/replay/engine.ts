@@ -21,18 +21,20 @@ export interface Snapshot {
   entities: EntityAt[];
 }
 
-export class ReplayEngine {
+// The play, pause, seek and rate machine over samples sorted by `t`, with no idea of what
+// a sample holds: the replay and the pose viewer (task 56) each add their own `frameAt`.
+export class Playback {
   state: PlayState = "idle";
   rate: Rate = 1;
   t: number;
   readonly t0: number;
   readonly tEnd: number;
-  private readonly frames: Frame[];
+  private readonly times: number[];
 
-  constructor(possession: Pick<Possession, "frames">) {
-    this.frames = possession.frames;
-    this.t0 = this.frames[0].t;
-    this.tEnd = this.frames[this.frames.length - 1].t;
+  constructor(times: number[]) {
+    this.times = times;
+    this.t0 = times[0];
+    this.tEnd = times[times.length - 1];
     this.t = this.t0;
   }
 
@@ -58,6 +60,27 @@ export class ReplayEngine {
     if (this.state !== "playing") return;
     this.t = Math.min(this.t + dtMs * this.rate, this.tEnd);
     if (this.t === this.tEnd) this.state = "ended";
+  }
+
+  // The last sample at or before `t` (binary search; samples are sorted by t).
+  indexAt(t: number): number {
+    let lo = 0;
+    let hi = this.times.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (this.times[mid] <= t) lo = mid;
+      else hi = mid - 1;
+    }
+    return lo;
+  }
+}
+
+export class ReplayEngine extends Playback {
+  private readonly frames: Frame[];
+
+  constructor(possession: Pick<Possession, "frames">) {
+    super(possession.frames.map((f) => f.t));
+    this.frames = possession.frames;
   }
 
   // Linear between the two native samples around `t`, the same at 25 and 10 fps.
@@ -90,18 +113,6 @@ export class ReplayEngine {
       });
     }
     return { t: clamped, clock, entities };
-  }
-
-  // The last sample at or before `t` (binary search; frames are sorted by t).
-  indexAt(t: number): number {
-    let lo = 0;
-    let hi = this.frames.length - 1;
-    while (lo < hi) {
-      const mid = (lo + hi + 1) >> 1;
-      if (this.frames[mid].t <= t) lo = mid;
-      else hi = mid - 1;
-    }
-    return lo;
   }
 }
 
