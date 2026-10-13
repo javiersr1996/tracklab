@@ -350,3 +350,61 @@ body {
 .runs label {
   font-size: 1rem;
 }
+
+.page.pose {
+  max-width: 1280px;
+}
+
+.pose-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 1100px) {
+  .pose-layout {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.pose-viewer {
+  margin: 0;
+  min-width: 0;
+}
+
+.pose-viewer canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #1d2327;
+}
+
+.pose-viewer .controls {
+  margin-top: 0.5rem;
+}
+
+.pose-viewer .controls input[type="range"] {
+  min-width: 6rem;
+}
+
+.pose-follow canvas {
+  max-width: 480px;
+}
+
+.pose-limits h2 {
+  margin-top: 0;
+}
+
+.pose-limits blockquote {
+  margin: 0 0 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 3px solid #9aa4ad;
+}
+
+.pose button,
+.pose select,
+.pose output,
+.pose code,
+.pose cite {
+  font-size: 1rem;
+}
