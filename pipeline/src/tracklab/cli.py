@@ -35,6 +35,7 @@ from tracklab.paths import data_root
 from tracklab.publish.examples import run_publish_examples
 from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.platform import run_publish_platform
+from tracklab.publish.pose import run_publish_pose
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.quality import run_publish_quality
 from tracklab.publish.runs import run_publish_runs
@@ -194,6 +195,17 @@ def _cmd_publish_examples(args: argparse.Namespace) -> int:
 
 def _cmd_publish_runs(args: argparse.Namespace) -> int:
     return run_publish_runs(args.data_dir, args.reports_dir, args.out_dir, check=args.check)
+
+
+def _cmd_publish_pose(args: argparse.Namespace) -> int:
+    return run_publish_pose(
+        args.data_dir,
+        args.reports_dir,
+        args.out_dir,
+        args.manifest,
+        args.schema,
+        check=args.check,
+    )
 
 
 def _cmd_publish_warehouse_pg(args: argparse.Namespace) -> int:
@@ -586,6 +598,48 @@ def build_parser() -> argparse.ArgumentParser:
         help="Regenerate in memory and compare with the files on disk; write nothing.",
     )
     publish_runs.set_defaults(func=_cmd_publish_runs)
+
+    publish_pose = publish_sub.add_parser(
+        "pose",
+        help="Write the Body Pose sample's clip (P6) under pose/ and its record, "
+        "reports/pose_clip.json.",
+    )
+    publish_pose.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; the sample and the bronze of the match are read from it.",
+    )
+    publish_pose.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where pose_clip.json goes (default: reports).",
+    )
+    publish_pose.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where pose/ goes (default: ../web/public/data).",
+    )
+    publish_pose.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path("manifest/sources.json"),
+        help="Path to sources.json, which pins the sample's sha256.",
+    )
+    publish_pose.add_argument(
+        "--schema",
+        type=Path,
+        default=Path("../web/lib/pose/schema.json"),
+        help="JSON schema the clip must validate against.",
+    )
+    publish_pose.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare with the files on disk; write nothing.",
+    )
+    publish_pose.set_defaults(func=_cmd_publish_pose)
 
     publish_warehouse_pg = publish_sub.add_parser(
         "warehouse-pg",
