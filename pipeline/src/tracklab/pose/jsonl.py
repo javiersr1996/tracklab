@@ -50,10 +50,18 @@ class PosePlayer:
 
 @dataclass(frozen=True)
 class PoseFrame:
+    """One line. The whole match (task 58) opens with frames outside every period: `period`,
+    `timestamp` and `ball` are None there, as are `possession_group` and `possession_player_id`
+    when nobody has the ball, and `players` is empty. The sample has none of them. The ball keeps
+    its position with `is_detected` null in a fifth of the match's frames (measured by task 58)."""
+
     frame: int
-    period: int
-    ball: tuple[float, float, float, bool]
+    period: int | None
+    ball: tuple[float, float, float, bool | None] | None
     players: tuple[PosePlayer, ...]
+    timestamp: str | None = None
+    possession_group: str | None = None
+    possession_player_id: int | None = None
 
 
 def _joints(
@@ -73,7 +81,7 @@ def parse_frame(line: str, order: tuple[str, ...] | None = None) -> PoseFrame:
     """One JSON line as a `PoseFrame`. `order` defaults to `JOINTS` (read at call time)."""
     order = JOINTS if order is None else order
     record = json.loads(line)
-    ball = record["ball_data"]
+    raw_ball = record["ball_data"]
     players = []
     for p in record["player_data"]:
         raw = p["joints"]
@@ -83,11 +91,31 @@ def parse_frame(line: str, order: tuple[str, ...] | None = None) -> PoseFrame:
                 int(p["player_id"]), float(p["x"]), float(p["y"]), bool(p["is_detected"]), xyz, mae
             )
         )
+    position = (raw_ball["x"], raw_ball["y"], raw_ball["z"])
+    detected = raw_ball["is_detected"]
+    if all(v is None for v in position):
+        ball = None
+    elif any(v is None for v in position):
+        raise PoseFormatError(
+            f"ball position is partly null in frame {record['frame']}: {raw_ball}"
+        )
+    else:
+        ball = (
+            float(position[0]),
+            float(position[1]),
+            float(position[2]),
+            None if detected is None else bool(detected),
+        )
+    period = record["period"]
+    owner = record["possession"]["player_id"]
     return PoseFrame(
         int(record["frame"]),
-        int(record["period"]),
-        (float(ball["x"]), float(ball["y"]), float(ball["z"]), bool(ball["is_detected"])),
+        None if period is None else int(period),
+        ball,
         tuple(players),
+        record["timestamp"],
+        record["possession"]["group"],
+        None if owner is None else int(owner),
     )
 
 
@@ -104,7 +132,13 @@ def open_lines(path: Path, member: str | None = None) -> Iterator[TextIO]:
     (`member` None: the zip must hold exactly one). Nothing is inflated to disk."""
     if path.suffix == ".zip":
         with zipfile.ZipFile(path) as archive:
-            names = [n for n in archive.namelist() if n.endswith(".jsonl")]
+            # The HuggingFace zips carry a macOS `__MACOSX/._<name>.jsonl` resource fork beside
+            # the data: it is not JSON and it is not the member.
+            names = [
+                n
+                for n in archive.namelist()
+                if n.endswith(".jsonl") and not n.startswith("__MACOSX/")
+            ]
             chosen = member if member is not None else (names[0] if len(names) == 1 else None)
             if chosen is None:
                 raise PoseFormatError(f"{path.name} does not hold exactly one .jsonl: {names}")

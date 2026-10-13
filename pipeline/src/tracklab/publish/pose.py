@@ -230,6 +230,7 @@ def build_clip(
             entries.append(
                 [index[pid], int(cm(p.x)), int(cm(p.y)), 1 if p.is_detected else 0, joints]
             )
+        assert f.ball is not None, f"frame {f.frame} of the sample has no ball"
         bx, by, _bz, detected = f.ball
         out_frames.append(
             {

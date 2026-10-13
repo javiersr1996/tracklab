@@ -112,8 +112,10 @@ def _line(frame: int, players: list[tuple[int, float, float, bool, float]]) -> s
     return json.dumps(
         {
             "frame": frame,
+            "timestamp": "00:00:00.00",
             "period": 2,
             "ball_data": {"x": 1.0, "y": 2.0, "z": 0.3, "is_detected": True},
+            "possession": {"player_id": None, "group": None},
             "player_data": data,
         }
     )

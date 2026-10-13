@@ -125,3 +125,55 @@ def test_joints_in_a_shuffled_declared_order_carry_the_same_content_by_name(
     assert base.xyz is not None and other.xyz is not None and base.mae_cm is not None
     for i, name in enumerate(shuffled):
         assert np.array_equal(other.xyz[i], base.xyz[JOINTS.index(name)])
+
+
+# Task 58: the shapes of the whole match that the 309-frame sample does not have.
+
+
+def test_a_frame_outside_every_period_has_no_period_ball_or_players() -> None:
+    line = json.dumps(
+        {
+            "frame": 0,
+            "timestamp": None,
+            "period": None,
+            "ball_data": {"x": None, "y": None, "z": None, "is_detected": None},
+            "possession": {"player_id": None, "group": None},
+            "player_data": [],
+        }
+    )
+    frame = parse_frame(line)
+    assert (frame.period, frame.timestamp, frame.ball, frame.players) == (None, None, None, ())
+
+
+def test_a_ball_with_a_position_and_no_is_detected_keeps_the_position() -> None:
+    record = json.loads(frame_line())
+    record["ball_data"]["is_detected"] = None
+    frame = parse_frame(json.dumps(record))
+    assert frame.ball == (1.0, 2.0, 0.3, None)
+
+
+def test_a_ball_with_only_part_of_its_position_is_refused() -> None:
+    record = json.loads(frame_line())
+    record["ball_data"]["z"] = None
+    with pytest.raises(PoseFormatError, match="partly null"):
+        parse_frame(json.dumps(record))
+
+
+def test_possession_and_timestamp_are_carried() -> None:
+    record = json.loads(frame_line())
+    record["possession"] = {"player_id": 7, "group": "home team"}
+    frame = parse_frame(json.dumps(record))
+    assert (frame.timestamp, frame.possession_player_id, frame.possession_group) == (
+        "00:00:00.00",
+        7,
+        "home team",
+    )
+
+
+def test_the_macos_resource_fork_in_the_huggingface_zips_is_not_the_member(tmp_path: Path) -> None:
+    zp = tmp_path / "1.jsonl.zip"
+    with zipfile.ZipFile(zp, "w") as archive:
+        archive.writestr("1.jsonl", frame_line(5))
+        archive.writestr("__MACOSX/._1.jsonl", b"\x00\x05\x16\x07 not json")
+    with open_lines(zp) as lines:
+        assert [f.frame for f in iter_frames(lines)] == [5]
