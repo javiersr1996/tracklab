@@ -43,7 +43,7 @@ from test_runs_windows import (  # the synthetic match and the throwaway design 
 
 from tracklab.cli import build_parser
 from tracklab.paths import data_root
-from tracklab.runs import candidates, data, probe, windows
+from tracklab.runs import candidates, data, probe, protocol, windows
 from tracklab.runs.candidates import (
     M3_PRE_TREND_SHARE,
     M4_DETECTED_SHARE,
@@ -904,3 +904,11 @@ def test_the_versioned_verdict_is_pinned() -> None:
             0.3736,
         ),
     }
+
+
+def test_pre_trend_window_is_the_frames_the_calculation_shifts_by() -> None:
+    """Alarm (review of task 54): the protocol's fingerprint covers `PRE_TREND_WINDOW_S`, but
+    the pre-trend is computed by shifting `t_c` by `EFFECT_FRAMES`. They are the same 2.0 s
+    today; if one moves without the other, the fingerprint names a window the figures were
+    not computed over."""
+    assert windows.whole_frames(protocol.PRE_TREND_WINDOW_S) == windows.EFFECT_FRAMES
