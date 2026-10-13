@@ -231,6 +231,9 @@ def test_every_aggregate_effect_is_published_with_its_rows_per_match(
                 rows = at_tc[part]["per_match"]
                 assert [r["match_id"] for r in rows] == matches
                 assert sum(r["pairs"] for r in rows) == at_tc[part]["pairs"]
+                if at_tc[part]["pairs"]:
+                    weighted = sum(r["pairs"] * r["mean_m"] for r in rows if r["pairs"])
+                    assert abs(weighted / at_tc[part]["pairs"] - at_tc[part]["mean_m"]) < 1e-3
 
 
 def test_the_modal_class_rows_are_the_reports_by_class_rows(
