@@ -34,6 +34,8 @@ from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.load.postgres import run_load_postgres
 from tracklab.paths import data_root
 from tracklab.pose.coverage import run_pose_coverage
+from tracklab.pose.sweep import CLIP as POSE_CLIP
+from tracklab.pose.sweep import run_pose_sweep
 from tracklab.publish.examples import run_publish_examples
 from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.platform import run_publish_platform
@@ -205,6 +207,10 @@ def _cmd_publish_runs(args: argparse.Namespace) -> int:
 
 def _cmd_pose_coverage(args: argparse.Namespace) -> int:
     return run_pose_coverage(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_pose_sweep(args: argparse.Namespace) -> int:
+    return run_pose_sweep(args.reports_dir, args.clip, check=args.check)
 
 
 def _cmd_publish_pose(args: argparse.Namespace) -> int:
@@ -819,6 +825,30 @@ def build_parser() -> argparse.ArgumentParser:
         "nothing. FULL n/n if every match was recounted, PARTIAL k/n on a slice.",
     )
     pose_coverage.set_defaults(func=_cmd_pose_coverage)
+    pose_sweep = pose_sub.add_parser(
+        "sweep",
+        help="Write reports/pose_sweep.json: task 60's synthetic sweep of the cadence of s (and, "
+        "for information, of h), from the mae of the versioned clip; no data is read.",
+    )
+    pose_sweep.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where pose_sweep.json goes (default: reports).",
+    )
+    pose_sweep.add_argument(
+        "--clip",
+        type=Path,
+        default=POSE_CLIP,
+        help="The versioned clip whose skeletons give the mae (default: "
+        "../web/public/data/pose/1925299_phase406.json).",
+    )
+    pose_sweep.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate the whole sweep in memory and compare the bytes; write nothing.",
+    )
+    pose_sweep.set_defaults(func=_cmd_pose_sweep)
 
     runs = subparsers.add_parser(
         "runs", help="P5: off-ball runs against the defence's displacement in the tracking."
