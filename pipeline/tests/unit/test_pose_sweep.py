@@ -2,9 +2,9 @@
 
 No data is read: the sweep's only input is the `mae` of the versioned clip
 (`web/public/data/pose/1925299_phase406.json`), so every test runs in CI. The whole sweep takes
-about a minute and a half; `tracklab pose sweep --check` regenerates it all, and here a tiny
-grid exercises the command and the sweep's two signals are rebuilt from a whole body through
-`gait`.
+about a minute and a half; `tracklab pose sweep --check` regenerates it all, and here a sample of
+its rows is regenerated against `reports/pose_sweep.json`, a tiny grid exercises the command,
+and the sweep's two signals are rebuilt from a whole body through `gait`.
 
 Mutations, each applied, seen failing and restored (tasks/todo.md, task 60, phase B1): the sign
 of h under the swap, the lean turning the wrong way, the lift on the wrong foot, a row's seed
@@ -30,6 +30,7 @@ Array = NDArray[np.float64]
 
 ROOT = Path(__file__).resolve().parents[3]
 CLIP = ROOT / "web" / "public" / "data" / "pose" / "1925299_phase406.json"
+VERSIONED = ROOT / "pipeline" / "reports" / sweep.SWEEP_NAME
 TINY = replace(
     sweep.PROTOCOL,
     widths=(25, 50),
@@ -182,3 +183,36 @@ def test_the_command_writes_the_same_bytes_twice_and_check_sees_a_changed_one(
     target.write_text(text.replace('"seed": 60', '"seed": 61', 1), encoding="utf-8", newline="\n")
     assert sweep.run_pose_sweep(reports, CLIP, check=True, grid=TINY) == 1
     assert sweep.run_pose_sweep(reports, tmp_path / "no_clip.json", grid=TINY) == 1
+
+
+def test_the_versioned_sweep_holds_the_protocol_and_regenerates_on_a_sample(
+    clip: tuple[float, Array, str],
+) -> None:
+    """`reports/pose_sweep.json` carries the protocol's grid, seed and clip; a sample of its
+    rows (the near tie of W 37, cap 25 and 2.5 Hz among them) comes back from the code as
+    written, and the bar's cells follow its rows. The whole file is `pose sweep --check`'s."""
+    fps, mae, sha = clip
+    v = json.loads(VERSIONED.read_text(encoding="utf-8"))
+    g = sweep.PROTOCOL
+    assert v["seed"] == g.seed and v["source"]["sha256"] == sha
+    p = v["parameters"]
+    assert (p["widths"], p["caps_cm"], p["cadences_hz"], p["rhos"]) == (
+        list(g.widths), list(g.caps_cm), list(g.cadences_hz), list(g.rhos)
+    )  # fmt: skip
+    assert (p["windows_s"], p["windows_h"], p["lifts_m"], p["kzs"]) == (
+        40_000, 400, [round(0.10 + 0.05 * i, 2) for i in range(11)], [1.0, 1.5]
+    )  # fmt: skip
+    rows = v["s_rows"]["rows"]
+    assert len(rows) == 144 and len(v["noise_twins"]["rows"]) == 36
+    assert len(v["h_rows"]["rows"]) == 4392
+    for key in ((37, 25, 2.5, 0.0), (25, 15, 3.0, 0.9)):
+        assert sweep.s_row(mae, fps, g, *key) in rows
+    assert sweep.twin_row(mae, fps, g, 37, 20, 0.5) in v["noise_twins"]["rows"]
+    h_rows = v["h_rows"]["rows"]
+    seen: set[str] = set()
+    for kind, spec in sweep._h_specs(g):
+        if kind not in seen and spec["width"] == 37 and spec["rho"] == 0.5 and spec["kz"] == 1.5:
+            seen.add(kind)
+            assert sweep.h_row(mae, fps, g, kind, spec) in h_rows
+    assert seen == {"sane", "no_gait", "flat_h", "swap", "lean"}
+    assert v["bar"]["cells"] == sweep.bar_cells(rows, g)
