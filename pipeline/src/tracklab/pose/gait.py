@@ -173,7 +173,8 @@ def cadence_hz_batch(s: ArrayLike, *, fps: float, band_z: float = BAND_Z) -> Arr
     """`cadence_hz` of every row of `s` (windows, frames), with the same additions in the same
     order, so the same bits (a test crosses them), and no Python loop over the windows: task
     60's sweep runs millions of them."""
-    s = np.asarray(s, dtype=np.float64)
+    # Row by row in memory: in Fortran order the sums would run in another order (other bits).
+    s = np.ascontiguousarray(s, dtype=np.float64)
     b, n = s.shape
     out = np.full(b, np.nan)
     if n < 4 or b == 0:

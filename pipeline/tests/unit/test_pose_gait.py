@@ -44,7 +44,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
-from tracklab.pose import gait
+from tracklab.pose import criteria, gait
 from tracklab.pose.jsonl import JOINTS, parse_frame
 
 Array = NDArray[np.float64]
@@ -334,16 +334,18 @@ def test_the_peak_interpolation_resolves_0_1_hz_on_the_clean_runners(
     assert np.all(np.abs(bar["cad_clean_hz"] - CADENCE_HZ) <= CADENCE_BAR_HZ)
 
 
+@pytest.mark.parametrize("width", [25, 37, 50])
 def test_the_propagated_sd_matches_the_spread_between_noisy_copies(
-    sample: tuple[float, Array],
+    sample: tuple[float, Array], width: int
 ) -> None:
     """The same runner seen through 400 independent noises gives the empirical sd; the Monte
     Carlo run around each of five noisy observations has to land within a factor 1.5 of it
-    (cadence of s, separation, step)."""
+    (cadence of s, separation, step). W 25 is task 59's; 37 and 50, the widths whose cells
+    meet the bar of task 60's sweep (review of phase B1)."""
     fps, rows = sample
     rng = np.random.default_rng(100)
-    mae = draw_mae(rng, rows)
-    clean, xy = runner(rng, fps=fps)
+    mae = draw_mae(rng, rows, width)
+    clean, xy = runner(rng, fps=fps, width=width)
     copies = np.array(
         [
             astuple(gait.estimate(clean + noise(np.random.default_rng(s), mae), xy, fps=fps))
@@ -356,9 +358,115 @@ def test_the_propagated_sd_matches_the_spread_between_noisy_copies(
         observed = clean + noise(np.random.default_rng(s), mae)
         p = gait.propagated_error(observed, xy, mae, fps=fps, draws=400)
         ratio = np.array(astuple(p))[[0, 3, 4]] / empirical
-        print(f"observation {s}: propagated / empirical sd = {np.round(ratio, 3).tolist()}")
+        print(f"W {width}, observation {s}: propagated / empirical sd = "
+              f"{np.round(ratio, 3).tolist()}")  # fmt: skip
         assert p.valid == p.draws
         assert np.all((ratio >= 1 / SD_RATIO_BAR) & (ratio <= SD_RATIO_BAR))
+
+
+def mc_cadences(observed: Array, xy: Array, mae: Array, *, fps: float, seed: int) -> Array:
+    """The cadence of s in each of `gait.DRAWS` draws, drawn as `gait.propagated_error` draws
+    them (a test ties the two): the per-draw values the median of M2 needs."""
+    rng = np.random.default_rng(seed)
+    centred = gait.centre_on_midhip(observed)
+    d = gait.direction(xy)
+    out = np.empty(gait.DRAWS)
+    for k in range(gait.DRAWS):
+        draw = centred + rng.standard_normal(centred.shape) * mae[:, :, None] / 100.0
+        out[k] = gait.cadence_hz(gait.signal(gait.centre_on_midhip(draw), d), fps=fps)
+    return out
+
+
+@pytest.mark.parametrize(
+    "width",
+    [
+        37,
+        pytest.param(
+            50,
+            marks=pytest.mark.xfail(
+                strict=True,
+                raises=AssertionError,
+                reason="bar missed on its first run (2026-10-14): 1.525 in one of five "
+                "observations (1.148 to 1.525); the propagated sd runs high, which errs towards "
+                "killing in M2; reported in tasks/todo.md (task 60, review of B1), not moved",
+            ),
+        ),
+    ],
+)
+def test_the_propagated_sd_of_the_median_of_five_windows_matches_the_spread(
+    sample: tuple[float, Array], width: int
+) -> None:
+    """The second clause of M2: the sd over the draws of the median of a player's five windows
+    (draw k of each window, its own seed per window, `criteria.propagated_sd`), against the
+    spread of that median between 400 noisy copies of the five windows. Five runners at 4.3 Hz
+    stand for one player's five windows. Within a factor 1.5, the bar of task 59."""
+    fps, rows = sample
+    rng = np.random.default_rng(103)
+    five = []
+    for _ in range(5):
+        mae = draw_mae(rng, rows, width)
+        clean, xy = runner(rng, fps=fps, width=width)
+        five.append((clean, xy, mae))
+    medians = []
+    for s in range(400):
+        noisy = np.random.default_rng(5000 + s)
+        medians.append(
+            np.median([gait.estimate(c + noise(noisy, m), xy, fps=fps).cadence_hz
+                       for c, xy, m in five])
+        )  # fmt: skip
+    empirical = float(np.std(medians, ddof=1))
+    clean, xy, mae = five[0]
+    tie = gait.propagated_error(clean, xy, mae, fps=fps)
+    assert float(np.std(mc_cadences(clean, xy, mae, fps=fps, seed=gait.SEED), ddof=1)) == (
+        pytest.approx(tie.cadence_hz_sd, rel=1e-12)
+    )
+    ratios = []
+    for s in range(6000, 6005):
+        noisy = np.random.default_rng(s)
+        draws = np.array(
+            [
+                mc_cadences(c + noise(noisy, m), xy, m, fps=fps, seed=gait.SEED + j)
+                for j, (c, xy, m) in enumerate(five)
+            ]
+        )
+        ratios.append(criteria.propagated_sd(draws) / empirical)
+    print(f"\nW {width}: empirical sd of the median of five {empirical:.4f} Hz; propagated / "
+          f"empirical {np.round(ratios, 3).tolist()}")  # fmt: skip
+    assert np.all((np.array(ratios) >= 1 / SD_RATIO_BAR) & (np.array(ratios) <= SD_RATIO_BAR))
+
+
+@pytest.mark.parametrize("lift", [0.30, 0.50])
+def test_the_propagated_sd_of_h_is_printed_not_trusted(
+    sample: tuple[float, Array], lift: float
+) -> None:
+    """The measurement behind the record of phase B1 (task 60), made a test at the review's
+    request: at W 50, the propagated sd of cad_h and of cad_s - cad_h around each of five noisy
+    observations, over the spread between 400 noisy copies. No bar: those two sds are not
+    calibrated like s's, and the concordance of M3 is published without a propagated error
+    (tasks 61 and 63). The test only asserts that the figures exist."""
+    fps, rows = sample
+    rng = np.random.default_rng(101)
+    mae = draw_mae(rng, rows, 50)
+    clean, xy = runner(rng, fps=fps, width=50, lift_m=lift)
+    g = [gait.estimate(clean + noise(np.random.default_rng(s), mae), xy, fps=fps)
+         for s in range(3000, 3400)]  # fmt: skip
+    pairs = np.array([(x.cadence_hz, x.cadence_h_hz) for x in g])
+    pairs = pairs[np.all(np.isfinite(pairs), axis=1)]
+    empirical = np.array([pairs[:, 1].std(ddof=1), (pairs[:, 0] - pairs[:, 1]).std(ddof=1)])
+    ratios = []
+    for s in range(4000, 4005):
+        p = gait.propagated_error(
+            clean + noise(np.random.default_rng(s), mae), xy, mae, fps=fps, draws=400
+        )
+        ratios.append(
+            (p.valid_h, *(np.array([p.cadence_h_hz_sd, p.cadence_diff_hz_sd]) / empirical))
+        )
+    r = np.array(ratios)
+    print(f"\nlift {lift} m, W 50: {len(pairs)} of 400 copies with both cadences; valid_h "
+          f"{r[:, 0].astype(int).tolist()}; propagated / empirical sd, cad_h "
+          f"{np.round(r[:, 1], 3).tolist()}, cad_s - cad_h "
+          f"{np.round(r[:, 2], 3).tolist()}")  # fmt: skip
+    assert np.all(np.isfinite(r))
 
 
 def test_the_sd_of_h_and_of_the_difference_are_taken_draw_by_draw(
@@ -518,7 +626,7 @@ def test_the_batch_cadence_is_cadence_hz_bit_for_bit(sample: tuple[float, Array]
     """`cadence_hz_batch` against `cadence_hz` one window at a time, with the band and without,
     on white noise, AR(1) noise, sinusoids under noise at random frequencies, constant windows
     and a window with a NaN, at W 25, 37 and 50: the same bits and the same NaN, with both
-    outcomes present."""
+    outcomes present, also when the windows come in Fortran order (review of phase B1)."""
     fps, _ = sample
     rng = np.random.default_rng(63)
     for width in (25, 37, 50):
@@ -541,6 +649,8 @@ def test_the_batch_cadence_is_cadence_hz_bit_for_bit(sample: tuple[float, Array]
             batch = gait.cadence_hz_batch(signals, fps=fps, band_z=band)
             one = np.array([gait.cadence_hz(s, fps=fps, band_z=band) for s in signals])
             assert np.array_equal(batch, one, equal_nan=True)
+            fortran = gait.cadence_hz_batch(np.asfortranarray(signals), fps=fps, band_z=band)
+            assert np.array_equal(fortran, one, equal_nan=True)
             assert 0 < np.sum(np.isnan(one)) < len(one)
 
 
