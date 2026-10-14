@@ -143,6 +143,11 @@ def test_a_row_is_its_key_and_the_noise_pool_is_the_twin(clip: tuple[float, Arra
     the twin's windows (the same NaN count and median) and adds its Monte Carlo copies."""
     fps, mae, sha = clip
     report = sweep.build_sweep(mae, fps, sha, TINY)
+    g = TINY
+    keys = [
+        (w, c, f, r) for w in g.widths for c in g.caps_cm for f in g.cadences_hz for r in g.rhos
+    ]
+    assert [tuple(r[:4]) for r in report["s_rows"]["rows"]] == keys  # the grid's order
     alone = replace(TINY, widths=(50,), cadences_hz=(4.3,), rhos=(0.8,))
     assert sweep.s_row(mae, fps, alone, 50, 20, 4.3, 0.8) in report["s_rows"]["rows"]
     twin = next(r for r in report["noise_twins"]["rows"] if r[:3] == [50, 20, 0.8])
@@ -190,7 +195,8 @@ def test_the_versioned_sweep_holds_the_protocol_and_regenerates_on_a_sample(
 ) -> None:
     """`reports/pose_sweep.json` carries the protocol's grid, seed and clip; a sample of its
     rows (the near tie of W 37, cap 25 and 2.5 Hz among them) comes back from the code as
-    written, and the bar's cells follow its rows. The whole file is `pose sweep --check`'s."""
+    written, every row's key is in the grid's order, and the bar's flags and cells follow the
+    rows with today's constants. The whole file is `pose sweep --check`'s, which CI runs."""
     fps, mae, sha = clip
     v = json.loads(VERSIONED.read_text(encoding="utf-8"))
     g = sweep.PROTOCOL
@@ -202,9 +208,24 @@ def test_the_versioned_sweep_holds_the_protocol_and_regenerates_on_a_sample(
     assert (p["windows_s"], p["windows_h"], p["lifts_m"], p["kzs"]) == (
         40_000, 400, [round(0.10 + 0.05 * i, 2) for i in range(11)], [1.0, 1.5]
     )  # fmt: skip
+    assert (p["swap_lift_m"], p["lean_deg"], p["band_z"]) == (
+        g.swap_lift_m, list(g.lean_deg), gait.BAND_Z
+    )  # fmt: skip
+    assert p["separation_m"] == round(g.separation_m, 6)
     rows = v["s_rows"]["rows"]
-    assert len(rows) == 144 and len(v["noise_twins"]["rows"]) == 36
-    assert len(v["h_rows"]["rows"]) == 4392
+    keys = [
+        (w, c, f, r) for w in g.widths for c in g.caps_cm for f in g.cadences_hz for r in g.rhos
+    ]
+    assert [tuple(r[:4]) for r in rows] == keys  # every row, in the grid's order
+    twins = [(w, c, r) for w in g.widths for c in g.caps_cm for r in g.rhos]
+    assert [tuple(r[:3]) for r in v["noise_twins"]["rows"]] == twins
+    h_keys = [
+        (k, s["width"], s["cap"], s["cadence"], s["rho"], s["kz"], s["lift"], s["lean"])
+        for k, s in sweep._h_specs(g)
+    ]
+    assert [tuple(r[:8]) for r in v["h_rows"]["rows"]] == h_keys
+    assert len(rows) == 144 and len(twins) == 36 and len(h_keys) == 4392
+    assert all(r[-1] == sweep.meets_bar(r) for r in rows)  # the flags, with today's bar
     for key in ((37, 25, 2.5, 0.0), (25, 15, 3.0, 0.9)):
         assert sweep.s_row(mae, fps, g, *key) in rows
     assert sweep.twin_row(mae, fps, g, 37, 20, 0.5) in v["noise_twins"]["rows"]

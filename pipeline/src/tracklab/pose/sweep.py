@@ -217,9 +217,15 @@ def s_row(mae_cm: Array, fps: float, grid: Grid, width: int, cap: int, cadence: 
     finite = cad[np.isfinite(cad)]
     rel = np.abs(finite - cadence) / cadence
     nan = int(len(cad) - len(finite))
-    p95 = _q(rel, 95)
-    meets = p95 is not None and p95 <= BAR_P95 and nan <= BAR_NAN * len(cad)
-    return [width, cap, cadence, rho, len(cad), nan, _q(finite, 50), _q(rel, 50), p95, meets]
+    row = [width, cap, cadence, rho, len(cad), nan, _q(finite, 50), _q(rel, 50), _q(rel, 95)]
+    return [*row, meets_bar(row)]
+
+
+def meets_bar(row: list[Any]) -> bool:
+    """The bar on a row of s, from the rounded figures it holds and the constants as they are:
+    p95 of the relative error <= `BAR_P95` and NaN in s <= `BAR_NAN` of the windows."""
+    windows, nan, p95 = row[4], row[5], row[8]
+    return bool(p95 is not None and p95 <= BAR_P95 and nan <= BAR_NAN * windows)
 
 
 def twin_windows(mae_cm: Array, grid: Grid, width: int, cap: int, rho: float) -> Windows:
@@ -326,12 +332,13 @@ def h_row(mae_cm: Array, fps: float, grid: Grid, kind: str, p: dict[str, Any]) -
 
 
 def bar_cells(s_rows: list[list[Any]], grid: Grid) -> list[dict[str, Any]]:
-    """Per (W, cap): does every cadence meet the bar at rho 0?"""
+    """Per (W, cap): does every cadence meet the bar at rho 0? Judged again from each row's
+    figures with `meets_bar`, never from the row's own flag."""
     at = {(r[0], r[1], r[2]): r for r in s_rows if r[3] == BAR_RHO}
     cells = []
     for width in grid.widths:
         for cap in grid.caps_cm:
-            failing = [c for c in grid.cadences_hz if not at[(width, cap, c)][-1]]
+            failing = [c for c in grid.cadences_hz if not meets_bar(at[(width, cap, c)])]
             cells.append(
                 {
                     "width": width,
