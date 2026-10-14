@@ -14,7 +14,10 @@ one rule, so nothing in the slice is chosen by hand:
 The body pose tables (`bodypose_*`, 25 fps, so 2.5 pose frames per tracking frame) are cut
 by their own rule, because their match is not the football cut's: they keep the cut's window
 in pose frames (ceil(2.5 * lo) to floor(2.5 * hi)) when the cut's match has a pose file, and
-otherwise the first `POSE_FALLBACK_FRAMES` frames that have a pose, of the lowest pose match.
+otherwise the first `POSE_FALLBACK_FRAMES` frames that have a pose of `POSE_FALLBACK_MATCH`,
+1925299, the match P6 calibrates on. Never another one: 1996435 is P6's confirmation match and
+is read once, by task 61, so the cut fails when 1925299 has no pose file rather than fall back
+on whichever match sorts first.
 
 Season aggregates have no match column, so they go whole like the aliases. The
 rows keep the exact bronze schema because they are copied with `SELECT *`, which is what
@@ -48,6 +51,7 @@ CUTS = (
 )
 POSE_TABLES = ("bodypose_frames", "bodypose_players")
 POSE_FALLBACK_FRAMES = 50
+POSE_FALLBACK_MATCH = 1925299  # P6's calibration match (task 60)
 FRAME_COLUMNS = ("frameIdx", "frame", "startFrame", "frame_start")
 MATCH_COLUMNS = ("match_id", "native_match_id")
 
@@ -98,9 +102,13 @@ def _copy(con: duckdb.DuckDBPyConnection, glob: str, where: str, target: Path) -
 
 def _cut_pose(con: duckdb.DuckDBPyConnection, table: Path, cut: Cut, out_dir: Path) -> CutTable:
     """One body pose table of `table.parent`, cut by the rule in the module docstring."""
-    files = sorted(table.glob("*.parquet"), key=lambda p: int(p.stem))
     own = table / f"{cut.native_match_id}.parquet"
-    match = cut.native_match_id if own.is_file() else int(files[0].stem)
+    match = cut.native_match_id if own.is_file() else POSE_FALLBACK_MATCH
+    if not (table / f"{match}.parquet").is_file():
+        raise FileNotFoundError(
+            f"{table.name}: no pose file for the cut's match {cut.native_match_id} nor for "
+            f"{POSE_FALLBACK_MATCH}, the only match the fixtures may fall back on"
+        )
     if match == cut.native_match_id:
         lo, hi = -(-cut.frame_lo * 5 // 2), cut.frame_hi * 5 // 2
     else:
