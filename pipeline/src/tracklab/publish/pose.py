@@ -122,8 +122,8 @@ def sample_path(data_dir: Path) -> Path:
     return data_dir / "raw" / SOURCE_ID / SAMPLE_PATH
 
 
-def _bronze(data_dir: Path, table: str) -> str:
-    return (data_dir / "bronze" / "football" / table / f"{MATCH_ID}.parquet").as_posix()
+def _bronze(data_dir: Path, table: str, match_id: int = MATCH_ID) -> str:
+    return (data_dir / "bronze" / "football" / table / f"{match_id}.parquet").as_posix()
 
 
 def read_sample(data_dir: Path, manifest_path: Path) -> tuple[list[PoseFrame], FileEntry]:
@@ -143,11 +143,11 @@ def read_sample(data_dir: Path, manifest_path: Path) -> tuple[list[PoseFrame], F
 
 
 def _players_block(
-    con: duckdb.DuckDBPyConnection, data_dir: Path, ids: set[int]
+    con: duckdb.DuckDBPyConnection, data_dir: Path, ids: set[int], match_id: int = MATCH_ID
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rows = con.execute(
         "select id, team_id, number from read_parquet(?) order by team_id, number, id",
-        [_bronze(data_dir, "match_players")],
+        [_bronze(data_dir, "match_players", match_id)],
     ).fetchall()
     known = {int(r[0]) for r in rows}
     missing = sorted(ids - known)
@@ -159,7 +159,8 @@ def _players_block(
         if int(r[0]) in ids
     ]
     match = con.execute(
-        "select home_team_id, away_team_id from read_parquet(?)", [_bronze(data_dir, "match")]
+        "select home_team_id, away_team_id from read_parquet(?)",
+        [_bronze(data_dir, "match", match_id)],
     ).fetchone()
     assert match is not None
     teams = [{"team_id": int(match[0]), "side": "home"}, {"team_id": int(match[1]), "side": "away"}]
@@ -168,11 +169,14 @@ def _players_block(
     return players, teams
 
 
-def _surface_block(con: duckdb.DuckDBPyConnection, data_dir: Path) -> dict[str, Any]:
+def _surface_block(
+    con: duckdb.DuckDBPyConnection, data_dir: Path, match_id: int = MATCH_ID
+) -> dict[str, Any]:
     """The pitch of the match as `dim_match` names it, `provider_<length>x<width>` (task 56:
     the viewer draws the replay's markings with it)."""
     row = con.execute(
-        "select pitch_length, pitch_width from read_parquet(?)", [_bronze(data_dir, "match")]
+        "select pitch_length, pitch_width from read_parquet(?)",
+        [_bronze(data_dir, "match", match_id)],
     ).fetchone()
     assert row is not None
     length, width = int(row[0]), int(row[1])
@@ -211,6 +215,7 @@ def build_clip(
     players: list[dict[str, Any]],
     teams: list[dict[str, Any]],
     surface: dict[str, Any],
+    match_id: int = MATCH_ID,
 ) -> dict[str, Any]:
     order = jsonl.JOINTS
     index = _player_index(players)
@@ -243,7 +248,7 @@ def build_clip(
     position = {name: i for i, name in enumerate(order)}
     return {
         "schema_version": SCHEMA_VERSION,
-        "match_id": MATCH_ID,
+        "match_id": match_id,
         "period": frames[0].period,
         "frame_lo": first,
         "frame_hi": frames[-1].frame,
@@ -404,9 +409,29 @@ def _manifest_source(manifest_path: Path) -> dict[str, Any]:
     return {"file": entry.path, "bytes": entry.bytes, "sha256": entry.sha256}
 
 
+SUMMARY_FILE = "pose.json"
+SUMMARY_SCHEMA = "summary.schema.json"
+
+
+def _validate(document: Any, schema_path: Path) -> list[str]:
+    from jsonschema import Draft202012Validator
+
+    validator = Draft202012Validator(_load(schema_path))
+    return sorted(
+        f"{'/'.join(map(str, e.absolute_path))}: {e.message}"
+        for e in validator.iter_errors(document)
+    )
+
+
 def _versioned_problems(
-    out_dir: Path, reports_dir: Path, schema_path: Path, manifest_path: Path
+    out_dir: Path,
+    reports_dir: Path,
+    schema_path: Path,
+    manifest_path: Path,
+    named: set[str],
 ) -> list[str]:
+    """The sample's clip as versioned (schema, size, sha256 against the record, source against
+    the manifest); `named` are the other clips of `pose/` the summary names."""
     clip_path, record_path = out_dir / CLIP_FILE, reports_dir / RECORD_FILE
     for path in (clip_path, record_path):
         if not path.is_file():
@@ -421,10 +446,122 @@ def _versioned_problems(
         problems.append(f"the clip and {RECORD_FILE} disagree on coverage or source")
     if clip["source"] != _manifest_source(manifest_path):
         problems.append("the clip's source is not the manifest's entry for the sample")
-    extra = sorted(p.name for p in clip_path.parent.glob("*.json") if p.name != clip_path.name)
-    if extra:
-        problems.append(f"{Path(CLIP_FILE).parent}/ holds files the record does not name: {extra}")
+    here = {p.name for p in clip_path.parent.glob("*.json")} - {clip_path.name}
+    if here != {Path(n).name for n in named}:
+        problems.append(
+            f"{Path(CLIP_FILE).parent}/ holds {sorted(here)}, the summary names {sorted(named)}"
+        )
     return problems
+
+
+def _clip_problems(out_dir: Path, schema_path: Path, record: dict[str, Any], cap: int) -> list[str]:
+    """One clip of a whole match as versioned: present, the bytes and sha256 the summary says,
+    valid, and under the cap of the sample's clip (task 55's measured bytes)."""
+    path = out_dir / record["file"]
+    if not path.is_file():
+        return [f"{record['file']} is missing"]
+    data = path.read_bytes()
+    schema = [f"{record['file']} schema: {e}" for e in validate_clip(json.loads(data), schema_path)]
+    problems = schema[:5]
+    if len(data) != record["bytes"] or hashlib.sha256(data).hexdigest() != record["sha256"]:
+        problems.append(f"{record['file']} is not the clip {SUMMARY_FILE} describes")
+    if len(data) > cap:
+        problems.append(f"{record['file']} has {len(data)} bytes, over the cap of {cap}")
+    return problems
+
+
+def _site(data_dir: Path, manifest_path: Path, reports_dir: Path) -> tuple[dict[str, str], str]:
+    """What the publication writes besides the sample's clip: the clips of the whole matches
+    (relative file to text) and the text of pose.json. Reads a match's bronze past the guard."""
+    from tracklab.publish import pose_hook, pose_summary
+
+    reports = pose_summary.load_reports(reports_dir)
+    status, dead_at = pose_summary.status_of(reports)
+    cap = int(reports["clip"]["clip"]["bytes"])
+    clips = pose_hook.build_clips(data_dir, manifest_path, reports, status, dead_at)
+    texts = {file: _write_text(clip) for file, clip in clips.items()}
+    for file, text in texts.items():
+        if len(text.encode("utf-8")) > cap:
+            raise PosePublishError(f"{file} is over the cap of {cap} bytes (task 55's clip)")
+    records = [pose_hook.record_of(f, texts[f], clips[f]) for f in texts]
+    summary = pose_summary.build_summary(reports, records)
+    return texts, _write_text(summary) + "\n"
+
+
+def _whole(data_dir: Path, match_id: int) -> bool:
+    from tracklab.pose.data import CountingHandle
+
+    handle = CountingHandle(data_dir, match_id)
+    return handle.exists() and handle.is_whole()
+
+
+def _expected_matches(reports_dir: Path) -> list[int]:
+    from tracklab.publish import pose_hook, pose_summary
+
+    reports = pose_summary.load_reports(reports_dir)
+    status, dead_at = pose_summary.status_of(reports)
+    return pose_hook.matches_to_clip(reports, status, dead_at)
+
+
+def _summary_problems(out_dir: Path, reports_dir: Path, schema_path: Path) -> tuple[list[str], int]:
+    """pose.json as versioned: valid, built from the reports it names (nothing typed), its clips
+    in place. Returns the problems and the number of clips it names."""
+    from tracklab.publish import pose_summary
+
+    path = out_dir / SUMMARY_FILE
+    if not path.is_file():
+        return [f"{SUMMARY_FILE} is missing"], 0
+    summary = json.loads(path.read_text(encoding="utf-8"))
+    problems = [
+        f"{SUMMARY_FILE} schema: {e}"
+        for e in _validate(summary, schema_path.parent / SUMMARY_SCHEMA)[:5]
+    ]
+    reports = pose_summary.load_reports(reports_dir)
+    rebuilt = pose_summary.build_summary(reports, summary["clips"])
+    if _write_text(rebuilt) + "\n" != path.read_text(encoding="utf-8"):
+        problems.append(f"{SUMMARY_FILE} is not what the reports in {reports_dir.name}/ give")
+    cap = int(reports["clip"]["clip"]["bytes"])
+    for record in summary["clips"]:
+        problems += _clip_problems(out_dir, schema_path, record, cap)
+    return problems, len(summary["clips"])
+
+
+def _check(
+    data_dir: Path,
+    reports_dir: Path,
+    out_dir: Path,
+    manifest_path: Path,
+    schema_path: Path,
+) -> tuple[list[str], int, int]:
+    """(problems, units recomputed, units named): the versioned files verified, and every unit
+    whose bronze (or sample) is whole recomputed and compared byte for byte."""
+    clip_path, record_path = out_dir / CLIP_FILE, reports_dir / RECORD_FILE
+    summary_path = out_dir / SUMMARY_FILE
+    problems, named = _summary_problems(out_dir, reports_dir, schema_path)
+    names = (
+        {r["file"] for r in json.loads(summary_path.read_text(encoding="utf-8"))["clips"]}
+        if summary_path.is_file()
+        else set()
+    )
+    problems += _versioned_problems(out_dir, reports_dir, schema_path, manifest_path, names)
+    done = 0
+    if sample_path(data_dir).is_file():
+        text, record = build(data_dir, manifest_path)
+        if not clip_path.is_file() or clip_path.read_bytes() != text.encode("utf-8"):
+            problems.append(f"{clip_path.name} differs from what the code writes")
+        if not record_path.is_file() or record_path.read_text(encoding="utf-8") != render(record):
+            problems.append(f"{RECORD_FILE} differs from what the code writes")
+        done += 1
+    matches = _expected_matches(reports_dir)
+    if all(_whole(data_dir, m) for m in matches):
+        texts, summary_text = _site(data_dir, manifest_path, reports_dir)
+        for file, text in texts.items():
+            if not (out_dir / file).is_file() or (out_dir / file).read_bytes() != text.encode():
+                problems.append(f"{file} differs from what the code writes")
+        if not summary_path.is_file() or summary_path.read_text(encoding="utf-8") != summary_text:
+            problems.append(f"{SUMMARY_FILE} differs from what the code writes")
+        done += len(matches)
+    return problems, done, 1 + named
 
 
 def run_publish_pose(
@@ -436,50 +573,60 @@ def run_publish_pose(
     *,
     check: bool = False,
 ) -> int:
-    whole = sample_path(data_dir).is_file()
+    from tracklab.runs.data import HeldOutLocked
+
     clip_path, record_path = out_dir / CLIP_FILE, reports_dir / RECORD_FILE
     if check:
         try:
-            problems = _versioned_problems(out_dir, reports_dir, schema_path, manifest_path)
-            if whole:
-                text, record = build(data_dir, manifest_path)
-                if not clip_path.is_file() or clip_path.read_bytes() != text.encode("utf-8"):
-                    problems.append(f"{clip_path.name} differs from what the code writes")
-                if not record_path.is_file() or record_path.read_text(encoding="utf-8") != render(
-                    record
-                ):
-                    problems.append(f"{RECORD_FILE} differs from what the code writes")
+            problems, done, total = _check(
+                data_dir, reports_dir, out_dir, manifest_path, schema_path
+            )
+        except HeldOutLocked as error:
+            print(f"publish pose --check: the confirmation match stays closed: {error}")
+            return 1
         except (OSError, KeyError, PosePublishError) as error:
             print(f"publish pose --check: {error!r}")
             return 1
         status = (
-            "FULL 1/1 recomputed and equal"
-            if whole
-            else "PARTIAL 0/1: the sample is not under the data root; schema, size and sha256 "
-            "of the versioned clip verified"
+            f"FULL {done}/{total} recomputed and equal"
+            if done == total
+            else f"PARTIAL {done}/{total}: schema, size, sha256 and the reports of the "
+            "versioned files verified"
         )
         if problems:
             print(f"publish pose --check: {status}; " + "; ".join(problems))
             return 1
-        print(f"publish pose --check: {CLIP_FILE} matches ({status})")
+        print(f"publish pose --check: {SUMMARY_FILE} and its {total - 1} clips match ({status})")
         return 0
     try:
         text, record = build(data_dir, manifest_path)
         problems = validate_clip(json.loads(text), schema_path)
-    except (OSError, KeyError, PosePublishError) as error:
+        texts, summary_text = _site(data_dir, manifest_path, reports_dir)
+        problems += _validate(json.loads(summary_text), schema_path.parent / SUMMARY_SCHEMA)
+        for clip_text in texts.values():
+            problems += validate_clip(json.loads(clip_text), schema_path)
+    except (OSError, KeyError, PosePublishError, HeldOutLocked) as error:
         print(f"publish pose: {error!r}")
         return 1
     if problems:
-        print("publish pose: the clip does not validate: " + "; ".join(problems[:5]))
+        print("publish pose: does not validate: " + "; ".join(problems[:5]))
         return 1
     clip_path.parent.mkdir(parents=True, exist_ok=True)
+    for stale in clip_path.parent.glob("*.json"):
+        if stale.name != clip_path.name:
+            stale.unlink()
     clip_path.write_bytes(text.encode("utf-8"))
+    for file, clip_text in texts.items():
+        (out_dir / file).write_bytes(clip_text.encode("utf-8"))
+    (out_dir / SUMMARY_FILE).write_bytes(summary_text.encode("utf-8"))
     reports_dir.mkdir(parents=True, exist_ok=True)
     record_path.write_text(render(record), encoding="utf-8", newline="\n")
     c = record["clip"]
+    sizes = ", ".join(f"{f} {len(t.encode())} bytes" for f, t in texts.items())
     print(
         f"publish pose: {clip_path} ({c['bytes']} bytes, hypothesis {MAX_POSE_CLIP_BYTES}: "
-        f"{'within' if c['within_hypothesis'] else 'OVER'}); midHip max "
+        f"{'within' if c['within_hypothesis'] else 'OVER'}); {sizes}; {SUMMARY_FILE} "
+        f"{len(summary_text.encode())} bytes; midHip max "
         f"{record['midhip_horizontal_cm']['max']} cm; alignment max "
         f"{record['alignment']['max_distance_m']} m at frame {ALIGN_FRAME}"
     )

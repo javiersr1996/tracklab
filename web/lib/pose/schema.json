@@ -162,6 +162,34 @@
         }
       }
     },
+    "selection": {
+      "type": "object",
+      "description": "Only in the clips of a whole match (task 62): the rule that chose the 4 s and what it picked.",
+      "required": ["kind", "rule"],
+      "properties": {
+        "kind": { "enum": ["hook", "stretch"] },
+        "rule": { "type": "string", "minLength": 1 }
+      }
+    },
+    "windows": {
+      "type": "array",
+      "description": "Only in the clips of a whole match: the windows of the hook player inside the clip. s_mm is s(t) in whole millimetres, one value per frame from frame_lo to frame_hi; cadence_hz and its sd are those of the metric (null when it is NaN).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["player", "band", "frame_lo", "frame_hi", "speed_m_s", "cadence_hz", "cadence_sd_hz", "s_mm"],
+        "properties": {
+          "player": { "type": "integer", "minimum": 0 },
+          "band": { "enum": ["low", "high"] },
+          "frame_lo": { "type": "integer" },
+          "frame_hi": { "type": "integer" },
+          "speed_m_s": { "type": "number" },
+          "cadence_hz": { "type": ["number", "null"] },
+          "cadence_sd_hz": { "type": ["number", "null"] },
+          "s_mm": { "type": "array", "minItems": 2, "items": { "type": "integer" } }
+        }
+      }
+    },
     "frames": {
       "type": "array",
       "minItems": 1,
