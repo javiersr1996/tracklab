@@ -20,7 +20,6 @@ import copy
 import hashlib
 import json
 import math
-import re
 import shutil
 from pathlib import Path
 from typing import Any
@@ -332,25 +331,19 @@ def test_the_hook_is_not_the_extreme_of_its_match() -> None:
 
 def test_the_three_limits_are_the_readmes_text_and_line() -> None:
     lines = README_FIXTURE.read_text(encoding="utf-8").splitlines()
-    for limit in LIMITS:
-        found = re.fullmatch(r"readme\.md:(\d+)(?:-(\d+))?", limit["readme"])
-        assert found, limit["readme"]
-        first = int(found.group(1))
-        last = int(found.group(2) or first)
-        text = " ".join(line.strip().removeprefix("* ") for line in lines[first - 1 : last])
-        assert text == limit["text"], limit["id"]
-        assert lines[first - 1].startswith("* "), "the line is not the start of a bullet"
-        assert not lines[last].startswith("  "), "the limit goes on past its last line"
+    assert publish_pose.limit_problems(lines) == []
     summary = _json(WEB_DATA / SUMMARY_FILE)
     assert summary["limits"] == [dict(item) for item in LIMITS]
 
 
-def test_a_changed_line_is_caught() -> None:
+def test_a_changed_line_text_or_bullet_is_caught_by_the_code() -> None:
     lines = README_FIXTURE.read_text(encoding="utf-8").splitlines()
-    wrong = dict(LIMITS[1], readme="readme.md:141-143")
-    first, last = 141, 143
-    text = " ".join(line.strip().removeprefix("* ") for line in lines[first - 1 : last])
-    assert text != wrong["text"]
+    moved = dict(LIMITS[1], readme="readme.md:141-143")
+    reworded = dict(LIMITS[0], text=LIMITS[0]["text"] + " Always.")
+    short = dict(LIMITS[1], readme="readme.md:140-141")  # the bullet goes on to line 142
+    for bad in (moved, reworded, short):
+        assert publish_pose.limit_problems(lines, (bad,)) != [], bad["readme"]
+    assert publish_pose.limit_problems(lines[1:]) != [], "the whole file moved one line"
 
 
 def test_pose_json_and_the_clips_are_to_watch_not_to_query() -> None:
@@ -583,7 +576,35 @@ def site_documents() -> dict[str, dict[str, Any]]:
         )
         stretches.append(stretch)
     dead = pose_summary.build_summary(dead_reports, stretches)
-    return {"alive": alive, "unreplicated": unreplicated, "dead": dead}
+
+    # Dead on 1925299: no metric, 1996435 never opened, so only its stretch is published.
+    def before_the_metric() -> dict[str, Any]:
+        reports = copy.deepcopy(_reports())
+        del reports["metric"]
+        return reports
+
+    m1_reports = before_the_metric()
+    verdict = m1_reports["verdict"]["verdict"]
+    verdict["M1"].update(players=verdict["M1"]["min_players"] - 1, dies=True)
+    verdict.update(dies_at="m1", alive=False)
+    m2_reports = before_the_metric()
+    verdict = m2_reports["verdict"]["verdict"]
+    verdict["M2"].update(median_sd_hz=2 * verdict["M2"]["half_iqr_hz"], dies_at="m2_precision")
+    verdict.update(dies_at="m2_precision", alive=False)
+    noise_reports = before_the_metric()
+    del noise_reports["verdict"]
+    noise_reports["calibration"]["rule_w_cap"]["chosen"] = None
+    del noise_reports["protocol"]["frozen"]
+    noise_reports["protocol"]["stage"] = "design"
+    first = stretches[:1]
+    return {
+        "alive": alive,
+        "unreplicated": unreplicated,
+        "dead": dead,
+        "dead-m1": pose_summary.build_summary(m1_reports, first),
+        "dead-m2": pose_summary.build_summary(m2_reports, first),
+        "dead-noise": pose_summary.build_summary(noise_reports, first),
+    }
 
 
 def write_documents() -> None:
@@ -597,11 +618,15 @@ def test_the_e2e_documents_are_what_the_publisher_writes_in_each_state() -> None
 
     validator = Draft202012Validator(_json(SUMMARY_SCHEMA))
     documents = site_documents()
-    assert {n: d["status"] for n, d in documents.items()} == {
-        "alive": "alive",
-        "unreplicated": "unreplicated",
-        "dead": "dead",
+    assert {n: (d["status"], d["dead_at"]) for n, d in documents.items()} == {
+        "alive": ("alive", None),
+        "unreplicated": ("unreplicated", None),
+        "dead": ("dead", "M4"),
+        "dead-m1": ("dead", "M1"),
+        "dead-m2": ("dead", "M2"),
+        "dead-noise": ("dead", "noise"),
     }
+    assert documents["dead-noise"]["protocol"]["width"] is None, "the noise never froze a window"
     for name, document in documents.items():
         assert list(validator.iter_errors(document)) == [], name
         assert _json(FIXTURES / f"pose.{name}.json") == document, f"regenerate pose.{name}.json"

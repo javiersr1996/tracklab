@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -71,6 +72,30 @@ LIMITS: tuple[dict[str, str], ...] = (
         "Pose joints.",
     },
 )
+
+
+def limit_problems(
+    readme_lines: list[str], limits: tuple[dict[str, str], ...] = LIMITS
+) -> list[str]:
+    """Each limit against the README it quotes: its text is the lines it names (the bullet's
+    marker dropped, the wrapped lines joined by a space), and those lines start and end a bullet."""
+    problems = []
+    for limit in limits:
+        found = re.fullmatch(r"readme\.md:(\d+)(?:-(\d+))?", limit["readme"])
+        if not found:
+            problems.append(f"{limit['id']}: {limit['readme']} is no line range")
+            continue
+        first = int(found.group(1))
+        last = int(found.group(2) or first)
+        text = " ".join(line.strip().removeprefix("* ") for line in readme_lines[first - 1 : last])
+        if text != limit["text"]:
+            problems.append(f"{limit['id']}: lines {first}-{last} say {text!r}")
+        if not readme_lines[first - 1].startswith("* "):
+            problems.append(f"{limit['id']}: line {first} does not start a bullet")
+        if last < len(readme_lines) and readme_lines[last].startswith("  "):
+            problems.append(f"{limit['id']}: the bullet goes on past line {last}")
+    return problems
+
 
 # Bones as joint-name pairs; the clip carries them as index pairs into its own `joints`.
 BONE_NAMES: tuple[tuple[str, str], ...] = (
