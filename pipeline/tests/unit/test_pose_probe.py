@@ -4,7 +4,10 @@ and a throwaway repository: no real pose is read, and no cadence is computed.
 Mutations, each applied, seen failing and restored (tasks/todo.md, task 60, phase B2): one
 period for the whole player in `admitted` (a window crosses the period change); the heels'
 cap folded into the wrong ankle column; the rule choosing the greatest W, or the least cap;
-`kills_the_noise` read from the first rho only.
+`kills_the_noise` read from the first rho only; and, after the review of phase B2: a cell
+eligible without the adjusted bar; `spares_the_sane` read from its first row; the bisection
+of the separation the wrong way; the PARTIAL check without comparing the cells with the
+sweep's bar, their counts with `windows.rows` or the base bar with the sweep's rows.
 """
 
 from __future__ import annotations
@@ -115,8 +118,8 @@ def test_bands_kinematics_and_features_of_a_steady_runner(
     assert accel.tolist() == ["accelerating", "plateau", "braking"]
 
 
-def _cell(width: int, cap: int, kills: bool) -> dict[str, Any]:
-    return {"width": width, "cap_cm": cap, "kills_the_noise": kills}
+def _cell(width: int, cap: int, eligible: bool) -> dict[str, Any]:
+    return {"width": width, "cap_cm": cap, "eligible": eligible}
 
 
 def test_a_cell_kills_the_noise_only_when_every_rho_does() -> None:
@@ -126,6 +129,24 @@ def test_a_cell_kills_the_noise_only_when_every_rho_does() -> None:
     assert probe.kills_the_noise(rows, 0.9) is True
 
 
+def test_a_cell_spares_the_sane_only_when_every_cadence_and_rho_does() -> None:
+    rows = [
+        [2.5, 0.0, 0.0, 0, 0, 0, 0],
+        [2.5, 0.9, 0.05, 10, 0, 0, 0],
+        [4.3, 0.9, 0.06, 0, 0, 12, 0],
+    ]
+    assert probe.spares_the_sane(rows[:2]) is True  # 0.05 is enough
+    assert probe.spares_the_sane(rows) is False  # one cadence and rho kills it
+    assert probe.spares_the_sane(rows, 0.1) is True
+
+
+def test_a_cell_is_eligible_only_with_the_adjusted_bar_the_noise_and_the_sane() -> None:
+    flags = ("passes_adjusted_bar", "kills_the_noise", "spares_the_sane")
+    for off in flags:
+        assert probe.is_eligible({f: f != off for f in flags}) is False, off
+    assert probe.is_eligible(dict.fromkeys(flags, True)) is True
+
+
 def test_the_rule_takes_the_least_w_then_the_greatest_cap_and_none_is_death() -> None:
     cells = [_cell(37, 15, True), _cell(37, 20, True), _cell(50, 25, True), _cell(25, 25, False)]
     assert probe.choose(cells) == {"width": 37, "cap_cm": 20}
@@ -133,39 +154,63 @@ def test_the_rule_takes_the_least_w_then_the_greatest_cap_and_none_is_death() ->
     assert probe.choose([_cell(37, 20, False), _cell(50, 25, False)]) is None
 
 
-def test_the_rule_simulates_only_the_cells_of_the_bar_on_their_own_twins() -> None:
-    """A tiny grid (400 windows per twin, rho 0 and 0.9, 20 copies, 40 repetitions): fifteen
-    players with 60 high and 60 low windows; the failing cell is not simulated; a cell kills
-    the noise when every rho does, and its row says which criterion killed."""
+def test_the_separation_is_found_back_from_the_sd_it_gives() -> None:
+    """On the sweep's own windows, the separation whose median sd of s is that of a planted
+    0.75 m comes back to the sixth digit, and a target below the noise alone gives 0."""
     raw = json.loads(CLIP.read_text(encoding="utf-8"))
     fps, mae = sweep.clip_mae(raw)
-    table = [[pid, 1, "ankles", 37, 20, 0, 60, 60] for pid in range(15)]
-    table += [[pid, 1, "ankles_heels", 37, 20, 0, 0, 0] for pid in range(15)]
-    bar = [
-        {"width": 25, "cap_cm": 20, "passes": False},
-        {"width": 37, "cap_cm": 20, "passes": True},
-    ]
-    rule = probe.rule_w_cap(table, bar, mae, fps, grid=TINY, draws=20, reps=40)
-    (cell,) = rule["cells"]
-    assert (cell["width"], cell["cap_cm"], cell["players"]) == (37, 20, 15)
-    assert cell["players_ge_min_high"] == cell["players_ge_min_both"] == 15
-    rows = cell["noise"]["rows"]
-    assert [r[0] for r in rows] == [0.0, 0.9]
-    for r in rows:
-        assert r[1] == sum(r[2:]) / 40  # p_dies is the deaths over the repetitions
-    print(f"\ntiny rule: {rows}")
-    assert cell["kills_the_noise"] == all(r[1] >= protocol.P_DIES_NOISE_MIN for r in rows)
-    assert rule["chosen"] == ({"width": 37, "cap_cm": 20} if cell["kills_the_noise"] else None)
-    again = probe.rule_w_cap(
-        [[pid, 1, "ankles", 37, 20, 0, 60, 60] for pid in range(15)],
-        bar,
-        mae,
-        fps,
-        grid=TINY,
-        draws=20,
-        reps=40,
-    )
-    assert again["cells"][0]["noise"] == cell["noise"]  # seeded: the same figures again
+    windows = sweep.s_windows(mae, TINY, 37, 20, 2.5, 0.0)
+    s, _ = sweep.signals(windows, fps=fps, cadence_hz=2.5, separation_m=0.75)
+    target = float(np.median(np.std(s, axis=1)))
+    assert probe.amplitude_for(windows, fps, 2.5, target) == pytest.approx(0.75, abs=1e-5)
+    assert probe.amplitude_for(windows, fps, 2.5, 0.01) == 0.0
+
+
+def _signal_sd(cells: list[tuple[int, int]], high: float, low: float) -> list[list[Any]]:
+    """(a') rows of period `all` for `cells`, with a median sd of s per band."""
+    rows = []
+    for w, cap in cells:
+        for band, sd in (("low", low), ("high", high)):
+            row: list[Any] = ["all", w, cap, band, 100] + [None] * (len(probe.SD_COLUMNS) - 5)
+            row[probe.SD_COLUMNS.index("s_sd_p50_m")] = sd
+            rows.append(row)
+    return rows
+
+
+def test_the_rule_judges_the_bar_again_and_simulates_noise_and_sane_per_cell() -> None:
+    """A tiny grid (400 windows per twin, rho 0 and 0.9, 10 copies, 20 repetitions, 100
+    windows per sane pool): fifteen players with 60 high and 60 low windows in every
+    candidate. The cells are those of the sweep's bar; each carries the sweep's bar and the
+    one judged again at the separation of (a'), the noise per rho and the sane per cadence
+    and rho; its flags follow its rows, and the same call gives the same figures."""
+    raw = json.loads(CLIP.read_text(encoding="utf-8"))
+    fps, mae = sweep.clip_mae(raw)
+    sweep_report = json.loads((REPORTS / sweep.SWEEP_NAME).read_text(encoding="utf-8"))
+    cells = probe.candidates(sweep_report)
+    assert cells == [(37, 15), (37, 20), (50, 15), (50, 20), (50, 25)]
+    table = [[pid, 1, "ankles", w, cap, 0, 60, 60] for w, cap in cells for pid in range(15)]
+    kwargs: dict[str, Any] = {"grid": TINY, "draws": 10, "reps": 20, "sane_windows": 100}
+    signal_sd = _signal_sd(cells, high=0.556, low=0.482)
+    rule = probe.rule_w_cap(table, signal_sd, sweep_report, mae, fps, **kwargs)
+    assert [(c["width"], c["cap_cm"]) for c in rule["cells"]] == cells
+    for cell in rule["cells"]:
+        assert (cell["players"], cell["players_ge_min_high"], cell["windows_high"]) == (15, 15, 900)
+        bar = cell["bar"]["rows"]
+        assert [r[0] for r in bar] == list(TINY.cadences_hz)
+        assert all(0.0 < r[4] < 1.28 and r[5] < r[4] for r in bar)  # (a') gives less than 1.28
+        assert [r[0] for r in cell["noise"]["rows"]] == [0.0, 0.9]
+        assert [(r[0], r[1]) for r in cell["sane"]["rows"]] == [
+            (c, rho) for c in TINY.cadences_hz for rho in (0.0, 0.9)
+        ]
+        for r in cell["noise"]["rows"]:
+            assert r[1] == sum(r[2:]) / 20
+        assert cell["eligible"] == (
+            cell["passes_adjusted_bar"] and cell["kills_the_noise"] and cell["spares_the_sane"]
+        )
+    print("\ntiny rule:", [(c["width"], c["cap_cm"], c["eligible"]) for c in rule["cells"]])
+    assert rule["chosen"] == probe.choose(rule["cells"])
+    again = probe.rule_w_cap(table, signal_sd, sweep_report, mae, fps, **kwargs)
+    assert again == rule  # seeded: the same figures again
 
 
 def test_the_probe_writes_the_same_bytes_twice_and_check_sees_a_change(
@@ -177,16 +222,15 @@ def test_the_probe_writes_the_same_bytes_twice_and_check_sees_a_change(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     _commit_real_design(pose_repo, reports)
-    monkeypatch.setattr(
-        probe, "rule_w_cap", partial(probe.rule_w_cap, grid=TINY, draws=10, reps=20)
-    )
+    tiny = partial(probe.rule_w_cap, grid=TINY, draws=10, reps=20, sane_windows=100)
+    monkeypatch.setattr(probe, "rule_w_cap", tiny)
     bodies = [
         pose_kit.runner(p, start=10, n=120, speed_m_s=v, period=per)
         for p, v, per in ((1, 6.0, 1), (2, 4.0, 1), (3, 6.5, 2))
     ]
     root = pose_kit.write_bronze(tmp_path / "data", pose_kit.calibration, bodies)
     assert probe.run_pose_probe(root, reports, CLIP) == 0
-    path = reports / probe.CALIBRATION_NAME
+    path = reports / protocol.CALIBRATION_NAME
     text = path.read_text(encoding="utf-8")
     payload = json.loads(text)
     assert payload["match_id"] == 1925299 and payload["protocol"]["stage"] == "design"
@@ -199,6 +243,11 @@ def test_the_probe_writes_the_same_bytes_twice_and_check_sees_a_change(
     assert probe.run_pose_probe(tmp_path / "empty", reports, CLIP, check=True) == 0
     assert "PARTIAL 0/1" in capsys.readouterr().out
 
+    def partial_fails(changed: dict[str, Any], message: str, *, reseal: bool = True) -> None:
+        path.write_text(probe._render(seal(changed) if reseal else changed), encoding="utf-8")
+        assert probe.run_pose_probe(tmp_path / "empty", reports, CLIP, check=True) == 1
+        assert message in capsys.readouterr().out
+
     moved = json.loads(text)
     moved["windows"]["rows"][0][-1] += 1  # a count moved, resealed
     path.write_text(probe._render(seal(moved)), encoding="utf-8")
@@ -206,15 +255,22 @@ def test_the_probe_writes_the_same_bytes_twice_and_check_sees_a_change(
     assert "differs from what the code writes" in capsys.readouterr().out
     unsealed = json.loads(text)
     unsealed["windows"]["rows"][0][-1] += 1
-    path.write_text(probe._render(unsealed), encoding="utf-8")
-    assert probe.run_pose_probe(tmp_path / "empty", reports, CLIP, check=True) == 1
-    assert "content_sha256" in capsys.readouterr().out
+    partial_fails(unsealed, "content_sha256", reseal=False)
     lying = json.loads(text)
     for cell in lying["rule_w_cap"]["cells"]:
         cell["kills_the_noise"] = not cell["kills_the_noise"]
-    path.write_text(probe._render(seal(lying)), encoding="utf-8")
-    assert probe.run_pose_probe(tmp_path / "empty", reports, CLIP, check=True) == 1
-    assert "does not follow its figures" in capsys.readouterr().out
+    partial_fails(lying, "does not follow its figures")
+    # the reviewer's mutation: the W 37 cells removed and the file resealed
+    cut = json.loads(text)
+    cut["rule_w_cap"]["cells"] = [c for c in cut["rule_w_cap"]["cells"] if c["width"] != 37]
+    cut["rule_w_cap"]["chosen"] = probe.choose(cut["rule_w_cap"]["cells"])
+    partial_fails(cut, "are not the cells that pass the sweep's bar")
+    counts = json.loads(text)
+    counts["rule_w_cap"]["cells"][0]["windows_high"] += 1
+    partial_fails(counts, "its counts are not those of windows.rows")
+    bar = json.loads(text)
+    bar["rule_w_cap"]["cells"][0]["bar"]["rows"][0][3] = 0.001  # the sweep's p95, edited
+    partial_fails(bar, "the bar at 2.5 Hz does not follow its figures")
 
     (pose_repo.root / "pipeline" / "src" / "tracklab" / "pose" / "new.py").write_text("x = 1\n")
     path.write_text(text, encoding="utf-8")
@@ -234,17 +290,26 @@ def test_the_counts_the_rule_reads_are_the_ankles_cap_summed_over_periods() -> N
     assert criteria.MIN_WINDOWS == 5
 
 
+FIRST_TIME_KEYS = {
+    "schema_version", "task", "phase", "time", "written", "match_id", "head", "code_tree_sha",
+    "protocol", "inputs", "windows", "signal_sd", "mae_by_joint", "kinematics", "z_up",
+    "rule_w_cap", "content_sha256",
+}  # fmt: skip
+
+
 def test_the_versioned_calibration_answers_to_the_committed_protocol_and_follows_its_rule(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """`reports/pose_calibration.json` as the first time wrote it: sealed, the calibration
-    match, the protocol and the sweep committed in HEAD, a rule that follows its own figures,
-    no cadence in it, and `--check` PARTIAL on the fixtures (a slice of 1925299)."""
-    text = (REPORTS / probe.CALIBRATION_NAME).read_text(encoding="utf-8")
+    match, the protocol and the sweep committed in HEAD, a rule that follows the sweep and its
+    own figures, no section of the second time and no column of a data cadence (the cadences
+    in it are the sweep's planted ones), and `--check` PARTIAL on the fixtures."""
+    text = (REPORTS / protocol.CALIBRATION_NAME).read_text(encoding="utf-8")
     payload = json.loads(text)
-    assert probe.consistency_problems(payload, 1925299) == []
-    assert payload["time"] == probe.TIME  # "first: no cadence computed", the one mention
-    assert text.count("cadence") == 1 and "cad_" not in text
+    sweep_report = json.loads((REPORTS / sweep.SWEEP_NAME).read_text(encoding="utf-8"))
+    assert probe.consistency_problems(payload, 1925299, sweep_report) == []
+    assert set(payload) == FIRST_TIME_KEYS and payload["time"] == probe.TIME
+    assert "cad_s" not in text and "cad_h" not in text
     assert payload["inputs"]["players_with_pose"] == 32
     fixtures = PIPELINE / "tests" / "fixtures" / "data"
     assert probe.run_pose_probe(fixtures, REPORTS, CLIP, check=True) == 0

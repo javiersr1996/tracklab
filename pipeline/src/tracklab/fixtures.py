@@ -118,7 +118,7 @@ def _cut_pose(con: duckdb.DuckDBPyConnection, table: Path, cut: Cut, out_dir: Pa
             f"WHERE n_with_pose > 0 ORDER BY frame LIMIT {POSE_FALLBACK_FRAMES})",
             [frames],
         ).fetchone() or (0, -1)
-    glob = (table / "*.parquet").as_posix()
+    glob = (table / f"{match}.parquet").as_posix()  # that match's file alone, never 1996435's
     target = out_dir / "bronze" / cut.sport / table.name / f"{match}.parquet"
     where = f"match_id = {match} AND frame BETWEEN {lo} AND {hi}"
     return CutTable(target, _copy(con, glob, where, target))

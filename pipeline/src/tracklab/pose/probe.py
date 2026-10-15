@@ -15,17 +15,21 @@
   +-`PLATEAU_REL` of the window's speed (descriptive: no rule reads it), and path / chord;
 * (g) per player and period: the median of z(nose) - z(midHip) and of the ankles' mean z -
   z(midHip), with the share of frames above 0;
-* `rule_w_cap`: the rule of the protocol applied blind, from (a) and the sweep alone: for each
-  cell that passes the bar of `pose_sweep.json`, M1 and M2 simulated on the noise twin of every
-  rho with (a)'s counts (cap on the ankles, both periods), and the cell chosen or P6's death.
+* `rule_w_cap`: the rule of the protocol applied blind, from (a), (a') and the sweep alone: for
+  each cell that passes the bar of `pose_sweep.json`, the bar judged again at the separation
+  that reproduces (a')'s median sd of s in the high band; M1 and M2 simulated with (a)'s counts
+  (cap on the ankles, both periods) on the noise twin of every rho, which they must kill, and on
+  sane pools at that separation in every cadence and rho, which they must spare; and the cell
+  chosen or P6's death.
 
 What reads cadences (c, d, e, the NaN rates, M1 and M2 on data) is the second time, after the
 freeze, and is not here. The rows come from `data.load_players`, past the guard; the match is
 the calibration one the committed protocol names. Write mode refuses while the code under
 `pose/` or the protocol has uncommitted changes, or while the bronze of 1925299 is not whole.
 `--check` regenerates the file where that bronze is whole (`FULL 1/1`) and compares the bytes;
-elsewhere it verifies the seal, the protocol it answered to and the rule against its own figures
-(`PARTIAL 0/1`).
+elsewhere it verifies the seal, the protocol it answered to and a rule that follows from the
+sweep and from its own figures: its cells are those that pass the sweep's bar, their counts
+those of (a) (`PARTIAL 0/1`).
 """
 
 from __future__ import annotations
@@ -33,6 +37,7 @@ from __future__ import annotations
 import json
 import time
 from collections import Counter, defaultdict
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -54,16 +59,20 @@ from tracklab.pose.data import (
 )
 from tracklab.pose.jsonl import JOINTS
 from tracklab.pose.protocol import (
+    CALIBRATION_NAME,
     FPS,
     HEAD_TAIL_FRAMES,
     P_DIES_NOISE_MIN,
     PLATEAU_REL,
+    SANE_DELTA_HZ,
+    SANE_P_DIES_MAX,
+    SANE_POOL_WINDOWS,
+    SANE_SIGMA_B_HZ,
     band,
     file_sha256,
 )
 from tracklab.runs.protocol import seal, sealed
 
-CALIBRATION_NAME = "pose_calibration.json"
 SCHEMA_VERSION = 1
 WRITTEN = "2026-10-15"
 TIME = "first: no cadence computed"
@@ -92,6 +101,12 @@ Z_COLUMNS = (
     "ankles_minus_midhip_p50_m", "ankles_share_above",
 )  # fmt: skip
 CELL_COLUMNS = ("rho", "p_dies", *criteria.DEATHS)
+SANE_COLUMNS = ("cadence_hz", "rho", "p_dies", *criteria.DEATHS)
+BAR_COLUMNS = (
+    "cadence_hz", "windows", "nan_s", "rel_err_p95", "separation_high_m", "separation_low_m",
+    "adjusted_windows", "adjusted_nan_s", "adjusted_rel_err_p95", "adjusted_meets_bar",
+)  # fmt: skip
+AMPLITUDE_MAX_M = 4.0
 
 
 def _r(value: float, digits: int = 6) -> float | None:
@@ -293,18 +308,87 @@ def kills_the_noise(noise_rows: list[list[Any]], p_dies_min: float = P_DIES_NOIS
     return all(r[1] >= p_dies_min for r in noise_rows)
 
 
+def spares_the_sane(sane_rows: list[list[Any]], p_dies_max: float = SANE_P_DIES_MAX) -> bool:
+    """P(P6 dies | sane) at or under `p_dies_max` in every cadence and rho (column 2)."""
+    return all(r[2] <= p_dies_max for r in sane_rows)
+
+
+def is_eligible(cell: dict[str, Any]) -> bool:
+    """A cell the rule may choose: it passes the adjusted bar, kills the noise and spares the
+    sane instrument."""
+    return bool(cell["passes_adjusted_bar"] and cell["kills_the_noise"] and cell["spares_the_sane"])
+
+
 def choose(cells: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """The cell of least W and, at equal W, of greatest cap among those that kill the noise."""
-    alive = [c for c in cells if c["kills_the_noise"]]
-    if not alive:
+    """The cell of least W and, at equal W, of greatest cap among the eligible ones: those that
+    pass the adjusted bar, kill the noise and spare the sane instrument."""
+    eligible = [c for c in cells if c["eligible"]]
+    if not eligible:
         return None
-    best = min(alive, key=lambda c: (c["width"], -c["cap_cm"]))
+    best = min(eligible, key=lambda c: (c["width"], -c["cap_cm"]))
     return {"width": best["width"], "cap_cm": best["cap_cm"]}
+
+
+def candidates(sweep_report: dict[str, Any]) -> list[tuple[int, int]]:
+    """The cells that pass the bar of the sweep (separation 5.5 / 4.3 m), judged again from
+    its rows (`sweep.bar_cells`), never from the file's own flags."""
+    cells = sweep.bar_cells(sweep_report["s_rows"]["rows"], sweep.PROTOCOL)
+    return [(int(c["width"]), int(c["cap_cm"])) for c in cells if c["passes"]]
+
+
+def amplitude_for(windows: sweep.Windows, fps: float, cadence: float, target_sd_m: float) -> float:
+    """The separation A at which the median over `windows` of the sd of s (ddof 0, the sd of
+    (a')) equals `target_sd_m`, by bisection on [0, `AMPLITUDE_MAX_M`], rounded to 6 digits;
+    a bound when the target lies outside."""
+    noise, _ = sweep.signals(windows, fps=fps, cadence_hz=cadence, separation_m=0.0)
+    gait_only = sweep.signals(windows, fps=fps, cadence_hz=cadence, separation_m=1.0)[0] - noise
+
+    def median_sd(a: float) -> float:
+        return float(np.median(np.std(a * gait_only + noise, axis=1)))
+
+    lo, hi = 0.0, AMPLITUDE_MAX_M
+    if median_sd(lo) >= target_sd_m:
+        return lo
+    if median_sd(hi) <= target_sd_m:
+        return hi
+    for _ in range(50):
+        mid = (lo + hi) / 2.0
+        lo, hi = (mid, hi) if median_sd(mid) < target_sd_m else (lo, mid)
+    return round((lo + hi) / 2.0, 6)
+
+
+def adjusted_bar(
+    width: int,
+    cap: int,
+    targets: dict[str, float],
+    sweep_report: dict[str, Any],
+    clip_mae_cm: Array,
+    clip_fps: float,
+    grid: sweep.Grid,
+) -> list[list[Any]]:
+    """Per cadence: the sweep's bar (its row at rho 0), the separations that reproduce the
+    median sd of s of (a') in the high and the low band on that row's own windows, and the bar
+    judged again at the high band's separation, same generator, seed and windows."""
+    at = {(r[0], r[1], r[2]): r for r in sweep_report["s_rows"]["rows"] if r[3] == sweep.BAR_RHO}
+    rows = []
+    for cadence in grid.cadences_hz:
+        windows = sweep.s_windows(clip_mae_cm, grid, width, cap, cadence, sweep.BAR_RHO)
+        a_high = amplitude_for(windows, clip_fps, cadence, targets["high"])
+        a_low = amplitude_for(windows, clip_fps, cadence, targets["low"])
+        again = sweep.s_row(
+            clip_mae_cm, clip_fps, replace(grid, separation_m=a_high), width, cap, cadence,
+            sweep.BAR_RHO,
+        )  # fmt: skip
+        base = at[(width, cap, cadence)]
+        rows.append([cadence, base[4], base[5], base[8], a_high, a_low, again[4], again[5],
+                     again[8], again[9]])  # fmt: skip
+    return rows
 
 
 def rule_w_cap(
     table: list[list[Any]],
-    bar_cells: list[dict[str, Any]],
+    signal_sd: list[list[Any]],
+    sweep_report: dict[str, Any],
     clip_mae_cm: Array,
     clip_fps: float,
     *,
@@ -312,44 +396,67 @@ def rule_w_cap(
     draws: int = gait.DRAWS,
     reps: int = criteria.REPS,
     seed: int = criteria.SEED,
+    sane_windows: int = SANE_POOL_WINDOWS,
 ) -> dict[str, Any]:
-    """The rule of (W, cap) of the protocol, from (a)'s counts and the sweep: per cell that
-    passes the bar, P(P6 dies | noise) in every rho, and the cell it chooses (None: P6 dies)."""
+    """The rule of (W, cap) of the protocol, from (a), (a') and the sweep alone: per cell that
+    passes the sweep's bar, the bar judged again at the separation (a') measures, P(P6 dies |
+    noise) in every rho and P(P6 dies | sane) in every cadence and rho, and the cell it
+    chooses (None: P6 dies)."""
+    sd_col = SD_COLUMNS.index("s_sd_p50_m")
+    sd = {(r[1], r[2], r[3]): r[sd_col] for r in signal_sd if r[0] == "all"}
     cells = []
-    for cell in bar_cells:
-        if not cell["passes"]:
-            continue
-        width, cap = int(cell["width"]), int(cell["cap_cm"])
+    for width, cap in candidates(sweep_report):
         high, low = counts_for_rule(table, width, cap)
-        sims = []
+        targets = {b: float(sd[(width, cap, b)]) for b in ("high", "low")}
+        bar = adjusted_bar(width, cap, targets, sweep_report, clip_mae_cm, clip_fps, grid)
+        noise = []
         for rho in grid.rhos:
             pool = sweep.noise_pool(
                 clip_mae_cm, clip_fps, width=width, cap=cap, rho=rho, grid=grid, draws=draws
             )
             sim = criteria.simulate_m1_m2(high, low, pool, pool, reps=reps, seed=seed)
-            sims.append([rho, sim["p_dies"], *(sim["by"][d] for d in criteria.DEATHS)])
-        cells.append(
-            {
-                "width": width,
-                "cap_cm": cap,
-                "players": len(high),
-                "players_ge_min_high": sum(n >= criteria.MIN_WINDOWS for n in high),
-                "players_ge_min_both": sum(
-                    min(a, b) >= criteria.MIN_WINDOWS for a, b in zip(high, low, strict=True)
-                ),
-                "windows_high": sum(high),
-                "windows_low": sum(low),
-                "noise": {"columns": list(CELL_COLUMNS), "rows": sims},
-                "kills_the_noise": kills_the_noise(sims),
-            }
-        )
+            noise.append([rho, sim["p_dies"], *(sim["by"][d] for d in criteria.DEATHS)])
+        sane = []
+        for row in bar:
+            cadence, a_high, a_low = row[0], row[4], row[5]
+            for rho in grid.rhos:
+                pools = [
+                    sweep.sane_pool(
+                        clip_mae_cm, clip_fps, width=width, cap=cap, cadence=cadence, rho=rho,
+                        separation_m=a, band=b, windows=sane_windows, grid=grid,
+                        draws=draws if b == "high" else 0,
+                    )
+                    for a, b in ((a_high, "high"), (a_low, "low"))
+                ]  # fmt: skip
+                sim = criteria.simulate_sane(
+                    high, low, pools[0], pools[1], cadence_hz=cadence, delta_hz=SANE_DELTA_HZ,
+                    sigma_b_hz=SANE_SIGMA_B_HZ, reps=reps, seed=seed,
+                )  # fmt: skip
+                sane.append([cadence, rho, sim["p_dies"], *(sim["by"][d] for d in criteria.DEATHS)])
+        cell: dict[str, Any] = {
+            "width": width,
+            "cap_cm": cap,
+            **cell_counts(high, low),
+            "target_s_sd_m": targets,
+            "bar": {"columns": list(BAR_COLUMNS), "rows": bar},
+            "passes_adjusted_bar": all(r[-1] for r in bar),
+            "noise": {"columns": list(CELL_COLUMNS), "rows": noise},
+            "kills_the_noise": kills_the_noise(noise),
+            "sane": {"columns": list(SANE_COLUMNS), "rows": sane},
+            "spares_the_sane": spares_the_sane(sane),
+        }
+        cells.append({**cell, "eligible": is_eligible(cell)})
     chosen = choose(cells)
     return {
         "p_dies_min": P_DIES_NOISE_MIN,
+        "sane_p_dies_max": SANE_P_DIES_MAX,
+        "sane_delta_hz": SANE_DELTA_HZ,
+        "sane_sigma_b_hz": SANE_SIGMA_B_HZ,
         "reps": reps,
         "draws": draws,
         "seed": seed,
         "pool_windows": grid.windows_s,
+        "sane_pool_windows": sane_windows,
         "cells": cells,
         "chosen": chosen,
         "verdict": (
@@ -357,6 +464,19 @@ def rule_w_cap(
             if chosen is None
             else f"W {chosen['width']}, cap {chosen['cap_cm']} cm"
         ),
+    }
+
+
+def cell_counts(high: list[int], low: list[int]) -> dict[str, int]:
+    """What a cell of the rule says about its counts: they come from `windows.rows` alone."""
+    return {
+        "players": len(high),
+        "players_ge_min_high": sum(n >= criteria.MIN_WINDOWS for n in high),
+        "players_ge_min_both": sum(
+            min(a, b) >= criteria.MIN_WINDOWS for a, b in zip(high, low, strict=True)
+        ),
+        "windows_high": sum(high),
+        "windows_low": sum(low),
     }
 
 
@@ -399,6 +519,7 @@ def build_calibration(
         raise ValueError("the clip is not the one the sweep was drawn from")
     found = admitted(rows)
     table = window_rows(rows, found["counts"])
+    signal_sd = sd_rows(found["features"])
     return seal(
         {
             "schema_version": SCHEMA_VERSION,
@@ -427,7 +548,7 @@ def build_calibration(
                 "note": "(a') cap on the ankles; sd over each window's frames, ddof 0; period "
                 "'all' pools both",
                 "columns": list(SD_COLUMNS),
-                "rows": sd_rows(found["features"]),
+                "rows": signal_sd,
             },
             "mae_by_joint": {
                 "note": "(b) over every row with a pose",
@@ -446,14 +567,18 @@ def build_calibration(
                 "columns": list(Z_COLUMNS),
                 "rows": z_rows(rows),
             },
-            "rule_w_cap": rule_w_cap(table, sweep_report["bar"]["cells"], clip_mae, fps),
+            "rule_w_cap": rule_w_cap(table, signal_sd, sweep_report, clip_mae, fps),
         }
     )
 
 
-def consistency_problems(current: dict[str, Any], calibration: int) -> list[str]:
+def consistency_problems(
+    current: dict[str, Any], calibration: int, sweep_report: dict[str, Any]
+) -> list[str]:
     """What the file must satisfy whatever bronze is at hand: the seal, the protocol, the match,
-    the shas, and a rule that follows from its own figures."""
+    the shas, and a rule that follows from the sweep and its own figures: its cells are the
+    ones that pass the sweep's bar, judged again from the sweep's rows; their counts come from
+    `windows.rows`; the base bar is the sweep's; each flag follows its rows."""
     problems: list[str] = []
     if not sealed(current):
         problems.append("content_sha256 does not cover the file")
@@ -468,23 +593,51 @@ def consistency_problems(current: dict[str, Any], calibration: int) -> list[str]
         problems.append("inputs.sweep.sha256 is not the protocol's")
     try:
         rule = current["rule_w_cap"]
-        for cell in rule["cells"]:
-            if cell["kills_the_noise"] != kills_the_noise(
-                cell["noise"]["rows"], rule["p_dies_min"]
-            ):
-                problems.append(f"rule_w_cap: W {cell['width']} / {cell['cap_cm']} does not "
-                                "follow its figures")  # fmt: skip
-        if rule["chosen"] != choose(rule["cells"]):
+        table = current["windows"]["rows"]
+        cells = rule["cells"]
+        if [(c["width"], c["cap_cm"]) for c in cells] != candidates(sweep_report):
+            problems.append("rule_w_cap.cells are not the cells that pass the sweep's bar")
+        at = {
+            (r[0], r[1], r[2]): r for r in sweep_report["s_rows"]["rows"] if r[3] == sweep.BAR_RHO
+        }
+        for cell in cells:
+            name = f"rule_w_cap: W {cell['width']} / {cell['cap_cm']}"
+            recount = cell_counts(*counts_for_rule(table, cell["width"], cell["cap_cm"]))
+            if {k: cell[k] for k in recount} != recount:
+                problems.append(f"{name}: its counts are not those of windows.rows")
+            bar = cell["bar"]["rows"]
+            for c, n, nan, p95, _a_high, _a_low, n2, nan2, p95_2, meets in bar:
+                base = at[(cell["width"], cell["cap_cm"], c)]
+                again = sweep.meets_bar([c, None, None, None, n2, nan2, None, None, p95_2])
+                if [n, nan, p95] != [base[4], base[5], base[8]] or meets != again:
+                    problems.append(f"{name}: the bar at {c} Hz does not follow its figures")
+            follows = (
+                cell["passes_adjusted_bar"] == all(r[-1] for r in bar),
+                cell["kills_the_noise"]
+                == kills_the_noise(cell["noise"]["rows"], rule["p_dies_min"]),
+                cell["spares_the_sane"]
+                == spares_the_sane(cell["sane"]["rows"], rule["sane_p_dies_max"]),
+                cell["eligible"] == is_eligible(cell),
+            )
+            if not all(follows):
+                problems.append(f"{name} does not follow its figures")
+        if rule["chosen"] != choose(cells):
             problems.append("rule_w_cap.chosen does not follow the cells")
-    except (KeyError, TypeError) as exc:
+    except (KeyError, TypeError, ValueError) as exc:
         problems.append(f"rule_w_cap is incomplete: {exc!r}")
     return problems
 
 
 def _summary(payload: dict[str, Any], status: str) -> str:
     rule = payload["rule_w_cap"]
+    flags = (
+        ("passes_adjusted_bar", "bar"),
+        ("kills_the_noise", "noise"),
+        ("spares_the_sane", "sane"),
+    )
     cells = ", ".join(
-        f"W{c['width']}/{c['cap_cm']}:{'kills' if c['kills_the_noise'] else 'spares'}"
+        f"W{c['width']}/{c['cap_cm']}:"
+        + "+".join(short if c[key] else f"no-{short}" for key, short in flags)
         for c in rule["cells"]
     )
     return (
@@ -567,7 +720,8 @@ def run_pose_probe(
         return 1
     text = path.read_text(encoding="utf-8")
     current = json.loads(text)
-    problems = consistency_problems(current, calibration)
+    sweep_report = json.loads((reports_dir / sweep.SWEEP_NAME).read_text(encoding="utf-8"))
+    problems = consistency_problems(current, calibration, sweep_report)
     if problems:
         print(f"pose probe --check: {path} " + "; ".join(problems))
         return 1

@@ -4,6 +4,7 @@ holds a pose protocol for the guard to read. No real pose is read by either."""
 
 from __future__ import annotations
 
+import importlib.metadata
 import json
 import subprocess
 from dataclasses import dataclass
@@ -49,10 +50,11 @@ def runner(
     period: int | NDArray[np.int64] = 1,
     mae_cm: float = 12.0,
     fps: float = 25.0,
+    cadence_hz: float = 3.0,
 ) -> Body:
     """A body that travels along +x at `speed_m_s`, its ankles swinging along the way and its
     nose above midHip: joints at the body's x, y, every joint's z its index / 100 except the
-    nose (+0.7 m) and the ankles (-0.7 m, rising in turn)."""
+    nose (+0.7 m) and the ankles (-0.7 m, rising in turn), `cadence_hz` steps a second."""
     t = np.arange(n) / fps
     x = 10.0 + speed_m_s * t
     y = np.full(n, -5.0)
@@ -60,13 +62,13 @@ def runner(
     joints[:, :, 0] = x[:, None]
     joints[:, :, 1] = y[:, None]
     joints[:, :, 2] = np.arange(len(JOINTS)) / 100.0
-    swing = 0.6 * np.sin(np.pi * 3.0 * t)
+    swing = 0.6 * np.sin(np.pi * cadence_hz * t)
     left, right = JOINTS.index("lAnkle"), JOINTS.index("rAnkle")
     joints[:, left, 0] += swing
     joints[:, right, 0] -= swing
     joints[:, JOINTS.index("nose"), 2] = 0.7
-    joints[:, left, 2] = -0.7 + 0.1 * np.maximum(np.cos(np.pi * 3.0 * t), 0.0)
-    joints[:, right, 2] = -0.7 + 0.1 * np.maximum(-np.cos(np.pi * 3.0 * t), 0.0)
+    joints[:, left, 2] = -0.7 + 0.1 * np.maximum(np.cos(np.pi * cadence_hz * t), 0.0)
+    joints[:, right, 2] = -0.7 + 0.1 * np.maximum(-np.cos(np.pi * cadence_hz * t), 0.0)
     periods = np.broadcast_to(np.asarray(period, dtype=np.int64), (n,)).copy()
     return Body(
         player_id,
@@ -79,12 +81,36 @@ def runner(
     )
 
 
-def write_bronze(root: Path, match_id: int, bodies: list[Body], *, first_row: int = 0) -> Path:
+def write_lineup(root: Path, match_id: int, rows: list[tuple[int, int, int]]) -> None:
+    """`match_players` of `match_id` with (id, team_id, number) per player, nothing else."""
+    path = bronze_path(root, "football", "match_players", match_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pq.write_table(
+        pa.table(
+            {
+                "match_id": [match_id] * len(rows),
+                "id": [r[0] for r in rows],
+                "team_id": [r[1] for r in rows],
+                "number": [r[2] for r in rows],
+            }
+        ),
+        path,
+    )
+
+
+def write_bronze(
+    root: Path, match_id: int, bodies: list[Body], *, first_row: int = 0, stored_as: int = 0
+) -> Path:
     """Both bronze tables of `match_id` under `root`, one frame row per frame any body has
-    (`first_row` > 0 makes it a slice, as `tracklab fixtures` cuts it)."""
+    (`first_row` > 0 makes it a slice, as `tracklab fixtures` cuts it); `stored_as`, a match id
+    other than `match_id` written in the rows' `match_id`."""
     frames = sorted({int(f) for b in bodies for f in b.frames})
     period_of = {int(f): int(p) for b in bodies for f, p in zip(b.frames, b.periods, strict=True)}
-    lineage = {"sport": "football", "match_id": match_id, "source_file": f"raw/{match_id}.zip"}
+    lineage = {
+        "sport": "football",
+        "match_id": stored_as or match_id,
+        "source_file": f"raw/{match_id}.zip",
+    }
     p_cols: dict[str, list[Any]] = {name: [] for name in BODYPOSE_PLAYERS.names}
     for b in bodies:
         for i in range(len(b.frames)):
@@ -140,8 +166,12 @@ def _git(repo: Path, *args: str) -> None:
 
 
 def protocol_payload(stage: str = "design", **extra: Any) -> dict[str, Any]:
-    """A sealed pose protocol with the plan's split: what the guard reads, nothing more."""
-    design = {"split": {"calibration": [CALIBRATION_MATCH], "confirmation": [CONFIRMATION_MATCH]}}
+    """A sealed pose protocol with the plan's split and the installed numpy: what the guard
+    reads, nothing more."""
+    design = {
+        "split": {"calibration": [CALIBRATION_MATCH], "confirmation": [CONFIRMATION_MATCH]},
+        "dependencies": {"numpy": importlib.metadata.version("numpy")},
+    }
     history = [{"stage": "design", "task": 60, "date": "2026-10-15"}]
     if stage == "frozen":
         history.append({"stage": "frozen", "task": 60, "date": "2026-10-16"})
@@ -162,17 +192,48 @@ class PoseRepo:
     def __init__(self, root: Path) -> None:
         self.root = root
 
-    def commit(self, payload: dict[str, Any] | None = None, message: str = "commit") -> None:
+    def commit(
+        self,
+        payload: dict[str, Any] | None = None,
+        message: str = "commit",
+        *,
+        at: str = data.PROTOCOL_IN_REPO,
+    ) -> None:
         if payload is not None:
-            path = self.root / data.PROTOCOL_IN_REPO
+            path = self.root / at
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         _git(self.root, "add", ".")
         _git(self.root, "commit", "-q", "--allow-empty", "-m", message)
 
-    def frozen(self) -> dict[str, Any]:
-        """The protocol frozen with the `pose/` tree HEAD holds now."""
-        return protocol_payload("frozen", frozen={"code_tree_sha": data.code_tree_sha()})
+    def frozen(self, width: int = 25, cap_cm: int = 20) -> dict[str, Any]:
+        """The protocol frozen at (width, cap_cm) with the `pose/` tree HEAD holds now."""
+        return protocol_payload(
+            "frozen",
+            frozen={"code_tree_sha": data.code_tree_sha(), "width": width, "cap_cm": cap_cm},
+        )
+
+    def verdict(self, protocol: dict[str, Any], **change: Any) -> dict[str, Any]:
+        """A sealed second-time verdict answering to `protocol`, alive with a finite half IQR,
+        `change` applied on top (keys `alive`, `half_iqr_hz`, `code_tree_sha`, `answers_to`)."""
+        return seal(
+            {
+                "protocol": {
+                    k: change.get("answers_to", protocol)[k]
+                    for k in ("stage", "fingerprint", "content_sha256")
+                },
+                "code_tree_sha": change.get("code_tree_sha", protocol["frozen"]["code_tree_sha"]),
+                "verdict": {"alive": change.get("alive", True)},
+                "m4": {"half_iqr_hz": change.get("half_iqr_hz", 0.1)},
+            }
+        )
+
+    def open(self, width: int = 25, cap_cm: int = 20) -> dict[str, Any]:
+        """Commit the frozen protocol, then its verdict: the guard opens."""
+        frozen = self.frozen(width, cap_cm)
+        self.commit(frozen, "frozen")
+        self.commit(self.verdict(frozen), "verdict", at=data.VERDICT_IN_REPO)
+        return frozen
 
 
 @pytest.fixture
@@ -200,6 +261,7 @@ def pose_kit() -> SimpleNamespace:
         Body=Body,
         runner=runner,
         write_bronze=write_bronze,
+        write_lineup=write_lineup,
         protocol_payload=protocol_payload,
         calibration=CALIBRATION_MATCH,
         confirmation=CONFIRMATION_MATCH,

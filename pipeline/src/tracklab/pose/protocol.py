@@ -6,8 +6,11 @@ number from the constants of the code that applies it (`gait`, `sweep`, `criteri
 ones below), so a threshold moved by hand shows as a diff to `--check` (D13 of the sister
 repo). The sha256 of the versioned sweep (`reports/pose_sweep.json`, committed before the probe)
 and of the coverage (`reports/pose_coverage.json`, what is already seen of 1996435) sit inside
-`design`, so inside `fingerprint`. Write mode never overwrites a frozen file; the freeze, and the
-check of a frozen file, are the second part of phase B2.
+`design`, so inside `fingerprint`. Write mode never overwrites a file that is not in design.
+`freeze_payload` is what `tracklab pose freeze` (`freeze.py`) writes, and on a frozen file
+`--check` verifies with `frozen_problems` what the freeze must keep: the design and its
+fingerprint, the evidence, the seal, the history, and a `frozen` block whose (W, cap) is the
+cell the sealed `pose_calibration.json` beside it chose.
 
 `evidence` holds the denominators of M1 per match (players the file lists, players with a
 pose), counted through `data.CountingHandle`, which returns integers and reads no position. The
@@ -29,11 +32,13 @@ from tracklab.pose import criteria, gait, sweep
 from tracklab.pose.coverage import COVERAGE_NAME, MANIFEST, match_ids
 from tracklab.pose.data import STAGE_DESIGN, STAGE_FROZEN, CountingHandle
 from tracklab.pose.jsonl import JOINTS
-from tracklab.runs.protocol import fingerprint, seal
+from tracklab.runs.protocol import fingerprint, seal, sealed
 
 PROTOCOL_NAME = "pose_protocol.json"
+CALIBRATION_NAME = "pose_calibration.json"
 SCHEMA_VERSION = 1
 WRITTEN = "2026-10-15"
+REVISED = "2026-10-15"  # the review of the first part, before the freeze
 TASK = 60
 CALIBRATION = (1925299,)
 CONFIRMATION = (1996435,)
@@ -41,10 +46,20 @@ FPS = 25.0  # the Body Pose files' rate (bronze/football/bodypose.py, the README
 BAND_LOW_M_S = 3.0  # the plan's hypotheses, fixed by the second review; no provider threshold
 BAND_HIGH_M_S = 5.5
 P_DIES_NOISE_MIN = 0.95
+SANE_P_DIES_MAX = 0.05  # the mirror of P_DIES_NOISE_MIN
+SANE_DELTA_HZ = 0.05  # high - low band of a sane player: no source, PENDIENTE DE CONFIRMAR
+SANE_SIGMA_B_HZ = 0.1  # sd between players: no source, PENDIENTE DE CONFIRMAR
+SANE_POOL_WINDOWS = 4000  # resampled with replacement; a player draws at most a few hundred
 HALF_IQR = 0.5
 HEAD_TAIL_FRAMES = 5  # two native samples of the 10 fps tracking interpolated to 25 (review 6b)
 PLATEAU_REL = 0.10  # (f): descriptive, no source, read by no rule
 NUMPY_VERSION = importlib.metadata.version("numpy")
+FREEZE_NOTE = (
+    "frozen with the (W, cap) the rule chose in reports/pose_calibration.json (first time "
+    "of the probe, no cadence) and the sha of the committed pose/ tree; the design is "
+    "untouched, same fingerprint; next, the second time on 1925299 (pose verdict) in a "
+    "commit of its own, and only then 1996435"
+)
 
 
 def band(speed_m_s: float) -> str:
@@ -119,6 +134,11 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
             "tiling": "from the start of each stretch, without overlap (gait.windows)",
             "inside_one_period": True,
             "w_and_cap": "chosen by rule_w_cap, blind, after the probe; written at the freeze",
+            "is_detected": (
+                "a pose whose player the provider did not detect in that frame (is_detected "
+                "false) enters the windows as delivered: the pose exists and its mae is the "
+                "file's; how many there are per match is in pose_coverage.json"
+            ),
         },
         "bands": {
             "low_m_s": [BAND_LOW_M_S, BAND_HIGH_M_S],
@@ -151,9 +171,34 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
         },
         "rule_w_cap": {
             "rule": (
-                "among the cells that pass the bar in the sweep and in which M1 + M2 kill the "
-                "noise, the one of least W and, at equal W, of greatest cap; if none, P6 dies"
+                "among the cells that pass the bar in the sweep (separation 5.5 / 4.3 m), pass it "
+                "again at the separation the probe measures, and in which M1 + M2 kill the "
+                "noise and spare a sane instrument, the one of least W and, at equal W, of "
+                "greatest cap; if none, P6 dies"
             ),
+            "adjusted_bar": (
+                "per cell and cadence, on the very windows of the sweep's row at rho 0 (same "
+                "generator, seed and 40,000 windows), the separation A whose median sd of s "
+                "(ddof 0) equals the median sd of s of the probe's (a') in the high band of that "
+                "cell (both periods), by bisection; the bar judged again at A; it reads no "
+                "cadence and only hardens the bar: a cell must pass both"
+            ),
+            "spares_the_sane": (
+                "M1 and M2 simulated (criteria.simulate_sane) with the same counts on sane pools "
+                "of (W, cap, cadence, rho) drawn by the sweep's generator at the adjusted "
+                "separation of each band (the low band's from its own (a') sd), "
+                f"{SANE_POOL_WINDOWS} windows each, the high ones with their Monte Carlo copies; "
+                f"player i runs at c_i = cadence + {SANE_SIGMA_B_HZ} Hz x N(0, 1) in the high band "
+                f"and c_i - {SANE_DELTA_HZ} Hz in the low one, a window scaled by c_i / cadence "
+                "(the estimator's relative error, not its error at c_i); P(P6 dies | sane) <= "
+                "sane_p_dies_max in every cadence and rho; the separation is matched at rho 0, "
+                "which at rho > 0 gives a smaller signal (conservative); delta and sigma_b have "
+                "no source: PENDIENTE DE CONFIRMAR"
+            ),
+            "sane_p_dies_max": SANE_P_DIES_MAX,
+            "sane_delta_hz": SANE_DELTA_HZ,
+            "sane_sigma_b_hz": SANE_SIGMA_B_HZ,
+            "sane_pool_windows": SANE_POOL_WINDOWS,
             "kills_the_noise": (
                 "M1 and M2 simulated as they are applied (criteria.simulate_m1_m2) with the "
                 "counts of admitted windows per player and band of the probe's (a), cap on the "
@@ -166,7 +211,9 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
             "draws": gait.DRAWS,
             "seed": criteria.SEED,
             "if_none": "P6 dies: the instrument cannot be told from the noise",
-            "reads": "the probe's (a) and the sweep, never a cadence or a discrepancy of data",
+            "reads": (
+                "the probe's (a) and (a') and the sweep, never a cadence or a discrepancy of data"
+            ),
         },
         "monte_carlo": {
             "noise": (
@@ -175,8 +222,8 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
             ),
             "draws": gait.DRAWS,
             "seed_per_window": (
-                f"numpy default_rng([{gait.SEED}, match_id, player_id, first frame of the "
-                "window]): every window its own stream (record of phase B1)"
+                f"gait.window_seed: numpy default_rng([{gait.SEED}, match_id, player_id, first "
+                "frame of the window]), every window its own stream (record of phase B1)"
             ),
             "invalid_draw": (
                 "in a player's draw, the median ignores his NaN windows (nanmedian); a draw "
@@ -208,7 +255,9 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
                 "windows) -> dies; or, among the players of M1, the median of the propagated sd "
                 f"of the median of their first {criteria.MIN_WINDOWS} finite high windows above "
                 f"{HALF_IQR} x the IQR between players of that same median -> dies: the "
-                "instrument does not see even what is forced"
+                "instrument does not see even what is forced, or the cadence does not rise "
+                f"{SANE_DELTA_HZ} Hz between the bands, or the squad does not spread "
+                f"{SANE_SIGMA_B_HZ} Hz (the sane instrument the rule asked to survive)"
             ),
             "M3": (
                 "no verdict (decision of Javier, fourth review): per player, the median of "
@@ -217,8 +266,9 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
             ),
             "M4": (
                 "M2 in 1996435 with the same numbers; its second clause compares the propagated "
-                f"sd of 1996435 with {HALF_IQR} x the IQR of 1925299, written as a number "
-                "before 1996435 is opened, never with the IQR of its own squad; if its admitted "
+                f"sd of 1996435 with {HALF_IQR} x the IQR of 1925299, written as "
+                "m4.half_iqr_hz in pose_verdict.json (second time) before 1996435 is opened, "
+                "never with the IQR of its own squad; if its admitted "
                 "windows (before the NaN rule) do not reach any of the minima of M1 and M2, "
                 "'not evaluable by coverage' and P6 is unreplicated, not dead; 'replication "
                 "failed' only if they reach them and M2 fails"
@@ -243,20 +293,30 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
                 "rule_w_cap, with its figures",
             ],
             "second_time": [
-                "after the freeze: (c) cad_s per player and band, the sign of high - low; (d) "
-                "the concordance of M3; (e) the propagated error against the spread between "
-                "players; the NaN rates; the distribution of cad_s; the slope of h on s by "
-                "heading; M1 and M2"
+                "after the freeze, tracklab pose verdict, reports/pose_verdict.json in a commit "
+                "of its own: (c) cad_s per player and band, the sign of high - low; (d) the "
+                "concordance of M3 with the sweep's rows of h; (e) the propagated error "
+                "against the spread between players; the NaN rates; the distribution of cad_s "
+                "with the sweep's swap rows; the slope of h on s by heading; the verdict of M1 "
+                "and M2 and m4.half_iqr_hz; sealed, with the frozen protocol's content_sha256 "
+                "and a code_tree_sha equal to frozen.code_tree_sha"
             ],
         },
+        "guard": (
+            "1996435 opens only when HEAD's protocol is frozen with a frozen entry after the "
+            "design ones; HEAD's pose/ tree is frozen.code_tree_sha; the installed numpy is "
+            "dependencies.numpy; HEAD holds pose_verdict.json sealed, answering to the frozen "
+            "protocol's content_sha256 and computed by frozen.code_tree_sha, with P6 alive and "
+            "a finite m4.half_iqr_hz (if M1 or M2 kill on 1925299, 1996435 never opens); and the "
+            "working tree is clean"
+        ),
         "order": [
             "sweep (committed)",
             "protocol in design (committed)",
-            "probe, first time (committed)",
-            "rule_w_cap",
-            "frozen",
-            "M1 and M2 on 1925299",
-            "1996435: M2 (M4)",
+            "probe, first time, and rule_w_cap (committed)",
+            "frozen at the chosen (W, cap) (pose freeze, its own commit)",
+            "second time on 1925299: M1, M2 and m4.half_iqr_hz (pose verdict, its own commit)",
+            "1996435, only if alive: the metric and M4 (pose metric, task 61)",
         ],
         "dependencies": {"numpy": NUMPY_VERSION},
     }
@@ -292,7 +352,20 @@ def build_protocol(
                         "phase B2, first part: the protocol after the six reviews, as code, "
                         "after the sweep and before the probe"
                     ),
-                }
+                },
+                {
+                    "stage": STAGE_DESIGN,
+                    "task": TASK,
+                    "date": REVISED,
+                    "note": (
+                        "review of phase B2's first part, before the freeze: the bar judged "
+                        "again at the separation the probe's (a') measures (it had been judged "
+                        "at 5.5 / 4.3 m only), a sane instrument that must survive M1 and M2 "
+                        "in the rule, the second time and its verdict file, M4's half IQR "
+                        "written there, the guard's conditions on it and on numpy, and the "
+                        "poses with is_detected false declared; the probe is run again"
+                    ),
+                },
             ],
         }
     )
@@ -349,25 +422,112 @@ def run_pose_protocol(
         return 1
     text = path.read_text(encoding="utf-8")
     current = json.loads(text)
-    if current.get("stage") != STAGE_DESIGN:
-        stage = current.get("stage")
-        what = (
-            "the check of a frozen file is written with the freeze" if stage == STAGE_FROZEN else ""
-        )
-        print(f"pose protocol --check: stage {stage!r} is not checked here; {what or 'unknown'}")
+    stage = current.get("stage")
+    if stage not in (STAGE_DESIGN, STAGE_FROZEN):
+        print(f"pose protocol --check: unknown stage {stage!r}")
         return 1
     written = (current.get("evidence") or {}).get("denominators", {}).get("per_match", {})
     evidence = {m: c if c is not None else written.get(m) for m, c in counted.items()}
     expected = build_protocol(sweep_sha, coverage_sha, ids, evidence)
     print(_summary(expected, status))
-    if render(expected) != text:
-        print(f"pose protocol --check: {path} differs from what the code writes")
+    if stage == STAGE_DESIGN:
+        problems = [] if render(expected) == text else ["differs from what the code writes"]
+    else:
+        calibration = reports_dir / CALIBRATION_NAME
+        problems = frozen_problems(
+            current,
+            expected,
+            json.loads(calibration.read_text(encoding="utf-8")) if calibration.is_file() else None,
+        )
+    if problems:
+        print(f"pose protocol --check: {path} " + "; ".join(problems))
         return 1
     print(
         f"pose protocol --check: {path} matches ({status}: {done} match(es) recounted, "
-        f"{len(ids) - done} as written; stage {STAGE_DESIGN})"
+        f"{len(ids) - done} as written; stage {stage})"
     )
     return 0
+
+
+FROZEN_KEEPS = ("schema_version", "written", "plan", "fingerprint", "design", "evidence")
+
+
+def freeze_payload(
+    current: dict[str, Any], calibration: dict[str, Any], *, code_tree: str, date: str
+) -> dict[str, Any]:
+    """The protocol as the freeze commits it: stage frozen, a `frozen` block with the (W, cap)
+    the rule chose in `calibration` (the sealed first time of the probe), that file's seal, and
+    the sha of the `pose/` tree committed in HEAD; a frozen entry after the design ones in
+    `history`; the design untouched; resealed. Refuses a file that is not a sealed design, a
+    calibration whose rule chose nothing (P6 died of noise: nothing to freeze) or a tree sha
+    that is not one."""
+    if current.get("stage") != STAGE_DESIGN:
+        raise ValueError(f"only a protocol in stage {STAGE_DESIGN!r} freezes")
+    if not sealed(current) or current.get("fingerprint") != fingerprint(current["design"]):
+        raise ValueError("the protocol to freeze fails its seal or its fingerprint")
+    chosen = (calibration.get("rule_w_cap") or {}).get("chosen")
+    if not sealed(calibration) or chosen is None:
+        raise ValueError("the calibration is not sealed or its rule chose no (W, cap)")
+    if len(code_tree) != 40:
+        raise ValueError(f"code_tree must be a git tree sha, got {code_tree!r}")
+    entry = {"stage": STAGE_FROZEN, "task": TASK, "date": date, "note": FREEZE_NOTE}
+    body = {k: v for k, v in current.items() if k != "content_sha256"}
+    return seal(
+        {
+            **body,
+            "stage": STAGE_FROZEN,
+            "frozen": {
+                "task": TASK,
+                "date": date,
+                "width": int(chosen["width"]),
+                "cap_cm": int(chosen["cap_cm"]),
+                "code_tree_sha": code_tree,
+                "calibration_from": {
+                    "file": f"pipeline/reports/{CALIBRATION_NAME}",
+                    "content_sha256": calibration["content_sha256"],
+                },
+            },
+            "history": [*body["history"], entry],
+        }
+    )
+
+
+def frozen_problems(
+    current: dict[str, Any], expected: dict[str, Any], calibration: dict[str, Any] | None
+) -> list[str]:
+    """What a frozen file must keep from the design the code writes (`expected`) and what the
+    freeze must leave verifiable: the seal, the history, and a `frozen` block whose (W, cap) is
+    the one the sealed calibration's rule chose. Whether its tree sha is HEAD's is the guard's
+    question (`data`), not a file's."""
+    problems: list[str] = []
+    if not sealed(current):
+        problems.append("content_sha256 does not cover the file")
+    for key in FROZEN_KEEPS:
+        if current.get(key) != expected[key]:
+            problems.append(f"{key} differs from what the code writes")
+    history = current.get("history") or []
+    opening = expected["history"]
+    if history[: len(opening)] != opening:
+        problems.append("history does not open with the design entries")
+    if not any(h.get("stage") == STAGE_FROZEN for h in history[len(opening) :]):
+        problems.append("history has no frozen entry")
+    frozen = current.get("frozen")
+    if not isinstance(frozen, dict):
+        return [*problems, "no frozen block"]
+    tree = frozen.get("code_tree_sha")
+    if not isinstance(tree, str) or len(tree) != 40:
+        problems.append("frozen.code_tree_sha is not a git tree sha")
+    if calibration is None or not sealed(calibration):
+        problems.append(f"no sealed {CALIBRATION_NAME} beside it")
+        return problems
+    if (frozen.get("calibration_from") or {}).get("content_sha256") != calibration.get(
+        "content_sha256"
+    ):
+        problems.append(f"frozen.calibration_from is not the {CALIBRATION_NAME} beside it")
+    chosen = (calibration.get("rule_w_cap") or {}).get("chosen") or {}
+    if (frozen.get("width"), frozen.get("cap_cm")) != (chosen.get("width"), chosen.get("cap_cm")):
+        problems.append("frozen (width, cap_cm) is not the cell the calibration's rule chose")
+    return problems
 
 
 def _summary(payload: dict[str, Any], status: str) -> str:

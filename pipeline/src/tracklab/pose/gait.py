@@ -28,7 +28,10 @@ this module's imports): the caller hands over one player's frames as `bronze` st
 * `propagated_error`: Monte Carlo with a fixed seed; every joint of every frame gets gaussian
   noise whose sd is its `p90_mae_cm` (the conservative reading: a p90 taken as an sd), and the
   sd of each estimate over the draws is returned, with the sd of cad_s - cad_h taken draw by
-  draw. The x, y of the file carry no predicted error, so none is added to them.
+  draw. The x, y of the file carry no predicted error, so none is added to them. The seed may
+  be a sequence: on data every window gets its own, `window_seed` (phase B1's record: one seed
+  for all would repeat draw k's noise in every window). `monte_carlo` returns the draws
+  themselves, which M2 resamples, and `summarise` turns them into the sds.
 """
 
 from __future__ import annotations
@@ -243,18 +246,25 @@ def _sd(values: Array) -> Array:
     return values.std(axis=0, ddof=1) if len(values) > 1 else np.full(values.shape[1], np.nan)
 
 
-def propagated_error(
+def window_seed(match_id: int, player_id: int, frame: int) -> list[int]:
+    """The seed of one window's Monte Carlo on data: `SEED`, the match, the player and the
+    window's first frame (the protocol's design.monte_carlo.seed_per_window)."""
+    return [SEED, match_id, player_id, frame]
+
+
+def monte_carlo(
     joints: Array,
     xy: Array,
     mae_cm: Array,
     *,
     fps: float,
     draws: int = DRAWS,
-    seed: int = SEED,
-) -> PropagatedError:
-    """The sd of `estimate` when each joint of each frame moves by N(0, its `mae`) per axis.
-    Noise is added to the centred joints and `estimate` centres again on the noisy midHip,
-    which is the same as adding it to the joints as the file has them."""
+    seed: int | list[int] = SEED,
+) -> Array:
+    """(draws, 4): cad_s, separation, step and cad_h of `estimate` when each joint of each frame
+    moves by N(0, its `mae`) per axis. Noise is added to the centred joints and `estimate`
+    centres again on the noisy midHip, which is the same as adding it to the joints as the file
+    has them."""
     rng = np.random.default_rng(seed)
     centred = centre_on_midhip(joints)
     sd_m = np.asarray(mae_cm, dtype=np.float64)[:, :, None] / 100.0
@@ -262,6 +272,26 @@ def propagated_error(
     for i in range(draws):
         g = estimate(centred + rng.standard_normal(centred.shape) * sd_m, xy, fps=fps)
         values[i] = (g.cadence_hz, g.ankle_separation_m, g.step_length_m, g.cadence_h_hz)
+    return values
+
+
+def propagated_error(
+    joints: Array,
+    xy: Array,
+    mae_cm: Array,
+    *,
+    fps: float,
+    draws: int = DRAWS,
+    seed: int | list[int] = SEED,
+) -> PropagatedError:
+    """The sd of `estimate` over `monte_carlo`'s draws."""
+    return summarise(monte_carlo(joints, xy, mae_cm, fps=fps, draws=draws, seed=seed))
+
+
+def summarise(values: Array) -> PropagatedError:
+    """The sds of `monte_carlo`'s draws: of cad_s, separation and step over the draws with the
+    three finite; of cad_h and cad_s - cad_h over those with both cadences finite."""
+    draws = len(values)
     with_s = values[np.all(np.isfinite(values[:, :3]), axis=1)]
     with_h = values[np.isfinite(values[:, 0]) & np.isfinite(values[:, 3])]
     cad, sep, step = _sd(with_s[:, :3])

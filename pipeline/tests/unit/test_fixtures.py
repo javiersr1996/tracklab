@@ -165,3 +165,15 @@ def test_pose_tables_of_a_match_with_pose_follow_the_window_in_pose_frames(tmp_p
     got = _rows(pose / "bodypose_players" / "30.parquet", "SELECT min(frame), max(frame) FROM t")
     assert got == [(225, 250)]
     assert not (pose / "bodypose_players" / "9.parquet").exists()
+
+
+def test_the_pose_cut_opens_only_the_file_of_its_match(tmp_path: Path) -> None:
+    """1996435's file replaced by bytes that are no Parquet: the cut of 1925299 reads its own
+    file alone (task 60, phase B2), so it never touches 1996435's and still succeeds."""
+    data = _pose_bronze(tmp_path / "data")
+    for table in ("bodypose_frames", "bodypose_players"):
+        (data / "bronze" / "football" / table / "1996435.parquet").write_bytes(b"not a parquet")
+    out = tmp_path / "out"
+    cut_fixtures(data, out, (Cut("football", 7, 10, 30),))
+    players = out / "bronze" / "football" / "bodypose_players" / "1925299.parquet"
+    assert _rows(players, "SELECT count(*) FROM t") == [(50,)]

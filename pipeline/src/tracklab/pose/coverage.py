@@ -146,10 +146,8 @@ def _mae(handle: CountingHandle) -> dict[str, Any]:
 
 def _z(handle: CountingHandle) -> dict[str, float | None]:
     """The range of z as delivered: relative to each player's centroid, not a height."""
-    values = [v for v in handle.z_range_m() if v is not None]
-    if not values:
-        return {"min": None, "max": None}
-    return {"min": _r(min(values)), "max": _r(max(values))}
+    lo, hi = handle.z_range_m()
+    return {"min": _r(lo), "max": _r(hi)}
 
 
 def coverage_match(data_dir: Path, match_id: int) -> dict[str, Any] | None:

@@ -4,7 +4,8 @@ and coverage and on a bronze written by hand: no real pose is read.
 The plan's mutation is a test here: a threshold of the JSON moved by hand, and resealed so the
 seal is not what catches it, fails `--check`. Mutations of the code, each applied, seen failing
 and restored (tasks/todo.md, task 60, phase B2): the denominators taken from the file instead
-of the bronze; the sweep's sha not read from its bytes; the high band from above 5.5 m/s.
+of the bronze; the sweep's sha not read from its bytes; the high band from above 5.5 m/s; the
+frozen check without comparing the chosen cell or the calibration's seal.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import json
 import shutil
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -21,9 +23,14 @@ from tracklab.pose.coverage import COVERAGE_NAME
 from tracklab.pose.protocol import (
     BAND_HIGH_M_S,
     BAND_LOW_M_S,
+    CALIBRATION_NAME,
     PROTOCOL_NAME,
+    SANE_DELTA_HZ,
+    SANE_P_DIES_MAX,
+    SANE_SIGMA_B_HZ,
     band,
     file_sha256,
+    freeze_payload,
     render,
     run_pose_protocol,
 )
@@ -127,18 +134,66 @@ def test_the_sweeps_bytes_and_the_bronze_counts_are_inside_what_check_compares(
     assert "players_listed={'1925299': 2, '1996435': 4}" in _status(capsys)
 
 
-def test_a_file_that_is_not_in_design_is_neither_rewritten_nor_checked_here(
+def _calibration(chosen: dict[str, int] | None) -> dict[str, Any]:
+    """A sealed first time of the probe whose rule chose `chosen`: what the freeze reads."""
+    return seal({"match_id": 1925299, "rule_w_cap": {"chosen": chosen}})
+
+
+def test_the_freeze_keeps_the_design_and_check_reads_the_frozen_file(
     reports: Path, whole: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    """`freeze_payload` (what `pose freeze` writes) turns the design to frozen at the chosen
+    cell; `--check` passes on it with the calibration beside, and fails when the frozen
+    (W, cap) is moved, the calibration beside it is another, the design is edited, the
+    history loses its frozen entry or the file is not resealed. Write mode never rewrites it."""
     assert run_pose_protocol(whole, reports) == 0
     path = reports / PROTOCOL_NAME
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    path.write_text(render(seal({**payload, "stage": "frozen"})), encoding="utf-8")
-    frozen = path.read_text(encoding="utf-8")
-    assert run_pose_protocol(whole, reports) == 1
-    assert path.read_text(encoding="utf-8") == frozen
-    assert run_pose_protocol(whole, reports, check=True) == 1
-    assert "written with the freeze" in _status(capsys)
+    design = json.loads(path.read_text(encoding="utf-8"))
+    calibration = _calibration({"width": 50, "cap_cm": 25})
+    (reports / CALIBRATION_NAME).write_text(json.dumps(calibration), encoding="utf-8")
+    frozen = freeze_payload(design, calibration, code_tree="a" * 40, date="2026-10-16")
+    assert frozen["design"] == design["design"] and frozen["fingerprint"] == design["fingerprint"]
+    assert (frozen["frozen"]["width"], frozen["frozen"]["cap_cm"]) == (50, 25)
+    assert frozen["history"][-1]["stage"] == "frozen" and sealed(frozen)
+    path.write_text(render(frozen), encoding="utf-8")
+    assert run_pose_protocol(whole, reports, check=True) == 0
+    assert "stage frozen" in _status(capsys)
+    assert run_pose_protocol(whole, reports) == 1  # never rewritten
+    assert json.loads(path.read_text(encoding="utf-8")) == frozen
+
+    def fails(payload: dict[str, Any], message: str) -> None:
+        path.write_text(render(payload), encoding="utf-8")
+        assert run_pose_protocol(whole, reports, check=True) == 1
+        assert message in _status(capsys)
+        path.write_text(render(frozen), encoding="utf-8")
+
+    moved = json.loads(json.dumps(frozen))
+    moved["frozen"]["cap_cm"] = 20  # the plan's mutation of task 61: the cap touched after
+    fails(seal(moved), "not the cell the calibration's rule chose")
+    edited = json.loads(json.dumps(frozen))
+    edited["design"]["windows"]["caps_cm"] = [15, 20]
+    fails(seal({**edited, "fingerprint": fingerprint(edited["design"])}), "design differs")
+    fails(seal({**frozen, "history": frozen["history"][:-1]}), "history has no frozen entry")
+    fails({**frozen, "stage": "frozen ", "content_sha256": frozen["content_sha256"]}, "unknown")
+    unsealed = json.loads(json.dumps(frozen))
+    unsealed["frozen"]["date"] = "2026-10-17"
+    fails(unsealed, "content_sha256 does not cover the file")
+    other = _calibration({"width": 50, "cap_cm": 25}) | {"note": "another file"}
+    (reports / CALIBRATION_NAME).write_text(json.dumps(seal(other)), encoding="utf-8")
+    fails(frozen, "calibration_from is not the pose_calibration.json beside it")
+
+
+def test_the_freeze_refuses_what_it_cannot_freeze(reports: Path, whole: Path) -> None:
+    assert run_pose_protocol(whole, reports) == 0
+    design = json.loads((reports / PROTOCOL_NAME).read_text(encoding="utf-8"))
+    chosen = _calibration({"width": 50, "cap_cm": 25})
+    with pytest.raises(ValueError, match="chose no"):
+        freeze_payload(design, _calibration(None), code_tree="a" * 40, date="2026-10-16")
+    with pytest.raises(ValueError, match="tree sha"):
+        freeze_payload(design, chosen, code_tree="abc", date="2026-10-16")
+    frozen = freeze_payload(design, chosen, code_tree="a" * 40, date="2026-10-16")
+    with pytest.raises(ValueError, match="only a protocol in stage"):
+        freeze_payload(frozen, chosen, code_tree="a" * 40, date="2026-10-16")
 
 
 def test_the_design_carries_the_numbers_of_the_code_that_applies_it(
@@ -162,6 +217,12 @@ def test_the_design_carries_the_numbers_of_the_code_that_applies_it(
     assert design["sweep"]["sha256"] == file_sha256(REPORTS / sweep.SWEEP_NAME)
     assert design["windows"]["cap_joints"] == ["lAnkle", "rAnkle"]
     assert design["bands"]["low_m_s"] == [BAND_LOW_M_S, BAND_HIGH_M_S] == [3.0, 5.5]
+    rule = design["rule_w_cap"]
+    assert (rule["sane_delta_hz"], rule["sane_sigma_b_hz"]) == (SANE_DELTA_HZ, SANE_SIGMA_B_HZ)
+    assert (SANE_DELTA_HZ, SANE_SIGMA_B_HZ, SANE_P_DIES_MAX) == (0.05, 0.1, 0.05)
+    assert "the cadence does not rise 0.05 Hz" in design["death_criteria"]["M2"]
+    assert "pose_verdict.json" in design["death_criteria"]["M4"]
+    assert "is_detected" in design["windows"]
 
 
 def test_the_bands_are_half_open() -> None:

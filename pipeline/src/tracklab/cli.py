@@ -34,10 +34,13 @@ from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.load.postgres import run_load_postgres
 from tracklab.paths import data_root
 from tracklab.pose.coverage import run_pose_coverage
+from tracklab.pose.freeze import run_pose_freeze
+from tracklab.pose.metric import run_pose_metric
 from tracklab.pose.probe import run_pose_probe
 from tracklab.pose.protocol import run_pose_protocol
 from tracklab.pose.sweep import CLIP as POSE_CLIP
 from tracklab.pose.sweep import run_pose_sweep
+from tracklab.pose.verdict import run_pose_verdict
 from tracklab.publish.examples import run_publish_examples
 from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.platform import run_publish_platform
@@ -221,6 +224,18 @@ def _cmd_pose_protocol(args: argparse.Namespace) -> int:
 
 def _cmd_pose_probe(args: argparse.Namespace) -> int:
     return run_pose_probe(args.data_dir, args.reports_dir, args.clip, check=args.check)
+
+
+def _cmd_pose_freeze(args: argparse.Namespace) -> int:
+    return run_pose_freeze(args.reports_dir, date=args.date)
+
+
+def _cmd_pose_verdict(args: argparse.Namespace) -> int:
+    return run_pose_verdict(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_pose_metric(args: argparse.Namespace) -> int:
+    return run_pose_metric(args.data_dir, args.reports_dir, check=args.check)
 
 
 def _cmd_publish_pose(args: argparse.Namespace) -> int:
@@ -894,8 +909,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--data-dir",
         type=Path,
         default=data_root(),
-        help="Data root; bronze/football/bodypose_players of 1925299 is read from it "
-        "(default: data).",
+        help="Data root; the Body Pose bronze of 1925299 is read from it (default: data).",
     )
     pose_probe.add_argument(
         "--reports-dir",
@@ -918,6 +932,54 @@ def build_parser() -> argparse.ArgumentParser:
         "elsewhere check the seal, the protocol and the rule as written (PARTIAL 0/1).",
     )
     pose_probe.set_defaults(func=_cmd_pose_probe)
+    pose_freeze = pose_sub.add_parser(
+        "freeze",
+        help="Turn reports/pose_protocol.json to stage frozen at the (W, cap) the rule chose, "
+        "with the sha of the committed pose/ tree; refuses anything uncommitted.",
+    )
+    pose_freeze.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where pose_protocol.json, pose_calibration.json and pose_sweep.json live "
+        "(default: reports).",
+    )
+    pose_freeze.add_argument("--date", required=True, help="The freeze's date, YYYY-MM-DD.")
+    pose_freeze.set_defaults(func=_cmd_pose_freeze)
+    for name, func, what in (
+        (
+            "verdict",
+            _cmd_pose_verdict,
+            "Write reports/pose_verdict.json: the probe's second time on 1925299 after the "
+            "freeze, M1 and M2's verdict and M4's half IQR.",
+        ),
+        (
+            "metric",
+            _cmd_pose_metric,
+            "Write reports/pose_metric.json (task 61): the metric per match, period and player, "
+            "and the verdicts of M1, M2 and M4; 1996435 only past the guard.",
+        ),
+    ):
+        sub = pose_sub.add_parser(name, help=what)
+        sub.add_argument(
+            "--data-dir",
+            type=Path,
+            default=data_root(),
+            help="Data root; the Body Pose bronze is read from it (default: data).",
+        )
+        sub.add_argument(
+            "--reports-dir",
+            type=Path,
+            default=Path("reports"),
+            help="Where the reports are read and written (default: reports).",
+        )
+        sub.add_argument(
+            "--check",
+            action="store_true",
+            help="Recompute where the bronze is whole and compare the bytes; elsewhere check the "
+            "seal and what the file answered to (PARTIAL).",
+        )
+        sub.set_defaults(func=func)
 
     runs = subparsers.add_parser(
         "runs", help="P5: off-ball runs against the defence's displacement in the tracking."

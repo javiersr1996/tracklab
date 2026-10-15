@@ -69,7 +69,8 @@ SEPARATION_M = 5.5 / 4.3
 BAR_P95 = 0.05
 BAR_NAN = 0.10
 BAR_RHO = 0.0
-KINDS = ("s", "twin", "sane", "no_gait", "flat_h", "swap", "lean", "pool_mc")
+KINDS = ("s", "twin", "sane", "no_gait", "flat_h", "swap", "lean", "pool_mc", "sane_high",
+         "sane_low")  # fmt: skip
 
 Array = NDArray[np.float64]
 
@@ -202,9 +203,11 @@ def _q(values: Array, q: float) -> float | None:
     return _r(float(np.percentile(values, q))) if values.size else None
 
 
-def s_row(mae_cm: Array, fps: float, grid: Grid, width: int, cap: int, cadence: float,
-          rho: float) -> list[Any]:  # fmt: skip
-    w = draw_windows(
+def s_windows(mae_cm: Array, grid: Grid, width: int, cap: int, cadence: float,
+              rho: float) -> Windows:  # fmt: skip
+    """The windows of the row of s of (W, cap, cadence, rho): the stream `s_row` draws, which
+    does not depend on the separation (phase B2 re-judges the bar on it at another one)."""
+    return draw_windows(
         _rng(grid.seed, "s", width, cap, cadence, rho),
         grid.windows_s,
         width=width,
@@ -212,6 +215,11 @@ def s_row(mae_cm: Array, fps: float, grid: Grid, width: int, cap: int, cadence: 
         rho=rho,
         vertical=False,
     )
+
+
+def s_row(mae_cm: Array, fps: float, grid: Grid, width: int, cap: int, cadence: float,
+          rho: float) -> list[Any]:  # fmt: skip
+    w = s_windows(mae_cm, grid, width, cap, cadence, rho)
     s, _ = signals(w, fps=fps, cadence_hz=cadence, separation_m=grid.separation_m)
     cad = gait.cadence_hz_batch(s, fps=fps)
     finite = cad[np.isfinite(cad)]
@@ -268,13 +276,49 @@ def noise_pool(
     s, _ = signals(w, fps=fps, cadence_hz=0.0, separation_m=0.0)
     cadence = gait.cadence_hz_batch(s, fps=fps)
     rng = _rng(grid.seed, "pool_mc", width, cap, rho, draws)
+    return Pool(cadence, _copies(rng, s, w.mae, fps=fps, draws=draws, chunk=chunk))
+
+
+def _copies(
+    rng: np.random.Generator, s: Array, mae: Array, *, fps: float, draws: int, chunk: int
+) -> Array:
+    """The cadence of `draws` copies of each window of `s`, white N(0, mae) on each ankle."""
+    width = s.shape[1]
     out = np.empty((len(s), draws))
-    for lo in range(0, len(s), chunk):
+    for lo in range(0, len(s) if draws else 0, chunk):
         hi = min(lo + chunk, len(s))
-        e = rng.standard_normal((hi - lo, draws, width, 2)) * w.mae[lo:hi, None]
+        e = rng.standard_normal((hi - lo, draws, width, 2)) * mae[lo:hi, None]
         copies = s[lo:hi, None, :] + (e[..., 0] - e[..., 1])
         out[lo:hi] = gait.cadence_hz_batch(copies.reshape(-1, width), fps=fps).reshape(-1, draws)
-    return Pool(cadence, out)
+    return out
+
+
+def sane_pool(
+    mae_cm: Array,
+    fps: float,
+    *,
+    width: int,
+    cap: int,
+    cadence: float,
+    rho: float,
+    separation_m: float,
+    band: str,
+    windows: int,
+    grid: Grid = PROTOCOL,
+    draws: int = gait.DRAWS,
+    chunk: int = 500,
+) -> Pool:
+    """`windows` sane windows of (W, cap, cadence, rho) whose ankles part by `separation_m`, on
+    the stream of their `band` ("high" or "low"), with `draws` copies each as `noise_pool` adds
+    them (none for the low band, whose draws M2 never reads): the condition that a sane
+    instrument survives M1 and M2 (phase B2)."""
+    rng = _rng(grid.seed, f"sane_{band}", width, cap, cadence, rho)
+    w = draw_windows(
+        rng, windows, width=width, mae_rows_cm=under_cap(mae_cm, cap), rho=rho, vertical=False
+    )
+    s, _ = signals(w, fps=fps, cadence_hz=cadence, separation_m=separation_m)
+    cad = gait.cadence_hz_batch(s, fps=fps)
+    return Pool(cad, _copies(rng, s, w.mae, fps=fps, draws=draws, chunk=chunk))
 
 
 def _h_specs(grid: Grid) -> Iterator[tuple[str, dict[str, Any]]]:

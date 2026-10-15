@@ -8,7 +8,8 @@ probe's counts; nothing here reads data.
 Mutations, each applied, seen failing and restored (tasks/todo.md, task 60, phase B1): "fewer
 than 3 in 4" read as "at most"; half the IQR read as the whole; the first five windows taken
 whether finite or not; M1 counting windows instead of finite ones; the low band drawn from the
-high pool.
+high pool; and in phase B2, the sane simulator without the low band lowered or without the
+spread between players.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
@@ -132,3 +134,25 @@ def test_the_simulator_kills_the_noise_twin_and_spares_a_sane_instrument() -> No
     sane = criteria.simulate_m1_m2([10] * 12, [10] * 12, band(4.3), band(3.5), seed=3)
     print(f"sane bands: {sane}")
     assert sane["p_dies"] <= 0.05
+
+
+def test_the_sane_simulator_needs_both_the_rise_between_bands_and_the_spread_of_the_squad() -> None:
+    """Pools drawn at 3.0 Hz with 0.02 Hz between windows and 0.01 Hz between copies, twelve
+    players of 10 high and 30 low windows, 100 repetitions. With the band rising 0.3 Hz and
+    players 0.1 Hz apart P6 lives; with no rise the sign clause kills it; with every player at
+    the same cadence the precision clause does (half an IQR of nearly nothing)."""
+    rng = np.random.default_rng(4)
+    c = 3.0 + 0.02 * rng.standard_normal(400)
+    pool = Pool(c, c[:, None] + 0.01 * rng.standard_normal((400, DRAWS)))
+
+    def sim(delta: float, sigma_b: float) -> dict[str, Any]:
+        return criteria.simulate_sane(
+            [10] * 12, [30] * 12, pool, pool, cadence_hz=3.0, delta_hz=delta,
+            sigma_b_hz=sigma_b, reps=100, seed=5,
+        )  # fmt: skip
+
+    lives, flat, alike = sim(0.3, 0.1), sim(0.0, 0.1), sim(0.3, 0.0)
+    print(f"\nsane: {lives}\nno rise: {flat}\nalike: {alike}")
+    assert lives["p_dies"] <= 0.05
+    assert flat["p_dies"] >= 0.5 and flat["by"]["m2_sign"] == flat["dies"]
+    assert alike["p_dies"] >= 0.5 and alike["by"]["m2_precision"] == alike["dies"]

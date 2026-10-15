@@ -17,10 +17,13 @@ valid draws there is no sd; such a player counts as imprecise (an infinite sd), 
 protocol does not make and this module does. The IQR is numpy's linear-interpolation
 percentiles 75 minus 25.
 
-`m1_m2` judges one match from its windows; `simulate_m1_m2` builds matches by resampling
+`m1_m2` judges one match from its windows; M4 passes it the half IQR of 1925299, frozen as a
+number, instead of the one of its own squad. `simulate_m1_m2` builds matches by resampling
 windows from two pools with the counts of admitted windows per player and band that the probe
 measures, and says how often P6 dies. Against the noise twin (`sweep.noise_pool` in both bands,
-NaN included), the rule of (W, cap) asks P(P6 dies | noise) >= 0.95 in each rho: phase B2.
+NaN included), the rule of (W, cap) asks P(P6 dies | noise) >= 0.95 in each rho; against sane
+pools (`sweep.sane_pool`), `simulate_sane` gives each player his own cadence, spread between
+players and lower in the low band, and the rule asks that P6 live (phase B2).
 """
 
 from __future__ import annotations
@@ -86,7 +89,10 @@ def m1_m2(
     min_players: int = MIN_PLAYERS,
     min_windows: int = MIN_WINDOWS,
     share: float = SIGN_SHARE,
+    half_iqr_hz: float | None = None,
 ) -> Verdict:
+    """`half_iqr_hz`, when given, is the precision clause's threshold instead of half the IQR
+    of these players' five-window medians (M4: 1925299's, frozen as a number)."""
     finite_high = [np.flatnonzero(np.isfinite(p.high)) for p in players]
     m1 = [i for i, f in enumerate(finite_high) if len(f) >= min_windows]
     both = [i for i in m1 if np.sum(np.isfinite(players[i].low)) >= min_windows]
@@ -103,6 +109,8 @@ def m1_m2(
         median_sd, half_iqr = float(np.median(sds)), float(q75 - q25) / 2.0
     else:
         median_sd = half_iqr = np.nan
+    if half_iqr_hz is not None:
+        half_iqr = half_iqr_hz
     if len(m1) < min_players:
         dies: str | None = "m1"
     elif len(both) < min_players:
@@ -138,5 +146,44 @@ def simulate_m1_m2(
             j = rng.integers(len(low.cadence), size=nl)
             players.append(Player(high.cadence[i], low.cadence[j], high.draws[i]))
         tally[m1_m2(players).dies_at or "alive"] += 1
+    return _tallied(tally, reps)
+
+
+def simulate_sane(
+    high_counts: Sequence[int],
+    low_counts: Sequence[int],
+    high: Pool,
+    low: Pool,
+    *,
+    cadence_hz: float,
+    delta_hz: float,
+    sigma_b_hz: float,
+    reps: int = REPS,
+    seed: int = SEED,
+) -> dict[str, Any]:
+    """P6 judged `reps` times on sane players: player i runs at c_i = `cadence_hz` + `sigma_b_hz`
+    x N(0, 1) in the high band and c_i - `delta_hz` in the low one. Both pools were drawn at
+    `cadence_hz`; a window and its copies are scaled by c_i / `cadence_hz` (by (c_i - delta) /
+    `cadence_hz` in the low band), so a player keeps the estimator's relative error, not its
+    error at c_i (an approximation, said in the protocol)."""
+    if len(high_counts) != len(low_counts):
+        raise ValueError("one count per player and band")
+    rng = np.random.default_rng(seed)
+    tally: Counter[str] = Counter()
+    for _ in range(reps):
+        players = []
+        for nh, nl in zip(high_counts, low_counts, strict=True):
+            c = cadence_hz + sigma_b_hz * rng.standard_normal()
+            f_high, f_low = c / cadence_hz, (c - delta_hz) / cadence_hz
+            i = rng.integers(len(high.cadence), size=nh)
+            j = rng.integers(len(low.cadence), size=nl)
+            players.append(
+                Player(high.cadence[i] * f_high, low.cadence[j] * f_low, high.draws[i] * f_high)
+            )
+        tally[m1_m2(players).dies_at or "alive"] += 1
+    return _tallied(tally, reps)
+
+
+def _tallied(tally: Counter[str], reps: int) -> dict[str, Any]:
     dies = reps - tally["alive"]
     return {"reps": reps, "dies": dies, "p_dies": dies / reps, "by": {d: tally[d] for d in DEATHS}}

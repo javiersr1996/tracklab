@@ -5,9 +5,12 @@ Every match id comes from the protocol committed in HEAD of the repository that 
 code (`reports/pose_protocol.json`, read with `git show`), never from the working copy: its
 `content_sha256` and its `fingerprint` are verified before its split is read. The confirmation
 match opens only past `assert_confirmation_open`: the committed protocol is in stage `frozen`
-with a frozen entry after the design ones in its history, the `pose/` tree committed in HEAD is
-the one the freeze recorded, and the working tree is clean, untracked files included. Anything
-else raises `HeldOutLocked`.
+with a frozen entry after the design ones in its history; the `pose/` tree committed in HEAD is
+the one the freeze recorded; the installed numpy is the one the design names; HEAD holds the
+verdict of the second time on 1925299 (`reports/pose_verdict.json`), sealed, computed against
+that frozen protocol by that same code tree, with P6 alive and a finite `m4.half_iqr_hz` (if M1
+or M2 killed P6 on 1925299, 1996435 never opens); and the working tree is clean, untracked
+files included. Anything else raises `HeldOutLocked`.
 
 Two doors to a match's Body Pose bronze, and no other read of it under `tracklab.pose` (a test
 greps the package):
@@ -16,17 +19,20 @@ greps the package):
   `require_readable` before it opens anything, and the `PoseRows` it returns runs it again as
   it is built, so a calibration one relabelled is refused. The rows are read in
   `_read_players`, whose only caller it is.
-* `CountingHandle`, for `pose coverage` and the protocol's evidence: fixed aggregate queries
-  over either match, each returning integers, save two: `mae_cm` (quantiles of the provider's
-  predicted error, not a position) and `z_range_m` (the least and greatest z of each joint),
-  which task 58 published for both matches and the review of method lists as seen (point 5).
+* `CountingHandle`, for `pose coverage`, the protocol's evidence and the lineup the metric is
+  ordered by: fixed aggregate queries over either match, each returning integers, save two:
+  `mae_cm` (quantiles of the provider's predicted error, not a position) and `z_range_m` (two
+  numbers, the least and the greatest z over every joint and row), which task 58 published for
+  both matches and the review of method lists as seen (point 5).
 
 There is no path argument for the repository: tests point `repo_root` at a throwaway one.
 """
 
 from __future__ import annotations
 
+import importlib.metadata
 import json
+import math
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -43,6 +49,7 @@ from tracklab.runs.data import HeldOutLocked, dirty_paths
 from tracklab.runs.protocol import fingerprint, sealed
 
 PROTOCOL_IN_REPO = "pipeline/reports/pose_protocol.json"
+VERDICT_IN_REPO = "pipeline/reports/pose_verdict.json"
 CODE_IN_REPO = "pipeline/src/tracklab/pose"  # the code that computes task 60's figures
 STAGE_DESIGN = "design"
 STAGE_FROZEN = "frozen"
@@ -93,6 +100,12 @@ def dirty_code_paths() -> list[str]:
     return found
 
 
+def dirty_among(paths_in_repo: tuple[str, ...]) -> list[str]:
+    """Which of `paths_in_repo` (from the repository's root) are uncommitted."""
+    dirty = [line[3:].split(" -> ")[-1].strip('"') for line in dirty_paths(repo_root())]
+    return [p for p in paths_in_repo if p in dirty]
+
+
 def committed_protocol() -> dict[str, Any]:
     """The protocol committed in HEAD, verified: `content_sha256` covers the file and
     `fingerprint` is the sha256 of `design`."""
@@ -111,6 +124,24 @@ def committed_protocol() -> dict[str, Any]:
     return payload
 
 
+def committed_verdict(protocol: dict[str, Any]) -> dict[str, Any]:
+    """The verdict of the second time committed in HEAD, verified against the frozen `protocol`:
+    sealed, computed against its `content_sha256` by the code tree the freeze recorded."""
+    out = _git(repo_root(), "show", f"HEAD:{VERDICT_IN_REPO}")
+    if out.returncode != 0:
+        raise HeldOutLocked(
+            f"HEAD holds no {VERDICT_IN_REPO}: the second time on 1925299 is not committed"
+        )
+    verdict: dict[str, Any] = json.loads(out.stdout)
+    if not sealed(verdict):
+        raise HeldOutLocked(f"the {VERDICT_IN_REPO} committed in HEAD fails its content_sha256")
+    if (verdict.get("protocol") or {}).get("content_sha256") != protocol.get("content_sha256"):
+        raise HeldOutLocked("the verdict committed in HEAD answers to another protocol")
+    if verdict.get("code_tree_sha") != (protocol.get("frozen") or {}).get("code_tree_sha"):
+        raise HeldOutLocked("the verdict committed in HEAD was not computed by the frozen code")
+    return verdict
+
+
 def committed_split() -> tuple[list[int], list[int]]:
     """(calibration, confirmation) as the committed protocol names them."""
     split = committed_protocol()["design"]["split"]
@@ -118,10 +149,8 @@ def committed_split() -> tuple[list[int], list[int]]:
 
 
 def assert_confirmation_open() -> None:
-    """The four conditions the confirmation match opens on, all read from HEAD: the committed
-    protocol is in stage frozen; its history has a frozen entry after the design ones; the
-    `pose/` tree committed in HEAD is the one the freeze recorded in `frozen.code_tree_sha`;
-    and the working tree is clean."""
+    """The conditions the confirmation match opens on, read from HEAD and the environment (the
+    module's docstring lists them), in that order."""
     payload = committed_protocol()
     stage = payload.get("stage")
     if stage != STAGE_FROZEN:
@@ -148,6 +177,15 @@ def assert_confirmation_open() -> None:
             f"freeze recorded ({str(recorded)[:12]}): a code commit after the freeze opens "
             "nothing"
         )
+    numpy = importlib.metadata.version("numpy")
+    if numpy != payload["design"].get("dependencies", {}).get("numpy"):
+        raise HeldOutLocked(f"numpy {numpy} is installed, not the one the protocol names")
+    verdict = committed_verdict(payload)
+    if (verdict.get("verdict") or {}).get("alive") is not True:
+        raise HeldOutLocked("P6 died on 1925299 (pose_verdict.json): 1996435 is never opened")
+    half_iqr = (verdict.get("m4") or {}).get("half_iqr_hz")
+    if not (isinstance(half_iqr, int | float) and math.isfinite(half_iqr)):
+        raise HeldOutLocked("pose_verdict.json holds no finite m4.half_iqr_hz for M4")
     dirty = dirty_paths(repo_root())
     if dirty:
         raise HeldOutLocked(
@@ -191,11 +229,14 @@ class PoseRows:
         return [(int(p), slice(int(a), int(b))) for p, a, b in zip(ids, starts, stops, strict=True)]
 
 
-def _read_players(path: Path) -> dict[str, Any]:
-    """Every row of one `bodypose_players` file, sorted by player and frame: the one read."""
+def _read_players(path: Path, match_id: int) -> dict[str, Any]:
+    """Every row of one `bodypose_players` file, sorted by player and frame: the one read. Every
+    row must carry `match_id`: a file of another match under this name is refused."""
     table = pq.read_table(
-        path, columns=["frame", "period", "player_id", "x", "y", "joints", "mae"]
+        path, columns=["match_id", "frame", "period", "player_id", "x", "y", "joints", "mae"]
     ).sort_by([("player_id", "ascending"), ("frame", "ascending")])
+    if set(table.column("match_id").unique().to_pylist()) - {match_id}:
+        raise ValueError(f"{path}: rows of another match than {match_id}")
     if table.column("period").null_count:
         raise ValueError(f"{path}: a row with a pose has no period")
     n = table.num_rows
@@ -218,7 +259,7 @@ def load_players(data_dir: Path, match_id: int) -> PoseRows:
     """The `bodypose_players` rows of `match_id`, past the guard before any file is opened."""
     require_readable(match_id)
     path = bronze_path(data_dir, "football", "bodypose_players", match_id)
-    return PoseRows(match_id, **_read_players(path))
+    return PoseRows(match_id, **_read_players(path, match_id))
 
 
 class CountingHandle:
@@ -228,14 +269,14 @@ class CountingHandle:
     def __init__(self, data_dir: Path, match_id: int) -> None:
         self._frames = bronze_path(data_dir, "football", "bodypose_frames", match_id).as_posix()
         self._players = bronze_path(data_dir, "football", "bodypose_players", match_id).as_posix()
+        self._lineup = bronze_path(data_dir, "football", "match_players", match_id).as_posix()
         self._con: duckdb.DuckDBPyConnection | None = None
 
     def _rows(self, sql: str, table: str) -> list[tuple[Any, ...]]:
         if self._con is None:
             self._con = duckdb.connect()
-        return self._con.execute(
-            sql, [self._frames if table == "frames" else self._players]
-        ).fetchall()
+        path = {"frames": self._frames, "players": self._players, "lineup": self._lineup}[table]
+        return self._con.execute(sql, [path]).fetchall()
 
     def exists(self) -> bool:
         return Path(self._frames).is_file() and Path(self._players).is_file()
@@ -344,12 +385,22 @@ class CountingHandle:
             by_joint.append((j_lo, j_50, j_90, j_hi))
         return (lo, p50, p90, hi), by_joint
 
-    def z_range_m(self) -> list[float | None]:
-        """Listed exception: the least and greatest z of each joint, in the order of `JOINTS`
-        (2 x 29 numbers, z relative to the player's centroid, never a height)."""
-        cols = ", ".join(
-            f"min(joints[{3 * j + 3}]::double), max(joints[{3 * j + 3}]::double)"
-            for j in range(len(JOINTS))
+    def z_range_m(self) -> tuple[float | None, float | None]:
+        """Listed exception: the least and the greatest z over every joint and row (z relative
+        to the player's centroid, never a height), both taken in the SQL: two numbers."""
+        zs = ", ".join(f"joints[{3 * j + 3}]::double" for j in range(len(JOINTS)))
+        ((lo, hi),) = self._rows(
+            f"select min(least({zs})), max(greatest({zs})) from read_parquet(?)", "players"
         )
-        (row,) = self._rows(f"select {cols} from read_parquet(?)", "players")
-        return list(row)
+        return lo, hi
+
+    def lineup(self) -> list[tuple[int, int, int]]:
+        """(player_id, team_id, number) of every player of the match's `match_players`, by
+        team and number: the order the metric's rows follow (task 61)."""
+        if not Path(self._lineup).is_file():
+            return []
+        rows = self._rows(
+            "select id, team_id, number from read_parquet(?) order by team_id, number, id",
+            "lineup",
+        )
+        return [(int(i), int(t), int(n)) for i, t, n in rows]
