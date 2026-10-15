@@ -5,12 +5,12 @@
   "time": "first: no cadence computed",
   "written": "2026-10-15",
   "match_id": 1925299,
-  "head": "9729754294091d3630cace0b8eeeb99827cf299f",
-  "code_tree_sha": "951daf25b2e4a85b41c83fb1d6d6c49fe41592df",
+  "head": "a306b7fec192fa9b0e2c261e71662d696030433a",
+  "code_tree_sha": "dd051e0617e4e1d5730c0120fe1cfe7a5fa97b65",
   "protocol": {
     "stage": "design",
-    "fingerprint": "a962049b1edee1915720d2ebe809248846459ff716804102c6d093659c14f60b",
-    "content_sha256": "c456152c5c7dbbc76f26e4e020fff4a811e849590936f120bfa4a65f227dbac0"
+    "fingerprint": "c5de770d16bd4652b0db506185191fee25d7e9b87e8bfe5d3aff5793bdf29caf",
+    "content_sha256": "a9d2664cfd0db021d554f179e1a48ae86d79fa133fe566da7846d91b8454c090"
   },
   "inputs": {
     "sweep": {
@@ -1676,10 +1676,14 @@
   },
   "rule_w_cap": {
     "p_dies_min": 0.95,
+    "sane_p_dies_max": 0.05,
+    "sane_delta_hz": 0.05,
+    "sane_sigma_b_hz": 0.1,
     "reps": 200,
     "draws": 200,
     "seed": 60,
     "pool_windows": 40000,
+    "sane_pool_windows": 4000,
     "cells": [
       {
         "width": 37,
@@ -1689,6 +1693,20 @@
         "players_ge_min_both": 16,
         "windows_high": 187,
         "windows_low": 2882,
+        "target_s_sd_m": {
+          "high": 0.548209,
+          "low": 0.481074
+        },
+        "bar": {
+          "columns": ["cadence_hz", "windows", "nan_s", "rel_err_p95", "separation_high_m", "separation_low_m", "adjusted_windows", "adjusted_nan_s", "adjusted_rel_err_p95", "adjusted_meets_bar"],
+          "rows": [
+            [2.5, 40000, 0, 0.048393, 0.737668, 0.636313, 40000, 2, 0.077605, false],
+            [3.0, 40000, 0, 0.021366, 0.737892, 0.636483, 40000, 0, 0.042306, true],
+            [3.5, 40000, 0, 0.022703, 0.739668, 0.638021, 40000, 0, 0.035646, true],
+            [4.3, 40000, 0, 0.014823, 0.736052, 0.635011, 40000, 0, 0.026054, true]
+          ]
+        },
+        "passes_adjusted_bar": false,
         "noise": {
           "columns": ["rho", "p_dies", "m1", "m2_coverage", "m2_sign", "m2_precision"],
           "rows": [
@@ -1698,7 +1716,30 @@
             [0.9, 1.0, 200, 0, 0, 0]
           ]
         },
-        "kills_the_noise": true
+        "kills_the_noise": true,
+        "sane": {
+          "columns": ["cadence_hz", "rho", "p_dies", "m1", "m2_coverage", "m2_sign", "m2_precision"],
+          "rows": [
+            [2.5, 0.0, 0.18, 0, 0, 5, 31],
+            [2.5, 0.5, 0.18, 0, 0, 10, 26],
+            [2.5, 0.8, 0.17, 0, 0, 20, 14],
+            [2.5, 0.9, 0.09, 0, 0, 3, 15],
+            [3.0, 0.0, 0.145, 0, 0, 1, 28],
+            [3.0, 0.5, 0.07, 0, 0, 0, 14],
+            [3.0, 0.8, 0.075, 0, 0, 2, 13],
+            [3.0, 0.9, 0.06, 0, 0, 0, 12],
+            [3.5, 0.0, 0.135, 0, 0, 0, 27],
+            [3.5, 0.5, 0.105, 0, 0, 3, 18],
+            [3.5, 0.8, 0.05, 0, 0, 2, 8],
+            [3.5, 0.9, 0.04, 0, 0, 0, 8],
+            [4.3, 0.0, 0.13, 0, 0, 0, 26],
+            [4.3, 0.5, 0.065, 0, 0, 1, 12],
+            [4.3, 0.8, 0.055, 0, 0, 0, 11],
+            [4.3, 0.9, 0.045, 0, 0, 0, 9]
+          ]
+        },
+        "spares_the_sane": false,
+        "eligible": false
       },
       {
         "width": 37,
@@ -1708,6 +1749,20 @@
         "players_ge_min_both": 27,
         "windows_high": 458,
         "windows_low": 5707,
+        "target_s_sd_m": {
+          "high": 0.555968,
+          "low": 0.482415
+        },
+        "bar": {
+          "columns": ["cadence_hz", "windows", "nan_s", "rel_err_p95", "separation_high_m", "separation_low_m", "adjusted_windows", "adjusted_nan_s", "adjusted_rel_err_p95", "adjusted_meets_bar"],
+          "rows": [
+            [2.5, 40000, 0, 0.048814, 0.743476, 0.632015, 40000, 2, 0.081679, false],
+            [3.0, 40000, 0, 0.022561, 0.745449, 0.633577, 40000, 0, 0.044988, true],
+            [3.5, 40000, 0, 0.023738, 0.747182, 0.634999, 40000, 0, 0.037941, true],
+            [4.3, 40000, 0, 0.015626, 0.742551, 0.631, 40000, 0, 0.027474, true]
+          ]
+        },
+        "passes_adjusted_bar": false,
         "noise": {
           "columns": ["rho", "p_dies", "m1", "m2_coverage", "m2_sign", "m2_precision"],
           "rows": [
@@ -1717,7 +1772,30 @@
             [0.9, 1.0, 200, 0, 0, 0]
           ]
         },
-        "kills_the_noise": true
+        "kills_the_noise": true,
+        "sane": {
+          "columns": ["cadence_hz", "rho", "p_dies", "m1", "m2_coverage", "m2_sign", "m2_precision"],
+          "rows": [
+            [2.5, 0.0, 0.09, 0, 0, 0, 18],
+            [2.5, 0.5, 0.05, 0, 0, 0, 10],
+            [2.5, 0.8, 0.03, 0, 0, 0, 6],
+            [2.5, 0.9, 0.035, 0, 0, 0, 7],
+            [3.0, 0.0, 0.025, 0, 0, 0, 5],
+            [3.0, 0.5, 0.035, 0, 0, 0, 7],
+            [3.0, 0.8, 0.015, 0, 0, 0, 3],
+            [3.0, 0.9, 0.01, 0, 0, 0, 2],
+            [3.5, 0.0, 0.035, 0, 0, 0, 7],
+            [3.5, 0.5, 0.02, 0, 0, 0, 4],
+            [3.5, 0.8, 0.015, 0, 0, 0, 3],
+            [3.5, 0.9, 0.005, 0, 0, 0, 1],
+            [4.3, 0.0, 0.035, 0, 0, 0, 7],
+            [4.3, 0.5, 0.04, 0, 0, 0, 8],
+            [4.3, 0.8, 0.005, 0, 0, 0, 1],
+            [4.3, 0.9, 0.01, 0, 0, 0, 2]
+          ]
+        },
+        "spares_the_sane": false,
+        "eligible": false
       },
       {
         "width": 50,
@@ -1727,6 +1805,20 @@
         "players_ge_min_both": 8,
         "windows_high": 97,
         "windows_low": 1735,
+        "target_s_sd_m": {
+          "high": 0.54798,
+          "low": 0.478899
+        },
+        "bar": {
+          "columns": ["cadence_hz", "windows", "nan_s", "rel_err_p95", "separation_high_m", "separation_low_m", "adjusted_windows", "adjusted_nan_s", "adjusted_rel_err_p95", "adjusted_meets_bar"],
+          "rows": [
+            [2.5, 40000, 0, 0.028077, 0.740559, 0.635682, 40000, 0, 0.039618, true],
+            [3.0, 40000, 0, 0.020695, 0.733767, 0.629732, 40000, 0, 0.03009, true],
+            [3.5, 40000, 0, 0.017307, 0.737067, 0.632591, 40000, 0, 0.026132, true],
+            [4.3, 40000, 0, 0.010771, 0.73507, 0.630743, 40000, 0, 0.019699, true]
+          ]
+        },
+        "passes_adjusted_bar": true,
         "noise": {
           "columns": ["rho", "p_dies", "m1", "m2_coverage", "m2_sign", "m2_precision"],
           "rows": [
@@ -1736,7 +1828,30 @@
             [0.9, 1.0, 200, 0, 0, 0]
           ]
         },
-        "kills_the_noise": true
+        "kills_the_noise": true,
+        "sane": {
+          "columns": ["cadence_hz", "rho", "p_dies", "m1", "m2_coverage", "m2_sign", "m2_precision"],
+          "rows": [
+            [2.5, 0.0, 1.0, 200, 0, 0, 0],
+            [2.5, 0.5, 1.0, 200, 0, 0, 0],
+            [2.5, 0.8, 1.0, 200, 0, 0, 0],
+            [2.5, 0.9, 1.0, 200, 0, 0, 0],
+            [3.0, 0.0, 1.0, 200, 0, 0, 0],
+            [3.0, 0.5, 1.0, 200, 0, 0, 0],
+            [3.0, 0.8, 1.0, 200, 0, 0, 0],
+            [3.0, 0.9, 1.0, 200, 0, 0, 0],
+            [3.5, 0.0, 1.0, 200, 0, 0, 0],
+            [3.5, 0.5, 1.0, 200, 0, 0, 0],
+            [3.5, 0.8, 1.0, 200, 0, 0, 0],
+            [3.5, 0.9, 1.0, 200, 0, 0, 0],
+            [4.3, 0.0, 1.0, 200, 0, 0, 0],
+            [4.3, 0.5, 1.0, 200, 0, 0, 0],
+            [4.3, 0.8, 1.0, 200, 0, 0, 0],
+            [4.3, 0.9, 1.0, 200, 0, 0, 0]
+          ]
+        },
+        "spares_the_sane": false,
+        "eligible": false
       },
       {
         "width": 50,
@@ -1746,6 +1861,20 @@
         "players_ge_min_both": 22,
         "windows_high": 265,
         "windows_low": 3707,
+        "target_s_sd_m": {
+          "high": 0.557315,
+          "low": 0.482403
+        },
+        "bar": {
+          "columns": ["cadence_hz", "windows", "nan_s", "rel_err_p95", "separation_high_m", "separation_low_m", "adjusted_windows", "adjusted_nan_s", "adjusted_rel_err_p95", "adjusted_meets_bar"],
+          "rows": [
+            [2.5, 40000, 0, 0.028911, 0.749244, 0.634781, 40000, 0, 0.040756, true],
+            [3.0, 40000, 0, 0.021318, 0.743038, 0.629619, 40000, 0, 0.031609, true],
+            [3.5, 40000, 0, 0.017904, 0.746186, 0.63219, 40000, 0, 0.02724, true],
+            [4.3, 40000, 0, 0.011401, 0.744739, 0.631077, 40000, 0, 0.020714, true]
+          ]
+        },
+        "passes_adjusted_bar": true,
         "noise": {
           "columns": ["rho", "p_dies", "m1", "m2_coverage", "m2_sign", "m2_precision"],
           "rows": [
@@ -1755,7 +1884,30 @@
             [0.9, 1.0, 200, 0, 0, 0]
           ]
         },
-        "kills_the_noise": true
+        "kills_the_noise": true,
+        "sane": {
+          "columns": ["cadence_hz", "rho", "p_dies", "m1", "m2_coverage", "m2_sign", "m2_precision"],
+          "rows": [
+            [2.5, 0.0, 0.015, 0, 0, 0, 3],
+            [2.5, 0.5, 0.02, 0, 0, 0, 4],
+            [2.5, 0.8, 0.015, 0, 0, 0, 3],
+            [2.5, 0.9, 0.015, 0, 0, 0, 3],
+            [3.0, 0.0, 0.005, 0, 0, 0, 1],
+            [3.0, 0.5, 0.015, 0, 0, 0, 3],
+            [3.0, 0.8, 0.01, 0, 0, 0, 2],
+            [3.0, 0.9, 0.005, 0, 0, 0, 1],
+            [3.5, 0.0, 0.025, 0, 0, 0, 5],
+            [3.5, 0.5, 0.005, 0, 0, 0, 1],
+            [3.5, 0.8, 0.005, 0, 0, 0, 1],
+            [3.5, 0.9, 0.0, 0, 0, 0, 0],
+            [4.3, 0.0, 0.02, 0, 0, 0, 4],
+            [4.3, 0.5, 0.0, 0, 0, 0, 0],
+            [4.3, 0.8, 0.0, 0, 0, 0, 0],
+            [4.3, 0.9, 0.0, 0, 0, 0, 0]
+          ]
+        },
+        "spares_the_sane": true,
+        "eligible": true
       },
       {
         "width": 50,
@@ -1765,6 +1917,20 @@
         "players_ge_min_both": 27,
         "windows_high": 410,
         "windows_low": 4901,
+        "target_s_sd_m": {
+          "high": 0.561333,
+          "low": 0.482957
+        },
+        "bar": {
+          "columns": ["cadence_hz", "windows", "nan_s", "rel_err_p95", "separation_high_m", "separation_low_m", "adjusted_windows", "adjusted_nan_s", "adjusted_rel_err_p95", "adjusted_meets_bar"],
+          "rows": [
+            [2.5, 40000, 0, 0.029676, 0.751329, 0.630848, 40000, 0, 0.04195, true],
+            [3.0, 40000, 0, 0.021765, 0.744938, 0.625517, 40000, 0, 0.032643, true],
+            [3.5, 40000, 0, 0.018385, 0.748269, 0.628291, 40000, 0, 0.02829, true],
+            [4.3, 40000, 0, 0.011995, 0.746159, 0.62659, 40000, 0, 0.021845, true]
+          ]
+        },
+        "passes_adjusted_bar": true,
         "noise": {
           "columns": ["rho", "p_dies", "m1", "m2_coverage", "m2_sign", "m2_precision"],
           "rows": [
@@ -1774,14 +1940,37 @@
             [0.9, 1.0, 195, 0, 4, 1]
           ]
         },
-        "kills_the_noise": true
+        "kills_the_noise": true,
+        "sane": {
+          "columns": ["cadence_hz", "rho", "p_dies", "m1", "m2_coverage", "m2_sign", "m2_precision"],
+          "rows": [
+            [2.5, 0.0, 0.035, 0, 0, 0, 7],
+            [2.5, 0.5, 0.005, 0, 0, 0, 1],
+            [2.5, 0.8, 0.005, 0, 0, 0, 1],
+            [2.5, 0.9, 0.0, 0, 0, 0, 0],
+            [3.0, 0.0, 0.015, 0, 0, 0, 3],
+            [3.0, 0.5, 0.005, 0, 0, 0, 1],
+            [3.0, 0.8, 0.005, 0, 0, 0, 1],
+            [3.0, 0.9, 0.0, 0, 0, 0, 0],
+            [3.5, 0.0, 0.03, 0, 0, 0, 6],
+            [3.5, 0.5, 0.005, 0, 0, 0, 1],
+            [3.5, 0.8, 0.01, 0, 0, 0, 2],
+            [3.5, 0.9, 0.0, 0, 0, 0, 0],
+            [4.3, 0.0, 0.025, 0, 0, 0, 5],
+            [4.3, 0.5, 0.015, 0, 0, 0, 3],
+            [4.3, 0.8, 0.0, 0, 0, 0, 0],
+            [4.3, 0.9, 0.0, 0, 0, 0, 0]
+          ]
+        },
+        "spares_the_sane": true,
+        "eligible": true
       }
     ],
     "chosen": {
-      "width": 37,
-      "cap_cm": 20
+      "width": 50,
+      "cap_cm": 25
     },
-    "verdict": "W 37, cap 20 cm"
+    "verdict": "W 50, cap 25 cm"
   },
-  "content_sha256": "a7521a4394d0997d1e069c3b9f6e098f0d061537a201bf825b7daccef2455831"
+  "content_sha256": "5bdde93021151b7f262fc4bd29517390b4df96a9d320b8492678544b598b0d62"
 }
