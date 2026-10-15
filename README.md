@@ -92,7 +92,7 @@ describe them (`lineage.json` and `platform.json` excluded, as they describe the
 than its data).
 
 ```
-title: 3.6 GB in, 7.4 MB out
+title: 3.6 GB in, 7.5 MB out
 subtitle: 5.4 MB to watch, 2.1 MB to query
 ```
 
@@ -151,7 +151,7 @@ error beside it. Nothing on the page ranks players, reads intent or measures an 
 status: alive
 M4: 27 of 27 players, median propagated sd 0.040166 Hz against 0.131793 Hz
 pose in the player-frames: 0.3143 of 1925299 and 0.3638 of 1996435
-pose.json: 51570 bytes, hook clips: 779700 and 692316 bytes
+pose.json: 51570 bytes, hook clips: 784665 and 696714 bytes
 ```
 
 The clips are a few seconds of each match, chosen by rule (the window of the high band whose cadence

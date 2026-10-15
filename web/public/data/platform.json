@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "title": "3.6 GB in, 7.4 MB out",
+  "title": "3.6 GB in, 7.5 MB out",
   "subtitle": "5.4 MB to watch, 2.1 MB to query",
   "run": {
-    "git_sha": "67f72f7f9f1d2599c3b68f4f6bb4d3430a3290bd",
-    "started_utc": "2026-10-15T19:39:49+00:00",
-    "finished_utc": "2026-10-15T19:50:38+00:00",
-    "wall_seconds": 649.688,
+    "git_sha": "bf097a9dc4acedec607817133ce143deeeab4792",
+    "started_utc": "2026-10-15T20:46:26+00:00",
+    "finished_utc": "2026-10-15T20:55:15+00:00",
+    "wall_seconds": 529.461,
     "host": {
       "system": "Windows",
       "cpus": 22,
@@ -26,8 +26,8 @@
       "files": 122,
       "rows": null,
       "bytes": 3583918346,
-      "seconds": 9.1,
-      "seconds_sum": 17.2,
+      "seconds": 6.5,
+      "seconds_sum": 13.1,
       "bytes_pinned": 3583918346,
       "bytes_read": 10432244078,
       "downloaded": 0,
@@ -38,42 +38,42 @@
       "files": 394,
       "rows": 34767903,
       "bytes": 1170828672,
-      "seconds": 577.1,
-      "seconds_sum": 1009.7
+      "seconds": 467.3,
+      "seconds_sum": 840.6
     },
     {
       "layer": "silver",
       "files": 66,
       "rows": 29521069,
-      "bytes": 251120477,
-      "seconds": 163.3,
-      "seconds_sum": 163.3
+      "bytes": 251125870,
+      "seconds": 141.1,
+      "seconds_sum": 141.1
     },
     {
       "layer": "gold",
       "files": 10,
       "rows": 371009,
-      "bytes": 1954688,
-      "seconds": 45.1,
-      "seconds_sum": 45.1
+      "bytes": 1954599,
+      "seconds": 39.9,
+      "seconds_sum": 39.9
     },
     {
       "layer": "quality",
       "files": 6,
       "rows": 910,
       "bytes": 57648,
-      "seconds": 177.9,
-      "seconds_sum": 262.8
+      "seconds": 143.2,
+      "seconds_sum": 210.6
     },
     {
       "layer": "publish",
       "files": 32,
       "rows": null,
-      "bytes": 7448633,
-      "seconds": 7.3,
-      "seconds_sum": 13.3,
+      "bytes": 7457996,
+      "seconds": 6.1,
+      "seconds_sum": 12.2,
       "watch_files": 22,
-      "watch_bytes": 5394532,
+      "watch_bytes": 5403895,
       "query_files": 10,
       "query_bytes": 2054101,
       "note": "split by use: to watch, the possessions and the JSON the other pages are built from; to query, what only /warehouse uses, the Parquet and the warehouse*.json that describe them; as `tracklab build` measured them, without lineage.json and platform.json (counting platform.json would make the title depend on its own previous value, decision 1); the query engine is not data and is not counted"
@@ -87,7 +87,7 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 2495.4610999993747,
+      "duration_ms": 2028.6068999994313,
       "dbt_seconds": {}
     },
     {
@@ -97,7 +97,7 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 9134.73040000099,
+      "duration_ms": 6474.488400002883,
       "dbt_seconds": {}
     },
     {
@@ -107,7 +107,7 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 5524.696499996935,
+      "duration_ms": 4618.403600004967,
       "dbt_seconds": {}
     },
     {
@@ -119,7 +119,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 7233.240900000965,
+      "duration_ms": 6140.813500001968,
       "dbt_seconds": {}
     },
     {
@@ -148,7 +148,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 36230.8492000011,
+      "duration_ms": 35323.74490000075,
       "dbt_seconds": {}
     },
     {
@@ -161,7 +161,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 2888.6924000034924,
+      "duration_ms": 1826.7055999967852,
       "dbt_seconds": {}
     },
     {
@@ -172,7 +172,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 181843.8740000056,
+      "duration_ms": 153229.01830000046,
       "dbt_seconds": {}
     },
     {
@@ -183,7 +183,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 577118.2345000051,
+      "duration_ms": 467291.37129999435,
       "dbt_seconds": {}
     },
     {
@@ -195,7 +195,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 4047.315099996922,
+      "duration_ms": 2632.6135999988765,
       "dbt_seconds": {}
     },
     {
@@ -206,7 +206,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 36947.64199999918,
+      "duration_ms": 37754.324200002884,
       "dbt_seconds": {}
     },
     {
@@ -219,7 +219,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 5485.826399999496,
+      "duration_ms": 4042.418400000315,
       "dbt_seconds": {}
     },
     {
@@ -230,7 +230,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 144215.6163999971,
+      "duration_ms": 124856.04269999749,
       "dbt_seconds": {}
     },
     {
@@ -249,18 +249,18 @@
       ],
       "group": "gold",
       "status": "success",
-      "duration_ms": 45110.37480000232,
+      "duration_ms": 39924.33280000114,
       "dbt_seconds": {
-        "gold_agg_bb_drives": 1.082534,
-        "gold_agg_bb_picks": 1.536886,
-        "gold_agg_bb_shots": 1.205632,
-        "gold_agg_fb_obr": 1.099296,
-        "gold_agg_fb_passing": 0.597266,
-        "gold_agg_fb_physical": 0.681806,
-        "gold_dim_metric": 0.245956,
-        "gold_dim_player": 0.851682,
-        "gold_dim_season_team": 0.759353,
-        "gold_fact_player_season_metric": 2.761815
+        "gold_agg_bb_drives": 0.609115,
+        "gold_agg_bb_picks": 1.315731,
+        "gold_agg_bb_shots": 0.96829,
+        "gold_agg_fb_obr": 0.840075,
+        "gold_agg_fb_passing": 0.690119,
+        "gold_agg_fb_physical": 0.715696,
+        "gold_dim_metric": 0.258435,
+        "gold_dim_player": 0.909864,
+        "gold_dim_season_team": 0.337387,
+        "gold_fact_player_season_metric": 2.693133
       }
     },
     {
@@ -272,7 +272,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 13654.72790000058,
+      "duration_ms": 7465.367899996636,
       "dbt_seconds": {}
     },
     {
@@ -282,7 +282,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 45764.106199996604,
+      "duration_ms": 34955.739700002596,
       "dbt_seconds": {}
     },
     {
@@ -292,7 +292,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 520.1349999988452,
+      "duration_ms": 443.0212000006577,
       "dbt_seconds": {}
     },
     {
@@ -313,20 +313,20 @@
       ],
       "group": "silver",
       "status": "success",
-      "duration_ms": 163288.34930000448,
+      "duration_ms": 141082.3894999994,
       "dbt_seconds": {
-        "seed_event_type_map": 0.521929,
-        "seed_surface_spec": 0.523551,
-        "silver_dim_entity": 0.511836,
-        "silver_dim_match": 0.443982,
-        "silver_dim_period": 0.77236,
-        "silver_dim_sport": 0.985268,
-        "silver_dim_team": 0.754165,
-        "silver_dim_team_period": 0.63627,
-        "silver_events": 7.20224,
-        "silver_frame_possession": 0.179016,
-        "silver_frames": 66.929236,
-        "silver_frames_attacking": 0.205033
+        "seed_event_type_map": 0.250106,
+        "seed_surface_spec": 0.256055,
+        "silver_dim_entity": 0.538599,
+        "silver_dim_match": 0.458597,
+        "silver_dim_period": 0.802689,
+        "silver_dim_sport": 0.554034,
+        "silver_dim_team": 0.792829,
+        "silver_dim_team_period": 0.613271,
+        "silver_events": 6.871484,
+        "silver_frame_possession": 0.15567,
+        "silver_frames": 57.127236,
+        "silver_frames_attacking": 0.281562
       }
     },
     {
@@ -336,7 +336,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 7321.707700000843,
+      "duration_ms": 5541.0067000048,
       "dbt_seconds": {}
     },
     {
@@ -346,7 +346,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 2528.644300000451,
+      "duration_ms": 1567.7458999998635,
       "dbt_seconds": {}
     },
     {
@@ -356,7 +356,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 17709.648200005176,
+      "duration_ms": 14937.522799998987,
       "dbt_seconds": {}
     },
     {
@@ -366,7 +366,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 18395.027300000947,
+      "duration_ms": 15458.140999995521,
       "dbt_seconds": {}
     },
     {
@@ -376,7 +376,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 177850.0503000032,
+      "duration_ms": 143220.56650000013,
       "dbt_seconds": {}
     },
     {
@@ -386,7 +386,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 613.1469999963883,
+      "duration_ms": 585.6420000054641,
       "dbt_seconds": {}
     },
     {
@@ -396,7 +396,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 5342.512199997145,
+      "duration_ms": 6123.180900001898,
       "dbt_seconds": {}
     }
   ],
@@ -799,7 +799,7 @@
       "table": "dim_metric",
       "files": 1,
       "rows": 1242,
-      "bytes": 14322
+      "bytes": 14237
     },
     {
       "layer": "gold",
@@ -807,7 +807,7 @@
       "table": "dim_player",
       "files": 1,
       "rows": 608,
-      "bytes": 17026
+      "bytes": 17013
     },
     {
       "layer": "gold",
@@ -815,7 +815,7 @@
       "table": "dim_season_team",
       "files": 1,
       "rows": 31,
-      "bytes": 1356
+      "bytes": 1365
     },
     {
       "layer": "gold",
@@ -831,7 +831,7 @@
       "table": "dim_entity",
       "files": 1,
       "rows": 983,
-      "bytes": 25411
+      "bytes": 25657
     },
     {
       "layer": "silver",
@@ -839,7 +839,7 @@
       "table": "dim_match",
       "files": 1,
       "rows": 30,
-      "bytes": 4723
+      "bytes": 4705
     },
     {
       "layer": "silver",
@@ -847,7 +847,7 @@
       "table": "dim_period",
       "files": 1,
       "rows": 81,
-      "bytes": 3159
+      "bytes": 3165
     },
     {
       "layer": "silver",
@@ -863,7 +863,7 @@
       "table": "dim_team",
       "files": 1,
       "rows": 30,
-      "bytes": 1949
+      "bytes": 1948
     },
     {
       "layer": "silver",
@@ -887,7 +887,7 @@
       "table": "frames",
       "files": 30,
       "rows": 29340593,
-      "bytes": 244095852
+      "bytes": 244101012
     }
   ],
   "matches": [
