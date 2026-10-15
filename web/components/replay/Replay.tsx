@@ -1,27 +1,35 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { formatClock, type Rate, ReplayEngine } from "../../lib/replay/engine";
-import { drawFrame, viewed } from "../../lib/replay/render";
+import { formatClock, type Rate, ReplayEngine, type Snapshot } from "../../lib/replay/engine";
+import { drawFrame, type View, viewed, viewOf } from "../../lib/replay/render";
 import type { Possession } from "../../lib/replay/types";
 
 // Playwright reads the player's state from here; a production build leaves it out.
 const EXPOSE =
   process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_EXPOSE_REPLAY === "1";
 
+interface ReplayState {
+  state: string;
+  t: number;
+  frameIndex: number;
+  sport: string;
+  rate: number;
+  normalized: boolean;
+  entities: { i: number; x: number; y: number }[];
+  overlay: number;
+}
+
 declare global {
   interface Window {
-    __replay?: {
-      state: string;
-      t: number;
-      frameIndex: number;
-      sport: string;
-      rate: number;
-      normalized: boolean;
-      entities: { i: number; x: number; y: number }[];
-    };
+    __replay?: ReplayState;
+    // Players that share a page (`/runs`), each under its `name`.
+    __replays?: Record<string, ReplayState>;
   }
 }
+
+// Drawn on top of each frame, after the players; returns how many marks it drew.
+export type Overlay = (ctx: CanvasRenderingContext2D, view: View, snapshot: Snapshot) => number;
 
 const RATES: Rate[] = [0.5, 1, 2];
 
@@ -29,9 +37,11 @@ interface Props {
   possession: Possession;
   autoplay?: boolean;
   onEnded?: () => void;
+  overlay?: Overlay;
+  name?: string;
 }
 
-export function Replay({ possession, autoplay = false, onEnded }: Props) {
+export function Replay({ possession, autoplay = false, onEnded, overlay, name }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [engine] = useState(() => {
     const e = new ReplayEngine(possession);
@@ -52,8 +62,10 @@ export function Replay({ possession, autoplay = false, onEnded }: Props) {
       const snapshot = viewed(engine.frameAt(engine.t), possession, normalized);
       const ctx = canvas.current?.getContext("2d");
       if (ctx) drawFrame(ctx, possession, snapshot);
+      const marks =
+        ctx && overlay ? overlay(ctx, viewOf(ctx.canvas, possession, normalized), snapshot) : 0;
       if (EXPOSE) {
-        window.__replay = {
+        const exposed: ReplayState = {
           state: engine.state,
           t: engine.t,
           frameIndex: engine.indexAt(engine.t),
@@ -61,7 +73,10 @@ export function Replay({ possession, autoplay = false, onEnded }: Props) {
           rate: engine.rate,
           normalized,
           entities: snapshot.entities.map(({ i, x, y }) => ({ i, x, y })),
+          overlay: marks,
         };
+        window.__replay = exposed;
+        if (name) window.__replays = { ...window.__replays, [name]: exposed };
       }
       // Every frame while playing, and once more on the tick that ends it.
       if (engine.state === "playing" || engine.state !== shown) setVersion((v) => v + 1);
@@ -71,11 +86,11 @@ export function Replay({ possession, autoplay = false, onEnded }: Props) {
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [engine, possession, normalized, onEnded]);
+  }, [engine, possession, normalized, onEnded, overlay, name]);
 
   const playing = engine.state === "playing";
   return (
-    <figure className="replay">
+    <figure className="replay" data-state={engine.state}>
       <canvas ref={canvas} width={960} height={560} aria-label="Replay of the possession" />
       <div className="controls">
         <button

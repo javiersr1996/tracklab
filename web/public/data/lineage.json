@@ -6,7 +6,8 @@
     "silver",
     "gold",
     "quality",
-    "publish"
+    "publish",
+    "runs"
   ],
   "nodes": [
     {
@@ -562,6 +563,15 @@
       "schema": "none"
     },
     {
+      "key": "publish_runs",
+      "group": "runs",
+      "kind": "asset",
+      "description": "web/public/data/runs.json and runs/*.json, regenerated and compared.",
+      "step": "publish_runs",
+      "sport": null,
+      "schema": "none"
+    },
+    {
       "key": "publish_stats",
       "group": "publish",
       "kind": "asset",
@@ -658,6 +668,42 @@
       "description": "Task 9's probe: the sign of the attack per (match, period, team) and the court.",
       "step": "orientation",
       "sport": "football",
+      "schema": "none"
+    },
+    {
+      "key": "runs_coverage",
+      "group": "runs",
+      "kind": "asset",
+      "description": "reports/runs_coverage.csv: runs, windows and placebos per match, checked.",
+      "step": "runs_coverage",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "runs_effect",
+      "group": "runs",
+      "kind": "asset",
+      "description": "reports/runs_calibration.json, section effect (M3 to M5a), recomputed and compared.",
+      "step": "runs_effect",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "runs_probe",
+      "group": "runs",
+      "kind": "asset",
+      "description": "reports/runs_calibration.json, section probe (M1, M2), recomputed and compared.",
+      "step": "runs_probe",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "runs_protocol",
+      "group": "runs",
+      "kind": "asset",
+      "description": "reports/runs_protocol.json: the split, the windows and the death criteria, checked.",
+      "step": "runs_protocol",
+      "sport": null,
       "schema": "none"
     },
     {
@@ -1110,6 +1156,22 @@
     },
     {
       "from": "bronze_football_dynamic_events",
+      "to": "runs_coverage"
+    },
+    {
+      "from": "bronze_football_dynamic_events",
+      "to": "runs_effect"
+    },
+    {
+      "from": "bronze_football_dynamic_events",
+      "to": "runs_probe"
+    },
+    {
+      "from": "bronze_football_dynamic_events",
+      "to": "runs_protocol"
+    },
+    {
+      "from": "bronze_football_dynamic_events",
       "to": "silver_events"
     },
     {
@@ -1119,6 +1181,18 @@
     {
       "from": "bronze_football_match",
       "to": "reports_orientation_football"
+    },
+    {
+      "from": "bronze_football_match",
+      "to": "runs_coverage"
+    },
+    {
+      "from": "bronze_football_match",
+      "to": "runs_effect"
+    },
+    {
+      "from": "bronze_football_match",
+      "to": "runs_probe"
     },
     {
       "from": "bronze_football_match",
@@ -1147,6 +1221,18 @@
     {
       "from": "bronze_football_match_players",
       "to": "reports_orientation_football"
+    },
+    {
+      "from": "bronze_football_match_players",
+      "to": "runs_coverage"
+    },
+    {
+      "from": "bronze_football_match_players",
+      "to": "runs_effect"
+    },
+    {
+      "from": "bronze_football_match_players",
+      "to": "runs_probe"
     },
     {
       "from": "bronze_football_match_players",
@@ -1307,6 +1393,10 @@
     {
       "from": "quality_partitions",
       "to": "publish_quality"
+    },
+    {
+      "from": "quality_partitions",
+      "to": "runs_protocol"
     },
     {
       "from": "raw_basketball",
@@ -1477,6 +1567,30 @@
       "to": "quality_partitions"
     },
     {
+      "from": "runs_coverage",
+      "to": "publish_runs"
+    },
+    {
+      "from": "runs_coverage",
+      "to": "runs_probe"
+    },
+    {
+      "from": "runs_effect",
+      "to": "publish_runs"
+    },
+    {
+      "from": "runs_probe",
+      "to": "runs_effect"
+    },
+    {
+      "from": "runs_protocol",
+      "to": "publish_runs"
+    },
+    {
+      "from": "runs_protocol",
+      "to": "runs_coverage"
+    },
+    {
       "from": "seed_event_type_map",
       "to": "silver_events"
     },
@@ -1506,7 +1620,23 @@
     },
     {
       "from": "silver_dim_match",
+      "to": "runs_protocol"
+    },
+    {
+      "from": "silver_dim_match",
       "to": "silver_dim_entity"
+    },
+    {
+      "from": "silver_dim_period",
+      "to": "runs_coverage"
+    },
+    {
+      "from": "silver_dim_period",
+      "to": "runs_effect"
+    },
+    {
+      "from": "silver_dim_period",
+      "to": "runs_probe"
     },
     {
       "from": "silver_dim_period",
@@ -1570,6 +1700,18 @@
     },
     {
       "from": "silver_dim_team_period",
+      "to": "runs_coverage"
+    },
+    {
+      "from": "silver_dim_team_period",
+      "to": "runs_effect"
+    },
+    {
+      "from": "silver_dim_team_period",
+      "to": "runs_probe"
+    },
+    {
+      "from": "silver_dim_team_period",
       "to": "silver_frames_attacking"
     },
     {
@@ -1615,6 +1757,18 @@
     {
       "from": "silver_frames",
       "to": "quality_noise"
+    },
+    {
+      "from": "silver_frames",
+      "to": "runs_coverage"
+    },
+    {
+      "from": "silver_frames",
+      "to": "runs_effect"
+    },
+    {
+      "from": "silver_frames",
+      "to": "runs_probe"
     },
     {
       "from": "silver_frames",

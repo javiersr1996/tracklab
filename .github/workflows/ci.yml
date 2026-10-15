@@ -58,6 +58,15 @@ jobs:
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
       - run: uv run tracklab build --select "group:silver or group:gold"
       - run: uv run tracklab publish lineage --check
+      # Task 54: P5's versioned reports and runs.json against the fixtures. A slice of the
+      # warehouse cannot recompute the figures, so each prints PARTIAL and what it verified
+      # (the seal, the protocol, the match list, the clips by size and hash); full-build.yml
+      # recomputes them on the whole warehouse. The synthetic P5 tests are in the pytest below.
+      - run: uv run tracklab runs protocol --check
+      - run: uv run tracklab runs coverage --check
+      - run: uv run tracklab runs probe --check
+      - run: uv run tracklab runs effect --check
+      - run: uv run tracklab publish runs --check
       # Task 46: the committed Parquet and example answers are what gold writes, on Linux too
       # (the fixtures carry the six season aggregates whole, so the bytes are the real ones).
       - run: uv run tracklab publish warehouse --check

@@ -11,6 +11,7 @@ import os
 import sys
 import time
 from collections.abc import Callable, Sequence
+from datetime import date
 from pathlib import Path
 
 from tracklab.bronze.basketball.aggregates import build_aggregates as build_basketball_aggregates
@@ -36,10 +37,15 @@ from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.platform import run_publish_platform
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.quality import run_publish_quality
+from tracklab.publish.runs import run_publish_runs
 from tracklab.publish.stats import run_publish_stats
 from tracklab.publish.warehouse import run_publish_warehouse
 from tracklab.publish.warehouse_pg import WHERE, run_publish_warehouse_pg
 from tracklab.quality.run import CHECKS, run_quality
+from tracklab.runs.candidates import run_runs_effect, run_runs_freeze
+from tracklab.runs.coverage import run_runs_coverage
+from tracklab.runs.probe import run_runs_probe
+from tracklab.runs.protocol import run_runs_protocol
 from tracklab.silver.orientation import SPORTS, run_orientation
 from tracklab.silver.possessions import run_possessions
 from tracklab.silver.stats import run_stats
@@ -186,6 +192,10 @@ def _cmd_publish_examples(args: argparse.Namespace) -> int:
     return run_publish_examples(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
 
 
+def _cmd_publish_runs(args: argparse.Namespace) -> int:
+    return run_publish_runs(args.data_dir, args.reports_dir, args.out_dir, check=args.check)
+
+
 def _cmd_publish_warehouse_pg(args: argparse.Namespace) -> int:
     return run_publish_warehouse_pg(
         data_dir=args.data_dir, out_dir=args.out_dir, dsn_env=args.dsn_env, where=args.where
@@ -220,6 +230,26 @@ def _cmd_quality(args: argparse.Namespace) -> int:
 
 def _cmd_fixtures(args: argparse.Namespace) -> int:
     return run_fixtures(data_dir=args.data_dir, out_dir=args.out_dir)
+
+
+def _cmd_runs_protocol(args: argparse.Namespace) -> int:
+    return run_runs_protocol(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_runs_coverage(args: argparse.Namespace) -> int:
+    return run_runs_coverage(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_runs_probe(args: argparse.Namespace) -> int:
+    return run_runs_probe(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_runs_effect(args: argparse.Namespace) -> int:
+    return run_runs_effect(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_runs_freeze(args: argparse.Namespace) -> int:
+    return run_runs_freeze(args.reports_dir, date=args.date)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -527,6 +557,36 @@ def build_parser() -> argparse.ArgumentParser:
     )
     publish_examples.set_defaults(func=_cmd_publish_examples)
 
+    publish_runs = publish_sub.add_parser(
+        "runs",
+        help="Write runs.json (P5, published dead: the figures of the reports, the funnel, "
+        "the per-match tables) and the hook's two clips under runs/.",
+    )
+    publish_runs.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; the calibration frames of the clips are read from it (default: data).",
+    )
+    publish_runs.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where the P5 reports live (default: reports).",
+    )
+    publish_runs.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where runs.json and runs/ go (default: ../web/public/data).",
+    )
+    publish_runs.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare with the files on disk; write nothing.",
+    )
+    publish_runs.set_defaults(func=_cmd_publish_runs)
+
     publish_warehouse_pg = publish_sub.add_parser(
         "warehouse-pg",
         help="Write warehouse_pg.json: rows, EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) and table "
@@ -667,6 +727,132 @@ def build_parser() -> argparse.ArgumentParser:
         help="Data root the cut lands in (default: tests/fixtures/data).",
     )
     fixtures.set_defaults(func=_cmd_fixtures)
+
+    runs = subparsers.add_parser(
+        "runs", help="P5: off-ball runs against the defence's displacement in the tracking."
+    )
+    runs_sub = runs.add_subparsers(dest="runs_command", required=True)
+    runs_protocol = runs_sub.add_parser(
+        "protocol",
+        help="Write reports/runs_protocol.json: the split, the windows, the placebo, the "
+        "instrument, the bar and the death criteria, as code, before any outcome.",
+    )
+    runs_protocol.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver/dim_match and the football bronze events are read from it "
+        "(default: data).",
+    )
+    runs_protocol.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where runs_protocol.json goes and quality_partitions.csv is read from "
+        "(default: reports).",
+    )
+    runs_protocol.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare with the versioned file; write nothing.",
+    )
+    runs_protocol.set_defaults(func=_cmd_runs_protocol)
+    runs_coverage = runs_sub.add_parser(
+        "coverage",
+        help="Write reports/runs_coverage.csv: runs, windows, detection and placebos per match "
+        "for the 20 matches, as counts and never an outcome.",
+    )
+    runs_coverage.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver frames and the football bronze events are read from it "
+        "(default: data).",
+    )
+    runs_coverage.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where runs_coverage.csv goes (default: reports); the split is read from the "
+        "protocol committed in HEAD, never from a file at hand.",
+    )
+    runs_coverage.add_argument(
+        "--check",
+        action="store_true",
+        help="Recount the matches at hand and compare with the versioned file; write nothing.",
+    )
+    runs_coverage.set_defaults(func=_cmd_runs_coverage)
+    runs_probe = runs_sub.add_parser(
+        "probe",
+        help="Write reports/runs_calibration.json, section probe: death probe 1 of P5 on the "
+        "calibration half (cadence, instrument, real null, power); no effect per subtype.",
+    )
+    runs_probe.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver frames and the football bronze events are read from it "
+        "(default: data).",
+    )
+    runs_probe.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where runs_calibration.json goes (default: reports); the split is read from the "
+        "protocol committed in HEAD, never from a file at hand.",
+    )
+    runs_probe.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate where the warehouse holds the 20 matches and compare with the "
+        "versioned file, else verify its seal and consistency; write nothing.",
+    )
+    runs_probe.set_defaults(func=_cmd_runs_probe)
+    runs_effect = runs_sub.add_parser(
+        "effect",
+        help="Write reports/runs_calibration.json, section effect: death probe 2 of P5 on the "
+        "calibration half (effect per probable subtype, pre-trend, fully detected, class at "
+        "t_c), next to the probe's section.",
+    )
+    runs_effect.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver frames and the football bronze events are read from it "
+        "(default: data).",
+    )
+    runs_effect.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where runs_calibration.json lives (default: reports); the split is read from "
+        "the protocol committed in HEAD, never from a file at hand.",
+    )
+    runs_effect.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate the section where the warehouse holds the calibration matches and "
+        "compare with the versioned file, else verify its seal and consistency; write nothing.",
+    )
+    runs_effect.set_defaults(func=_cmd_runs_effect)
+    runs_freeze = runs_sub.add_parser(
+        "freeze",
+        help="Turn reports/runs_protocol.json to stage frozen with the candidates of the "
+        "effect section and the sha of the committed runs/ tree; writes the file, commits "
+        "nothing (the commit is the freeze).",
+    )
+    runs_freeze.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where runs_protocol.json and runs_calibration.json live (default: reports).",
+    )
+    runs_freeze.add_argument(
+        "--date",
+        default=date.today().isoformat(),
+        help="The date of the frozen history entry (default: today).",
+    )
+    runs_freeze.set_defaults(func=_cmd_runs_freeze)
 
     build = subparsers.add_parser(
         "build",

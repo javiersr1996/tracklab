@@ -54,6 +54,18 @@ def test_lineage_from_defs_returns_exactly_the_graphs_keys() -> None:
     assert {n["group"] for n in payload["nodes"]} <= set(GROUPS_IN_FLOW)
 
 
+def test_the_runs_group_is_in_the_exported_flow_with_its_five_assets() -> None:
+    payload = lineage_from_defs(defs)
+    assert payload["groups"][-1] == "runs"
+    assert {n["key"] for n in payload["nodes"] if n["group"] == "runs"} == {
+        "runs_protocol",
+        "runs_coverage",
+        "runs_probe",
+        "runs_effect",
+        "publish_runs",
+    }
+
+
 def test_every_edge_has_both_ends_among_nodes() -> None:
     payload = lineage_from_defs(defs)
     keys = {n["key"] for n in payload["nodes"]}
