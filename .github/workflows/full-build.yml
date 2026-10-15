@@ -75,7 +75,15 @@ jobs:
       # and the publication read the confirmation match only past the guard, which refuses a dirty
       # tree: what the build left in the working tree is printed first. `pose metric --check`
       # takes about half an hour.
-      - run: git status --short
+      - name: The working tree must be clean for the guard of P6
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --short
+            git --no-pager diff --stat
+            git --no-pager diff | cat -A | head -n 40
+            echo "the build left the working tree dirty: the confirmation match would stay closed"
+            exit 1
+          fi
       - run: uv run tracklab pose coverage --check
       - run: uv run tracklab pose protocol --check
       - run: uv run tracklab pose metric --check
