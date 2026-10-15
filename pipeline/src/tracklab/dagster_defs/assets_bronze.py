@@ -81,6 +81,14 @@ def bronze_key(sport: str, table: str) -> AssetKey:
     return AssetKey(f"bronze_{sport}_{table}")
 
 
+# The keys of the football pose bronze, for the group whose checks read it (task 64). Only
+# this module and the guard name the tables (tests/unit/test_pose_data.py).
+BODYPOSE_KEYS = [
+    bronze_key("football", table).to_user_string()
+    for table in BRONZE_TABLES[("football", "bodypose")]
+]
+
+
 def _bronze_asset(sport: str, group: str, tables: tuple[str, ...]) -> AssetsDefinition:
     source_id = bronze_source_id(sport, group)
     raw = raw_asset_name(load_manifest(MANIFEST).source(source_id))

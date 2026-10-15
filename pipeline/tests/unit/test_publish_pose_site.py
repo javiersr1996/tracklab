@@ -318,6 +318,7 @@ def test_a_hook_clip_carries_the_window_with_its_signal_and_never_a_null_skeleto
             assert clip["frame_lo"] <= w["frame_lo"] and w["frame_hi"] <= clip["frame_hi"]
         for frame in clip["frames"]:
             assert all(entry[4] is not None for entry in frame["p"]), "a player without joints"
+            assert all(entry[3] is None for entry in frame["p"]), "a flag the bronze door lacks"
             assert len({entry[0] for entry in frame["p"]}) == len(frame["p"])
 
 
@@ -506,7 +507,6 @@ def test_the_bronze_path_gives_the_samples_skeletons_within_a_centimetre(real_da
             compared += diff.size
             flipped += int((diff > 0).sum())
             assert int(publish_pose.cm(p.x)) == e[1] and int(publish_pose.cm(p.y)) == e[2]
-            assert bool(e[3]) == p.is_detected
     print(f"bronze vs sample: {compared} coordinates, {flipped} differ, worst {worst} cm")
     # Some offsets sit on a half-centimetre tie, which is all float32 can flip (measured: 4.5 %,
     # none by more than 1 cm); a bound of a tenth is the loosest that still means a tie.

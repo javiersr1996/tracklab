@@ -7,9 +7,10 @@ import type { Surface } from "../replay/types";
 // p90_mae_cm in whole mm.
 export type Joints = [xyz: [number, number, number][], mae: number[]];
 
-// [index into `players`, x_cm, y_cm, is_detected 0/1, joints or null]. A null is a player the
+// [index into `players`, x_cm, y_cm, is_detected 0/1 (null in the clips of a whole match, which
+// the one reader of the bronze gives no flag), joints or null]. A null joints is a player the
 // file has no pose for in that frame: it is never interpolated or carried over.
-export type PlayerAt = [i: number, x: number, y: number, detected: 0 | 1, joints: Joints | null];
+export type PlayerAt = [i: number, x: number, y: number, detected: 0 | 1 | null, joints: Joints | null];
 
 export interface PoseFrame {
   f: number;

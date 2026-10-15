@@ -34,7 +34,7 @@ from numpy.typing import NDArray
 from tracklab.bronze.common import bronze_path
 from tracklab.ingest.manifest import FileEntry
 from tracklab.pose import criteria, gait
-from tracklab.pose.data import PoseRows, require_readable
+from tracklab.pose.data import PoseRows, committed_split, require_readable
 from tracklab.pose.jsonl import PoseFrame, PosePlayer
 from tracklab.pose.verdict import Window
 from tracklab.publish import pose as base
@@ -142,26 +142,9 @@ def choose_stretch(table: FrameTable, n: int = CLIP_FRAMES) -> tuple[int, int]:
     return first, first + n - 1
 
 
-def detected_flags(data_dir: Path, match_id: int, lo: int, hi: int) -> dict[tuple[int, int], bool]:
-    """`is_detected` of the pose rows in `[lo, hi]`, by (player_id, frame): a flag, no position.
-    Past the guard like everything that reads a match."""
-    require_readable(match_id)
-    path = bronze_path(data_dir, "football", "bodypose_players", match_id).as_posix()
-    rows = (
-        duckdb.connect()
-        .execute(
-            "select player_id, frame, is_detected from read_parquet(?) where frame between ? and ?",
-            [path, lo, hi],
-        )
-        .fetchall()
-    )
-    return {(int(p), int(f)): bool(d) for p, f, d in rows}
-
-
 def pose_frames(
     rows: PoseRows,
     table: FrameTable,
-    detected: dict[tuple[int, int], bool],
     lo: int,
     hi: int,
 ) -> list[PoseFrame]:
@@ -181,7 +164,7 @@ def pose_frames(
                 int(rows.player_id[i]),
                 float(rows.x[i]),
                 float(rows.y[i]),
-                detected[(int(rows.player_id[i]), f)],
+                True,  # placeholder: `build_clip` takes a bool; the clip says null (below)
                 rows.joints[i].astype(np.float64),
                 rows.mae_cm[i].astype(np.float64),
             )
@@ -288,8 +271,7 @@ def clip_file(kind: str, match_id: int) -> str:
 def matches_to_clip(reports: dict[str, Any], status: str, dead_at: str | None) -> list[int]:
     """The matches whose bronze may be opened for a clip: the calibration match always; the
     confirmation one when its metric was read (alive, unreplicated, or dead at M4)."""
-    split = reports["protocol"]["design"]["split"]
-    calibration, confirmation = int(split["calibration"][0]), int(split["confirmation"][0])
+    (calibration,), (confirmation,) = committed_split()
     if status in ("alive", "unreplicated") or dead_at == "M4":
         return [calibration, confirmation]
     return [calibration]
@@ -317,8 +299,7 @@ def _clip_of_match(
         lo, hi = clip_range(hook.frame, width, table, hook.period)
     else:
         lo, hi = choose_stretch(table)
-    detected = detected_flags(data_dir, match_id, lo, hi)
-    frames = pose_frames(rows, table, detected, lo, hi)
+    frames = pose_frames(rows, table, lo, hi)
     con = duckdb.connect()
     ids = {p.player_id for f in frames for p in f.players}
     players, teams = base._players_block(con, data_dir, ids, match_id)
@@ -327,6 +308,11 @@ def _clip_of_match(
         frames, zip_entry(manifest_path, match_id), players, teams, surface, match_id
     )
     clip["coverage"] = coverage_of(frames, table)
+    # `rows` (the one door, `load_players`) carries no `is_detected`: the flag is null, not
+    # guessed. The viewer reads it only for a player drawn as a disc, and there are none.
+    for frame in clip["frames"]:
+        for entry in frame["p"]:
+            entry[3] = None
     index = base._player_index(players)
     if hook is None:
         skeletons = int(table.n_with_pose[(table.frame >= lo) & (table.frame <= hi)].sum())

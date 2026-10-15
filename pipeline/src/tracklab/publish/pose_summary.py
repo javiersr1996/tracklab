@@ -17,6 +17,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from tracklab.pose.data import committed_split
 from tracklab.publish import pose as base
 
 SCHEMA_VERSION = 1
@@ -127,11 +128,11 @@ def _stages(reports: dict[str, Any]) -> list[dict[str, Any]]:
 def _protocol(reports: dict[str, Any]) -> dict[str, Any]:
     protocol = reports["protocol"]
     frozen = protocol.get("frozen") or {}
-    split = protocol["design"]["split"]
+    calibration, confirmation = committed_split()
     return {
         "stage": protocol["stage"],
-        "calibration": split["calibration"][0],
-        "confirmation": split["confirmation"][0],
+        "calibration": calibration[0],
+        "confirmation": confirmation[0],
         "width": frozen.get("width"),
         "cap_cm": frozen.get("cap_cm"),
         "bands": {
@@ -160,7 +161,7 @@ def _opened(reports: dict[str, Any]) -> dict[str, Any]:
     return {
         "confirmation_match_opened": opened,
         "at_the_freeze": {"not_seen": seen["not_seen"], "consequence": seen["consequence"]},
-        "not_opened": [] if opened else [reports["protocol"]["design"]["split"]["confirmation"][0]],
+        "not_opened": [] if opened else [committed_split()[1][0]],
     }
 
 

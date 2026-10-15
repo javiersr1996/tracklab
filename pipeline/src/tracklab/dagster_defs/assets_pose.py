@@ -17,6 +17,7 @@ from pathlib import Path
 
 from dagster import AssetExecutionContext, Failure, asset
 
+from tracklab.dagster_defs.assets_bronze import BODYPOSE_KEYS
 from tracklab.dagster_defs.assets_runs import REPORTS_DIR, WEB_DATA_DIR, check_asset
 from tracklab.paths import data_root
 from tracklab.pose.coverage import run_pose_coverage
@@ -29,11 +30,7 @@ MANIFEST = Path("manifest/sources.json")
 SCHEMA = Path("../web/lib/pose/schema.json")
 
 # The bronze the checks read: the pose of both matches and the lineup that orders their players.
-_BRONZE = (
-    "bronze_football_bodypose_frames",
-    "bronze_football_bodypose_players",
-    "bronze_football_match_players",
-)
+_BRONZE = (*BODYPOSE_KEYS, "bronze_football_match_players")
 
 pose_coverage = check_asset(
     "pose_coverage",

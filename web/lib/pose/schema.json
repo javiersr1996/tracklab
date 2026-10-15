@@ -218,7 +218,7 @@
                 { "type": "integer", "minimum": 0 },
                 { "type": "integer" },
                 { "type": "integer" },
-                { "enum": [0, 1] },
+                { "enum": [0, 1, null] },
                 {
                   "oneOf": [
                     { "type": "null" },
