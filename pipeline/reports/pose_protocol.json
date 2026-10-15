@@ -3,7 +3,7 @@
   "stage": "design",
   "written": "2026-10-15",
   "plan": "tasks/todo.md, P6, task 60, 'Protocolo que vale tras las seis pasadas'",
-  "fingerprint": "c5de770d16bd4652b0db506185191fee25d7e9b87e8bfe5d3aff5793bdf29caf",
+  "fingerprint": "bd8a897f770723056468bb0c055ec77764cd03169ac714ca63f32fdd30d71843",
   "design": {
     "question": "Cadence and step length in the high-speed stretches, per match and per player, with their propagated error, from the Body Pose of two full matches.",
     "unit": "the player: the windows of one player are not independent, so they are reported per player; there is no null, P6 measures and tests no effect",
@@ -102,9 +102,9 @@
       "seed": 60
     },
     "rule_w_cap": {
-      "rule": "among the cells that pass the bar in the sweep (separation 5.5 / 4.3 m), pass it again at the separation the probe measures, and in which M1 + M2 kill the noise and spare a sane instrument, the one of least W and, at equal W, of greatest cap; if none, P6 dies",
+      "rule": "among the cells that pass the bar in the sweep (separation 5.5 / 4.3 m), pass it again at the separation the probe measures, and in which M1 + M2 kill the noise, the one of least W and, at equal W, of greatest cap; if none, P6 dies",
       "adjusted_bar": "per cell and cadence, on the very windows of the sweep's row at rho 0 (same generator, seed and 40,000 windows), the separation A whose median sd of s (ddof 0) equals the median sd of s of the probe's (a') in the high band of that cell (both periods), by bisection; the bar judged again at A; it reads no cadence and only hardens the bar: a cell must pass both",
-      "spares_the_sane": "M1 and M2 simulated (criteria.simulate_sane) with the same counts on sane pools of (W, cap, cadence, rho) drawn by the sweep's generator at the adjusted separation of each band (the low band's from its own (a') sd), 4000 windows each, the high ones with their Monte Carlo copies; player i runs at c_i = cadence + 0.1 Hz x N(0, 1) in the high band and c_i - 0.05 Hz in the low one, a window scaled by c_i / cadence (the estimator's relative error, not its error at c_i); P(P6 dies | sane) <= sane_p_dies_max in every cadence and rho; the separation is matched at rho 0, which at rho > 0 gives a smaller signal (conservative); delta and sigma_b have no source: PENDIENTE DE CONFIRMAR",
+      "spares_the_sane": "printed per cell, read by no rule (a criterion calibrated only on suppositions is reported as a number: delta and sigma_b have no source, and P6 must not die of them before it measures): M1 and M2 simulated (criteria.simulate_sane) with the same counts on sane pools of (W, cap, cadence, rho) drawn by the sweep's generator at the adjusted separation of each band (the low band's from its own (a') sd), 4000 windows each, the high ones with their Monte Carlo copies; player i runs at c_i = cadence + 0.1 Hz x N(0, 1) in the high band and c_i - 0.05 Hz in the low one, a window scaled by c_i / cadence (the estimator's relative error, not its error at c_i); spares_the_sane is P(P6 dies | sane) <= sane_p_dies_max in every cadence and rho; the separation is matched at rho 0, which at rho > 0 gives a smaller signal (conservative); delta and sigma_b have no source: PENDIENTE DE CONFIRMAR",
       "sane_p_dies_max": 0.05,
       "sane_delta_hz": 0.05,
       "sane_sigma_b_hz": 0.1,
@@ -134,7 +134,7 @@
     "death_criteria": {
       "noise": "rule_w_cap finds no cell -> P6 dies: the instrument is not told from noise",
       "M1": "in 1925299, fewer than 10 players with >= 5 windows finite in s in the high band -> P6 dies: the coverage does not pay for the question",
-      "M2": "among the players with >= 5 windows finite in s in both bands (n printed; n < 10 dies by coverage), fewer than 0.75 with cad_s high > cad_s low (medians of their finite windows) -> dies; or, among the players of M1, the median of the propagated sd of the median of their first 5 finite high windows above 0.5 x the IQR between players of that same median -> dies: the instrument does not see even what is forced, or the cadence does not rise 0.05 Hz between the bands, or the squad does not spread 0.1 Hz (the sane instrument the rule asked to survive)",
+      "M2": "among the players with >= 5 windows finite in s in both bands (n printed; n < 10 dies by coverage), fewer than 0.75 with cad_s high > cad_s low (medians of their finite windows) -> dies; or, among the players of M1, the median of the propagated sd of the median of their first 5 finite high windows above 0.5 x the IQR between players of that same median -> dies: the instrument does not see even what is forced, or the cadence does not rise 0.05 Hz between the bands, or the squad does not spread 0.1 Hz (the sane instrument printed beside the rule)",
       "M3": "no verdict (decision of Javier, fourth review): per player, the median of |cad_s - cad_h| and the share of NaN in h in the high band, published with the sweep's rows of h beside it, without a propagated error",
       "M4": "M2 in 1996435 with the same numbers; its second clause compares the propagated sd of 1996435 with 0.5 x the IQR of 1925299, written as m4.half_iqr_hz in pose_verdict.json (second time) before 1996435 is opened, never with the IQR of its own squad; if its admitted windows (before the NaN rule) do not reach any of the minima of M1 and M2, 'not evaluable by coverage' and P6 is unreplicated, not dead; 'replication failed' only if they reach them and M2 fails",
       "blind_spots": [
@@ -197,8 +197,8 @@
       "stage": "design",
       "task": 60,
       "date": "2026-10-15",
-      "note": "review of phase B2's first part, before the freeze: the bar judged again at the separation the probe's (a') measures (it had been judged at 5.5 / 4.3 m only), a sane instrument that must survive M1 and M2 in the rule, the second time and its verdict file, M4's half IQR written there, the guard's conditions on it and on numpy, and the poses with is_detected false declared; the probe is run again"
+      "note": "review of phase B2's first part, before the freeze: the bar judged again at the separation the probe's (a') measures (it had been judged at 5.5 / 4.3 m only), a sane instrument against M1 and M2 printed beside the rule and read by none, the second time and its verdict file, M4's half IQR written there, the guard's conditions on it and on numpy, and the poses with is_detected false declared; the probe is run again"
     }
   ],
-  "content_sha256": "a9d2664cfd0db021d554f179e1a48ae86d79fa133fe566da7846d91b8454c090"
+  "content_sha256": "5e7d5414667539a3390f79968244083ea4494fb7404979560c6a20aff50b9f0d"
 }

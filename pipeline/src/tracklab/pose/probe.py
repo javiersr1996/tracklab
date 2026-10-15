@@ -19,8 +19,9 @@
   each cell that passes the bar of `pose_sweep.json`, the bar judged again at the separation
   that reproduces (a')'s median sd of s in the high band; M1 and M2 simulated with (a)'s counts
   (cap on the ankles, both periods) on the noise twin of every rho, which they must kill, and on
-  sane pools at that separation in every cadence and rho, which they must spare; and the cell
-  chosen or P6's death.
+  sane pools at that separation in every cadence and rho, printed beside each cell with no
+  effect on the rule (a criterion calibrated only on suppositions is reported as a number);
+  and the cell chosen or P6's death.
 
 What reads cadences (c, d, e, the NaN rates, M1 and M2 on data) is the second time, after the
 freeze, and is not here. The rows come from `data.load_players`, past the guard; the match is
@@ -314,14 +315,15 @@ def spares_the_sane(sane_rows: list[list[Any]], p_dies_max: float = SANE_P_DIES_
 
 
 def is_eligible(cell: dict[str, Any]) -> bool:
-    """A cell the rule may choose: it passes the adjusted bar, kills the noise and spares the
-    sane instrument."""
-    return bool(cell["passes_adjusted_bar"] and cell["kills_the_noise"] and cell["spares_the_sane"])
+    """A cell the rule may choose: it passes the adjusted bar and kills the noise. Whether it
+    spares the sane instrument is printed beside it and decides nothing: delta and sigma_b have
+    no source, and P6 must not die of a supposition before it measures."""
+    return bool(cell["passes_adjusted_bar"] and cell["kills_the_noise"])
 
 
 def choose(cells: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """The cell of least W and, at equal W, of greatest cap among the eligible ones: those that
-    pass the adjusted bar, kill the noise and spare the sane instrument."""
+    """The cell of least W and, at equal W, of greatest cap among the eligible ones
+    (`is_eligible`)."""
     eligible = [c for c in cells if c["eligible"]]
     if not eligible:
         return None

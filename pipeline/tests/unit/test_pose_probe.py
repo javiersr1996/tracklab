@@ -5,7 +5,8 @@ Mutations, each applied, seen failing and restored (tasks/todo.md, task 60, phas
 period for the whole player in `admitted` (a window crosses the period change); the heels'
 cap folded into the wrong ankle column; the rule choosing the greatest W, or the least cap;
 `kills_the_noise` read from the first rho only; and, after the review of phase B2: a cell
-eligible without the adjusted bar; `spares_the_sane` read from its first row; the bisection
+eligible without the adjusted bar, or only if it spares the sane instrument (which is printed
+and decides nothing); `spares_the_sane` read from its first row; the bisection
 of the separation the wrong way; the PARTIAL check without comparing the cells with the
 sweep's bar, their counts with `windows.rows` or the base bar with the sweep's rows.
 """
@@ -140,11 +141,15 @@ def test_a_cell_spares_the_sane_only_when_every_cadence_and_rho_does() -> None:
     assert probe.spares_the_sane(rows, 0.1) is True
 
 
-def test_a_cell_is_eligible_only_with_the_adjusted_bar_the_noise_and_the_sane() -> None:
-    flags = ("passes_adjusted_bar", "kills_the_noise", "spares_the_sane")
-    for off in flags:
-        assert probe.is_eligible({f: f != off for f in flags}) is False, off
-    assert probe.is_eligible(dict.fromkeys(flags, True)) is True
+def test_a_cell_is_eligible_with_the_adjusted_bar_and_the_noise_whatever_the_sane() -> None:
+    """The sane condition is printed and decides nothing: a cell that would kill a sane
+    instrument is still eligible (the mutation that puts it back in the rule falls here)."""
+    for off in ("passes_adjusted_bar", "kills_the_noise"):
+        cell = {"passes_adjusted_bar": True, "kills_the_noise": True, "spares_the_sane": True}
+        assert probe.is_eligible({**cell, off: False}) is False, off
+    for spares in (True, False):
+        cell = {"passes_adjusted_bar": True, "kills_the_noise": True, "spares_the_sane": spares}
+        assert probe.is_eligible(cell) is True
 
 
 def test_the_rule_takes_the_least_w_then_the_greatest_cap_and_none_is_death() -> None:
@@ -204,9 +209,7 @@ def test_the_rule_judges_the_bar_again_and_simulates_noise_and_sane_per_cell() -
         ]
         for r in cell["noise"]["rows"]:
             assert r[1] == sum(r[2:]) / 20
-        assert cell["eligible"] == (
-            cell["passes_adjusted_bar"] and cell["kills_the_noise"] and cell["spares_the_sane"]
-        )
+        assert cell["eligible"] == (cell["passes_adjusted_bar"] and cell["kills_the_noise"])
     print("\ntiny rule:", [(c["width"], c["cap_cm"], c["eligible"]) for c in rule["cells"]])
     assert rule["chosen"] == probe.choose(rule["cells"])
     again = probe.rule_w_cap(table, signal_sd, sweep_report, mae, fps, **kwargs)

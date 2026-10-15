@@ -173,8 +173,7 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
             "rule": (
                 "among the cells that pass the bar in the sweep (separation 5.5 / 4.3 m), pass it "
                 "again at the separation the probe measures, and in which M1 + M2 kill the "
-                "noise and spare a sane instrument, the one of least W and, at equal W, of "
-                "greatest cap; if none, P6 dies"
+                "noise, the one of least W and, at equal W, of greatest cap; if none, P6 dies"
             ),
             "adjusted_bar": (
                 "per cell and cadence, on the very windows of the sweep's row at rho 0 (same "
@@ -184,14 +183,18 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
                 "cadence and only hardens the bar: a cell must pass both"
             ),
             "spares_the_sane": (
+                "printed per cell, read by no rule (a criterion calibrated only on suppositions "
+                "is reported as a number: delta and sigma_b have no source, and P6 must not die "
+                "of them before it measures): "
                 "M1 and M2 simulated (criteria.simulate_sane) with the same counts on sane pools "
                 "of (W, cap, cadence, rho) drawn by the sweep's generator at the adjusted "
                 "separation of each band (the low band's from its own (a') sd), "
                 f"{SANE_POOL_WINDOWS} windows each, the high ones with their Monte Carlo copies; "
                 f"player i runs at c_i = cadence + {SANE_SIGMA_B_HZ} Hz x N(0, 1) in the high band "
                 f"and c_i - {SANE_DELTA_HZ} Hz in the low one, a window scaled by c_i / cadence "
-                "(the estimator's relative error, not its error at c_i); P(P6 dies | sane) <= "
-                "sane_p_dies_max in every cadence and rho; the separation is matched at rho 0, "
+                "(the estimator's relative error, not its error at c_i); spares_the_sane is "
+                "P(P6 dies | sane) <= sane_p_dies_max in every cadence and rho; the separation "
+                "is matched at rho 0, "
                 "which at rho > 0 gives a smaller signal (conservative); delta and sigma_b have "
                 "no source: PENDIENTE DE CONFIRMAR"
             ),
@@ -257,7 +260,7 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
                 f"{HALF_IQR} x the IQR between players of that same median -> dies: the "
                 "instrument does not see even what is forced, or the cadence does not rise "
                 f"{SANE_DELTA_HZ} Hz between the bands, or the squad does not spread "
-                f"{SANE_SIGMA_B_HZ} Hz (the sane instrument the rule asked to survive)"
+                f"{SANE_SIGMA_B_HZ} Hz (the sane instrument printed beside the rule)"
             ),
             "M3": (
                 "no verdict (decision of Javier, fourth review): per player, the median of "
@@ -360,8 +363,9 @@ def build_protocol(
                     "note": (
                         "review of phase B2's first part, before the freeze: the bar judged "
                         "again at the separation the probe's (a') measures (it had been judged "
-                        "at 5.5 / 4.3 m only), a sane instrument that must survive M1 and M2 "
-                        "in the rule, the second time and its verdict file, M4's half IQR "
+                        "at 5.5 / 4.3 m only), a sane instrument against M1 and M2 printed "
+                        "beside the rule and read by none, the second time and its verdict "
+                        "file, M4's half IQR "
                         "written there, the guard's conditions on it and on numpy, and the "
                         "poses with is_detected false declared; the probe is run again"
                     ),
