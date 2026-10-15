@@ -139,6 +139,7 @@ def _protocol(reports: dict[str, Any]) -> dict[str, Any]:
             "high_m_s_from": protocol["design"]["bands"]["high_m_s_from"],
         },
         "numbers": protocol["design"]["numbers"],
+        "blind_spots": protocol["design"]["death_criteria"]["blind_spots"],
         "stages": _stages(reports),
     }
 
