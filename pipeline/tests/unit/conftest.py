@@ -192,6 +192,7 @@ class PoseRepo:
 
     def __init__(self, root: Path) -> None:
         self.root = root
+        self.calibration_seal: str | None = None  # of the last calibration committed
 
     def commit(
         self,
@@ -208,10 +209,16 @@ class PoseRepo:
         _git(self.root, "commit", "-q", "--allow-empty", "-m", message)
 
     def frozen(self, width: int = 25, cap_cm: int = 20) -> dict[str, Any]:
-        """The protocol frozen at (width, cap_cm) with the `pose/` tree HEAD holds now."""
+        """The protocol frozen at (width, cap_cm) with the `pose/` tree HEAD holds now and the
+        seal of the last calibration committed."""
         return protocol_payload(
             "frozen",
-            frozen={"code_tree_sha": data.code_tree_sha(), "width": width, "cap_cm": cap_cm},
+            frozen={
+                "code_tree_sha": data.code_tree_sha(),
+                "width": width,
+                "cap_cm": cap_cm,
+                "calibration_from": {"content_sha256": self.calibration_seal},
+            },
         )
 
     def verdict(self, protocol: dict[str, Any], **change: Any) -> dict[str, Any]:
@@ -242,11 +249,14 @@ class PoseRepo:
             }
         )
 
-    def calibration(self, rows: int = ROWS) -> None:
-        """Commit a sealed first time of the probe that counted `rows` rows of 1925299."""
-        self.commit(seal({"inputs": {"rows": rows}}), "calibration", at=data.CALIBRATION_IN_REPO)
+    def calibration(self, rows: Any = ROWS, **more: Any) -> None:
+        """Commit a sealed first time of the probe that counted `rows` rows of 1925299 (`more`
+        changes its content, so its seal), and remember the seal for `frozen`."""
+        payload = seal({"inputs": {"rows": rows}, **more})
+        self.commit(payload, "calibration", at=data.CALIBRATION_IN_REPO)
+        self.calibration_seal = payload["content_sha256"]
 
-    def open(self, width: int = 25, cap_cm: int = 20, rows: int = ROWS) -> dict[str, Any]:
+    def open(self, width: int = 25, cap_cm: int = 20, rows: Any = ROWS) -> dict[str, Any]:
         """Commit the calibration and the frozen protocol, then its verdict: the guard opens."""
         self.calibration(rows)
         frozen = self.frozen(width, cap_cm)

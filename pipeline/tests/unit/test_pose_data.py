@@ -16,7 +16,8 @@ Mutations, each applied, seen failing and restored (tasks/todo.md, task 60, phas
 removed from `load_players`; the guard removed from `PoseRows.__post_init__`; each condition of
 `assert_confirmation_open` removed in turn (frozen entry, code tree, numpy, verdict in HEAD, its
 seal, its protocol, its tree, its rows against the calibration's, alive by its own figures,
-alive, finite half IQR, dirty tree); the `match_id` check and the duplicate check removed from
+alive, finite half IQR, dirty tree; the calibration's seal against the freeze's, rows an
+integer); the `match_id` check and the duplicate check removed from
 `_read_players`; `z_range_m` returning every z; the reviewer's `pose/peek.py`.
 """
 
@@ -191,7 +192,7 @@ def test_another_numpy_than_the_designs_closes_it(
         ({"m1_players": 3, "dies_at": "m1", "alive": False}, "P6 died on 1925299"),
         ({"m1_players": 3}, "does not follow its own figures"),  # alive: true, M1 = 3
         ({"alive": False}, "does not follow its own figures"),  # dead by no figure
-        ({"rows": 99}, "rows the sealed pose_calibration.json counted"),
+        ({"rows": 99}, "rows the frozen pose_calibration.json counted"),
         ({"half_iqr_hz": None}, "no finite m4.half_iqr_hz"),
         ({"code_tree_sha": "0" * 40}, "not computed by the frozen code"),
         ({"answers_to": "design"}, "answers to another protocol"),
@@ -214,6 +215,23 @@ def test_the_verdict_in_head_must_be_sealed_alive_and_of_the_frozen_protocol_and
         broken = pose_repo.verdict(frozen, **change)
     pose_repo.commit(broken, "broken verdict", at=data.VERDICT_IN_REPO)
     with pytest.raises(HeldOutLocked, match=message):
+        data.assert_confirmation_open()
+
+
+def test_the_calibration_must_be_the_one_the_freeze_recorded_and_rows_a_count(
+    pose_repo: Any,
+) -> None:
+    """The reviewer's scen3: after the freeze, `pose_calibration.json` swapped for another one,
+    resealed, with the same rows: the guard reads the seal the freeze recorded and closes. And
+    a verdict and a calibration that both lack `rows` (None == None) do not open it either."""
+    pose_repo.open()
+    data.assert_confirmation_open()
+    pose_repo.calibration(note="another first time, resealed after the freeze")
+    with pytest.raises(HeldOutLocked, match="not the one the freeze recorded"):
+        data.assert_confirmation_open()
+
+    pose_repo.open(rows=None)
+    with pytest.raises(HeldOutLocked, match="rows the frozen pose_calibration.json counted"):
         data.assert_confirmation_open()
 
 

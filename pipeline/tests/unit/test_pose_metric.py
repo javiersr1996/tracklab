@@ -51,6 +51,7 @@ def opened(pose_repo: Any, pose_kit: SimpleNamespace, tmp_path: Path) -> SimpleN
     reports = pose_repo.root / "pipeline" / "reports"
     reports.mkdir(parents=True, exist_ok=True)
     shutil.copy(REPORTS / sweep.SWEEP_NAME, reports / sweep.SWEEP_NAME)
+    pose_repo.calibration(rows=5000)  # 10 players x 500 rows of 1925299
     pose_repo.commit(pose_repo.frozen(W, CAP), "frozen")
     root = tmp_path / "data"
     pose_kit.write_bronze(root, pose_kit.calibration, squad(pose_kit, 100, 10, 2.6))
@@ -59,7 +60,6 @@ def opened(pose_repo: Any, pose_kit: SimpleNamespace, tmp_path: Path) -> SimpleN
     for match, first in ((pose_kit.calibration, 100), (pose_kit.confirmation, 200)):
         lineup = [(first + p, 2 if p % 2 else 1, 30 - p) for p in range(10)]
         pose_kit.write_lineup(root, match, lineup)
-    pose_repo.calibration(rows=5000)  # 10 players x 500 rows of 1925299
     assert verdict.run_pose_verdict(root, reports) == 0
     pose_repo.commit(None, "verdict")
     return SimpleNamespace(repo=pose_repo, reports=reports, root=root)

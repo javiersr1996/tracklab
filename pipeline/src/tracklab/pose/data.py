@@ -8,10 +8,11 @@ match opens only past `assert_confirmation_open`: the committed protocol is in s
 with a frozen entry after the design ones in its history; the `pose/` tree committed in HEAD is
 the one the freeze recorded; the installed numpy is the one the design names; HEAD holds the
 verdict of the second time on 1925299 (`reports/pose_verdict.json`), sealed, computed against
-that frozen protocol by that same code tree on as many rows as the committed
-`pose_calibration.json` counted, with P6 alive by the verdict's own figures and a finite
-`m4.half_iqr_hz` (if M1 or M2 killed P6 on 1925299, 1996435 never opens); and the working tree
-is clean, untracked files included. Anything else raises `HeldOutLocked`.
+that frozen protocol by that same code tree on as many rows as the `pose_calibration.json`
+the freeze recorded counted (the one in HEAD must be it), with P6 alive by the verdict's own
+figures and a finite `m4.half_iqr_hz` (if M1 or M2 killed P6 on 1925299, 1996435 never
+opens); and the working tree is clean, untracked files included. Anything else raises
+`HeldOutLocked`.
 
 Two doors to a match's Body Pose bronze, and no other read of it under `tracklab.pose` (a test
 greps the package):
@@ -130,7 +131,9 @@ def committed_protocol() -> dict[str, Any]:
 
 def committed_verdict(protocol: dict[str, Any]) -> dict[str, Any]:
     """The verdict of the second time committed in HEAD, verified against the frozen `protocol`:
-    sealed, computed against its `content_sha256` by the code tree the freeze recorded."""
+    sealed, computed against its `content_sha256` by the code tree the freeze recorded, on as
+    many rows (an integer) as the `pose_calibration.json` in HEAD counted, which must be the one
+    the freeze recorded (`frozen.calibration_from.content_sha256`)."""
     out = _git(repo_root(), "show", f"HEAD:{VERDICT_IN_REPO}")
     if out.returncode != 0:
         raise HeldOutLocked(
@@ -145,11 +148,15 @@ def committed_verdict(protocol: dict[str, Any]) -> dict[str, Any]:
         raise HeldOutLocked("the verdict committed in HEAD was not computed by the frozen code")
     out = _git(repo_root(), "show", f"HEAD:{CALIBRATION_IN_REPO}")
     calibration = json.loads(out.stdout) if out.returncode == 0 else {}
-    if not sealed(calibration) or (verdict.get("inputs") or {}).get("rows") != (
-        calibration.get("inputs") or {}
-    ).get("rows"):
+    recorded = ((protocol.get("frozen") or {}).get("calibration_from") or {}).get("content_sha256")
+    if not sealed(calibration) or calibration.get("content_sha256") != recorded:
         raise HeldOutLocked(
-            "the verdict committed in HEAD was not computed on the rows the sealed "
+            "the pose_calibration.json committed in HEAD is not the one the freeze recorded"
+        )
+    rows = (verdict.get("inputs") or {}).get("rows")
+    if type(rows) is not int or rows != (calibration.get("inputs") or {}).get("rows"):
+        raise HeldOutLocked(
+            "the verdict committed in HEAD was not computed on the rows the frozen "
             "pose_calibration.json counted"
         )
     return verdict

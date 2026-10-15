@@ -47,6 +47,7 @@ def frozen_repo(pose_repo: Any) -> Any:
     reports = pose_repo.root / "pipeline" / "reports"
     reports.mkdir(parents=True, exist_ok=True)
     shutil.copy(REPORTS / sweep.SWEEP_NAME, reports / sweep.SWEEP_NAME)
+    pose_repo.calibration(rows=6000)  # 12 players x 500 rows, as the first time counted
     pose_repo.commit(pose_repo.frozen(50, 20), "frozen")
     return pose_repo
 
@@ -79,7 +80,6 @@ def test_the_second_time_writes_a_verdict_that_opens_the_guard_once_committed(
 ) -> None:
     reports = frozen_repo.root / "pipeline" / "reports"
     root = pose_kit.write_bronze(tmp_path / "data", pose_kit.calibration, squad(pose_kit))
-    frozen_repo.calibration(rows=6000)  # 12 players x 500 rows, as the first time counted
     assert verdict.run_pose_verdict(root, reports) == 0
     path = reports / verdict.VERDICT_NAME
     text = path.read_text(encoding="utf-8")
