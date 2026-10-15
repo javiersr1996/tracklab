@@ -138,7 +138,8 @@ uv run tracklab publish runs --check       # runs.json and the two clips
 ## Body pose
 
 [`/pose`](https://tracklab-sable.vercel.app/pose) is the Body Pose SkillCorner publishes for two
-full matches: the joints of every detected player in every frame, each with its predicted error. The question is narrow, the cadence and the step in the high-speed stretches,
+full matches: the joints of the players it resolves in each frame, each with its predicted error. It
+is meant for detected players, but a few rows with a pose are not flagged as detected (counted below). The question is narrow, the cadence and the step in the high-speed stretches,
 per match and per player, and the instrument is the signal of the ankles' separation along the
 run. The protocol (`pipeline/reports/pose_protocol.json`) was written and frozen on one match
 before the other was read, and the other was read once. The page says the state the project
@@ -152,6 +153,7 @@ status: alive
 M4: 27 of 27 players, median propagated sd 0.040166 Hz against 0.131793 Hz
 pose in the player-frames: 0.3143 of 1925299 and 0.3638 of 1996435
 pose.json: 51570 bytes, hook clips: 784665 and 696714 bytes
+pose rows not flagged as detected: 2 of 1540715 in 1925299 and 1357 of 1571830 in 1996435
 ```
 
 The clips are a few seconds of each match, chosen by rule (the window of the high band whose cadence

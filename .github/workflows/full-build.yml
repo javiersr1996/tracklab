@@ -48,7 +48,7 @@ jobs:
       # P5 and P6, run below as steps of their own, so the probe's and the metric's minutes are
       # spent once and a failure names its step. The bronze of the pose (about 4 minutes locally)
       # is inside this build; the disk is printed before and after it, and what it left, because
-      # the inflated JSON (about 6.7 GB per match) must never be written: only its Parquet may be.
+      # the inflated JSON (gigabytes per match) must never be written: only its Parquet may be.
       - run: df -h .
       - run: uv run tracklab build --select "not group:runs and not group:pose"
       - run: df -h . && du -sh data/bronze/football/bodypose_frames data/bronze/football/bodypose_players

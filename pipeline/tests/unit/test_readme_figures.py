@@ -152,6 +152,12 @@ def code_expected() -> list[str]:
 
     clips = [c["bytes"] for c in pose["clips"]]
     pose_bytes = (DATA_DIR / "pose.json").stat().st_size
+    covered = json.loads((REPO / "pipeline" / "reports" / "pose_coverage.json").read_text("utf-8"))
+
+    def unflagged(match: int) -> str:
+        total = covered["matches"][str(match)]["periods"]["total"]
+        return f"{total['with_pose'] - total['with_pose_detected']} of {total['with_pose']}"
+
     return [
         f"title: {platform['title']}",
         f"subtitle: {platform['subtitle']}",
@@ -171,6 +177,8 @@ def code_expected() -> list[str]:
         f"{m4['median_sd_hz']} Hz against {m4['half_iqr_hz']} Hz",
         f"pose in the player-frames: {share(cal)} of {cal} and {share(conf)} of {conf}",
         f"pose.json: {pose_bytes} bytes, hook clips: {clips[0]} and {clips[1]} bytes",
+        f"pose rows not flagged as detected: {unflagged(cal)} in {cal} "
+        f"and {unflagged(conf)} in {conf}",
     ]
 
 
@@ -217,7 +225,7 @@ def test_a_changed_figure_in_code_is_caught() -> None:
     # A number that equals one of the figures, or a 0 or a 1, in a place that is none of theirs.
     for stray in ("76", "2.3", "0", "1"):
         mutated.append(flat.replace("## Warehouse ", f"## Warehouse It answers in `{stray}` s. "))
-    assert len(mutated) == 33
+    assert len(mutated) == 39
     for text in mutated:
         assert text != flat, "the mutation changed nothing: the README moved on, update this test"
         assert code_problems(text) != []
