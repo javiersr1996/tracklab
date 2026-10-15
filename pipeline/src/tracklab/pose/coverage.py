@@ -2,8 +2,9 @@
 
 Per match, per period and per player, with the denominator beside every count: the denominator
 of a frame-player is what the file lists in `player_data` (`n_players` of `bodypose_frames`), not
-a constant. The README counts 32 per frame for 1925299; 1996435 has 30. Everything is read from
-the bronze Parquet by DuckDB; the file is the artefact `reports/pose_coverage.json`, versioned.
+a constant. The README counts 32 per frame for 1925299; 1996435 has 30. Everything is counted
+from the bronze Parquet through `data.CountingHandle` (DuckDB, counts only, since task 60); the
+file is the artefact `reports/pose_coverage.json`, versioned.
 
 SkillCorner's three limits live here as numbers, not as a footer: the pose exists only for
 detected players (`with_pose_detected` against `with_pose`), z is relative to the player's own
@@ -23,10 +24,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-import duckdb
-
-from tracklab.bronze.common import bronze_path
 from tracklab.ingest.manifest import load_manifest
+from tracklab.pose.data import CountingHandle
 from tracklab.pose.jsonl import JOINTS
 
 COVERAGE_NAME = "pose_coverage.json"
@@ -42,23 +41,6 @@ def match_ids(manifest_path: Path = MANIFEST) -> list[int]:
     return sorted(f.match_id for f in source.files if f.role == "bodypose_zip" and f.match_id)
 
 
-def _paths(data_dir: Path, match_id: int) -> tuple[str, str]:
-    return (
-        bronze_path(data_dir, "football", "bodypose_frames", match_id).as_posix(),
-        bronze_path(data_dir, "football", "bodypose_players", match_id).as_posix(),
-    )
-
-
-def is_whole(con: duckdb.DuckDBPyConnection, frames: str) -> bool:
-    """The bronze holds every line of the member: `source_row` runs 0..n-1 without a cut."""
-    row = con.execute(
-        "select count(*), min(source_row), max(source_row) from read_parquet(?)", [frames]
-    ).fetchone()
-    assert row is not None
-    n, lo, hi = row
-    return bool(n) and lo == 0 and hi == n - 1
-
-
 def _r(value: Any) -> Any:
     return round(float(value), 4) if value is not None else None
 
@@ -67,29 +49,9 @@ def _period_key(period: int | None) -> str:
     return OUTSIDE if period is None else str(period)
 
 
-def _periods(con: duckdb.DuckDBPyConnection, frames: str, players: str) -> dict[str, Any]:
-    by_frames = {
-        _period_key(r[0]): r
-        for r in con.execute(
-            """
-            select period, count(*), count(*) filter (where n_with_pose > 0),
-                   sum(n_players), sum(n_with_pose), min(n_players), max(n_players),
-                   min(n_with_pose) filter (where n_with_pose > 0), max(n_with_pose)
-            from read_parquet(?) group by period
-            """,
-            [frames],
-        ).fetchall()
-    }
-    by_players = {
-        _period_key(r[0]): r
-        for r in con.execute(
-            """
-            select period, count(*), count(*) filter (where is_detected), sum(len(mae))
-            from read_parquet(?) group by period
-            """,
-            [players],
-        ).fetchall()
-    }
+def _periods(handle: CountingHandle) -> dict[str, Any]:
+    by_frames = {_period_key(r[0]): r for r in handle.frames_by_period()}
+    by_players = {_period_key(r[0]): r for r in handle.players_by_period()}
     out: dict[str, Any] = {}
     totals = [0, 0, 0, 0, 0, 0]
     ranges: list[tuple[int, int, int, int]] = []
@@ -140,37 +102,10 @@ def _periods(con: duckdb.DuckDBPyConnection, frames: str, players: str) -> dict[
     return out
 
 
-def _players(con: duckdb.DuckDBPyConnection, frames: str, players: str) -> list[dict[str, Any]]:
-    present = dict(
-        con.execute(
-            "select pid, count(*) from (select unnest(player_ids) as pid from read_parquet(?)) "
-            "group by pid",
-            [frames],
-        ).fetchall()
-    )
-    posed = {
-        r[0]: (r[1], r[2])
-        for r in con.execute(
-            "select player_id, count(*), count(*) filter (where is_detected) "
-            "from read_parquet(?) group by player_id",
-            [players],
-        ).fetchall()
-    }
-    minima = ", ".join(f"count(*) filter (where len >= {m})" for m in RUN_MINIMA)
-    runs = {
-        r[0]: r[1:]
-        for r in con.execute(
-            f"""
-            with s as (
-              select player_id, period, frame,
-                     frame - row_number() over (partition by player_id, period order by frame) g
-              from read_parquet(?)
-            ), r as (select player_id, count(*) len from s group by player_id, period, g)
-            select player_id, max(len), {minima} from r group by player_id
-            """,
-            [players],
-        ).fetchall()
-    }
+def _players(handle: CountingHandle) -> list[dict[str, Any]]:
+    present = handle.frames_present()
+    posed = handle.frames_posed()
+    runs = handle.runs(RUN_MINIMA)
     out = []
     for pid in sorted(present):
         with_pose, detected = posed.get(pid, (0, 0))
@@ -191,74 +126,44 @@ def _players(con: duckdb.DuckDBPyConnection, frames: str, players: str) -> list[
     return out
 
 
-def _run_lengths(con: duckdb.DuckDBPyConnection, players: str) -> list[dict[str, int]]:
+def _run_lengths(handle: CountingHandle) -> list[dict[str, int]]:
     """The three commonest lengths of a stretch of consecutive frames with pose, over every
     player and period: how the pose arrives, which the per-player maxima alone do not say."""
-    rows = con.execute(
-        """
-        with s as (
-          select player_id, period,
-                 frame - row_number() over (partition by player_id, period order by frame) g
-          from read_parquet(?)
-        ), r as (select count(*) len from s group by player_id, period, g)
-        select len, count(*) n from r group by len order by n desc, len limit 3
-        """,
-        [players],
-    ).fetchall()
-    return [{"length": int(length), "count": int(n)} for length, n in rows]
+    return [{"length": length, "count": n} for length, n in handle.run_lengths()]
 
 
-def _mae(con: duckdb.DuckDBPyConnection, players: str) -> dict[str, Any]:
-    allv = con.execute(
-        "select min(m), quantile_cont(m, 0.5), quantile_cont(m, 0.9), max(m) "
-        "from (select unnest(mae)::double as m from read_parquet(?))",
-        [players],
-    ).fetchone()
-    assert allv is not None
-    cols = ", ".join(
-        f"min(mae[{j}]::double), quantile_cont(mae[{j}]::double, [0.5, 0.9]), max(mae[{j}]::double)"
-        for j in range(1, len(JOINTS) + 1)
-    )
-    row = con.execute(f"select {cols} from read_parquet(?)", [players]).fetchone()
-    assert row is not None
-    by_joint = {}
-    for i, name in enumerate(JOINTS):
-        lo, (p50, p90), hi = row[3 * i : 3 * i + 3]
-        by_joint[name] = {"min": _r(lo), "p50": _r(p50), "p90": _r(p90), "max": _r(hi)}
+def _mae(handle: CountingHandle) -> dict[str, Any]:
+    (lo, p50, p90, hi), joints = handle.mae_cm()
+    by_joint = {
+        name: {"min": _r(j[0]), "p50": _r(j[1]), "p90": _r(j[2]), "max": _r(j[3])}
+        for name, j in zip(JOINTS, joints, strict=True)
+    }
     return {
-        "all": {"min": _r(allv[0]), "p50": _r(allv[1]), "p90": _r(allv[2]), "max": _r(allv[3])},
+        "all": {"min": _r(lo), "p50": _r(p50), "p90": _r(p90), "max": _r(hi)},
         "by_joint": by_joint,
     }
 
 
-def _z(con: duckdb.DuckDBPyConnection, players: str) -> dict[str, float | None]:
+def _z(handle: CountingHandle) -> dict[str, float | None]:
     """The range of z as delivered: relative to each player's centroid, not a height."""
-    cols = ", ".join(
-        f"min(joints[{3 * j + 3}]::double), max(joints[{3 * j + 3}]::double)"
-        for j in range(len(JOINTS))
-    )
-    row = con.execute(f"select {cols} from read_parquet(?)", [players]).fetchone()
-    assert row is not None
-    values = [v for v in row if v is not None]
+    values = [v for v in handle.z_range_m() if v is not None]
     if not values:
         return {"min": None, "max": None}
     return {"min": _r(min(values)), "max": _r(max(values))}
 
 
 def coverage_match(data_dir: Path, match_id: int) -> dict[str, Any] | None:
-    """The coverage of one match, or None when its bronze is absent or only a slice."""
-    frames, players = _paths(data_dir, match_id)
-    if not (Path(frames).is_file() and Path(players).is_file()):
-        return None
-    con = duckdb.connect()
-    if not is_whole(con, frames):
+    """The coverage of one match, or None when its bronze is absent or only a slice. Counted
+    through a `CountingHandle`: no pose of either match comes out of it."""
+    handle = CountingHandle(data_dir, match_id)
+    if not handle.exists() or not handle.is_whole():
         return None
     return {
-        "periods": _periods(con, frames, players),
-        "players": _players(con, frames, players),
-        "common_run_lengths": _run_lengths(con, players),
-        "mae_cm": _mae(con, players),
-        "z_m": _z(con, players),
+        "periods": _periods(handle),
+        "players": _players(handle),
+        "common_run_lengths": _run_lengths(handle),
+        "mae_cm": _mae(handle),
+        "z_m": _z(handle),
         # Any other key set is refused by the reader (`PoseFormatError`): a bronze that exists
         # was read to the end with one.
         "joint_key_sets": 1,
