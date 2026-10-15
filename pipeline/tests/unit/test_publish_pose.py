@@ -21,6 +21,7 @@ import copy
 import hashlib
 import json
 import random
+import shutil
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -325,10 +326,11 @@ def test_the_published_mae_in_millimetres_keeps_the_median_within_a_twentieth_of
 
 def _copy_published(tmp_path: Path) -> tuple[Path, Path]:
     out, reports = tmp_path / "data", tmp_path / "reports"
-    (out / "pose").mkdir(parents=True)
+    shutil.copytree(WEB_DATA / "pose", out / "pose")  # the sample's clip and the two of task 62
+    shutil.copy(WEB_DATA / "pose.json", out / "pose.json")
     reports.mkdir()
-    (out / CLIP_FILE).write_bytes((WEB_DATA / CLIP_FILE).read_bytes())
-    (reports / RECORD_FILE).write_bytes((REPORTS / RECORD_FILE).read_bytes())
+    for path in REPORTS.glob("pose_*.json"):
+        shutil.copy(path, reports / path.name)
     return out, reports
 
 
@@ -341,7 +343,7 @@ def test_check_says_partial_without_the_sample_and_passes(
 ) -> None:
     out, reports = _copy_published(tmp_path)
     assert _check(tmp_path, out, reports) == 0
-    assert "PARTIAL 0/1" in capsys.readouterr().out
+    assert "PARTIAL 0/3" in capsys.readouterr().out
 
 
 def test_check_fails_when_one_byte_of_the_clip_changes(tmp_path: Path) -> None:
