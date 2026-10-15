@@ -7,7 +7,8 @@
     "gold",
     "quality",
     "publish",
-    "runs"
+    "runs",
+    "pose"
   ],
   "nodes": [
     {
@@ -559,6 +560,42 @@
       "kind": "external",
       "description": "manifest/sources.json: each source's repo, pinned commit, files and sha256.",
       "step": null,
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "pose_coverage",
+      "group": "pose",
+      "kind": "asset",
+      "description": "reports/pose_coverage.json: frames, player-frames and joints with a pose per match, checked.",
+      "step": "pose_coverage",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "pose_metric",
+      "group": "pose",
+      "kind": "asset",
+      "description": "reports/pose_metric.json: the metric in both matches, recomputed and compared.",
+      "step": "pose_metric",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "pose_protocol",
+      "group": "pose",
+      "kind": "asset",
+      "description": "reports/pose_protocol.json: the frozen protocol against the code and the denominators.",
+      "step": "pose_protocol",
+      "sport": null,
+      "schema": "none"
+    },
+    {
+      "key": "publish_pose",
+      "group": "pose",
+      "kind": "asset",
+      "description": "web/public/data/pose.json and pose/*.json, regenerated and compared.",
+      "step": "publish_pose",
       "sport": null,
       "schema": "none"
     },
@@ -1174,6 +1211,38 @@
       "to": "gold_agg_fb_physical"
     },
     {
+      "from": "bronze_football_bodypose_frames",
+      "to": "pose_coverage"
+    },
+    {
+      "from": "bronze_football_bodypose_frames",
+      "to": "pose_metric"
+    },
+    {
+      "from": "bronze_football_bodypose_frames",
+      "to": "pose_protocol"
+    },
+    {
+      "from": "bronze_football_bodypose_frames",
+      "to": "publish_pose"
+    },
+    {
+      "from": "bronze_football_bodypose_players",
+      "to": "pose_coverage"
+    },
+    {
+      "from": "bronze_football_bodypose_players",
+      "to": "pose_metric"
+    },
+    {
+      "from": "bronze_football_bodypose_players",
+      "to": "pose_protocol"
+    },
+    {
+      "from": "bronze_football_bodypose_players",
+      "to": "publish_pose"
+    },
+    {
       "from": "bronze_football_dynamic_events",
       "to": "bronze_common_orientation"
     },
@@ -1204,6 +1273,10 @@
     {
       "from": "bronze_football_match",
       "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_football_match",
+      "to": "publish_pose"
     },
     {
       "from": "bronze_football_match",
@@ -1244,6 +1317,22 @@
     {
       "from": "bronze_football_match_players",
       "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_football_match_players",
+      "to": "pose_coverage"
+    },
+    {
+      "from": "bronze_football_match_players",
+      "to": "pose_metric"
+    },
+    {
+      "from": "bronze_football_match_players",
+      "to": "pose_protocol"
+    },
+    {
+      "from": "bronze_football_match_players",
+      "to": "publish_pose"
     },
     {
       "from": "bronze_football_match_players",
@@ -1288,6 +1377,10 @@
     {
       "from": "bronze_football_tracking_objects",
       "to": "bronze_common_orientation"
+    },
+    {
+      "from": "bronze_football_tracking_objects",
+      "to": "publish_pose"
     },
     {
       "from": "bronze_football_tracking_objects",
@@ -1396,6 +1489,26 @@
     {
       "from": "manifest_sources",
       "to": "silver_dim_match"
+    },
+    {
+      "from": "pose_coverage",
+      "to": "pose_protocol"
+    },
+    {
+      "from": "pose_coverage",
+      "to": "publish_pose"
+    },
+    {
+      "from": "pose_metric",
+      "to": "publish_pose"
+    },
+    {
+      "from": "pose_protocol",
+      "to": "pose_metric"
+    },
+    {
+      "from": "pose_protocol",
+      "to": "publish_pose"
     },
     {
       "from": "publish_possessions",
@@ -1588,6 +1701,10 @@
     {
       "from": "raw_football",
       "to": "bronze_football_tracking_objects"
+    },
+    {
+      "from": "raw_football",
+      "to": "publish_pose"
     },
     {
       "from": "raw_football_bodypose",

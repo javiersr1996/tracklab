@@ -16,7 +16,7 @@ import tracklab.bronze.basketball.meta
 import tracklab.bronze.basketball.tracking
 import tracklab.bronze.football.meta
 import tracklab.bronze.football.tracking
-from tracklab.dagster_defs import assets_runs, defs
+from tracklab.dagster_defs import assets_pose, assets_runs, defs
 from tracklab.dagster_defs.assets_bronze import BRONZE_TABLES, bronze_key
 
 SCHEMAS_DIR = Path("src/tracklab/bronze/schemas")
@@ -128,3 +128,48 @@ def test_the_runs_assets_only_check_and_fail_when_the_check_fails(
 
     exit_code["value"] = 1
     assert not materialize(assets_runs.runs_assets, raise_on_error=False).success
+
+
+POSE_ASSETS = {"pose_coverage", "pose_protocol", "pose_metric", "publish_pose"}
+
+
+def test_the_pose_group_holds_the_four_p6_assets() -> None:
+    graph = defs.resolve_asset_graph()
+    in_group = {
+        k.to_user_string() for k in graph.get_all_asset_keys() if graph.get(k).group_name == "pose"
+    }
+    assert in_group == POSE_ASSETS
+
+
+def test_the_pose_assets_only_check_and_fail_when_the_check_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Like the runs group: the metric and the publication read the confirmation match past a
+    guard that refuses a dirty tree, so an asset that wrote would compare a file with itself.
+    Each calls its command with `check=True`; a non-zero exit fails the asset."""
+    seen: dict[str, bool] = {}
+    exit_code = {"value": 0}
+
+    def fake(name: str):  # type: ignore[no-untyped-def]
+        def run(*args: object, check: bool = False) -> int:
+            seen[name] = check
+            return exit_code["value"]
+
+        return run
+
+    names = ("run_pose_coverage", "run_pose_protocol", "run_pose_metric", "run_publish_pose")
+    for attr in names:
+        monkeypatch.setattr(assets_pose, attr, fake(attr))
+
+    assert materialize(assets_pose.pose_assets).success
+    assert seen == dict.fromkeys(names, True)
+
+    exit_code["value"] = 1
+    assert not materialize(assets_pose.pose_assets, raise_on_error=False).success
+
+
+def test_the_pose_checks_read_the_bronze_they_check() -> None:
+    graph = defs.resolve_asset_graph()
+    for name in POSE_ASSETS:
+        parents = {k.to_user_string() for k in graph.get(AssetKey(name)).parent_keys}
+        assert "bronze_football_bodypose_players" in parents, name

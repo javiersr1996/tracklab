@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from dagster import Definitions
 
 SCHEMA_VERSION = 1
-GROUPS_IN_FLOW = ("ingest", "bronze", "silver", "gold", "quality", "publish", "runs")
+GROUPS_IN_FLOW = ("ingest", "bronze", "silver", "gold", "quality", "publish", "runs", "pose")
 DBT_MANIFEST = Path("dbt/target/manifest.json")
 SCHEMAS_DIR = Path(__file__).resolve().parent.parent / "bronze" / "schemas"
 LINEAGE_JSON = "lineage.json"

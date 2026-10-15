@@ -8,6 +8,7 @@ from dagster_dbt import DbtCliResource
 from tracklab.dagster_defs.assets_bronze import bronze_assets, orientation
 from tracklab.dagster_defs.assets_dbt import DUCKDB_TAG, dbt_project, gold, silver
 from tracklab.dagster_defs.assets_ingest import manifest_sources, raw_assets
+from tracklab.dagster_defs.assets_pose import pose_assets
 from tracklab.dagster_defs.assets_publish import publish_possessions, publish_quality, publish_stats
 from tracklab.dagster_defs.assets_quality import quality_assets
 from tracklab.dagster_defs.assets_runs import runs_assets
@@ -30,6 +31,7 @@ defs = Definitions(
         *quality_assets,
         publish_quality,
         *runs_assets,
+        *pose_assets,
     ],
     jobs=[build],
     # On the `Definitions`, not on `build`: the implicit job behind `dagster asset
