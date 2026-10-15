@@ -3,7 +3,7 @@
   "stage": "design",
   "written": "2026-10-15",
   "plan": "tasks/todo.md, P6, task 60, 'Protocolo que vale tras las seis pasadas'",
-  "fingerprint": "bd8a897f770723056468bb0c055ec77764cd03169ac714ca63f32fdd30d71843",
+  "fingerprint": "8d1e7362d8ffb1b479ee05fed792d4130901f49adc330fedba142c68f5ae8449",
   "design": {
     "question": "Cadence and step length in the high-speed stretches, per match and per player, with their propagated error, from the Body Pose of two full matches.",
     "unit": "the player: the windows of one player are not independent, so they are reported per player; there is no null, P6 measures and tests no effect",
@@ -63,7 +63,8 @@
       "tiling": "from the start of each stretch, without overlap (gait.windows)",
       "inside_one_period": true,
       "w_and_cap": "chosen by rule_w_cap, blind, after the probe; written at the freeze",
-      "is_detected": "a pose whose player the provider did not detect in that frame (is_detected false) enters the windows as delivered: the pose exists and its mae is the file's; how many there are per match is in pose_coverage.json"
+      "is_detected": "a pose whose player the provider did not detect in that frame (is_detected false) enters the windows as delivered: the pose exists and its mae is the file's; how many there are per match is in pose_coverage.json",
+      "duplicates": "a (player_id, frame) that appears twice among a match's pose rows is refused where they are read (an error), never resolved by keeping or dropping a row; the rows beyond the first per match are counted by the CountingHandle (evidence.denominators.per_match.duplicate_player_frames)"
     },
     "bands": {
       "low_m_s": [
@@ -155,10 +156,11 @@
         "rule_w_cap, with its figures"
       ],
       "second_time": [
-        "after the freeze, tracklab pose verdict, reports/pose_verdict.json in a commit of its own: (c) cad_s per player and band, the sign of high - low; (d) the concordance of M3 with the sweep's rows of h; (e) the propagated error against the spread between players; the NaN rates; the distribution of cad_s with the sweep's swap rows; the slope of h on s by heading; the verdict of M1 and M2 and m4.half_iqr_hz; sealed, with the frozen protocol's content_sha256 and a code_tree_sha equal to frozen.code_tree_sha"
-      ]
+        "after the freeze, tracklab pose verdict, reports/pose_verdict.json in a commit of its own: (c) cad_s per player and band, the sign of high - low; (d) the concordance of M3 with the sweep's rows of h; (e) the propagated error against the spread between players; the NaN rates; the distribution of cad_s with the sweep's swap rows; the slope of h on s by heading; the verdict of M1 and M2 and m4.half_iqr_hz; sealed, with the frozen protocol's content_sha256, a code_tree_sha equal to frozen.code_tree_sha and inputs.rows; it runs only with the numpy of dependencies.numpy; the first time is never written again once the protocol is frozen"
+      ],
+      "metric": "task 61, tracklab pose metric: per match, period and player, ordered by team and number, the windows per band and the medians of cad_s, the step and the ankle separation and their ratio, each over the windows with that value finite and with its sd propagated over the draws of the same windows; M3's concordance and speed_mean_m_s without a propagated error, said in the file; 1925299 is recomputed first and 1996435 is loaded only if it gives the committed verdict"
     },
-    "guard": "1996435 opens only when HEAD's protocol is frozen with a frozen entry after the design ones; HEAD's pose/ tree is frozen.code_tree_sha; the installed numpy is dependencies.numpy; HEAD holds pose_verdict.json sealed, answering to the frozen protocol's content_sha256 and computed by frozen.code_tree_sha, with P6 alive and a finite m4.half_iqr_hz (if M1 or M2 kill on 1925299, 1996435 never opens); and the working tree is clean",
+    "guard": "1996435 opens only when HEAD's protocol is frozen with a frozen entry after the design ones; HEAD's pose/ tree is frozen.code_tree_sha; the installed numpy is dependencies.numpy; HEAD holds pose_verdict.json sealed, answering to the frozen protocol's content_sha256 and computed by frozen.code_tree_sha on as many rows as the sealed pose_calibration.json in HEAD counted, with P6 alive as the verdict's own figures of M1 and M2 say (criteria.verdict_dies_at) and a finite m4.half_iqr_hz (if M1 or M2 kill on 1925299, 1996435 never opens); and the working tree is clean",
     "order": [
       "sweep (committed)",
       "protocol in design (committed)",
@@ -173,15 +175,17 @@
   },
   "evidence": {
     "denominators": {
-      "what": "per match, the players the file lists and the players with a pose: the denominator printed beside M1; counted, never a position",
+      "what": "per match, the players the file lists and the players with a pose (the denominator printed beside M1) and the rows of a duplicated (player_id, frame), which design.windows.duplicates refuses; counted, never a position",
       "per_match": {
         "1925299": {
           "players_listed": 32,
-          "players_with_pose": 32
+          "players_with_pose": 32,
+          "duplicate_player_frames": 0
         },
         "1996435": {
           "players_listed": 30,
-          "players_with_pose": 30
+          "players_with_pose": 30,
+          "duplicate_player_frames": 0
         }
       }
     }
@@ -198,7 +202,13 @@
       "task": 60,
       "date": "2026-10-15",
       "note": "review of phase B2's first part, before the freeze: the bar judged again at the separation the probe's (a') measures (it had been judged at 5.5 / 4.3 m only), a sane instrument against M1 and M2 printed beside the rule and read by none, the second time and its verdict file, M4's half IQR written there, the guard's conditions on it and on numpy, and the poses with is_detected false declared; the probe is run again"
+    },
+    {
+      "stage": "design",
+      "task": 60,
+      "date": "2026-10-15",
+      "note": "second review of phase B2's first part, before the freeze: the sane instrument printed and read by no rule; the metric's step, separation and ratio with their propagated sd; the guard reading alive from the verdict's figures and its rows against pose_calibration.json; the verdict on the design's numpy; duplicated player-frames refused and counted; the probe is run again"
     }
   ],
-  "content_sha256": "5e7d5414667539a3390f79968244083ea4494fb7404979560c6a20aff50b9f0d"
+  "content_sha256": "383fc248ad3b269ed68a07e49e54faa1ebbb2733b86194ac053ced69ba17f080"
 }

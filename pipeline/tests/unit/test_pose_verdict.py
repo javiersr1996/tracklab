@@ -7,7 +7,8 @@ committed the guard opens. The Monte Carlo of each window has its own seed.
 
 Mutations, each applied, seen failing and restored (tasks/todo.md, task 60, phase B2): one seed
 for every window (`seed=gait.SEED` in `window_estimates`); the verdict's `alive` not following
-its figures in `consistency_problems`; the second time run on code committed after the freeze.
+its figures in `consistency_problems`; the second time run on code committed after the freeze
+or on another numpy than the design's.
 """
 
 from __future__ import annotations
@@ -78,6 +79,7 @@ def test_the_second_time_writes_a_verdict_that_opens_the_guard_once_committed(
 ) -> None:
     reports = frozen_repo.root / "pipeline" / "reports"
     root = pose_kit.write_bronze(tmp_path / "data", pose_kit.calibration, squad(pose_kit))
+    frozen_repo.calibration(rows=6000)  # 12 players x 500 rows, as the first time counted
     assert verdict.run_pose_verdict(root, reports) == 0
     path = reports / verdict.VERDICT_NAME
     text = path.read_text(encoding="utf-8")
@@ -86,6 +88,7 @@ def test_the_second_time_writes_a_verdict_that_opens_the_guard_once_committed(
     assert (v["M1"]["players"], v["M2"]["players_with_both"], v["M2"]["positive"]) == (12, 12, 12)
     assert v["alive"] is True and v["dies_at"] is None
     assert payload["m4"]["half_iqr_hz"] == v["M2"]["half_iqr_hz"] > v["M2"]["median_sd_hz"]
+    assert payload["inputs"]["rows"] == 6000
     assert payload["protocol"]["stage"] == "frozen"
     assert payload["code_tree_sha"] == data.code_tree_sha()
     assert {r[0] for r in payload["nan_rates"]["rows"]} == {"low", "high"}
@@ -114,6 +117,26 @@ def test_the_second_time_writes_a_verdict_that_opens_the_guard_once_committed(
     path.write_text(text, encoding="utf-8")
 
 
+def test_the_second_time_runs_only_on_the_designs_numpy(
+    frozen_repo: Any,
+    pose_kit: SimpleNamespace,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reports = frozen_repo.root / "pipeline" / "reports"
+    root = pose_kit.write_bronze(tmp_path / "data", pose_kit.calibration, squad(pose_kit, 2))
+    real = verdict.importlib.metadata.version
+    monkeypatch.setattr(
+        verdict.importlib.metadata,
+        "version",
+        lambda name: "0.0.1" if name == "numpy" else real(name),
+    )
+    assert verdict.run_pose_verdict(root, reports) == 1
+    assert "numpy 0.0.1" in capsys.readouterr().out
+    assert not (reports / verdict.VERDICT_NAME).exists()
+
+
 def test_the_second_time_refuses_a_design_or_code_after_the_freeze(
     pose_repo: Any, pose_kit: SimpleNamespace, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -130,19 +153,3 @@ def test_the_second_time_refuses_a_design_or_code_after_the_freeze(
     assert verdict.run_pose_verdict(root, reports) == 1
     assert "not the one the freeze recorded" in capsys.readouterr().out
     assert not (reports / verdict.VERDICT_NAME).exists()
-
-
-def test_a_dead_verdict_follows_from_its_figures() -> None:
-    section = {
-        "M1": {"players": 9},
-        "M2": {"players_with_both": 9, "positive": 9, "median_sd_hz": 0.01, "half_iqr_hz": 0.1},
-    }
-    assert verdict.verdict_dies_at(section) == "m1"
-    section["M1"]["players"] = 12
-    assert verdict.verdict_dies_at(section) == "m2_coverage"
-    section["M2"] |= {"players_with_both": 12, "positive": 8}
-    assert verdict.verdict_dies_at(section) == "m2_sign"
-    section["M2"] |= {"positive": 9, "median_sd_hz": 0.2}
-    assert verdict.verdict_dies_at(section) == "m2_precision"
-    section["M2"]["median_sd_hz"] = 0.05
-    assert verdict.verdict_dies_at(section) is None

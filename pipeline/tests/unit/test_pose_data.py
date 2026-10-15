@@ -15,8 +15,9 @@ names `bodypose_players`.
 Mutations, each applied, seen failing and restored (tasks/todo.md, task 60, phase B2): the guard
 removed from `load_players`; the guard removed from `PoseRows.__post_init__`; each condition of
 `assert_confirmation_open` removed in turn (frozen entry, code tree, numpy, verdict in HEAD, its
-seal, its protocol, its tree, alive, finite half IQR, dirty tree); the `match_id` check removed
-from `_read_players`; `z_range_m` returning every z; the reviewer's `pose/peek.py`.
+seal, its protocol, its tree, its rows against the calibration's, alive by its own figures,
+alive, finite half IQR, dirty tree); the `match_id` check and the duplicate check removed from
+`_read_players`; `z_range_m` returning every z; the reviewer's `pose/peek.py`.
 """
 
 from __future__ import annotations
@@ -98,6 +99,21 @@ def test_no_pose_rows_of_the_confirmation_match_come_into_being(
         PoseRows(pose_kit.confirmation, **arrays)  # built by hand
 
 
+def test_a_duplicated_player_frame_is_counted_and_refused(
+    pose_repo: Any, pose_kit: SimpleNamespace, tmp_path: Path
+) -> None:
+    """The same body written twice for one player: the handle counts 30 extra rows (an
+    integer, no position) and `_read_players` refuses the file rather than keep or drop one."""
+    root = tmp_path / "data"
+    body = pose_kit.runner(7, start=100, n=30, speed_m_s=6.0)
+    pose_kit.write_bronze(root, pose_kit.calibration, [body])
+    assert CountingHandle(root, pose_kit.calibration).duplicate_player_frames() == 0
+    pose_kit.write_bronze(root, pose_kit.calibration, [body, body])
+    assert CountingHandle(root, pose_kit.calibration).duplicate_player_frames() == 30
+    with pytest.raises(ValueError, match="appears twice"):
+        load_players(root, pose_kit.calibration)
+
+
 def test_a_file_of_another_match_under_this_name_is_refused(
     pose_repo: Any, pose_kit: SimpleNamespace, tmp_path: Path
 ) -> None:
@@ -172,7 +188,10 @@ def test_another_numpy_than_the_designs_closes_it(
 @pytest.mark.parametrize(
     ("change", "message"),
     [
-        ({"alive": False}, "P6 died on 1925299"),
+        ({"m1_players": 3, "dies_at": "m1", "alive": False}, "P6 died on 1925299"),
+        ({"m1_players": 3}, "does not follow its own figures"),  # alive: true, M1 = 3
+        ({"alive": False}, "does not follow its own figures"),  # dead by no figure
+        ({"rows": 99}, "rows the sealed pose_calibration.json counted"),
         ({"half_iqr_hz": None}, "no finite m4.half_iqr_hz"),
         ({"code_tree_sha": "0" * 40}, "not computed by the frozen code"),
         ({"answers_to": "design"}, "answers to another protocol"),
@@ -301,7 +320,6 @@ READS_NO_POSE = {
     "verdict.Window",
     "verdict.criteria_players",
     "verdict.second_time",
-    "verdict.verdict_dies_at",
     "verdict.frozen_here",
     "verdict.consistency_problems",
     "metric.player_rows",
@@ -310,6 +328,8 @@ READS_NO_POSE = {
     "metric.match_verdicts",
     "metric.build_metric",
     "metric.recompute_problems",
+    "metric.ratio_sd",
+    "metric.partial_problems",
 }
 
 
@@ -433,6 +453,7 @@ def test_every_public_name_of_pose_refuses_the_confirmation_match_or_counts_only
         "mae_cm",
         "z_range_m",
         "lineup",
+        "duplicate_player_frames",
     }
     for name, method in methods.items():
         if name not in ("mae_cm", "z_range_m"):
@@ -454,6 +475,7 @@ def test_every_public_name_of_pose_refuses_the_confirmation_match_or_counts_only
     assert counted("protocol.denominators", protocol.denominators(root, held)) == {
         "players_listed": 1,
         "players_with_pose": 1,
+        "duplicate_player_frames": 0,
     }
     # both matches of the manifest: 1925299 has no bronze here, so nothing is written
     (reports / SWEEP_NAME).write_bytes((REPORTS / SWEEP_NAME).read_bytes())

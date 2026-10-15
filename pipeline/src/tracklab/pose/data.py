@@ -8,9 +8,10 @@ match opens only past `assert_confirmation_open`: the committed protocol is in s
 with a frozen entry after the design ones in its history; the `pose/` tree committed in HEAD is
 the one the freeze recorded; the installed numpy is the one the design names; HEAD holds the
 verdict of the second time on 1925299 (`reports/pose_verdict.json`), sealed, computed against
-that frozen protocol by that same code tree, with P6 alive and a finite `m4.half_iqr_hz` (if M1
-or M2 killed P6 on 1925299, 1996435 never opens); and the working tree is clean, untracked
-files included. Anything else raises `HeldOutLocked`.
+that frozen protocol by that same code tree on as many rows as the committed
+`pose_calibration.json` counted, with P6 alive by the verdict's own figures and a finite
+`m4.half_iqr_hz` (if M1 or M2 killed P6 on 1925299, 1996435 never opens); and the working tree
+is clean, untracked files included. Anything else raises `HeldOutLocked`.
 
 Two doors to a match's Body Pose bronze, and no other read of it under `tracklab.pose` (a test
 greps the package):
@@ -20,7 +21,8 @@ greps the package):
   it is built, so a calibration one relabelled is refused. The rows are read in
   `_read_players`, whose only caller it is.
 * `CountingHandle`, for `pose coverage`, the protocol's evidence and the lineup the metric is
-  ordered by: fixed aggregate queries over either match, each returning integers, save two:
+  ordered by (and the duplicates of a player-frame, which `_read_players` refuses): fixed
+  aggregate queries over either match, each returning integers, save two:
   `mae_cm` (quantiles of the provider's predicted error, not a position) and `z_range_m` (two
   numbers, the least and the greatest z over every joint and row), which task 58 published for
   both matches and the review of method lists as seen (point 5).
@@ -44,12 +46,14 @@ import pyarrow.parquet as pq
 from numpy.typing import NDArray
 
 from tracklab.bronze.common import bronze_path
+from tracklab.pose import criteria
 from tracklab.pose.jsonl import JOINTS
 from tracklab.runs.data import HeldOutLocked, dirty_paths
 from tracklab.runs.protocol import fingerprint, sealed
 
 PROTOCOL_IN_REPO = "pipeline/reports/pose_protocol.json"
 VERDICT_IN_REPO = "pipeline/reports/pose_verdict.json"
+CALIBRATION_IN_REPO = "pipeline/reports/pose_calibration.json"
 CODE_IN_REPO = "pipeline/src/tracklab/pose"  # the code that computes task 60's figures
 STAGE_DESIGN = "design"
 STAGE_FROZEN = "frozen"
@@ -139,6 +143,15 @@ def committed_verdict(protocol: dict[str, Any]) -> dict[str, Any]:
         raise HeldOutLocked("the verdict committed in HEAD answers to another protocol")
     if verdict.get("code_tree_sha") != (protocol.get("frozen") or {}).get("code_tree_sha"):
         raise HeldOutLocked("the verdict committed in HEAD was not computed by the frozen code")
+    out = _git(repo_root(), "show", f"HEAD:{CALIBRATION_IN_REPO}")
+    calibration = json.loads(out.stdout) if out.returncode == 0 else {}
+    if not sealed(calibration) or (verdict.get("inputs") or {}).get("rows") != (
+        calibration.get("inputs") or {}
+    ).get("rows"):
+        raise HeldOutLocked(
+            "the verdict committed in HEAD was not computed on the rows the sealed "
+            "pose_calibration.json counted"
+        )
     return verdict
 
 
@@ -181,7 +194,14 @@ def assert_confirmation_open() -> None:
     if numpy != payload["design"].get("dependencies", {}).get("numpy"):
         raise HeldOutLocked(f"numpy {numpy} is installed, not the one the protocol names")
     verdict = committed_verdict(payload)
-    if (verdict.get("verdict") or {}).get("alive") is not True:
+    section = verdict.get("verdict") or {}
+    try:
+        dies_at = criteria.verdict_dies_at(section)
+    except (KeyError, TypeError):
+        raise HeldOutLocked("pose_verdict.json does not hold the figures of M1 and M2") from None
+    if section.get("alive") is not (dies_at is None) or section.get("dies_at") != dies_at:
+        raise HeldOutLocked("pose_verdict.json's verdict does not follow its own figures")
+    if section.get("alive") is not True:
         raise HeldOutLocked("P6 died on 1925299 (pose_verdict.json): 1996435 is never opened")
     half_iqr = (verdict.get("m4") or {}).get("half_iqr_hz")
     if not (isinstance(half_iqr, int | float) and math.isfinite(half_iqr)):
@@ -239,6 +259,10 @@ def _read_players(path: Path, match_id: int) -> dict[str, Any]:
         raise ValueError(f"{path}: rows of another match than {match_id}")
     if table.column("period").null_count:
         raise ValueError(f"{path}: a row with a pose has no period")
+    player = table.column("player_id").to_numpy()
+    frame = table.column("frame").to_numpy()
+    if np.any((np.diff(player) == 0) & (np.diff(frame) == 0)):
+        raise ValueError(f"{path}: a (player_id, frame) appears twice; none is kept or dropped")
     n = table.num_rows
     return {
         "player_id": table.column("player_id").to_numpy().astype(np.int64),
@@ -393,6 +417,13 @@ class CountingHandle:
             f"select min(least({zs})), max(greatest({zs})) from read_parquet(?)", "players"
         )
         return lo, hi
+
+    def duplicate_player_frames(self) -> int:
+        """Rows of `bodypose_players` beyond the first of their (player_id, frame): an integer."""
+        ((n,),) = self._rows(
+            "select count(*) - count(distinct (player_id, frame)) from read_parquet(?)", "players"
+        )
+        return int(n)
 
     def lineup(self) -> list[tuple[int, int, int]]:
         """(player_id, team_id, number) of every player of the match's `match_players`, by

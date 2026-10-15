@@ -8,7 +8,8 @@ cap folded into the wrong ankle column; the rule choosing the greatest W, or the
 eligible without the adjusted bar, or only if it spares the sane instrument (which is printed
 and decides nothing); `spares_the_sane` read from its first row; the bisection
 of the separation the wrong way; the PARTIAL check without comparing the cells with the
-sweep's bar, their counts with `windows.rows` or the base bar with the sweep's rows.
+sweep's bar, their counts with `windows.rows` or the base bar with the sweep's rows; and,
+after the second review, the first time written although the protocol is frozen.
 """
 
 from __future__ import annotations
@@ -24,7 +25,7 @@ from typing import Any
 import numpy as np
 import pytest
 
-from tracklab.pose import criteria, probe, protocol, sweep
+from tracklab.pose import criteria, data, probe, protocol, sweep
 from tracklab.pose.coverage import COVERAGE_NAME
 from tracklab.pose.data import load_players
 from tracklab.pose.jsonl import JOINTS
@@ -279,6 +280,27 @@ def test_the_probe_writes_the_same_bytes_twice_and_check_sees_a_change(
     path.write_text(text, encoding="utf-8")
     assert probe.run_pose_probe(root, reports, CLIP) == 1  # uncommitted code: nothing written
     assert "commit them first" in capsys.readouterr().out
+
+
+def test_the_first_time_is_never_written_once_the_protocol_is_frozen(
+    pose_repo: Any, pose_kit: SimpleNamespace, reports: Path, tmp_path: Path,
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch,
+) -> None:  # fmt: skip
+    """The real design, frozen and committed: with a tiny rule grid the probe would write in
+    seconds, and it refuses instead."""
+    bodies = [pose_kit.runner(p, start=10, n=120, speed_m_s=v) for p, v in ((1, 6.0), (2, 4.0))]
+    root = pose_kit.write_bronze(tmp_path / "data", pose_kit.calibration, bodies)
+    _commit_real_design(pose_repo, reports)
+    design = json.loads((pose_repo.root / data.PROTOCOL_IN_REPO).read_text(encoding="utf-8"))
+    frozen = {k: v for k, v in design.items() if k != "content_sha256"}
+    frozen["history"] = [*frozen["history"], {"stage": "frozen", "task": 60}]
+    pose_repo.commit(seal({**frozen, "stage": "frozen"}), "frozen")
+    monkeypatch.setattr(
+        probe, "rule_w_cap", partial(probe.rule_w_cap, grid=TINY, draws=5, reps=5, sane_windows=50)
+    )
+    assert probe.run_pose_probe(root, reports, CLIP) == 1
+    assert "stage 'frozen'" in capsys.readouterr().out
+    assert not (reports / protocol.CALIBRATION_NAME).exists()
 
 
 def test_the_counts_the_rule_reads_are_the_ankles_cap_summed_over_periods() -> None:

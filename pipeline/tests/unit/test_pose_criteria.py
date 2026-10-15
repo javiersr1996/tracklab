@@ -156,3 +156,21 @@ def test_the_sane_simulator_needs_both_the_rise_between_bands_and_the_spread_of_
     assert lives["p_dies"] <= 0.05
     assert flat["p_dies"] >= 0.5 and flat["by"]["m2_sign"] == flat["dies"]
     assert alike["p_dies"] >= 0.5 and alike["by"]["m2_precision"] == alike["dies"]
+
+
+def test_a_written_verdict_dies_where_its_figures_say() -> None:
+    """`verdict_dies_at` reads the death back from the figures a verdict file writes (the
+    second time's check and the guard), in the order of `m1_m2`."""
+    section: dict[str, Any] = {
+        "M1": {"players": 9},
+        "M2": {"players_with_both": 9, "positive": 9, "median_sd_hz": 0.01, "half_iqr_hz": 0.1},
+    }
+    assert criteria.verdict_dies_at(section) == "m1"
+    section["M1"]["players"] = 12
+    assert criteria.verdict_dies_at(section) == "m2_coverage"
+    section["M2"] |= {"players_with_both": 12, "positive": 8}
+    assert criteria.verdict_dies_at(section) == "m2_sign"
+    section["M2"] |= {"positive": 9, "median_sd_hz": 0.2}
+    assert criteria.verdict_dies_at(section) == "m2_precision"
+    section["M2"]["median_sd_hz"] = 0.05
+    assert criteria.verdict_dies_at(section) is None

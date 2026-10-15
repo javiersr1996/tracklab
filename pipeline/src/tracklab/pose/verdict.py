@@ -29,6 +29,7 @@ checks the seal, the protocol, the tree and a verdict that follows from its figu
 
 from __future__ import annotations
 
+import importlib.metadata
 import json
 import math
 import time
@@ -307,21 +308,6 @@ def second_time(
     }
 
 
-def verdict_dies_at(section: dict[str, Any]) -> str | None:
-    """The death the verdict's own figures give, in the order of `criteria.m1_m2`."""
-    m1, m2 = section["M1"], section["M2"]
-    if m1["players"] < criteria.MIN_PLAYERS:
-        return "m1"
-    if m2["players_with_both"] < criteria.MIN_PLAYERS:
-        return "m2_coverage"
-    if m2["positive"] < criteria.SIGN_SHARE * m2["players_with_both"]:
-        return "m2_sign"
-    sd, half = m2["median_sd_hz"], m2["half_iqr_hz"]
-    if sd is None or half is None or sd > half:
-        return "m2_precision"
-    return None
-
-
 def build_verdict(
     rows: PoseRows,
     sweep_report: dict[str, Any],
@@ -348,19 +334,23 @@ def build_verdict(
             "width": width,
             "cap_cm": cap,
             "draws": draws,
+            "inputs": {"rows": len(rows.frame), "players_with_pose": len(rows.players())},
             **second_time(windows, sweep_report, width, cap),
         }
     )
 
 
 def frozen_here() -> dict[str, Any]:
-    """The committed protocol, frozen, whose recorded tree is HEAD's: what the second time
-    answers to. Anything else raises ValueError."""
+    """The committed protocol, frozen, whose recorded tree is HEAD's, with the numpy its design
+    names installed: what the second time answers to. Anything else raises ValueError."""
     protocol = committed_protocol()
     if protocol.get("stage") != STAGE_FROZEN:
         raise ValueError(f"the committed protocol is in stage {protocol.get('stage')!r}")
     if (protocol.get("frozen") or {}).get("code_tree_sha") != code_tree_sha():
         raise ValueError("HEAD's pose/ tree is not the one the freeze recorded")
+    numpy = importlib.metadata.version("numpy")
+    if numpy != protocol["design"].get("dependencies", {}).get("numpy"):
+        raise ValueError(f"numpy {numpy} is installed, not the one the protocol names")
     return protocol
 
 
@@ -378,9 +368,11 @@ def consistency_problems(current: dict[str, Any], calibration: int) -> list[str]
         problems.append("match_id is not the committed calibration match")
     try:
         section = current["verdict"]
-        dies = verdict_dies_at(section)
+        dies = criteria.verdict_dies_at(section)
         if section["dies_at"] != dies or section["alive"] != (dies is None):
             problems.append("verdict does not follow its figures")
+        if not isinstance(current["inputs"]["rows"], int):
+            problems.append("inputs.rows is not a count")
         if current["m4"]["half_iqr_hz"] != section["M2"]["half_iqr_hz"]:
             problems.append("m4.half_iqr_hz is not M2's")
     except (KeyError, TypeError) as exc:
@@ -447,10 +439,15 @@ def run_pose_verdict(data_dir: Path, reports_dir: Path, *, check: bool = False) 
         print(_summary(current, status))
         print(f"pose verdict --check: {path} matches ({status} as written)")
         return 0
+    try:
+        protocol = frozen_here()
+    except ValueError as exc:
+        print(f"pose verdict --check: {exc}")
+        return 1
     payload = build_verdict(
         load_players(data_dir, calibration),
         sweep_report,
-        protocol=committed_protocol(),
+        protocol=protocol,
         head=str(current["head"]),
         code_tree=str(current["code_tree_sha"]),
         draws=int(current["draws"]),

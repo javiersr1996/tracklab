@@ -688,6 +688,13 @@ def run_pose_probe(
     path = reports_dir / CALIBRATION_NAME
     started = time.perf_counter()
     if not check:
+        stage = committed_protocol().get("stage")
+        if stage != STAGE_DESIGN:
+            print(
+                f"pose probe: the committed protocol is in stage {stage!r}; the first time is "
+                "written only before the freeze, and never again after it"
+            )
+            return 1
         dirty = dirty_code_paths()
         if dirty:
             print(

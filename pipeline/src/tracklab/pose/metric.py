@@ -6,19 +6,22 @@ At the frozen (W, cap), every admitted window of the low and the high band of bo
 estimated and gets its Monte Carlo with its own seed (`verdict.window_estimates`). Per match,
 period (and the whole match, `all`) and player, ordered by team and number
 (`CountingHandle.lineup`): the windows per band (the denominator) and how many are finite in s;
-the median cadence of s with the propagated sd of that median over all his windows and, in the
-high band, over his first five finite ones (M2's); the median step (v / cad_s) and ankle
-separation and their ratio; M3's concordance in the high band without a propagated error (the
-sd propagated to cad_h is not calibrated, phase B1 of task 60); the mean speed.
+the median cadence of s with the propagated sd of that median over his finite windows and, in
+the high band, over his first five finite ones (M2's); the median step (v / cad_s) and ankle
+separation and their ratio, each with its propagated sd; M3's concordance in the high band
+without a propagated error (the sd propagated to cad_h is not calibrated, phase B1 of task 60);
+the mean speed, without one either (the file's x, y carry no predicted error).
 
 Verdicts, beside their frozen thresholds: 1925299's M1 and M2, recomputed with the frozen code,
 must equal the committed `pose_verdict.json` or nothing is written. 1996435: if its admitted
 windows (before the NaN rule) do not reach any of the minima of M1 and M2, `unreplicated`
 (not evaluable by coverage); otherwise M2 with the half IQR of 1925299 frozen as a number:
 `replicated` or `replication_failed`. 1996435 is read through `load_players`, past the guard.
+1925299 is recomputed first, and 1996435 is loaded only if it gives the committed verdict.
 The file records `head`, `code_tree_sha`, the protocol's fingerprint and seal and the
 verdict's seal. `--check` recomputes where both bronzes are whole and the guard opens
-(`FULL 2/2`), and otherwise checks the seal and what the file answered to (`PARTIAL k/2`).
+(`FULL 2/2`), and otherwise checks the seal, the protocol, the code tree and the verdict
+against what HEAD holds (`PARTIAL k/2`).
 """
 
 from __future__ import annotations
@@ -30,6 +33,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from tracklab.pose import criteria, sweep
 from tracklab.pose.data import (
@@ -51,9 +55,13 @@ SCHEMA_VERSION = 1
 WRITTEN = "2026-10-15"
 COLUMNS = (
     "team_id", "number", "player_id", "period", "band", "windows", "finite_s", "cad_s_p50_hz",
-    "cad_s_sd_hz", "cad_s_sd_5_hz", "step_length_p50_m", "ankle_separation_p50_m",
-    "separation_over_step", "m3_abs_diff_p50_hz", "m3_nan_h_share", "speed_mean_m_s",
+    "cad_s_sd_hz", "cad_s_sd_5_hz", "step_length_p50_m", "step_length_sd_m",
+    "ankle_separation_p50_m", "ankle_separation_sd_m", "separation_over_step",
+    "separation_over_step_sd", "m3_abs_diff_p50_hz", "m3_nan_h_share", "speed_mean_m_s",
 )  # fmt: skip
+CAD, SEPARATION, STEP = 0, 1, 2  # columns of `gait.monte_carlo`'s draws
+
+Array = NDArray[np.float64]
 
 
 def _r(value: float) -> float | None:
@@ -66,8 +74,23 @@ def _median(values: list[float]) -> float:
     return float(np.median(a)) if a.size else math.nan
 
 
+def _finite(values: list[float]) -> list[int]:
+    return [i for i, v in enumerate(values) if math.isfinite(v)]
+
+
+def ratio_sd(separation: Array, step: Array) -> float:
+    """The sd over the draws of the ratio of the two medians over the windows (rows), each draw
+    with the windows finite in it (`nanmedian`); a draw with either median NaN is not valid."""
+    with np.errstate(all="ignore"):
+        ratio = np.nanmedian(separation, axis=0) / np.nanmedian(step, axis=0)
+    valid = ratio[np.isfinite(ratio)]
+    return float(np.std(valid, ddof=1)) if len(valid) >= 2 else math.inf
+
+
 def player_rows(windows: list[Window], lineup: list[tuple[int, int, int]]) -> list[list[Any]]:
-    """One row per player, period (and `all`) and band, ordered by team, number and player."""
+    """One row per player, period (and `all`) and band, ordered by team, number and player.
+    Each median is over the windows whose value is finite, and its propagated sd
+    (`criteria.propagated_sd`, the draws of the same windows) beside it."""
     place = {pid: (team, number) for pid, team, number in lineup}
     out = []
     players = sorted(
@@ -82,16 +105,16 @@ def player_rows(windows: list[Window], lineup: list[tuple[int, int, int]]) -> li
                 ws = [w for w in mine if w.band == band and period in ("all", str(w.period))]
                 if not ws:
                     continue
+                draws = np.array([w.draws for w in ws])  # (windows, draws, 4)
                 cad = [w.estimate.cadence_hz for w in ws]
-                draws = np.array([w.draws[:, 0] for w in ws if w.draws is not None])
-                finite = [i for i, c in enumerate(cad) if math.isfinite(c)]
+                step = [w.estimate.step_length_m for w in ws]
+                sep = [w.estimate.ankle_separation_m for w in ws]
+                f_cad, f_step, f_sep = _finite(cad), _finite(step), _finite(sep)
                 sd5 = (
-                    criteria.propagated_sd(draws[finite[: criteria.MIN_WINDOWS]])
-                    if band == "high" and len(finite) >= criteria.MIN_WINDOWS
+                    criteria.propagated_sd(draws[f_cad[: criteria.MIN_WINDOWS], :, CAD])
+                    if band == "high" and len(f_cad) >= criteria.MIN_WINDOWS
                     else math.nan
                 )
-                step = _median([w.estimate.step_length_m for w in ws])
-                separation = _median([w.estimate.ankle_separation_m for w in ws])
                 diffs = [
                     abs(w.estimate.cadence_hz - w.estimate.cadence_h_hz)
                     if math.isfinite(w.estimate.cadence_h_hz)
@@ -101,9 +124,13 @@ def player_rows(windows: list[Window], lineup: list[tuple[int, int, int]]) -> li
                 ]
                 out.append(
                     [
-                        team, number, pid, period, band, len(ws), len(finite), _r(_median(cad)),
-                        _r(criteria.propagated_sd(draws)) if len(draws) else None, _r(sd5),
-                        _r(step), _r(separation), _r(separation / step),
+                        team, number, pid, period, band, len(ws), len(f_cad), _r(_median(cad)),
+                        _sd(draws, f_cad, CAD), _r(sd5),
+                        _r(_median(step)), _sd(draws, f_step, STEP),
+                        _r(_median(sep)), _sd(draws, f_sep, SEPARATION),
+                        _r(_median(sep) / _median(step)),
+                        _r(ratio_sd(draws[f_sep, :, SEPARATION], draws[f_step, :, STEP]))
+                        if f_sep and f_step else None,
                         _r(float(np.median(diffs))) if band == "high" and diffs else None,
                         _r(sum(not math.isfinite(w.estimate.cadence_h_hz) for w in ws) / len(ws))
                         if band == "high" else None,
@@ -111,6 +138,11 @@ def player_rows(windows: list[Window], lineup: list[tuple[int, int, int]]) -> li
                     ]
                 )  # fmt: skip
     return out
+
+
+def _sd(draws: Array, rows: list[int], column: int) -> float | None:
+    """The propagated sd of the median of `column` over the windows `rows`."""
+    return _r(criteria.propagated_sd(draws[rows, :, column])) if rows else None
 
 
 def admitted_minima(windows: list[Window]) -> dict[str, Any]:
@@ -189,8 +221,11 @@ def build_metric(
             },
             "width": int(frozen["width"]),
             "cap_cm": int(frozen["cap_cm"]),
-            "note": "M3's concordance has no propagated error: the sd propagated to cad_h is not "
-            "calibrated (phase B1 of task 60)",
+            "note": "each median is over the windows with that value finite, its sd propagated "
+            "over the draws of the same windows (criteria.propagated_sd; the ratio's, draw by "
+            "draw); M3's concordance has no propagated error: the sd propagated to cad_h is not "
+            "calibrated (phase B1 of task 60); speed_mean_m_s has no propagated error: the "
+            "file's x, y carry no predicted error",
             "columns": list(COLUMNS),
             "matches": {str(m): player_rows(windows[m], lineups[m]) for m in (cal, conf)},
             "verdicts": match_verdicts(
@@ -200,9 +235,9 @@ def build_metric(
     )
 
 
-def recompute_problems(payload: dict[str, Any], verdict: dict[str, Any]) -> list[str]:
-    """1925299, recomputed with the frozen code, must say what the committed verdict says."""
-    mine = payload["verdicts"]["calibration"]
+def recompute_problems(figures: dict[str, Any], verdict: dict[str, Any]) -> list[str]:
+    """1925299's M1 and M2 (`m_verdict`), recomputed with the frozen code, must say what the
+    committed verdict says."""
     theirs = verdict["verdict"]
     said = {
         "m1_players": theirs["M1"]["players"],
@@ -212,7 +247,7 @@ def recompute_problems(payload: dict[str, Any], verdict: dict[str, Any]) -> list
         "half_iqr_hz": theirs["M2"]["half_iqr_hz"],
         "dies_at": theirs["dies_at"],
     }
-    return [] if mine == said else ["1925299 recomputed differs from pose_verdict.json"]
+    return [] if figures == said else ["1925299 recomputed differs from pose_verdict.json"]
 
 
 def _summary(payload: dict[str, Any], status: str) -> str:
@@ -225,26 +260,55 @@ def _summary(payload: dict[str, Any], status: str) -> str:
 
 
 def _compute(data_dir: Path, head: str, code_tree: str) -> dict[str, Any] | str:
+    """1925299 first: if the frozen code does not give the committed verdict, 1996435 is never
+    loaded."""
     protocol = committed_protocol()
     calibration, confirmation = (m for (m,) in committed_split())
     try:
         verdict = committed_verdict(protocol)
-        rows = {m: load_players(data_dir, m) for m in (calibration, confirmation)}
     except HeldOutLocked as exc:
         return f"1996435 stays closed: {exc}"
     frozen = protocol["frozen"]
-    windows = {
-        m: window_estimates(
-            r, int(frozen["width"]), int(frozen["cap_cm"]), mc_bands=("low", "high")
-        )
-        for m, r in rows.items()
-    }
-    lineups = {m: CountingHandle(data_dir, m).lineup() for m in rows}
-    payload = build_metric(
+    width, cap = int(frozen["width"]), int(frozen["cap_cm"])
+
+    def estimated(match: int) -> list[Window]:
+        rows = load_players(data_dir, match)
+        return window_estimates(rows, width, cap, mc_bands=("low", "high"))
+
+    windows = {calibration: estimated(calibration)}
+    problems = recompute_problems(
+        m_verdict(criteria.m1_m2(criteria_players(windows[calibration]))), verdict
+    )
+    if problems:
+        return "; ".join(problems)
+    try:
+        windows[confirmation] = estimated(confirmation)
+    except HeldOutLocked as exc:
+        return f"1996435 stays closed: {exc}"
+    lineups = {m: CountingHandle(data_dir, m).lineup() for m in windows}
+    return build_metric(
         windows, lineups, protocol=protocol, verdict=verdict, head=head, code_tree=code_tree
     )
-    problems = recompute_problems(payload, verdict)
-    return "; ".join(problems) if problems else payload
+
+
+def partial_problems(current: dict[str, Any]) -> list[str]:
+    """What the file must say whatever bronze is at hand: sealed, answering to the protocol,
+    the frozen code tree and the verdict committed in HEAD."""
+    problems = [] if sealed(current) else ["content_sha256 does not cover the file"]
+    protocol = committed_protocol()
+    recorded = current.get("protocol") or {}
+    if any(recorded.get(k) != protocol.get(k) for k in ("stage", "fingerprint", "content_sha256")):
+        problems.append("protocol is not the one committed in HEAD")
+    if current.get("code_tree_sha") != (protocol.get("frozen") or {}).get("code_tree_sha"):
+        problems.append("code_tree_sha is not the tree the freeze recorded")
+    try:
+        seal_ = committed_verdict(protocol)["content_sha256"]
+    except HeldOutLocked as exc:
+        problems.append(f"no verdict to answer to: {exc}")
+    else:
+        if (current.get("verdict_from") or {}).get("content_sha256") != seal_:
+            problems.append("verdict_from is not the pose_verdict.json committed in HEAD")
+    return problems
 
 
 def run_pose_metric(data_dir: Path, reports_dir: Path, *, check: bool = False) -> int:
@@ -273,15 +337,15 @@ def run_pose_metric(data_dir: Path, reports_dir: Path, *, check: bool = False) -
         return 1
     text = path.read_text(encoding="utf-8")
     current = json.loads(text)
-    protocol = committed_protocol()
-    problems = [] if sealed(current) else ["content_sha256 does not cover the file"]
-    if current.get("protocol", {}).get("fingerprint") != protocol["fingerprint"]:
-        problems.append("protocol.fingerprint is not the committed protocol's")
+    problems = partial_problems(current)
     if problems:
         print(f"pose metric --check: {path} " + "; ".join(problems))
         return 1
     if len(whole) != len(ids):
-        status = f"PARTIAL {len(whole)}/{len(ids)}: seal and protocol checked, nothing recomputed"
+        status = (
+            f"PARTIAL {len(whole)}/{len(ids)}: seal, protocol, code tree and verdict checked, "
+            "nothing recomputed"
+        )
         print(_summary(current, status))
         print(f"pose metric --check: {path} matches ({status})")
         return 0

@@ -23,7 +23,9 @@ windows from two pools with the counts of admitted windows per player and band t
 measures, and says how often P6 dies. Against the noise twin (`sweep.noise_pool` in both bands,
 NaN included), the rule of (W, cap) asks P(P6 dies | noise) >= 0.95 in each rho; against sane
 pools (`sweep.sane_pool`), `simulate_sane` gives each player his own cadence, spread between
-players and lower in the low band, and the rule asks that P6 live (phase B2).
+players and lower in the low band, and how often P6 dies is printed beside the rule, which it
+decides nothing of (phase B2). `verdict_dies_at` reads the death back from the figures a
+verdict file writes, for the second time's check and for the guard.
 """
 
 from __future__ import annotations
@@ -122,6 +124,22 @@ def m1_m2(
     else:
         dies = None
     return Verdict(dies, len(m1), len(both), positive, median_sd, half_iqr)
+
+
+def verdict_dies_at(section: dict[str, Any]) -> str | None:
+    """The death that the figures of a written verdict give (its `M1` and `M2`), in the order of
+    `m1_m2`: what `alive` and `dies_at` beside them must say."""
+    m1, m2 = section["M1"], section["M2"]
+    if m1["players"] < MIN_PLAYERS:
+        return "m1"
+    if m2["players_with_both"] < MIN_PLAYERS:
+        return "m2_coverage"
+    if m2["positive"] < SIGN_SHARE * m2["players_with_both"]:
+        return "m2_sign"
+    sd, half = m2["median_sd_hz"], m2["half_iqr_hz"]
+    if sd is None or half is None or sd > half:
+        return "m2_precision"
+    return None
 
 
 def simulate_m1_m2(

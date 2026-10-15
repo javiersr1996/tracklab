@@ -26,6 +26,7 @@ from tracklab.runs.protocol import fingerprint, seal
 
 CALIBRATION_MATCH = 1925299
 CONFIRMATION_MATCH = 1996435
+ROWS = 100  # the rows of 1925299 a hand-made verdict and calibration both count
 
 
 @dataclass(frozen=True)
@@ -214,8 +215,10 @@ class PoseRepo:
         )
 
     def verdict(self, protocol: dict[str, Any], **change: Any) -> dict[str, Any]:
-        """A sealed second-time verdict answering to `protocol`, alive with a finite half IQR,
-        `change` applied on top (keys `alive`, `half_iqr_hz`, `code_tree_sha`, `answers_to`)."""
+        """A sealed second-time verdict answering to `protocol`, alive by its own figures of M1
+        and M2, computed on `ROWS` rows, `change` applied on top (keys `alive`, `dies_at`,
+        `m1_players`, `half_iqr_hz`, `code_tree_sha`, `answers_to`, `rows`)."""
+        m1 = change.get("m1_players", 12)
         return seal(
             {
                 "protocol": {
@@ -223,16 +226,32 @@ class PoseRepo:
                     for k in ("stage", "fingerprint", "content_sha256")
                 },
                 "code_tree_sha": change.get("code_tree_sha", protocol["frozen"]["code_tree_sha"]),
-                "verdict": {"alive": change.get("alive", True)},
+                "inputs": {"rows": change.get("rows", ROWS)},
+                "verdict": {
+                    "M1": {"players": m1},
+                    "M2": {
+                        "players_with_both": 12,
+                        "positive": 12,
+                        "median_sd_hz": 0.01,
+                        "half_iqr_hz": 0.1,
+                    },
+                    "dies_at": change.get("dies_at"),
+                    "alive": change.get("alive", True),
+                },
                 "m4": {"half_iqr_hz": change.get("half_iqr_hz", 0.1)},
             }
         )
 
-    def open(self, width: int = 25, cap_cm: int = 20) -> dict[str, Any]:
-        """Commit the frozen protocol, then its verdict: the guard opens."""
+    def calibration(self, rows: int = ROWS) -> None:
+        """Commit a sealed first time of the probe that counted `rows` rows of 1925299."""
+        self.commit(seal({"inputs": {"rows": rows}}), "calibration", at=data.CALIBRATION_IN_REPO)
+
+    def open(self, width: int = 25, cap_cm: int = 20, rows: int = ROWS) -> dict[str, Any]:
+        """Commit the calibration and the frozen protocol, then its verdict: the guard opens."""
+        self.calibration(rows)
         frozen = self.frozen(width, cap_cm)
         self.commit(frozen, "frozen")
-        self.commit(self.verdict(frozen), "verdict", at=data.VERDICT_IN_REPO)
+        self.commit(self.verdict(frozen, rows=rows), "verdict", at=data.VERDICT_IN_REPO)
         return frozen
 
 

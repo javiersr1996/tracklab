@@ -81,8 +81,8 @@ def test_full_on_whole_bronze_partial_elsewhere_and_the_same_bytes(
     assert payload["stage"] == "design" and sealed(payload)
     assert payload["fingerprint"] == fingerprint(payload["design"])
     assert payload["evidence"]["denominators"]["per_match"] == {
-        "1925299": {"players_listed": 2, "players_with_pose": 2},
-        "1996435": {"players_listed": 3, "players_with_pose": 3},
+        "1925299": {"players_listed": 2, "players_with_pose": 2, "duplicate_player_frames": 0},
+        "1996435": {"players_listed": 3, "players_with_pose": 3, "duplicate_player_frames": 0},
     }
     assert run_pose_protocol(whole, reports) == 0  # a second run, the same bytes
     assert (reports / PROTOCOL_NAME).read_text(encoding="utf-8") == text
@@ -222,7 +222,8 @@ def test_the_design_carries_the_numbers_of_the_code_that_applies_it(
     assert (SANE_DELTA_HZ, SANE_SIGMA_B_HZ, SANE_P_DIES_MAX) == (0.05, 0.1, 0.05)
     assert "the cadence does not rise 0.05 Hz" in design["death_criteria"]["M2"]
     assert "pose_verdict.json" in design["death_criteria"]["M4"]
-    assert "is_detected" in design["windows"]
+    assert "is_detected" in design["windows"] and "duplicates" in design["windows"]
+    assert "propagated over the draws" in design["probe"]["metric"]
 
 
 def test_the_bands_are_half_open() -> None:
@@ -248,8 +249,8 @@ def test_the_versioned_protocol_is_sealed_in_design_and_names_the_versioned_file
     seen = payload["design"]["seen_of_confirmation"]["coverage"]
     assert seen["sha256"] == file_sha256(REPORTS / COVERAGE_NAME)
     assert payload["evidence"]["denominators"]["per_match"] == {
-        "1925299": {"players_listed": 32, "players_with_pose": 32},
-        "1996435": {"players_listed": 30, "players_with_pose": 30},
+        "1925299": {"players_listed": 32, "players_with_pose": 32, "duplicate_player_frames": 0},
+        "1996435": {"players_listed": 30, "players_with_pose": 30, "duplicate_player_frames": 0},
     }
     assert run_pose_protocol(FIXTURES, REPORTS, check=True) == 0
     assert "PARTIAL 0/2" in _status(capsys)

@@ -139,6 +139,12 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
                 "false) enters the windows as delivered: the pose exists and its mae is the "
                 "file's; how many there are per match is in pose_coverage.json"
             ),
+            "duplicates": (
+                "a (player_id, frame) that appears twice among a match's pose rows is refused "
+                "where they are read (an error), never resolved by keeping or dropping a row; "
+                "the rows beyond the first per match are counted by the CountingHandle "
+                "(evidence.denominators.per_match.duplicate_player_frames)"
+            ),
         },
         "bands": {
             "low_m_s": [BAND_LOW_M_S, BAND_HIGH_M_S],
@@ -301,17 +307,29 @@ def design(sweep_sha256: str, coverage_sha256: str, ids: list[int]) -> dict[str,
                 "concordance of M3 with the sweep's rows of h; (e) the propagated error "
                 "against the spread between players; the NaN rates; the distribution of cad_s "
                 "with the sweep's swap rows; the slope of h on s by heading; the verdict of M1 "
-                "and M2 and m4.half_iqr_hz; sealed, with the frozen protocol's content_sha256 "
-                "and a code_tree_sha equal to frozen.code_tree_sha"
+                "and M2 and m4.half_iqr_hz; sealed, with the frozen protocol's content_sha256, "
+                "a code_tree_sha equal to frozen.code_tree_sha and inputs.rows; it runs only "
+                "with the numpy of dependencies.numpy; the first time is never written again "
+                "once the protocol is frozen"
             ],
+            "metric": (
+                "task 61, tracklab pose metric: per match, period and player, ordered by team "
+                "and number, the windows per band and the medians of cad_s, the step and the "
+                "ankle separation and their ratio, each over the windows with that value finite "
+                "and with its sd propagated over the draws of the same windows; M3's concordance "
+                "and speed_mean_m_s without a propagated error, said in the file; 1925299 is "
+                "recomputed first and 1996435 is loaded only if it gives the committed verdict"
+            ),
         },
         "guard": (
             "1996435 opens only when HEAD's protocol is frozen with a frozen entry after the "
             "design ones; HEAD's pose/ tree is frozen.code_tree_sha; the installed numpy is "
             "dependencies.numpy; HEAD holds pose_verdict.json sealed, answering to the frozen "
-            "protocol's content_sha256 and computed by frozen.code_tree_sha, with P6 alive and "
-            "a finite m4.half_iqr_hz (if M1 or M2 kill on 1925299, 1996435 never opens); and the "
-            "working tree is clean"
+            "protocol's content_sha256 and computed by frozen.code_tree_sha on as many rows as "
+            "the sealed pose_calibration.json in HEAD counted, with P6 alive as the verdict's "
+            "own figures of M1 and M2 say (criteria.verdict_dies_at) and a finite "
+            "m4.half_iqr_hz (if M1 or M2 kill on 1925299, 1996435 never opens); and the working "
+            "tree is clean"
         ),
         "order": [
             "sweep (committed)",
@@ -340,8 +358,10 @@ def build_protocol(
             "evidence": {
                 "denominators": {
                     "what": (
-                        "per match, the players the file lists and the players with a pose: "
-                        "the denominator printed beside M1; counted, never a position"
+                        "per match, the players the file lists and the players with a pose "
+                        "(the denominator printed beside M1) and the rows of a duplicated "
+                        "(player_id, frame), which design.windows.duplicates refuses; counted, "
+                        "never a position"
                     ),
                     "per_match": evidence,
                 }
@@ -370,6 +390,19 @@ def build_protocol(
                         "poses with is_detected false declared; the probe is run again"
                     ),
                 },
+                {
+                    "stage": STAGE_DESIGN,
+                    "task": TASK,
+                    "date": REVISED,
+                    "note": (
+                        "second review of phase B2's first part, before the freeze: the sane "
+                        "instrument printed and read by no rule; the metric's step, separation "
+                        "and ratio with their propagated sd; the guard reading alive from the "
+                        "verdict's figures and its rows against pose_calibration.json; the "
+                        "verdict on the design's numpy; duplicated player-frames refused and "
+                        "counted; the probe is run again"
+                    ),
+                },
             ],
         }
     )
@@ -380,13 +413,15 @@ def render(payload: dict[str, Any]) -> str:
 
 
 def denominators(data_dir: Path, match_id: int) -> dict[str, int] | None:
-    """Players listed and players with a pose, or None when the bronze is absent or a slice."""
+    """Players listed, players with a pose and rows of a duplicated (player_id, frame), or None
+    when the bronze is absent or a slice."""
     handle = CountingHandle(data_dir, match_id)
     if not handle.exists() or not handle.is_whole():
         return None
     return {
         "players_listed": len(handle.frames_present()),
         "players_with_pose": len(handle.frames_posed()),
+        "duplicate_player_frames": handle.duplicate_player_frames(),
     }
 
 
