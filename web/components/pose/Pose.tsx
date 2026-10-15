@@ -38,6 +38,59 @@ declare global {
 
 const RATES: Rate[] = [0.5, 1, 2];
 const START_TILT = 60;
+const SIGNAL_W = 960;
+const SIGNAL_H = 160;
+
+// s(t) of the windows a hook clip carries, under the viewer, with the playhead on the frame the
+// viewer shows (task 63). s is the ankles' separation along the run, in the clip's whole
+// millimetres; the line runs only over the frames of its window, and nothing is drawn between.
+function Signal({ clip, frame, label }: { clip: PoseClip; frame: number; label: (i: number) => string }) {
+  const windows = clip.windows ?? [];
+  if (windows.length === 0) return null;
+  const span = clip.frame_hi - clip.frame_lo;
+  const x = (f: number) => ((f - clip.frame_lo) / span) * SIGNAL_W;
+  const reach = Math.max(1, ...windows.flatMap((w) => w.s_mm.map(Math.abs)));
+  const y = (v: number) => SIGNAL_H / 2 - (v / reach) * (SIGNAL_H / 2 - 8);
+  return (
+    <div className="pose-signal" data-signal>
+      <svg viewBox={`0 0 ${SIGNAL_W} ${SIGNAL_H}`} role="img" aria-label="s(t) of the hook window, with the playhead">
+        <line x1={0} x2={SIGNAL_W} y1={SIGNAL_H / 2} y2={SIGNAL_H / 2} className="axis" />
+        {windows.map((w, k) => (
+          <polyline
+            key={k}
+            data-window={k}
+            data-band={w.band}
+            className={`s-${w.band}`}
+            fill="none"
+            points={w.s_mm.map((v, j) => `${x(w.frame_lo + j)},${y(v)}`).join(" ")}
+          />
+        ))}
+        <line data-playhead data-frame={frame} x1={x(frame)} x2={x(frame)} y1={0} y2={SIGNAL_H} className="playhead" />
+      </svg>
+      {windows.map((w, k) => (
+        <p key={k} data-window-caption={k}>
+          s(t) of {label(w.player)}, {w.band} band, frames <span data-clip-fig={`windows.${k}.frame_lo`}>{w.frame_lo}</span> to{" "}
+          <span data-clip-fig={`windows.${k}.frame_hi`}>{w.frame_hi}</span>: cadence{" "}
+          {w.cadence_hz === null ? (
+            "none"
+          ) : (
+            <>
+              <span data-clip-fig={`windows.${k}.cadence_hz`}>{String(w.cadence_hz)}</span>
+              {w.cadence_sd_hz === null ? null : (
+                <>
+                  {" ± "}
+                  <span data-clip-fig={`windows.${k}.cadence_sd_hz`}>{String(w.cadence_sd_hz)}</span>
+                </>
+              )}{" "}
+              Hz
+            </>
+          )}
+          , in millimetres.
+        </p>
+      ))}
+    </div>
+  );
+}
 
 export function Pose({ clip }: { clip: PoseClip }) {
   const pitch = useRef<HTMLCanvasElement>(null);
@@ -177,6 +230,7 @@ export function Pose({ clip }: { clip: PoseClip }) {
           ))}
         </select>
       </div>
+      <Signal clip={clip} frame={frame.f} label={nameOf} />
       {player !== null ? (
         <div className="pose-follow" data-follow={followed?.[4] ? "skeleton" : "disc"}>
           <canvas ref={follow} width={480} height={480} aria-label="The followed body, enlarged in its own frame" />

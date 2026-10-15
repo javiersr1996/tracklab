@@ -408,3 +408,73 @@ body {
 .pose cite {
   font-size: 1rem;
 }
+
+.pose-stage {
+  min-width: 0;
+}
+
+.pose-clips {
+  margin-bottom: 0.5rem;
+}
+
+.pose-signal svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #1d2327;
+}
+
+.pose-signal .axis {
+  stroke: #596168;
+  stroke-width: 1;
+}
+
+.pose-signal polyline {
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.pose-signal .s-high {
+  stroke: #f2c14e;
+}
+
+.pose-signal .s-low {
+  stroke: #9aa4ad;
+}
+
+.pose-signal .playhead {
+  stroke: #fff;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin: 0.5rem 0 1rem;
+}
+
+.pose table {
+  font-size: 1rem;
+  border-collapse: collapse;
+}
+
+.pose th,
+.pose td {
+  padding: 0.15rem 0.6rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.pose caption {
+  text-align: left;
+  font-size: 1rem;
+  padding-bottom: 0.25rem;
+}
+
+.pose .pose-stages {
+  padding-left: 1.25rem;
+}
+
+.pose .pose-stages code {
+  overflow-wrap: anywhere;
+}

@@ -540,3 +540,71 @@ def test_a_dead_state_publishes_a_stretch_without_a_metric(real_data: Path, tmp_
     assert clip["selection"]["skeletons"] == best
     assert int(table.n_with_pose[(table.frame >= lo) & (table.frame <= hi)].sum()) == best
     assert pose_summary.status_of(pose_summary.load_reports(reports)) == ("dead", "noise")
+
+
+# --- the documents the web's e2e is given ---------------------------------------------------
+
+FIXTURES = REPO / "web" / "e2e" / "fixtures"
+
+
+def site_documents() -> dict[str, dict[str, Any]]:
+    """`pose.json` as the publisher writes it in each state the page has a branch for: alive (the
+    published one), unreplicated (1996435 below the minima of M1 and M2) and dead at M4 (its
+    clips are stretches, chosen without a metric). Built by `build_summary` from the reports
+    changed the way each state changes them, so the page is tested on the publisher's own shape.
+    Regenerate with `python -c "import test_publish_pose_site as t; t.write_documents()"` from
+    `pipeline/tests/unit`."""
+    published = _json(WEB_DATA / SUMMARY_FILE)
+    clips = published["clips"]
+    alive = pose_summary.build_summary(_reports(), clips)
+
+    unreplicated_reports = copy.deepcopy(_reports())
+    confirmation = unreplicated_reports["metric"]["verdicts"]
+    confirmation["p6"] = "unreplicated"
+    confirmation["confirmation"] = {
+        "coverage": {"players_ge_min_high": 4, "players_ge_min_both": 3, "reached": False},
+        "m4": None,
+        "status": "unreplicated",
+    }
+    unreplicated = pose_summary.build_summary(unreplicated_reports, clips)
+
+    dead_reports = copy.deepcopy(_reports())
+    verdicts = dead_reports["metric"]["verdicts"]
+    verdicts["p6"] = "replication_failed"
+    verdicts["confirmation"]["status"] = "replication_failed"
+    verdicts["confirmation"]["m4"].update(median_sd_hz=0.2, dies_at="m2_precision")
+    stretches = []
+    for record in clips:
+        stretch = copy.deepcopy(record)
+        stretch.update(
+            kind="stretch",
+            file=f"pose/stretch_{record['match_id']}.json",
+            selection={"kind": "stretch", "rule": pose_hook.STRETCH_RULE, "skeletons": 1},
+            windows=[],
+        )
+        stretches.append(stretch)
+    dead = pose_summary.build_summary(dead_reports, stretches)
+    return {"alive": alive, "unreplicated": unreplicated, "dead": dead}
+
+
+def write_documents() -> None:
+    for name, document in site_documents().items():
+        text = json.dumps(document, ensure_ascii=False, separators=(",", ":")) + "\n"
+        (FIXTURES / f"pose.{name}.json").write_text(text, encoding="utf-8", newline="\n")
+
+
+def test_the_e2e_documents_are_what_the_publisher_writes_in_each_state() -> None:
+    from jsonschema import Draft202012Validator
+
+    validator = Draft202012Validator(_json(SUMMARY_SCHEMA))
+    documents = site_documents()
+    assert {n: d["status"] for n, d in documents.items()} == {
+        "alive": "alive",
+        "unreplicated": "unreplicated",
+        "dead": "dead",
+    }
+    for name, document in documents.items():
+        assert list(validator.iter_errors(document)) == [], name
+        assert _json(FIXTURES / f"pose.{name}.json") == document, f"regenerate pose.{name}.json"
+    assert documents["alive"] == _json(WEB_DATA / SUMMARY_FILE)
+    assert documents["dead"]["tables"] is None and documents["dead"]["dead_at"] == "M4"

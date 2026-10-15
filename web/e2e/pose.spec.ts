@@ -1,5 +1,11 @@
-import { expect, type Page, type Request, test } from "@playwright/test";
-import type { PoseClip } from "../lib/pose/types";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { expect as baseExpect, type Page, type Request, test } from "@playwright/test";
+import type { PoseClip, PoseSummary } from "../lib/pose/types";
+
+// Eleven workers share one server and the clip is megabytes: the waits are on the page's own
+// state, with room for a loaded machine, and nothing waits on a clock.
+const expect = baseExpect.configure({ timeout: 20_000 });
 
 // `/pose` (task 56): the Body Pose sample in the viewer with its own projection. The viewer is
 // driven from the console through `window.__pose` (state, t, frameIndex, yaw, tilt, skeletons,
@@ -9,6 +15,7 @@ import type { PoseClip } from "../lib/pose/types";
 
 const EXPOSED = !process.env.BASE_URL;
 const CLIP = "/data/pose/1925299_phase406.json";
+const SUMMARY = "/data/pose.json";
 const WIDTHS = [390, 1440];
 
 const resolve = (root: unknown, dotted: string): unknown =>
@@ -179,55 +186,288 @@ test("the viewer plays, pauses, seeks and turns from the console, and draws what
   expect(errors).toEqual([]);
 });
 
-test("every figure on /pose is the clip's, and its three limits sit next to the viewer", async ({ page }) => {
+// Every `data-fig` element holds the value at its path in `pose.json`, and every `data-clip-fig`
+// the value at its path in the clip on show: the text and the number agree with the file.
+async function expectFigures(page: Page, summary: PoseSummary, clip: PoseClip) {
+  const shown = await page
+    .locator("[data-fig], [data-clip-fig]")
+    .evaluateAll((els) =>
+      els.map((e) => [e.getAttribute("data-fig"), e.getAttribute("data-clip-fig"), (e.textContent ?? "").trim()]),
+    );
+  const wrong: string[] = [];
+  for (const [fig, clipFig, text] of shown) {
+    const [root, p] = fig !== null ? [summary, fig] : [clip, clipFig ?? ""];
+    const value = resolve(root, p);
+    if (value === undefined) wrong.push(`${p}: not in the file`);
+    else if (text !== String(value)) wrong.push(`${p}: page "${text}", file ${String(value)}`);
+    else if (typeof value === "number" && Number(text) !== value) wrong.push(`${p}: ${text}`);
+  }
+  expect(wrong.slice(0, 5)).toEqual([]);
+  return shown.map(([fig, clipFig]) => fig ?? clipFig ?? "");
+}
+
+// The prose is what is left once the figures, the code, the viewer, the clip selector and the
+// tables are taken out: no digit is typed in it.
+const proseOf = (page: Page) =>
+  page.evaluate(() => {
+    const main = document.querySelector("main")!.cloneNode(true) as HTMLElement;
+    main
+      .querySelectorAll("[data-fig], [data-clip-fig], code, figure.pose-viewer, .pose-clips, table")
+      .forEach((e) => e.remove());
+    return main.textContent ?? "";
+  });
+
+const FORBIDDEN = /\b(faster|better|efficient|asymmetric|asymmetry|fatigue|injury|injuries)\b/i;
+const HEIGHT = /\b(height|heights|tall|elevation|altitude|jump|jumps)\b/i;
+
+async function publishedSummary(page: Page): Promise<PoseSummary> {
+  return (await (await page.request.get(SUMMARY)).json()) as PoseSummary;
+}
+
+const fixture = (name: "alive" | "unreplicated" | "dead"): PoseSummary =>
+  JSON.parse(readFileSync(path.join(process.cwd(), "e2e", "fixtures", `pose.${name}.json`), "utf-8"));
+
+// Hands the page `summary` as `/data/pose.json`. A file dead at M4 names stretches no build has
+// published, so the hook clips stand in for them, without their windows.
+async function openWith(page: Page, summary: PoseSummary) {
+  const published = await publishedSummary(page);
+  const clips = new Map<string, PoseClip>();
+  for (const record of summary.clips) {
+    const real = published.clips.find((c) => c.match_id === record.match_id)!;
+    const clip = (await (await page.request.get(`/data/${real.file}`)).json()) as PoseClip;
+    clips.set(
+      record.file,
+      record.kind === real.kind ? clip : { ...clip, selection: { kind: record.kind, rule: record.selection.rule }, windows: [] },
+    );
+  }
+  await page.route("**/data/pose.json", (route) => route.fulfill({ json: summary }));
+  for (const [file, clip] of clips) await page.route(`**/data/${file}`, (route) => route.fulfill({ json: clip }));
+  return { errors: await open(page), clips };
+}
+
+test("every figure on /pose is a file's, its three limits sit next to the viewer, and the state shows", async ({
+  page,
+}) => {
   const clip = await clipOf(page);
+  const summary = await publishedSummary(page);
   const errors = await open(page);
 
   await expect(page.locator("h1")).toHaveText(`${clip.joints.length} joints`);
-  const shown = await page
-    .locator("[data-fig]")
-    .evaluateAll((els) => els.map((e) => [e.getAttribute("data-fig"), (e.textContent ?? "").trim()]));
-  const wrong: string[] = [];
-  for (const [p, text] of shown) {
-    const value = resolve(clip, p ?? "");
-    if (value === undefined) wrong.push(`${p}: not in the clip`);
-    else if (text !== String(value)) wrong.push(`${p}: page "${text}", clip ${String(value)}`);
+  const paths = await expectFigures(page, summary, clip);
+  for (const root of ["limits", "protocol", "coverage", "tables", "verdict"]) {
+    expect(paths.filter((q) => q.startsWith(`${root}.`)).length, `no figure of ${root}`).toBeGreaterThan(0);
   }
-  expect(wrong).toEqual([]);
-  const roots = new Set(shown.map(([p]) => (p ?? "").split(".")[0]));
-  for (const root of ["joints", "match_id", "period", "frame_lo", "frame_hi", "fps", "limits", "coverage"]) {
-    expect(roots, `no figure of ${root}`).toContain(root);
+  for (const p of ["joints.length", "match_id", "period", "frame_lo", "frame_hi", "fps", "coverage.with_joints"]) {
+    expect(paths, p).toContain(p);
   }
-  for (const p of ["p90_mae_cm.median", "p90_mae_cm.p90", "with_joints", "player_frames", "skeletons_per_frame.max"]) {
-    expect(shown.map(([q]) => q), p).toContain(`coverage.${p}`);
-  }
-  console.log(`/pose: ${shown.length} figures checked against the clip`);
+  console.log(`/pose: ${paths.length} figures checked against pose.json and the clip`);
 
-  // The three limits, word for word from the clip, with their README lines.
+  // The state of the project, from the file.
+  const status = page.locator("[data-section=status]");
+  await expect(status).toHaveAttribute("data-status", summary.status);
+  await expect(status).toHaveAttribute("data-dead-at", summary.dead_at ?? "");
+
+  // The three limits, word for word from the file, with their README lines, beside the viewer.
   const limits = page.locator("aside.pose-limits [data-limit]");
-  await expect(limits).toHaveCount(clip.limits.length);
-  for (const [j, limit] of clip.limits.entries()) {
+  await expect(limits).toHaveCount(summary.limits.length);
+  for (const [j, limit] of summary.limits.entries()) {
     await expect(limits.nth(j)).toHaveAttribute("data-limit", limit.id);
     await expect(limits.nth(j).locator("blockquote")).toHaveText(limit.text);
     await expect(limits.nth(j).locator("cite")).toHaveText(limit.readme);
   }
 
-  // No figure typed into the prose, and nothing that reads z as a height.
-  const prose = await page.evaluate(() => {
-    const main = document.querySelector("main")!.cloneNode(true) as HTMLElement;
-    main.querySelectorAll("[data-fig], code, figure.pose-viewer").forEach((e) => e.remove());
-    return main.textContent ?? "";
-  });
+  // No figure typed into the prose, nothing that reads z as a height (the scope line says there
+  // is none), none of the forbidden words.
+  const prose = await proseOf(page);
   expect(prose.match(/\d+/g), "a figure typed into the prose").toBeNull();
-  expect(prose).not.toMatch(/\b(height|heights|tall|elevation|altitude|jump|jumps)\b/i);
+  const scope = (await page.locator("[data-scope]").first().textContent()) ?? "";
+  expect(prose.replace(scope, "")).not.toMatch(HEIGHT);
+  expect(await page.locator("main").innerHTML()).not.toMatch(FORBIDDEN);
   expect(errors).toEqual([]);
 });
 
-for (const width of WIDTHS) {
-  test(`/pose at ${width} px: no sideways scroll, no overlaps, text of 16 px or more`, async ({ page }) => {
+test("the tables carry a denominator in every row, the sd beside each value, and keep team and shirt order", async ({
+  page,
+}) => {
+  const summary = await publishedSummary(page);
+  const tables = summary.tables!;
+  const c = (name: string) => tables.columns.indexOf(name);
+  await open(page);
+  expect(await page.locator("table th button, table th [role=button], table th a").count(), "a sort control").toBe(0);
+  for (const match of Object.keys(tables.matches)) {
+    const rows = tables.matches[match];
+    const wanted = rows.flatMap((row, i) => (row[c("period")] === "all" ? [i] : []));
+    const table = page.locator(`table[data-table=players][data-match="${match}"]`);
+    await expect(table.locator("tbody tr")).toHaveCount(wanted.length);
+    const seen = await table.locator("tbody tr").evaluateAll((trs) =>
+      trs.map((tr) => ({
+        row: tr.getAttribute("data-row"),
+        figs: Array.from(tr.querySelectorAll("[data-fig]")).map((e) => e.getAttribute("data-fig")),
+      })),
+    );
+    expect(seen.map((r) => r.row)).toEqual(wanted.map((i) => `${match}.${i}`));
+    for (const [k, i] of wanted.entries()) {
+      const base = `tables.matches.${match}.${i}`;
+      // The denominator: windows and the windows finite in s, in the row.
+      expect(seen[k].figs, `row ${base}: its denominator`).toEqual(
+        expect.arrayContaining([`${base}.${c("windows")}`, `${base}.${c("finite_s")}`]),
+      );
+      // Every value shown with a propagated sd has the sd's figure next to it.
+      for (const [v, sd] of [
+        ["cad_s_p50_hz", "cad_s_sd_hz"],
+        ["step_length_p50_m", "step_length_sd_m"],
+        ["ankle_separation_p50_m", "ankle_separation_sd_m"],
+        ["separation_over_step", "separation_over_step_sd"],
+      ]) {
+        const row = rows[i];
+        if (row[c(v)] === null) continue;
+        expect(seen[k].figs).toContain(`${base}.${c(v)}`);
+        if (row[c(sd)] !== null) expect(seen[k].figs, `${base}: ${v} without its sd`).toContain(`${base}.${c(sd)}`);
+      }
+    }
+    // By team, then shirt number: never by a metric.
+    const order = wanted.map((i) => [rows[i][c("team_id")], rows[i][c("number")]] as [number, number]);
+    expect(order).toEqual([...order].sort((a, b) => a[0] - b[0] || a[1] - b[1]));
+  }
+  // M3 beside the cadence, without an error, and saying it.
+  await expect(page.locator("[data-section=m3]")).toContainText("no propagated error");
+});
+
+test("the hook clip paints s(t) under the viewer, and the playhead follows the frame shown", async ({ page }) => {
+  test.skip(!EXPOSED, "window.__pose exists only in dev and test builds");
+  const summary = await publishedSummary(page);
+  expect(summary.status).not.toBe("dead");
+  await open(page);
+  expect(await page.locator("[data-signal]").count(), "the sample has no window").toBe(0);
+  for (const record of summary.clips) {
+    const clip = (await (await page.request.get(`/data/${record.file}`)).json()) as PoseClip;
+    await page.getByLabel("Clip", { exact: true }).selectOption(record.file);
+    await page.waitForFunction((f) => window.__pose?.state === "idle" && window.__pose.frame === f, clip.frames[0].f);
+    expect(clip.windows!.length).toBeGreaterThan(0);
+    await expectFigures(page, summary, clip);
+    // One polyline per window, one point per frame of the window, from the clip's own s_mm.
+    const lines = page.locator("[data-signal] polyline");
+    await expect(lines).toHaveCount(clip.windows!.length);
+    for (const [k, w] of clip.windows!.entries()) {
+      const n = await lines.nth(k).evaluate((el) => (el.getAttribute("points") ?? "").trim().split(/\s+/).length);
+      expect(n).toBe(w.s_mm.length);
+      expect(w.s_mm.length).toBe(w.frame_hi - w.frame_lo + 1);
+    }
+    // The playhead is on the frame the viewer shows, across a spread of seeks.
+    for (let j = 0; j < clip.frames.length; j += 17) {
+      const at = await seek(page, clip.frames[j].t);
+      expect(at.frame).toBe(clip.frames[j].f);
+      await expect(page.locator("[data-playhead]")).toHaveAttribute("data-frame", String(at.frame));
+    }
+    await seek(page, clip.frames[0].t);
+    const first = await page.locator("[data-playhead]").evaluate((el) => Number(el.getAttribute("x1")));
+    await seek(page, clip.frames[clip.frames.length - 1].t);
+    const last = await page.locator("[data-playhead]").evaluate((el) => Number(el.getAttribute("x1")));
+    expect(last).toBeGreaterThan(first);
+    // The hook player has a skeleton in every frame of his window: nothing painted from nothing.
+    const hook = clip.windows![0];
+    for (const frame of clip.frames.filter((f) => f.f >= hook.frame_lo && f.f <= hook.frame_hi)) {
+      const entry = frame.p.find((e) => e[0] === hook.player);
+      expect(entry?.[4], `frame ${frame.f}`).toBeTruthy();
+    }
+  }
+});
+
+// The three states the page has a branch for, each handed to it as a file (as /runs is).
+for (const name of ["alive", "unreplicated", "dead"] as const) {
+  test(`the ${name} branch shows its own state, with its figures from the file`, async ({ page }) => {
+    const summary = fixture(name);
+    const { errors, clips } = await openWith(page, summary);
+    const status = page.locator("[data-section=status]");
+    await expect(status).toHaveAttribute("data-status", summary.status);
+    await expect(status).toHaveAttribute("data-dead-at", summary.dead_at ?? "");
+    await expectFigures(page, summary, await clipOf(page));
+    // The word that tells the states apart is in the text, and only the right one.
+    const text = (await status.innerText()).trim();
+    if (summary.status === "alive") expect(text).toMatch(/^Alive\./);
+    if (summary.status === "unreplicated") expect(text).toMatch(/^Not replicated by coverage; not dead\./);
+    if (summary.status === "dead") expect(text).toMatch(new RegExp(`^Dead at ${summary.dead_at}`));
+    if (summary.status !== "alive") expect(text).not.toMatch(/^Alive/);
+    if (summary.status !== "dead") expect(text).not.toMatch(/^Dead/);
+    // Tables where the project lives or is unreplicated, none where it died; the viewer in all three.
+    await expect(page.locator("[data-section=tables]")).toHaveCount(summary.tables === null ? 0 : 1);
+    await expect(page.locator("[data-section=no-tables]")).toHaveCount(summary.tables === null ? 1 : 0);
+    await expect(page.locator("figure.pose-viewer")).toBeVisible();
+    await expect(page.locator("aside.pose-limits [data-limit]")).toHaveCount(3);
+    // The clips of the file: a hook paints its window, a stretch has none to paint.
+    for (const record of summary.clips) {
+      await page.getByLabel("Clip", { exact: true }).selectOption(record.file);
+      await expect(page.locator("main.pose")).toHaveAttribute("data-loaded", "true");
+      await expect(page.locator("[data-section=clip] [data-clip-fig='selection.rule']")).toHaveText(
+        record.selection.rule,
+      );
+      await expect(page.locator("[data-signal]")).toHaveCount(record.kind === "hook" ? 1 : 0);
+      await expectFigures(page, summary, clips.get(record.file)!);
+    }
+    expect(await page.locator("main").innerHTML()).not.toMatch(FORBIDDEN);
+    const prose = await proseOf(page);
+    expect(prose.match(/\d+/g), "a figure typed into the prose").toBeNull();
+    expect(errors).toEqual([]);
+  });
+}
+
+test("a file dead at M1, M2 or the noise is told apart from a live one", async ({ page }) => {
+  const dead = fixture("dead");
+  const alive = fixture("alive");
+  const calibration = alive.verdict.calibration as Record<string, number>;
+  const thresholds = alive.verdict.thresholds as Record<string, number>;
+  const shapes: Record<string, Record<string, unknown>> = {
+    noise: { source: "pose_calibration.json", chosen: null },
+    M1: {
+      source: "pose_verdict.json",
+      M1: { players: calibration.m1_players, min_players: thresholds.min_players, dies: true },
+      dies_at: "m1",
+      alive: false,
+    },
+    M2: {
+      source: "pose_verdict.json",
+      M2: {
+        players_with_both: calibration.m2_players,
+        positive: calibration.m2_positive,
+        sign_share: thresholds.sign_share,
+        median_sd_hz: calibration.median_sd_hz,
+        half_iqr_hz: calibration.half_iqr_hz,
+        dies_at: "m2_precision",
+      },
+      dies_at: "m2_precision",
+      alive: false,
+    },
+  };
+  for (const [deadAt, verdict] of Object.entries(shapes)) {
+    const summary = structuredClone(dead);
+    summary.dead_at = deadAt as PoseSummary["dead_at"];
+    summary.verdict = verdict as PoseSummary["verdict"];
+    summary.clips = summary.clips.slice(0, 1);
+    summary.opened = { ...summary.opened, confirmation_match_opened: false, not_opened: [summary.protocol.confirmation] };
+    await page.unroute("**/data/pose.json");
+    await openWith(page, summary);
+    const status = page.locator("[data-section=status]");
+    await expect(status).toHaveAttribute("data-status", "dead");
+    await expect(status).toHaveAttribute("data-dead-at", deadAt);
+    await expect(status).toHaveText(deadAt === "noise" ? /^Dead at the noise/ : new RegExp(`^Dead at ${deadAt}`));
+    await expectFigures(page, summary, await clipOf(page));
+    await expect(page.locator("[data-section=no-tables]")).toHaveCount(1);
+  }
+});
+
+for (const [width, shown] of WIDTHS.flatMap((w) => [w, w].map((x, k) => [x, k === 0 ? "sample" : "hook"] as const))) {
+  test(`/pose at ${width} px with the ${shown} clip: no sideways scroll, no overlaps, text of 16 px or more`, async ({
+    page,
+  }) => {
     await page.setViewportSize({ width, height: 900 });
-    const clip = await clipOf(page);
     await open(page);
+    let clip = await clipOf(page);
+    if (shown === "hook") {
+      const record = (await publishedSummary(page)).clips[0];
+      clip = (await (await page.request.get(`/data/${record.file}`)).json()) as PoseClip;
+      await page.getByLabel("Clip", { exact: true }).selectOption(record.file);
+      await expect(page.locator("[data-signal]")).toBeVisible();
+    }
     // Follow a player, so his own panel is part of the layout.
     await page.getByLabel("Player", { exact: true }).selectOption(String(clip.frames[0].p.find((e) => e[4] !== null)![0]));
     await expect(page.locator(".pose-follow canvas")).toBeVisible();
