@@ -5,12 +5,12 @@
   "time": "first: no cadence computed",
   "written": "2026-10-15",
   "match_id": 1925299,
-  "head": "caef9f396a17bd2d78087254b9f56bffce473493",
-  "code_tree_sha": "9ff4ab70b8d233d55930a3ef751517d4488f44ad",
+  "head": "b2b4bf55a7e5a9eb9cef5cb76bceb134f11b391c",
+  "code_tree_sha": "645ffe3113cca6e0d0fb5dcfdab54c0ce490bf5f",
   "protocol": {
     "stage": "design",
-    "fingerprint": "bd8a897f770723056468bb0c055ec77764cd03169ac714ca63f32fdd30d71843",
-    "content_sha256": "5e7d5414667539a3390f79968244083ea4494fb7404979560c6a20aff50b9f0d"
+    "fingerprint": "8d1e7362d8ffb1b479ee05fed792d4130901f49adc330fedba142c68f5ae8449",
+    "content_sha256": "383fc248ad3b269ed68a07e49e54faa1ebbb2733b86194ac053ced69ba17f080"
   },
   "inputs": {
     "sweep": {
@@ -1972,5 +1972,5 @@
     },
     "verdict": "W 50, cap 25 cm"
   },
-  "content_sha256": "3314bcab9984af4791a03b6a528357f03eead3541ab8cd654ae9d55a504bb0b4"
+  "content_sha256": "271fa460f1c6f91a51e843c1b4dc6d8a1c9e791f350058f7a1f6afb7a82ab548"
 }
