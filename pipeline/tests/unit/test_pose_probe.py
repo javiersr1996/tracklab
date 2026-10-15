@@ -232,3 +232,20 @@ def test_the_counts_the_rule_reads_are_the_ankles_cap_summed_over_periods() -> N
     ]
     assert probe.counts_for_rule(table, 37, 20) == ([0, 10], [0, 5])
     assert criteria.MIN_WINDOWS == 5
+
+
+def test_the_versioned_calibration_answers_to_the_committed_protocol_and_follows_its_rule(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """`reports/pose_calibration.json` as the first time wrote it: sealed, the calibration
+    match, the protocol and the sweep committed in HEAD, a rule that follows its own figures,
+    no cadence in it, and `--check` PARTIAL on the fixtures (a slice of 1925299)."""
+    text = (REPORTS / probe.CALIBRATION_NAME).read_text(encoding="utf-8")
+    payload = json.loads(text)
+    assert probe.consistency_problems(payload, 1925299) == []
+    assert payload["time"] == probe.TIME  # "first: no cadence computed", the one mention
+    assert text.count("cadence") == 1 and "cad_" not in text
+    assert payload["inputs"]["players_with_pose"] == 32
+    fixtures = PIPELINE / "tests" / "fixtures" / "data"
+    assert probe.run_pose_probe(fixtures, REPORTS, CLIP, check=True) == 0
+    assert "PARTIAL 0/1" in capsys.readouterr().out

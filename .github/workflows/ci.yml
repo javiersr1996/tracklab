@@ -77,6 +77,9 @@ jobs:
       # Task 60, phase B2: the protocol against the code; the fixtures hold a slice of 1925299,
       # so the denominators travel as written and it prints PARTIAL 0/2.
       - run: uv run tracklab pose protocol --check
+      # The probe's first time recomputes only on a whole 1925299 (about 20 minutes); on the
+      # fixtures it checks the seal, the protocol and the rule as written (PARTIAL 0/1).
+      - run: uv run tracklab pose probe --check
       # Task 44 by hand, as Javier will run it against Neon: two loads of the same gold (the
       # second prints inserted=0 updated=0 deleted=0) and the snapshot, to a scratch directory.
       # The tests below assert all of it.
