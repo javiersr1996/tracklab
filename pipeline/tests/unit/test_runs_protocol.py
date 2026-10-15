@@ -866,15 +866,18 @@ def test_this_repositorys_head_keeps_the_held_out_closed() -> None:
 def test_the_split_lists_are_read_only_in_data_and_protocol() -> None:
     """`held_out` and `["split"]` live in `runs/data.py` and `runs/protocol.py` alone, so no
     other module can read a half from a file; `repo_root` in `data.py` alone, and nothing
-    under src/ monkeypatches it, the one way to point the guard at another repository."""
+    under src/ monkeypatches it, the one way to point the guard at another repository. P6's
+    guard on 1996435 (`pose/data.py`, task 60) is the one other module allowed `["split"]`
+    and `repo_root`, for its own protocol."""
     src = PIPELINE / "src" / "tracklab"
     for path in sorted(src.rglob("*.py")):
         rel = path.relative_to(src).as_posix()
         text = path.read_text(encoding="utf-8")
         if rel not in ("runs/data.py", "runs/protocol.py"):
             assert "held_out" not in text, rel
+        if rel not in ("runs/data.py", "runs/protocol.py", "pose/data.py"):
             assert '["split"]' not in text, rel
-        if rel != "runs/data.py":  # its docstring names both, as the only way in for tests
+        if rel not in ("runs/data.py", "pose/data.py"):  # their docstrings name it for tests
             assert "repo_root" not in text, rel
             assert "monkeypatch" not in text, rel
         assert "setattr(" not in text, rel

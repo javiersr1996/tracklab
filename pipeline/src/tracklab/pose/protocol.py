@@ -371,12 +371,11 @@ def run_pose_protocol(
 
 
 def _summary(payload: dict[str, Any], status: str) -> str:
-    split = payload["design"]["split"]
     per_match = payload["evidence"]["denominators"]["per_match"]
     listed = {m: (c or {}).get("players_listed") for m, c in per_match.items()}
     return (
-        f"pose protocol: bronze={status} calibration={split['calibration']} "
-        f"confirmation={split['confirmation']} players_listed={listed} "
+        f"pose protocol: bronze={status} calibration={list(CALIBRATION)} "
+        f"confirmation={list(CONFIRMATION)} players_listed={listed} "
         f"sweep={payload['design']['sweep']['sha256'][:12]} "
         f"fingerprint={payload['fingerprint'][:12]}"
     )
