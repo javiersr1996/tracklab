@@ -51,6 +51,23 @@ const IN_THIS_VIEWER: Record<string, string> = {
     "Positions are the pose file's own x and y, not the tracking's, and frames are matched by number, never by timestamp.",
 };
 
+// What each sub-criterion of `dies_at` (criteria.verdict_dies_at) says, in words.
+const REASON: Record<string, string> = {
+  m1: "too few players have enough windows with a cadence in the fast band",
+  m2_coverage: "too few players have enough windows with a cadence in both bands",
+  m2_sign: "too few players have a higher cadence in the fast band than in the slow one",
+  m2_precision: "the median propagated sd is larger than the half spread between players frozen as the bar",
+};
+
+function Reason({ doc, p }: { doc: PoseSummary; p: string }) {
+  const value = String(at(doc, p));
+  return (
+    <>
+      <code data-fig={p}>{value}</code>: {REASON[value] ?? "a sub-criterion this page does not know"}
+    </>
+  );
+}
+
 function Status({ doc }: { doc: PoseSummary }) {
   const { status, dead_at: deadAt } = doc;
   let body: ReactNode;
@@ -80,8 +97,8 @@ function Status({ doc }: { doc: PoseSummary }) {
   } else if (deadAt === "M4") {
     body = (
       <>
-        Dead at <code>M4</code>. Match <S doc={doc} p="protocol.confirmation" /> did not replicate: the
-        median propagated sd is <S doc={doc} p="verdict.confirmation.m4.median_sd_hz" /> Hz against the{" "}
+        Dead at <code>M4</code>, by <Reason doc={doc} p="verdict.confirmation.m4.dies_at" />. Match{" "}
+        <S doc={doc} p="protocol.confirmation" /> did not replicate: the median propagated sd is <S doc={doc} p="verdict.confirmation.m4.median_sd_hz" /> Hz against the{" "}
         <S doc={doc} p="verdict.confirmation.m4.half_iqr_hz" /> Hz frozen, with{" "}
         <S doc={doc} p="verdict.confirmation.m4.m2_players" /> players in both bands.
       </>
@@ -97,7 +114,8 @@ function Status({ doc }: { doc: PoseSummary }) {
   } else if (deadAt === "M2") {
     body = (
       <>
-        Dead at <code>M2</code>. Match <S doc={doc} p="protocol.calibration" />:{" "}
+        Dead at <code>M2</code>, by <Reason doc={doc} p="verdict.dies_at" />. Match{" "}
+        <S doc={doc} p="protocol.calibration" />:{" "}
         <S doc={doc} p="verdict.M2.positive" /> of <S doc={doc} p="verdict.M2.players_with_both" /> players
         have a higher cadence in the fast band, and the median propagated sd is{" "}
         <S doc={doc} p="verdict.M2.median_sd_hz" /> Hz against <S doc={doc} p="verdict.M2.half_iqr_hz" />{" "}
@@ -233,7 +251,14 @@ function MetricTables({ doc }: { doc: PoseSummary }) {
 function Concordance({ doc }: { doc: PoseSummary }) {
   const tables = doc.tables;
   if (tables === null) return null;
-  const [number, player, period, band] = ["number", "player_id", "period", "band"].map((n) => col(doc, n));
+  const [number, player, period, band, windows, finite] = [
+    "number",
+    "player_id",
+    "period",
+    "band",
+    "windows",
+    "finite_s",
+  ].map((n) => col(doc, n));
   const diff = col(doc, "m3_abs_diff_p50_hz");
   const nan = col(doc, "m3_nan_h_share");
   return (
@@ -247,10 +272,15 @@ function Concordance({ doc }: { doc: PoseSummary }) {
       {Object.keys(tables.matches).map((match) => (
         <div className="table-scroll" key={match}>
           <table data-table="m3" data-match={match}>
+            <caption>
+              Match <S doc={doc} p={`protocol.${match === String(doc.protocol.calibration) ? "calibration" : "confirmation"}`} />{": the fast band, by team and shirt number"}
+            </caption>
             <thead>
               <tr>
                 <th>no.</th>
                 <th>player</th>
+                <th>windows</th>
+                <th>finite in s</th>
                 <th>median gap between the two cadences, Hz</th>
                 <th>share of windows with no vertical cadence</th>
               </tr>
@@ -263,6 +293,8 @@ function Concordance({ doc }: { doc: PoseSummary }) {
                   <tr key={i} data-row={`${match}.${i}`}>
                     <td><S doc={doc} p={`${r}.${number}`} /></td>
                     <td><S doc={doc} p={`${r}.${player}`} /></td>
+                    <td><S doc={doc} p={`${r}.${windows}`} /></td>
+                    <td><S doc={doc} p={`${r}.${finite}`} /></td>
                     <td><S doc={doc} p={`${r}.${diff}`} /></td>
                     <td><S doc={doc} p={`${r}.${nan}`} /></td>
                   </tr>
@@ -290,10 +322,17 @@ function Protocol({ doc }: { doc: PoseSummary }) {
       <h2>The protocol, in the order it was written</h2>
       <p>
         Match <S doc={doc} p="protocol.calibration" /> calibrates and match{" "}
-        <S doc={doc} p="protocol.confirmation" /> confirms. The window is <S doc={doc} p="protocol.width" />{" "}
-        frames and the cap on the ankles&apos; predicted error is <S doc={doc} p="protocol.cap_cm" /> cm,
-        both frozen before the confirmation match was read. The fast band starts at{" "}
-        <S doc={doc} p="protocol.bands.high_m_s_from" /> m/s.
+        <S doc={doc} p="protocol.confirmation" /> confirms.{" "}
+        {doc.protocol.width === null ? (
+          <>The window and the cap were never frozen: the rule that chooses them found no cell.</>
+        ) : (
+          <>
+            The window is <S doc={doc} p="protocol.width" /> frames and the cap on the ankles&apos; predicted
+            error is <S doc={doc} p="protocol.cap_cm" /> cm, both frozen before the confirmation match was
+            read.
+          </>
+        )}{" "}
+        The fast band starts at <S doc={doc} p="protocol.bands.high_m_s_from" /> m/s.
       </p>
       <ol className="pose-stages">
         {doc.protocol.stages.map((stage, i) => (
@@ -417,7 +456,7 @@ function View({
       {doc.tables === null ? (
         <section data-section="no-tables">
           <h2>No table is published</h2>
-          <p>The project died before it could say anything per player, so none is published.</p>
+          <p>A project that died is published without per-player tables.</p>
         </section>
       ) : (
         <section data-section="tables">

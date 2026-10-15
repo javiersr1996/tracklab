@@ -23,7 +23,9 @@ interface PoseState {
   skeletons: number;
   discs: number;
   // The followed player and what his own panel shows.
-  player: { i: number; shows: "skeleton" | "disc" } | null;
+  // `absent`: the clip lists him in no pose or disc in this frame (a clip of a whole match lists only
+  // the players with a pose), so the panel is empty.
+  player: { i: number; shows: "skeleton" | "disc" | "absent" } | null;
   // One joint of one body as projected for the drawing, in metres of the body frame.
   probe: Probe | null;
   // Animation frames run, paused or not: a pause holds `t` while this keeps counting.
@@ -117,7 +119,13 @@ export function Pose({ clip }: { clip: PoseClip }) {
       const drawn = ctx ? drawPitch(ctx, clip, frame, camera, player) : null;
       const entry = frame.p.find((e) => e[0] === player);
       const followCtx = follow.current?.getContext("2d");
-      const shows = entry && followCtx ? drawFollow(followCtx, clip, entry, camera) : null;
+      let shows: "skeleton" | "disc" | "absent" | null = null;
+      if (followCtx && entry) shows = drawFollow(followCtx, clip, entry, camera);
+      else if (followCtx && player !== null) {
+        followCtx.setTransform(1, 0, 0, 1, 0, 0);
+        followCtx.clearRect(0, 0, followCtx.canvas.width, followCtx.canvas.height);
+        shows = "absent";
+      }
       if (EXPOSE && drawn) {
         window.__pose = {
           state: engine.state,
@@ -129,7 +137,7 @@ export function Pose({ clip }: { clip: PoseClip }) {
           tilt,
           skeletons: drawn.skeletons,
           discs: drawn.discs,
-          player: entry && shows ? { i: entry[0], shows } : null,
+          player: player !== null && shows ? { i: player, shows } : null,
           probe: drawn.probe,
           ticks: ticks.current,
         };
@@ -232,13 +240,15 @@ export function Pose({ clip }: { clip: PoseClip }) {
       </div>
       <Signal clip={clip} frame={frame.f} label={nameOf} />
       {player !== null ? (
-        <div className="pose-follow" data-follow={followed?.[4] ? "skeleton" : "disc"}>
+        <div className="pose-follow" data-follow={followed ? (followed[4] ? "skeleton" : "disc") : "absent"}>
           <canvas ref={follow} width={480} height={480} aria-label="The followed body, enlarged in its own frame" />
           <p>
             {nameOf(player)}:{" "}
-            {followed?.[4]
-              ? "the pose in this frame, centred on its centroid, over a grid through it."
-              : "no pose in this frame, so the disc, as on the pitch."}
+            {followed
+              ? followed[4]
+                ? "the pose in this frame, centred on its centroid, over a grid through it."
+                : "no pose in this frame, so the disc, as on the pitch."
+              : "no pose in this frame and the clip lists no disc for him: nothing is drawn."}
           </p>
         </div>
       ) : null}
