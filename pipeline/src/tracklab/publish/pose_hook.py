@@ -207,10 +207,10 @@ def coverage_of(frames: list[PoseFrame], table: FrameTable) -> dict[str, Any]:
         "joint_observations": int(mae.size),
         "skeletons_per_frame": {"min": min(per_frame), "max": max(per_frame)},
         "p90_mae_cm": {
-            "min": float(mae.min()),
-            "median": float(np.median(mae)),
-            "p90": float(np.percentile(mae, 90)),
-            "max": float(mae.max()),
+            "min": round(float(mae.min()), 4),
+            "median": round(float(np.median(mae)), 4),
+            "p90": round(float(np.percentile(mae, 90)), 4),
+            "max": round(float(mae.max()), 4),
         },
     }
 
