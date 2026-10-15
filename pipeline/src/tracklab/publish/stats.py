@@ -28,10 +28,9 @@ SPORTS = ("basketball", "football")
 
 def raw_bytes(manifest_path: Path) -> dict[str, int]:
     """Every file of each source, as `tracklab freeze` pinned it."""
-    by_sport = {
-        source.sport: sum(f.bytes for f in source.files)
-        for source in load_manifest(manifest_path).sources
-    }
+    by_sport: dict[str, int] = {}
+    for source in load_manifest(manifest_path).sources:  # a sport can have several sources
+        by_sport[source.sport] = by_sport.get(source.sport, 0) + sum(f.bytes for f in source.files)
     return {**by_sport, "total": sum(by_sport.values())}
 
 

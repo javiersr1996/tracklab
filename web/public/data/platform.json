@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "title": "2.3 GB in, 3.5 MB out",
-  "subtitle": "1.5 MB to watch, 2.1 MB to query",
+  "title": "3.6 GB in, 7.4 MB out",
+  "subtitle": "5.4 MB to watch, 2.1 MB to query",
   "run": {
-    "git_sha": "457cb135e3f4a5a9ba7b457267b47535ec95bb61",
-    "started_utc": "2026-10-13T14:57:18+00:00",
-    "finished_utc": "2026-10-13T15:13:52+00:00",
-    "wall_seconds": 994.443,
+    "git_sha": "67f72f7f9f1d2599c3b68f4f6bb4d3430a3290bd",
+    "started_utc": "2026-10-15T19:39:49+00:00",
+    "finished_utc": "2026-10-15T19:50:38+00:00",
+    "wall_seconds": 649.688,
     "host": {
       "system": "Windows",
       "cpus": 22,
@@ -23,57 +23,57 @@
   "layers": [
     {
       "layer": "raw",
-      "files": 120,
+      "files": 122,
       "rows": null,
-      "bytes": 2316182304,
-      "seconds": 9.0,
-      "seconds_sum": 11.4,
-      "bytes_pinned": 2316182304,
-      "bytes_read": 3736408087,
+      "bytes": 3583918346,
+      "seconds": 9.1,
+      "seconds_sum": 17.2,
+      "bytes_pinned": 3583918346,
+      "bytes_read": 10432244078,
       "downloaded": 0,
-      "verified": 120
+      "verified": 122
     },
     {
       "layer": "bronze",
-      "files": 390,
-      "rows": 31358054,
-      "bytes": 445275560,
-      "seconds": 196.5,
-      "seconds_sum": 477.3
+      "files": 394,
+      "rows": 34767903,
+      "bytes": 1170828672,
+      "seconds": 577.1,
+      "seconds_sum": 1009.7
     },
     {
       "layer": "silver",
       "files": 66,
       "rows": 29521069,
-      "bytes": 251116190,
-      "seconds": 188.7,
-      "seconds_sum": 188.7
+      "bytes": 251120477,
+      "seconds": 163.3,
+      "seconds_sum": 163.3
     },
     {
       "layer": "gold",
       "files": 10,
       "rows": 371009,
-      "bytes": 1954590,
-      "seconds": 61.2,
-      "seconds_sum": 61.2
+      "bytes": 1954688,
+      "seconds": 45.1,
+      "seconds_sum": 45.1
     },
     {
       "layer": "quality",
       "files": 6,
       "rows": 910,
       "bytes": 57648,
-      "seconds": 218.9,
-      "seconds_sum": 302.7
+      "seconds": 177.9,
+      "seconds_sum": 262.8
     },
     {
       "layer": "publish",
-      "files": 28,
+      "files": 32,
       "rows": null,
-      "bytes": 3514119,
-      "seconds": 15.5,
-      "seconds_sum": 24.2,
-      "watch_files": 18,
-      "watch_bytes": 1460018,
+      "bytes": 7448633,
+      "seconds": 7.3,
+      "seconds_sum": 13.3,
+      "watch_files": 22,
+      "watch_bytes": 5394532,
       "query_files": 10,
       "query_bytes": 2054101,
       "note": "split by use: to watch, the possessions and the JSON the other pages are built from; to query, what only /warehouse uses, the Parquet and the warehouse*.json that describe them; as `tracklab build` measured them, without lineage.json and platform.json (counting platform.json would make the title depend on its own previous value, decision 1); the query engine is not data and is not counted"
@@ -87,7 +87,7 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 2438.5379999876022,
+      "duration_ms": 2495.4610999993747,
       "dbt_seconds": {}
     },
     {
@@ -97,7 +97,17 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 8971.023500023875,
+      "duration_ms": 9134.73040000099,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "raw_football_bodypose",
+      "assets": [
+        "raw_football_bodypose"
+      ],
+      "group": "ingest",
+      "status": "success",
+      "duration_ms": 5524.696499996935,
       "dbt_seconds": {}
     },
     {
@@ -109,7 +119,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 10176.703799981624,
+      "duration_ms": 7233.240900000965,
       "dbt_seconds": {}
     },
     {
@@ -138,7 +148,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 42857.30659996625,
+      "duration_ms": 36230.8492000011,
       "dbt_seconds": {}
     },
     {
@@ -151,7 +161,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 5352.424500044435,
+      "duration_ms": 2888.6924000034924,
       "dbt_seconds": {}
     },
     {
@@ -162,7 +172,18 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 196531.47240000544,
+      "duration_ms": 181843.8740000056,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "bronze_football_bodypose",
+      "assets": [
+        "bronze_football_bodypose_frames",
+        "bronze_football_bodypose_players"
+      ],
+      "group": "bronze",
+      "status": "success",
+      "duration_ms": 577118.2345000051,
       "dbt_seconds": {}
     },
     {
@@ -174,7 +195,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 4546.105699962936,
+      "duration_ms": 4047.315099996922,
       "dbt_seconds": {}
     },
     {
@@ -185,7 +206,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 41207.93069998035,
+      "duration_ms": 36947.64199999918,
       "dbt_seconds": {}
     },
     {
@@ -198,7 +219,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 5485.18449999392,
+      "duration_ms": 5485.826399999496,
       "dbt_seconds": {}
     },
     {
@@ -209,7 +230,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 161421.08539998299,
+      "duration_ms": 144215.6163999971,
       "dbt_seconds": {}
     },
     {
@@ -228,18 +249,18 @@
       ],
       "group": "gold",
       "status": "success",
-      "duration_ms": 61172.722599992994,
+      "duration_ms": 45110.37480000232,
       "dbt_seconds": {
-        "gold_agg_bb_drives": 1.045654,
-        "gold_agg_bb_picks": 1.762583,
-        "gold_agg_bb_shots": 1.372904,
-        "gold_agg_fb_obr": 1.254971,
-        "gold_agg_fb_passing": 0.88802,
-        "gold_agg_fb_physical": 0.753472,
-        "gold_dim_metric": 0.84873,
-        "gold_dim_player": 1.495957,
-        "gold_dim_season_team": 1.447025,
-        "gold_fact_player_season_metric": 4.333023
+        "gold_agg_bb_drives": 1.082534,
+        "gold_agg_bb_picks": 1.536886,
+        "gold_agg_bb_shots": 1.205632,
+        "gold_agg_fb_obr": 1.099296,
+        "gold_agg_fb_passing": 0.597266,
+        "gold_agg_fb_physical": 0.681806,
+        "gold_dim_metric": 0.245956,
+        "gold_dim_player": 0.851682,
+        "gold_dim_season_team": 0.759353,
+        "gold_fact_player_season_metric": 2.761815
       }
     },
     {
@@ -251,7 +272,7 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 9731.956099974923,
+      "duration_ms": 13654.72790000058,
       "dbt_seconds": {}
     },
     {
@@ -261,7 +282,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 43135.16550004715,
+      "duration_ms": 45764.106199996604,
       "dbt_seconds": {}
     },
     {
@@ -271,7 +292,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 347.5062999641523,
+      "duration_ms": 520.1349999988452,
       "dbt_seconds": {}
     },
     {
@@ -292,20 +313,20 @@
       ],
       "group": "silver",
       "status": "success",
-      "duration_ms": 188736.5381999989,
+      "duration_ms": 163288.34930000448,
       "dbt_seconds": {
-        "seed_event_type_map": 0.30354,
-        "seed_surface_spec": 0.295936,
-        "silver_dim_entity": 0.455469,
-        "silver_dim_match": 0.748982,
-        "silver_dim_period": 0.679632,
-        "silver_dim_sport": 0.633851,
-        "silver_dim_team": 0.71686,
-        "silver_dim_team_period": 0.544796,
-        "silver_events": 7.778875,
-        "silver_frame_possession": 0.571331,
-        "silver_frames": 85.082345,
-        "silver_frames_attacking": 0.135051
+        "seed_event_type_map": 0.521929,
+        "seed_surface_spec": 0.523551,
+        "silver_dim_entity": 0.511836,
+        "silver_dim_match": 0.443982,
+        "silver_dim_period": 0.77236,
+        "silver_dim_sport": 0.985268,
+        "silver_dim_team": 0.754165,
+        "silver_dim_team_period": 0.63627,
+        "silver_events": 7.20224,
+        "silver_frame_possession": 0.179016,
+        "silver_frames": 66.929236,
+        "silver_frames_attacking": 0.205033
       }
     },
     {
@@ -315,7 +336,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 7668.101899966132,
+      "duration_ms": 7321.707700000843,
       "dbt_seconds": {}
     },
     {
@@ -325,7 +346,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 1378.4977999748662,
+      "duration_ms": 2528.644300000451,
       "dbt_seconds": {}
     },
     {
@@ -335,7 +356,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 19817.35069997376,
+      "duration_ms": 17709.648200005176,
       "dbt_seconds": {}
     },
     {
@@ -345,7 +366,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 19151.69860003516,
+      "duration_ms": 18395.027300000947,
       "dbt_seconds": {}
     },
     {
@@ -355,27 +376,7 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 218913.39750000043,
-      "dbt_seconds": {}
-    },
-    {
-      "step_key": "runs_protocol",
-      "assets": [
-        "runs_protocol"
-      ],
-      "group": "runs",
-      "status": "success",
-      "duration_ms": 4938.739100005478,
-      "dbt_seconds": {}
-    },
-    {
-      "step_key": "runs_coverage",
-      "assets": [
-        "runs_coverage"
-      ],
-      "group": "runs",
-      "status": "success",
-      "duration_ms": 109751.6750000068,
+      "duration_ms": 177850.0503000032,
       "dbt_seconds": {}
     },
     {
@@ -385,17 +386,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 1011.6351000033319,
-      "dbt_seconds": {}
-    },
-    {
-      "step_key": "runs_probe",
-      "assets": [
-        "runs_probe"
-      ],
-      "group": "runs",
-      "status": "success",
-      "duration_ms": 286804.30660001,
+      "duration_ms": 613.1469999963883,
       "dbt_seconds": {}
     },
     {
@@ -405,27 +396,7 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 15546.686699963175,
-      "dbt_seconds": {}
-    },
-    {
-      "step_key": "runs_effect",
-      "assets": [
-        "runs_effect"
-      ],
-      "group": "runs",
-      "status": "success",
-      "duration_ms": 47702.47760001803,
-      "dbt_seconds": {}
-    },
-    {
-      "step_key": "publish_runs",
-      "assets": [
-        "publish_runs"
-      ],
-      "group": "runs",
-      "status": "success",
-      "duration_ms": 22969.802300038282,
+      "duration_ms": 5342.512199997145,
       "dbt_seconds": {}
     }
   ],
@@ -697,6 +668,22 @@
     {
       "layer": "bronze",
       "sport": "football",
+      "table": "bodypose_frames",
+      "files": 2,
+      "rows": 297304,
+      "bytes": 5743337
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "bodypose_players",
+      "files": 2,
+      "rows": 3112545,
+      "bytes": 719809775
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
       "table": "dynamic_events",
       "files": 20,
       "rows": 94361,
@@ -812,7 +799,7 @@
       "table": "dim_metric",
       "files": 1,
       "rows": 1242,
-      "bytes": 14205
+      "bytes": 14322
     },
     {
       "layer": "gold",
@@ -820,7 +807,7 @@
       "table": "dim_player",
       "files": 1,
       "rows": 608,
-      "bytes": 17040
+      "bytes": 17026
     },
     {
       "layer": "gold",
@@ -828,7 +815,7 @@
       "table": "dim_season_team",
       "files": 1,
       "rows": 31,
-      "bytes": 1361
+      "bytes": 1356
     },
     {
       "layer": "gold",
@@ -844,7 +831,7 @@
       "table": "dim_entity",
       "files": 1,
       "rows": 983,
-      "bytes": 25723
+      "bytes": 25411
     },
     {
       "layer": "silver",
@@ -852,7 +839,7 @@
       "table": "dim_match",
       "files": 1,
       "rows": 30,
-      "bytes": 4729
+      "bytes": 4723
     },
     {
       "layer": "silver",
@@ -860,7 +847,7 @@
       "table": "dim_period",
       "files": 1,
       "rows": 81,
-      "bytes": 3153
+      "bytes": 3159
     },
     {
       "layer": "silver",
@@ -876,7 +863,7 @@
       "table": "dim_team",
       "files": 1,
       "rows": 30,
-      "bytes": 1952
+      "bytes": 1949
     },
     {
       "layer": "silver",
@@ -900,7 +887,7 @@
       "table": "frames",
       "files": 30,
       "rows": 29340593,
-      "bytes": 244091250
+      "bytes": 244095852
     }
   ],
   "matches": [
@@ -1050,8 +1037,8 @@
     {
       "sport": "football",
       "match_id": 1925299,
-      "raw_bytes": 102294620,
-      "raw_bytes_read": 102294620,
+      "raw_bytes": 725702851,
+      "raw_bytes_read": 3447550993,
       "bronze_tracking_rows": 61301,
       "silver_frames_rows": 1102666,
       "silver_events_rows": 5909,
@@ -1105,8 +1092,8 @@
     {
       "sport": "football",
       "match_id": 1996435,
-      "raw_bytes": 93746713,
-      "raw_bytes_read": 93746713,
+      "raw_bytes": 738074524,
+      "raw_bytes_read": 3444326331,
       "bronze_tracking_rows": 57621,
       "silver_frames_rows": 1001213,
       "silver_events_rows": 5819,
