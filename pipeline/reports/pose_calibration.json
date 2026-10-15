@@ -5,12 +5,12 @@
   "time": "first: no cadence computed",
   "written": "2026-10-15",
   "match_id": 1925299,
-  "head": "a306b7fec192fa9b0e2c261e71662d696030433a",
-  "code_tree_sha": "dd051e0617e4e1d5730c0120fe1cfe7a5fa97b65",
+  "head": "caef9f396a17bd2d78087254b9f56bffce473493",
+  "code_tree_sha": "9ff4ab70b8d233d55930a3ef751517d4488f44ad",
   "protocol": {
     "stage": "design",
-    "fingerprint": "c5de770d16bd4652b0db506185191fee25d7e9b87e8bfe5d3aff5793bdf29caf",
-    "content_sha256": "a9d2664cfd0db021d554f179e1a48ae86d79fa133fe566da7846d91b8454c090"
+    "fingerprint": "bd8a897f770723056468bb0c055ec77764cd03169ac714ca63f32fdd30d71843",
+    "content_sha256": "5e7d5414667539a3390f79968244083ea4494fb7404979560c6a20aff50b9f0d"
   },
   "inputs": {
     "sweep": {
@@ -1851,7 +1851,7 @@
           ]
         },
         "spares_the_sane": false,
-        "eligible": false
+        "eligible": true
       },
       {
         "width": 50,
@@ -1972,5 +1972,5 @@
     },
     "verdict": "W 50, cap 25 cm"
   },
-  "content_sha256": "5bdde93021151b7f262fc4bd29517390b4df96a9d320b8492678544b598b0d62"
+  "content_sha256": "3314bcab9984af4791a03b6a528357f03eead3541ab8cd654ae9d55a504bb0b4"
 }
