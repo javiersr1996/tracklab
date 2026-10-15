@@ -74,6 +74,9 @@ jobs:
       # Task 60: the synthetic sweep reads no data, so CI regenerates all of it and compares
       # the bytes of reports/pose_sweep.json (about 1.5 minutes).
       - run: uv run tracklab pose sweep --check
+      # Task 60, phase B2: the protocol against the code; the fixtures hold a slice of 1925299,
+      # so the denominators travel as written and it prints PARTIAL 0/2.
+      - run: uv run tracklab pose protocol --check
       # Task 44 by hand, as Javier will run it against Neon: two loads of the same gold (the
       # second prints inserted=0 updated=0 deleted=0) and the snapshot, to a scratch directory.
       # The tests below assert all of it.

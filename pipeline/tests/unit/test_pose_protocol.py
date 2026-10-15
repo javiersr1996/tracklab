@@ -172,3 +172,23 @@ def test_the_bands_are_half_open() -> None:
         "high",
         "high",
     ]
+
+
+def test_the_versioned_protocol_is_sealed_in_design_and_names_the_versioned_files(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """`reports/pose_protocol.json` as committed before the probe: in design (the freeze, in
+    the second part of phase B2, changes this test on purpose), its sweep and coverage the
+    versioned ones, the denominators 32 and 30, and `--check` PARTIAL on the fixtures."""
+    payload = json.loads((REPORTS / PROTOCOL_NAME).read_text(encoding="utf-8"))
+    assert payload["stage"] == "design" and sealed(payload)
+    assert payload["fingerprint"] == fingerprint(payload["design"])
+    assert payload["design"]["sweep"]["sha256"] == file_sha256(REPORTS / sweep.SWEEP_NAME)
+    seen = payload["design"]["seen_of_confirmation"]["coverage"]
+    assert seen["sha256"] == file_sha256(REPORTS / COVERAGE_NAME)
+    assert payload["evidence"]["denominators"]["per_match"] == {
+        "1925299": {"players_listed": 32, "players_with_pose": 32},
+        "1996435": {"players_listed": 30, "players_with_pose": 30},
+    }
+    assert run_pose_protocol(FIXTURES, REPORTS, check=True) == 0
+    assert "PARTIAL 0/2" in _status(capsys)
