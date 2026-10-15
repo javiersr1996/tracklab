@@ -153,3 +153,22 @@ def test_the_second_time_refuses_a_design_or_code_after_the_freeze(
     assert verdict.run_pose_verdict(root, reports) == 1
     assert "not the one the freeze recorded" in capsys.readouterr().out
     assert not (reports / verdict.VERDICT_NAME).exists()
+
+
+def test_the_versioned_verdict_answers_to_the_frozen_protocol_and_follows_its_figures(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """`reports/pose_verdict.json` as the second time committed it: sealed, against the frozen
+    protocol and the tree its freeze recorded, on the rows the frozen calibration counted, its
+    verdict following its own figures, and `--check` PARTIAL on the fixtures."""
+    payload = json.loads((REPORTS / verdict.VERDICT_NAME).read_text(encoding="utf-8"))
+    assert verdict.consistency_problems(payload, 1925299) == []
+    protocol = json.loads((REPORTS / "pose_protocol.json").read_text(encoding="utf-8"))
+    calibration = json.loads((REPORTS / "pose_calibration.json").read_text(encoding="utf-8"))
+    assert (payload["width"], payload["cap_cm"]) == (50, 25)
+    assert payload["code_tree_sha"] == protocol["frozen"]["code_tree_sha"]
+    assert payload["inputs"]["rows"] == calibration["inputs"]["rows"]
+    assert payload["m4"]["half_iqr_hz"] == payload["verdict"]["M2"]["half_iqr_hz"]
+    fixtures = REPORTS.parent / "tests" / "fixtures" / "data"
+    assert verdict.run_pose_verdict(fixtures, REPORTS, check=True) == 0
+    assert "PARTIAL 0/1" in capsys.readouterr().out

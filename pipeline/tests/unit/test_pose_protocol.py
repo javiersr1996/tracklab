@@ -236,14 +236,20 @@ def test_the_bands_are_half_open() -> None:
     ]
 
 
-def test_the_versioned_protocol_is_sealed_in_design_and_names_the_versioned_files(
+def test_the_versioned_protocol_is_frozen_at_the_rules_cell_and_names_the_versioned_files(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """`reports/pose_protocol.json` as committed before the probe: in design (the freeze, in
-    the second part of phase B2, changes this test on purpose), its sweep and coverage the
+    """`reports/pose_protocol.json` as the freeze committed it: frozen at the cell the rule of
+    the versioned calibration chose, with that file's seal, its design's sweep and coverage the
     versioned ones, the denominators 32 and 30, and `--check` PARTIAL on the fixtures."""
     payload = json.loads((REPORTS / PROTOCOL_NAME).read_text(encoding="utf-8"))
-    assert payload["stage"] == "design" and sealed(payload)
+    assert payload["stage"] == "frozen" and sealed(payload)
+    calibration = json.loads((REPORTS / CALIBRATION_NAME).read_text(encoding="utf-8"))
+    chosen = calibration["rule_w_cap"]["chosen"]
+    frozen = payload["frozen"]
+    assert (frozen["width"], frozen["cap_cm"]) == (chosen["width"], chosen["cap_cm"]) == (50, 25)
+    assert frozen["calibration_from"]["content_sha256"] == calibration["content_sha256"]
+    assert [h["stage"] for h in payload["history"]] == ["design"] * 3 + ["frozen"]
     assert payload["fingerprint"] == fingerprint(payload["design"])
     assert payload["design"]["sweep"]["sha256"] == file_sha256(REPORTS / sweep.SWEEP_NAME)
     seen = payload["design"]["seen_of_confirmation"]["coverage"]
