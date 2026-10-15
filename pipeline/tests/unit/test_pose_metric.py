@@ -197,3 +197,35 @@ def test_each_published_median_has_its_sd_over_the_draws_of_the_same_windows() -
     assert got["separation_over_step_sd"] == round(
         metric.ratio_sd(all_draws[:, :, 1], all_draws[:, :, 2]), 6
     )
+
+
+def test_the_versioned_metric_crosses_the_coverage_and_follows_the_verdict(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """`reports/pose_metric.json` as task 61 committed it, against `pose_coverage.json`: every
+    player is one the coverage lists, his windows of W frames (both bands) fit in his frames
+    with a pose and need a stretch of at least W; rows by team and number; 1925299 says what
+    the sealed verdict says; and `--check` PARTIAL on the fixtures."""
+    payload = json.loads((REPORTS / metric.METRIC_NAME).read_text(encoding="utf-8"))
+    coverage = json.loads((REPORTS / "pose_coverage.json").read_text(encoding="utf-8"))
+    sealed_verdict = json.loads((REPORTS / verdict.VERDICT_NAME).read_text(encoding="utf-8"))
+    width = payload["width"]
+    assert width == W
+    columns = payload["columns"]
+    for match, rows in payload["matches"].items():
+        players = {p["player_id"]: p for p in coverage["matches"][match]["players"]}
+        table = [dict(zip(columns, r, strict=True)) for r in rows]
+        assert [(r["team_id"], r["number"]) for r in table] == sorted(
+            (r["team_id"], r["number"]) for r in table
+        )
+        windows: dict[int, int] = {}
+        for r in table:
+            if r["period"] == "all":
+                windows[r["player_id"]] = windows.get(r["player_id"], 0) + r["windows"]
+        for pid, n in windows.items():
+            assert n <= players[pid]["with_pose"] // width, (match, pid)
+            assert players[pid][f"runs_ge_{width}"] >= 1, (match, pid)
+    assert metric.recompute_problems(payload["verdicts"]["calibration"], sealed_verdict) == []
+    fixtures = REPORTS.parent / "tests" / "fixtures" / "data"
+    assert metric.run_pose_metric(fixtures, REPORTS, check=True) == 0
+    assert "PARTIAL 0/2" in capsys.readouterr().out
