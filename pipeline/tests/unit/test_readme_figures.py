@@ -5,6 +5,10 @@ in `web/public/data/stats.json`, the file the README names as its only source.
 Any number of `pipeline/reports/` would be too loose: with every integer found
 there, a small invented figure would pass (final review, row V). Thousands
 separators are the README's own formatting and are dropped first.
+
+A figure inside code is checked against the one field it stands for
+(`code_problems`), and a number in code that stands for none fails (review V
+of P4, M2: the Warehouse section quoted four, and no test read them).
 """
 
 from __future__ import annotations
@@ -39,31 +43,47 @@ def _numbers(value: Any) -> set[str]:
 
 
 DATA_DIR = REPO / "web" / "public" / "data"
+README = REPO / "README.md"
 
 
-def artefact_numbers() -> set[str]:
-    """The numbers of stats.json, plus each table's rows per sport summed over its
-    matches (the figure the site shows, `rowsOf` in web/lib/data.ts), plus
-    every number platform.json and lineage.json carry (task 34: the measured
-    title and the graph's own counts)."""
-    stats = json.loads((DATA_DIR / "stats.json").read_text("utf-8"))
-    per_sport: dict[tuple[str, str], int] = {}
-    for row in stats["tables"]:
-        key = (row["table"], row["sport"])
-        per_sport[key] = per_sport.get(key, 0) + row["rows"]
-    numbers = _numbers(stats) | {str(n) for n in per_sport.values()}
-    for name in ("platform.json", "lineage.json"):
-        path = DATA_DIR / name
-        if path.is_file():
-            numbers |= _numbers(json.loads(path.read_text("utf-8")))
-    return numbers
+def _artefact(name: str) -> Any:
+    return json.loads((DATA_DIR / name).read_text("utf-8"))
+
+
+def _frames(stats: Any, sport: str) -> int:
+    return sum(r["rows"] for r in stats["tables"] if r["table"] == "frames" and r["sport"] == sport)
+
+
+def prose_expected() -> list[str]:
+    """The sentences of the prose that carry a figure, each with the number read from the field it
+    stands for: `frames` per sport (the figure the site shows, `rowsOf` in web/lib/data.ts, so
+    summed over the matches) and the bytes of stats.json. A figure that is in stats.json under
+    another field is wrong (review V of P4, B10: the two `frames` figures swapped passed)."""
+    stats = _artefact("stats.json")
+    basketball, football = _frames(stats, "basketball"), _frames(stats, "football")
+    raw, published = stats["bytes"]["raw"]["total"], stats["bytes"]["published"]["total"]
+    return [
+        f"returns {basketball:,} rows of basketball and {football:,} of football",
+        f"weigh {raw:,} bytes as pinned (`bytes.raw.total`)",
+        f"the site ships {published:,} bytes of possessions (`bytes.published.total`)",
+    ]
+
+
+def prose_problems(readme: str) -> list[str]:
+    """`prose_expected` missing from the README, and any other figure in its prose."""
+    flat = " ".join(readme.split())
+    expected = prose_expected()
+    allowed = {n.replace(",", "") for n in NUMBER.findall(" ".join(expected))}
+    return [f"not in the README: {e!r}" for e in expected if e not in flat] + [
+        f"in the prose, from no field: {f}" for f in readme_figures(readme) if f not in allowed
+    ]
 
 
 def test_readme_figures_come_from_artefacts() -> None:
-    figures = readme_figures((REPO / "README.md").read_text("utf-8"))
-    print(f"README figures: {figures}")
-    assert figures, "the README quotes no figure at all: the regex is broken"
-    assert [f for f in figures if f not in artefact_numbers()] == []
+    readme = README.read_text("utf-8")
+    print(f"README figures: {readme_figures(readme)}")
+    assert readme_figures(readme), "the README quotes no figure at all: the regex is broken"
+    assert prose_problems(readme) == []
 
 
 def test_a_typed_figure_is_caught() -> None:
@@ -71,18 +91,104 @@ def test_a_typed_figure_is_caught() -> None:
         "9126745",
         "12",
     ]
-    assert "9126745" not in artefact_numbers()
-    assert "12" not in artefact_numbers()
+    flat = " ".join(README.read_text("utf-8").split())
+    assert prose_problems(flat.replace("9,126,744", "9,126,745")) != []
 
 
-def test_readme_title_and_asset_count_are_the_artefacts() -> None:
-    """The two figures the README quotes inside code, where the test above cannot
-    see them: the title `tracklab publish platform` prints and the asset count."""
-    readme = (REPO / "README.md").read_text("utf-8")
-    platform = json.loads((DATA_DIR / "platform.json").read_text("utf-8"))
-    lineage = json.loads((DATA_DIR / "lineage.json").read_text("utf-8"))
-    title = re.search(r"^title: (.+)$", readme, flags=re.M)
-    assets = re.search(r"lists `(\d+)` assets", readme)
-    assert title and assets, "the README no longer quotes the title or the asset count"
-    assert title.group(1) == platform["title"]
-    assert int(assets.group(1)) == sum(1 for n in lineage["nodes"] if n["kind"] == "asset")
+def test_a_figure_of_another_field_is_caught() -> None:
+    """The real README with the figures swapped for others that stats.json does hold: the two
+    `frames` figures, and the published bytes of football in place of the total."""
+    stats = _artefact("stats.json")
+    flat = " ".join(README.read_text("utf-8").split())
+    basketball, football = (f"{_frames(stats, sport):,}" for sport in ("basketball", "football"))
+    published = f"{stats['bytes']['published']['total']:,}"
+    swapped = flat.replace(basketball, "@").replace(football, basketball).replace("@", football)
+    other_bytes = flat.replace(published, f"{stats['bytes']['published']['football']:,}")
+    for text in (swapped, other_bytes):
+        assert text != flat, "the mutation changed nothing: the README moved on, update this test"
+        assert prose_problems(text) != []
+
+
+# The only numbers in code that are not measurements: the second load's contract and the exit code
+# of `ingest`. Exact phrases, so a stray `0` or `1` elsewhere in code is a problem (review V of P4,
+# B10).
+NOT_FIGURES = ("`inserted=0 updated=0 deleted=0`", "Exit code `1`")
+
+
+def code_figures(text: str) -> list[str]:
+    """The numbers `readme_figures` leaves out: those in code blocks and in inline code."""
+    for phrase in NOT_FIGURES:
+        text = text.replace(phrase, "")
+    blocks = re.findall(r"```.*?```", text, flags=re.S)
+    inline = re.findall(r"`[^`]*`", re.sub(r"```.*?```", "", text, flags=re.S))
+    return [m.group().replace(",", "") for s in blocks + inline for m in NUMBER.finditer(s)]
+
+
+def code_expected() -> list[str]:
+    """What the README must say in code, read from the field each figure stands for: the title
+    and subtitle `tracklab publish platform` prints (platform.json), the asset count
+    (lineage.json), the long fact's rows and row group size (warehouse.json), and the Postgres
+    database's bytes and fact rows (warehouse_pg.json)."""
+    platform, lineage = _artefact("platform.json"), _artefact("lineage.json")
+    warehouse, pg = _artefact("warehouse.json"), _artefact("warehouse_pg.json")
+    fact = next(t for t in warehouse["tables"] if t["table"] == "fact")
+    group = max(g["rows"] for g in fact["row_groups"])
+    pg_fact = next(t for t in pg["tables"] if t["table"] == "fact_player_season_metric")
+    assets = sum(1 for n in lineage["nodes"] if n["kind"] == "asset")
+    return [
+        f"title: {platform['title']}",
+        f"subtitle: {platform['subtitle']}",
+        f"lists `{assets}` assets",
+        f"has `{fact['rows']}` rows in row groups of `{group}` ordered by metric",
+        f"`{pg['database_bytes']}` bytes for the whole database, `{pg_fact['rows']}` rows in the "
+        "fact table",
+    ]
+
+
+def code_problems(readme: str) -> list[str]:
+    """`code_expected` missing from the README, the Postgres numbers said to come from Docker
+    when warehouse_pg.json says otherwise (or the reverse), and any other number in code."""
+    flat = " ".join(readme.split())
+    expected = code_expected()
+    problems = [f"not in the README: {e!r}" for e in expected if e not in flat]
+    where = _artefact("warehouse_pg.json")["source"]["where_id"]
+    if ("a local Postgres in Docker" in flat) != (where == "local"):
+        problems.append(f"where the Postgres numbers come from: {where}")
+    # The sentences out first: a number elsewhere in code is no figure of theirs, even when it
+    # equals one (`76` ms or `2.3` s passed while the allowed set held every number of the five).
+    rest = flat
+    for sentence in expected:
+        rest = rest.replace(sentence, "")
+    return problems + [f"in code, from no artefact: {n}" for n in code_figures(rest)]
+
+
+def test_readme_figures_in_code_are_the_artefacts() -> None:
+    """The figures inside code, where `test_readme_figures_come_from_artefacts` cannot see them."""
+    readme = README.read_text("utf-8")
+    print(f"README figures in code: {code_figures(readme)}")
+    assert code_problems(readme) == []
+
+
+def _another(number: str) -> str:
+    return number[:-1] + str((int(number[-1]) + 1) % 10)
+
+
+def test_a_changed_figure_in_code_is_caught() -> None:
+    """The real README with each figure in code changed, one at a time, plus a sentence that
+    moves the Postgres numbers to Neon and a new figure in code: each must be a problem (the
+    typed subtitle of task 46 only tested the helper, review V of P4, B8)."""
+    flat = " ".join(README.read_text("utf-8").split())
+    mutated = [
+        flat.replace(sentence, sentence[: m.start()] + _another(m.group()) + sentence[m.end() :])
+        for sentence in code_expected()
+        for m in NUMBER.finditer(sentence)
+    ]
+    mutated.append(flat.replace("a local Postgres in Docker", "Neon"))
+    mutated.append(flat.replace("## Warehouse ", "## Warehouse It answers in `250` ms. "))
+    # A number that equals one of the figures, or a 0 or a 1, in a place that is none of theirs.
+    for stray in ("76", "2.3", "0", "1"):
+        mutated.append(flat.replace("## Warehouse ", f"## Warehouse It answers in `{stray}` s. "))
+    assert len(mutated) == 15
+    for text in mutated:
+        assert text != flat, "the mutation changed nothing: the README moved on, update this test"
+        assert code_problems(text) != []

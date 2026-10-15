@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "writer": {
+    "library": "pyarrow",
+    "version": "25.0.1",
+    "compression": "zstd",
+    "compression_level": 3,
+    "parquet_version": "2.6"
+  },
+  "tables": [
+    {
+      "table": "bb_drives",
+      "sport": "basketball",
+      "file": "bb_drives.17be543e.parquet",
+      "rows": 301,
+      "columns": 73,
+      "order_by": [
+        "player_id",
+        "team_id"
+      ],
+      "row_groups": [
+        {
+          "rows": 301,
+          "min": 446,
+          "max": 96118
+        }
+      ],
+      "bytes": 80553,
+      "sha256": "17be543e023f4a1a86b63eac43e736e432445e2fb5171f12e603de86de0f5f38"
+    },
+    {
+      "table": "bb_picks",
+      "sport": "basketball",
+      "file": "bb_picks.89cc2992.parquet",
+      "rows": 319,
+      "columns": 686,
+      "order_by": [
+        "player_id",
+        "team_id"
+      ],
+      "row_groups": [
+        {
+          "rows": 319,
+          "min": 446,
+          "max": 96118
+        }
+      ],
+      "bytes": 490408,
+      "sha256": "89cc2992d04adfe1f698bd8d05cec19f03db526297b8d0d48889fe17f7f9da10"
+    },
+    {
+      "table": "bb_shots",
+      "sport": "basketball",
+      "file": "bb_shots.38163f30.parquet",
+      "rows": 326,
+      "columns": 310,
+      "order_by": [
+        "player_id",
+        "team_id"
+      ],
+      "row_groups": [
+        {
+          "rows": 326,
+          "min": 446,
+          "max": 96118
+        }
+      ],
+      "bytes": 317195,
+      "sha256": "38163f30cd10d7ae0e840e19aa12191c97d254a6b65feff4ffa9a16dbe3388fb"
+    },
+    {
+      "table": "fb_obr",
+      "sport": "football",
+      "file": "fb_obr.417337cd.parquet",
+      "rows": 407,
+      "columns": 132,
+      "order_by": [
+        "player_id",
+        "team_id",
+        "position_group"
+      ],
+      "row_groups": [
+        {
+          "rows": 407,
+          "min": 211,
+          "max": 1002177
+        }
+      ],
+      "bytes": 153775,
+      "sha256": "417337cd32c639068d8f470894e6bc776a3e73b588e6b665898a7453b81009a9"
+    },
+    {
+      "table": "fb_passing",
+      "sport": "football",
+      "file": "fb_passing.dd38e541.parquet",
+      "rows": 407,
+      "columns": 50,
+      "order_by": [
+        "player_id",
+        "team_id",
+        "position_group"
+      ],
+      "row_groups": [
+        {
+          "rows": 407,
+          "min": 211,
+          "max": 1002177
+        }
+      ],
+      "bytes": 75279,
+      "sha256": "dd38e541a7a5523fa91384407412dec0248d0dd8350c1d0470798844f65fa493"
+    },
+    {
+      "table": "fb_physical",
+      "sport": "football",
+      "file": "fb_physical.13917553.parquet",
+      "rows": 406,
+      "columns": 67,
+      "order_by": [
+        "player_id",
+        "team_id",
+        "position_group"
+      ],
+      "row_groups": [
+        {
+          "rows": 406,
+          "min": 211,
+          "max": 1002177
+        }
+      ],
+      "bytes": 101923,
+      "sha256": "1391755343ac1af03df62c353f57b231e24c6f63ab861f365f3cd3210c83528a"
+    },
+    {
+      "table": "fact",
+      "sport": "both",
+      "file": "fact.00ed21c4.parquet",
+      "rows": 366962,
+      "columns": 8,
+      "order_by": [
+        "metric",
+        "sport",
+        "family",
+        "player_id",
+        "team_id",
+        "position_group"
+      ],
+      "row_groups": [
+        {
+          "rows": 50000,
+          "min": "aheadoftheballrun_avgdistance",
+          "max": "cst_floater_attempt_rate"
+        },
+        {
+          "rows": 50000,
+          "min": "cst_floater_attempt_rate",
+          "max": "handler_assist_opportunity_to_other_vs_switch"
+        },
+        {
+          "rows": 50000,
+          "min": "handler_assist_opportunity_to_other_vs_switch",
+          "max": "handler_ppp_at_stepUp"
+        },
+        {
+          "rows": 50000,
+          "min": "handler_ppp_at_stepUp",
+          "max": "overlaprun_count_dangerous_p30tip"
+        },
+        {
+          "rows": 50000,
+          "min": "overlaprun_count_dangerous_p30tip",
+          "max": "screener_assist_to_other_vs_show"
+        },
+        {
+          "rows": 50000,
+          "min": "screener_assist_to_other_vs_show",
+          "max": "screener_score_at_wing"
+        },
+        {
+          "rows": 50000,
+          "min": "screener_score_at_wing",
+          "max": "zone_corner_3_right_attempt_rate"
+        },
+        {
+          "rows": 16962,
+          "min": "zone_corner_3_right_attempt_rate",
+          "max": "zone_wing_3_right_total_points"
+        }
+      ],
+      "bytes": 745465,
+      "sha256": "00ed21c4f45180e223e6a6f95cb82c9a516e8f737f0faec15c0bb843c9c04ad5"
+    }
+  ]
+}

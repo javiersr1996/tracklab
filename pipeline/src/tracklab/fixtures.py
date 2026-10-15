@@ -11,9 +11,11 @@ one rule, so nothing in the slice is chosen by hand:
 - `events_chance_players` has no frame and follows the chances it belongs to;
 - a table with no match column (the aliases) is small and goes whole.
 
-Season aggregates are left out: no silver model reads them. The rows keep the
-exact bronze schema because they are copied with `SELECT *`, which is what
-lets dbt build on the slice with the same sources it uses on the full bundle.
+Season aggregates have no match column, so they go whole like the aliases. The
+rows keep the exact bronze schema because they are copied with `SELECT *`, which is what
+lets dbt build on the slice with the same sources it uses on the full bundle. DuckDB
+writes every column as nullable, so a table whose bronze schema has NOT NULL columns is
+rewritten with the schema of its source file.
 """
 
 from __future__ import annotations
@@ -22,6 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import duckdb
+import pyarrow.parquet as pq
 
 
 @dataclass(frozen=True)
@@ -40,7 +43,6 @@ CUTS = (
 )
 FRAME_COLUMNS = ("frameIdx", "frame", "startFrame", "frame_start")
 MATCH_COLUMNS = ("match_id", "native_match_id")
-SKIPPED_PREFIX = "aggregates_"
 
 
 @dataclass(frozen=True)
@@ -80,6 +82,9 @@ def _copy(con: duckdb.DuckDBPyConnection, glob: str, where: str, target: Path) -
     target.unlink(missing_ok=True)
     query = f"SELECT * FROM read_parquet('{glob}') WHERE {where}"
     con.execute(f"COPY ({query}) TO '{target.as_posix()}' (FORMAT PARQUET, COMPRESSION zstd)")
+    source = pq.read_schema(sorted(Path(glob).parent.glob(Path(glob).name))[0])
+    if not pq.read_schema(target).equals(source, check_metadata=False):
+        pq.write_table(pq.read_table(target).cast(source), target, compression="zstd")
     rows = con.execute(f"SELECT count(*) FROM read_parquet('{target.as_posix()}')").fetchall()
     return int(rows[0][0])
 
@@ -91,8 +96,6 @@ def cut_fixtures(data_dir: Path, out_dir: Path, cuts: tuple[Cut, ...] = CUTS) ->
     written: list[CutTable] = []
     for cut in cuts:
         for table in sorted(p for p in (bronze / cut.sport).iterdir() if p.is_dir()):
-            if table.name.startswith(SKIPPED_PREFIX):
-                continue
             glob = (table / "*.parquet").as_posix()
             columns = _columns(con, glob)
             per_match = (table / f"{cut.native_match_id}.parquet").is_file()

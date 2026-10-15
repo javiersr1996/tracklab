@@ -10,6 +10,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "playwright-report/**",
     "test-results/**",
+    // The engine copied by scripts/copy-engine.mjs before the build.
+    "public/duckdb/**",
   ]),
 ]);
 

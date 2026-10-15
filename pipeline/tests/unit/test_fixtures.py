@@ -2,7 +2,7 @@
 
 The fabricated bronze has what the real one only has by accident: rows of a
 second match, rows either side of the window, a chance player whose chance is
-outside it, and an aggregate that must not travel.
+outside it, and a season aggregate that must go whole.
 """
 
 from __future__ import annotations
@@ -49,7 +49,9 @@ def _bronze(root: Path) -> Path:
         "SELECT 7 AS match_id, * FROM (VALUES ('c-in', 1), ('c-out', 2)) v(chanceId, playerId)",
     )
     _write(bronze, "basketball", "player_id_aliases", "data.parquet", "SELECT 1 AS player_id")
-    _write(bronze, "basketball", "aggregates_shots", "data.parquet", "SELECT 1 AS n")
+    _write(
+        bronze, "basketball", "aggregates_shots", "data.parquet", "SELECT 1 AS n UNION ALL SELECT 2"
+    )
     _write(
         bronze,
         "common",
@@ -83,13 +85,14 @@ def test_a_chance_player_follows_its_chance(tmp_path: Path) -> None:
     assert _rows(players, "SELECT chanceId FROM t") == [("c-in",)]
 
 
-def test_season_tables_go_whole_and_aggregates_stay_behind(tmp_path: Path) -> None:
+def test_season_tables_and_aggregates_go_whole(tmp_path: Path) -> None:
     data = _bronze(tmp_path / "data")
     out = tmp_path / "out"
     cut_fixtures(data, out, (Cut("basketball", 7, 10, 30),))
     bronze = out / "bronze"
     assert _rows(bronze / "basketball" / "player_id_aliases" / "data.parquet") == [(1,)]
-    assert not (bronze / "basketball" / "aggregates_shots").exists()
+    shots = bronze / "basketball" / "aggregates_shots" / "data.parquet"
+    assert _rows(shots) == [(1,), (2,)]
     orientation = _rows(bronze / "common" / "orientation" / "data.parquet")
     assert orientation == [(7, 1)]
 

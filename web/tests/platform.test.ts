@@ -58,6 +58,7 @@ describe("silverModelRows", () => {
   const platform: PlatformData = {
     schema_version: 1,
     title: "fixture",
+    subtitle: "fixture",
     run: {
       git_sha: "abc1234",
       started_utc: "",

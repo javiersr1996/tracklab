@@ -24,6 +24,7 @@ from tracklab.publish.platform import (
     platform_from_record,
     run_publish_platform,
     season_files_from_record,
+    subtitle_from_record,
     tables_from_record,
     title_from_record,
 )
@@ -123,6 +124,10 @@ def _record() -> dict[str, Any]:
         ),
         _table("silver", None, "dim_match", [_parquet("data.parquet", 2, 20)]),
     ]
+    gold_tables = [
+        _table("gold", None, "dim_player", [_parquet("data.parquet", 4, 40)]),
+        _table("gold", None, "fact_player_season_metric", [_parquet("data.parquet", 8, 80)]),
+    ]
     return {
         "schema_version": 1,
         "git_sha": "abc1234",
@@ -138,6 +143,7 @@ def _record() -> dict[str, Any]:
             _step("bronze_basketball", "bronze", 5000.0),
             _step("bronze_football", "bronze", 8000.0),
             _step("silver", "silver", 4000.0),
+            _step("gold", "gold", 2500.0),
             _step("quality_x", "quality", 1000.0),
             _step("publish_stats", "publish", 500.0),
             _step("bronze_skipped", "bronze", None, status="skipped"),
@@ -165,6 +171,12 @@ def _record() -> dict[str, Any]:
                 "bytes": sum(t["bytes"] for t in silver_tables),
                 "tables": silver_tables,
             },
+            "gold": {
+                "files": sum(t["files"] for t in gold_tables),
+                "rows": sum(t["rows"] for t in gold_tables),
+                "bytes": sum(t["bytes"] for t in gold_tables),
+                "tables": gold_tables,
+            },
             "quality": {
                 "files": 1,
                 "rows": 6,
@@ -172,11 +184,18 @@ def _record() -> dict[str, Any]:
                 "csv": [{"path": "quality_x.csv", "rows": 6, "bytes": 60}],
             },
             "publish": {
-                "files": 2,
-                "bytes": 300,
-                "json": [
+                "files": 4,
+                "bytes": 3300,
+                "watch_bytes": 300,
+                "query_bytes": 3000,
+                "watch": [
                     {"path": "stats.json", "bytes": 150},
                     {"path": "index.json", "bytes": 150},
+                ],
+                "query": [
+                    {"path": "warehouse/fact.abcd1234.parquet", "bytes": 1800},
+                    {"path": "warehouse/bb_picks.ef567890.parquet", "bytes": 1000},
+                    {"path": "warehouse.json", "bytes": 200},
                 ],
             },
         },
@@ -197,13 +216,36 @@ def _index() -> dict[str, Any]:
 
 
 def test_title_uses_bytes_pinned_and_the_records_own_publish_snapshot() -> None:
-    assert title_from_record(_record()) == "1.9 KB in, 300 B out"
+    assert title_from_record(_record()) == "1.9 KB in, 3.3 KB out"
+
+
+def test_subtitle_splits_out_into_what_the_site_watches_and_what_warehouse_queries() -> None:
+    record = _record()
+    assert subtitle_from_record(record) == "300 B to watch, 3.0 KB to query"
+    assert platform_from_record(record, _index())["subtitle"] == subtitle_from_record(record)
+    publish = record["disk"]["publish"]
+    assert publish["watch_bytes"] + publish["query_bytes"] == publish["bytes"]
+
+
+def test_gold_is_a_layer_between_silver_and_quality_with_its_tables_and_seconds() -> None:
+    layers = {entry["layer"]: entry for entry in layers_from_record(_record())}
+    assert list(layers) == ["raw", "bronze", "silver", "gold", "quality", "publish"]
+    assert (layers["gold"]["files"], layers["gold"]["rows"], layers["gold"]["bytes"]) == (
+        2,
+        12,
+        120,
+    )
+    assert layers["gold"]["seconds"] == 2.5
+    gold_tables = [t["table"] for t in tables_from_record(_record()) if t["layer"] == "gold"]
+    assert gold_tables == ["dim_player", "fact_player_season_metric"]
 
 
 def test_publish_layer_carries_a_note_explaining_why_it_is_not_a_live_rescan() -> None:
     layers = layers_from_record(_record())
     publish_layer = next(entry for entry in layers if entry["layer"] == "publish")
-    assert publish_layer["bytes"] == 300
+    assert publish_layer["bytes"] == 3300
+    assert (publish_layer["watch_bytes"], publish_layer["query_bytes"]) == (300, 3000)
+    assert (publish_layer["watch_files"], publish_layer["query_files"]) == (2, 3)
     assert "lineage.json" in publish_layer["note"] and "platform.json" in publish_layer["note"]
 
 
@@ -344,11 +386,13 @@ def test_no_local_traces(assert_no_local_traces: Any) -> None:
 def test_platform_from_record_assembles_every_section() -> None:
     payload = platform_from_record(_record(), _index())
     assert payload["schema_version"] == 1
-    assert payload["title"] == "1.9 KB in, 300 B out"
+    assert payload["title"] == "1.9 KB in, 3.3 KB out"
+    assert payload["subtitle"] == "300 B to watch, 3.0 KB to query"
     assert {entry["layer"] for entry in payload["layers"]} == {
         "raw",
         "bronze",
         "silver",
+        "gold",
         "quality",
         "publish",
     }

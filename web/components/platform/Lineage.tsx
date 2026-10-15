@@ -213,7 +213,7 @@ export function Lineage({ lineage }: { lineage: LineageData }) {
           <i className="lineage-swatch" style={{ background: SCHEMA_COLOR.dbt }} /> dbt-owned schema
         </span>
         <span>
-          <i className="lineage-swatch lineage-swatch-badge">#</i> dbt tests (silver models only,
+          <i className="lineage-swatch lineage-swatch-badge">#</i> dbt tests (dbt models,
           count above the node)
         </span>
       </figcaption>

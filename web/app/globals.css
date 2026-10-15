@@ -72,8 +72,14 @@ body {
 
 .platform-layers {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0.75rem;
+}
+
+@media (max-width: 1000px) {
+  .platform-layers {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
@@ -256,4 +262,47 @@ body {
 .table-scroll td:first-child,
 .table-scroll td:nth-child(2) {
   text-align: left;
+}
+
+.warehouse {
+  margin: 1.5rem 0;
+}
+
+.warehouse textarea {
+  box-sizing: border-box;
+  width: 100%;
+  font-family: ui-monospace, monospace;
+  font-size: 1rem;
+}
+
+.warehouse button {
+  font-size: 1rem;
+}
+
+.warehouse-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.warehouse-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Column names are long identifiers with no place to break. */
+.warehouse-page p,
+.warehouse-page li {
+  overflow-wrap: anywhere;
+}
+
+.warehouse-page code,
+.warehouse pre {
+  font-family: ui-monospace, monospace;
+  font-size: 1rem;
+}
+
+.warehouse pre {
+  margin: 0.5rem 0;
 }

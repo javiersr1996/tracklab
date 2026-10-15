@@ -67,10 +67,11 @@ GROUP_TO_LAYER = {
     "ingest": "raw",
     "bronze": "bronze",
     "silver": "silver",
+    "gold": "gold",
     "quality": "quality",
     "publish": "publish",
 }
-LAYER_ORDER = ("raw", "bronze", "silver", "quality", "publish")
+LAYER_ORDER = ("raw", "bronze", "silver", "gold", "quality", "publish")
 
 _MATCH_FILE = re.compile(r"^(\d+)\.parquet$")
 _NATIVE_PARTITION = re.compile(r"native_match_id=(\d+)")
@@ -111,10 +112,11 @@ def _step_seconds(steps: list[dict[str, Any]]) -> dict[str, tuple[float | None, 
 
 def layers_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
     disk = record["disk"]
-    raw, bronze, silver, quality, publish = (
+    raw, bronze, silver, gold, quality, publish = (
         disk["raw"],
         disk["bronze"],
         disk["silver"],
+        disk["gold"],
         disk["quality"],
         disk["publish"],
     )
@@ -122,6 +124,7 @@ def layers_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
         "raw": None,
         "bronze": bronze["rows"],
         "silver": silver["rows"],
+        "gold": gold["rows"],
         "quality": quality["rows"],
         "publish": None,
     }
@@ -129,6 +132,7 @@ def layers_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
         "raw": raw["files"],
         "bronze": bronze["files"],
         "silver": silver["files"],
+        "gold": gold["files"],
         "quality": quality["files"],
         "publish": publish["files"],
     }
@@ -136,6 +140,7 @@ def layers_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
         "raw": raw["bytes_pinned"],
         "bronze": bronze["bytes"],
         "silver": silver["bytes"],
+        "gold": gold["bytes"],
         "quality": quality["bytes"],
         "publish": publish["bytes"],
     }
@@ -158,11 +163,17 @@ def layers_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
             entry["downloaded"] = raw["downloaded"]
             entry["verified"] = raw["verified"]
         if layer == "publish":
+            entry["watch_files"] = len(publish["watch"])
+            entry["watch_bytes"] = publish["watch_bytes"]
+            entry["query_files"] = len(publish["query"])
+            entry["query_bytes"] = publish["query_bytes"]
             entry["note"] = (
-                "measured by `tracklab build`, without lineage.json and platform.json: "
-                "the build job writes neither, they describe the platform rather than "
-                "the data it publishes, and counting platform.json would make the title "
-                "depend on its own previous value (decision 1)"
+                "split by use: to watch, the possessions and the JSON the other pages are built "
+                "from; to query, what only /warehouse uses, the Parquet and the warehouse*.json "
+                "that describe them; as `tracklab build` "
+                "measured them, without lineage.json and platform.json (counting platform.json "
+                "would make the title depend on its own previous value, decision 1); the query "
+                "engine is not data and is not counted"
             )
         layers.append(entry)
     return layers
@@ -182,7 +193,7 @@ def tables_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
             "rows": t["rows"],
             "bytes": t["bytes"],
         }
-        for t in (*disk["bronze"]["tables"], *disk["silver"]["tables"])
+        for t in (*disk["bronze"]["tables"], *disk["silver"]["tables"], *disk["gold"]["tables"])
     ]
     rows.sort(key=lambda r: (r["layer"], r["sport"] or "", r["table"]))
     return rows
@@ -333,6 +344,13 @@ def title_from_record(record: dict[str, Any]) -> str:
     )
 
 
+def subtitle_from_record(record: dict[str, Any]) -> str:
+    """The split behind "out" (decision 10, option C), by use (`build.serves_query`): what the
+    site watches and what `/warehouse` queries, from the same measure as the title."""
+    publish = record["disk"]["publish"]
+    return f"{fmt(publish['watch_bytes'])} to watch, {fmt(publish['query_bytes'])} to query"
+
+
 def run_block(record: dict[str, Any]) -> dict[str, Any]:
     return {
         "git_sha": record["git_sha"],
@@ -348,6 +366,7 @@ def platform_from_record(record: dict[str, Any], index_payload: dict[str, Any]) 
     return {
         "schema_version": SCHEMA_VERSION,
         "title": title_from_record(record),
+        "subtitle": subtitle_from_record(record),
         "run": run_block(record),
         "layers": layers_from_record(record),
         "steps": record["steps"],
@@ -438,6 +457,7 @@ def run_publish_platform(
 
     print(f"publish platform: record {path.name}")
     print(f"publish platform: title: {payload['title']}")
+    print(f"publish platform: subtitle: {payload['subtitle']}")
 
     if check:
         target = platform_path(out_dir)

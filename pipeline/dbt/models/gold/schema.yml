@@ -1,0 +1,190 @@
+version: 2
+
+models:
+  - name: agg_bb_shots
+    description: >
+      Basketball season aggregate `aggregates_shots` as bronze wrote it, without `source_file` and `source_row`,
+      plus `is_season_total`. Grain: one row per (player_id, team_id); traded players also carry a `team_name = 'total'` row with a null `team_id` (`is_season_total`).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [player_id, team_id]
+    columns:
+      - name: player_id
+        data_tests: [not_null]
+      - name: is_season_total
+        data_tests: [not_null]
+      - name: team_id
+        description: Null only on the season-total row.
+  - name: agg_bb_drives
+    description: >
+      Basketball season aggregate `aggregates_drives` as bronze wrote it, without `source_file` and `source_row`,
+      plus `is_season_total`. Grain: one row per (player_id, team_id); traded players also carry a `team_name = 'total'` row with a null `team_id` (`is_season_total`).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [player_id, team_id]
+    columns:
+      - name: player_id
+        data_tests: [not_null]
+      - name: is_season_total
+        data_tests: [not_null]
+      - name: team_id
+        description: Null only on the season-total row.
+  - name: agg_bb_picks
+    description: >
+      Basketball season aggregate `aggregates_picks` as bronze wrote it, without `source_file` and `source_row`,
+      plus `is_season_total`. Grain: one row per (player_id, team_id); traded players also carry a `team_name = 'total'` row with a null `team_id` (`is_season_total`).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [player_id, team_id]
+    columns:
+      - name: player_id
+        data_tests: [not_null]
+      - name: is_season_total
+        data_tests: [not_null]
+      - name: team_id
+        description: Null only on the season-total row.
+  - name: agg_fb_obr
+    description: >
+      Football season aggregate `aggregates_obr` as bronze wrote it, without `source_file` and `source_row`,
+      plus `is_season_total`. Grain: one row per (player_id, team_id, position_group); the (player, team) pair repeats once per `position_group`, so the key has three columns.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [player_id, team_id, position_group]
+    columns:
+      - name: player_id
+        data_tests: [not_null]
+      - name: is_season_total
+        data_tests: [not_null]
+      - name: team_id
+        data_tests: [not_null]
+      - name: position_group
+        data_tests: [not_null]
+  - name: agg_fb_passing
+    description: >
+      Football season aggregate `aggregates_passing` as bronze wrote it, without `source_file` and `source_row`,
+      plus `is_season_total`. Grain: one row per (player_id, team_id, position_group); the (player, team) pair repeats once per `position_group`, so the key has three columns.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [player_id, team_id, position_group]
+    columns:
+      - name: player_id
+        data_tests: [not_null]
+      - name: is_season_total
+        data_tests: [not_null]
+      - name: team_id
+        data_tests: [not_null]
+      - name: position_group
+        data_tests: [not_null]
+  - name: agg_fb_physical
+    description: >
+      Football season aggregate `aggregates_physical` as bronze wrote it, without `source_file` and `source_row`,
+      plus `is_season_total`. Grain: one row per (player_id, team_id, position_group); the (player, team) pair repeats once per `position_group`, so the key has three columns.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [player_id, team_id, position_group]
+    columns:
+      - name: player_id
+        data_tests: [not_null]
+      - name: is_season_total
+        data_tests: [not_null]
+      - name: team_id
+        data_tests: [not_null]
+      - name: position_group
+        data_tests: [not_null]
+
+  - name: dim_player
+    description: One row per player and sport across the six aggregates, with the provider's own id.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [sport, player_id]
+    columns:
+      - name: sport
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["basketball", "football"]
+      - name: player_id
+        data_tests: [not_null]
+      - name: player_name
+        data_tests: [not_null]
+
+  - name: dim_season_team
+    description: >
+      One row per team and sport in the six aggregates. Not called `dim_team` because
+      silver already has one; the season-total row of a traded player is not a team.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [sport, team_id]
+    columns:
+      - name: sport
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["basketball", "football"]
+      - name: team_id
+        data_tests: [not_null]
+      - name: team_name
+        data_tests: [not_null]
+
+  - name: dim_metric
+    description: One row per (sport, family, metric) with at least one non-null value; `kind` is read off the name.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [sport, family, metric]
+    columns:
+      - name: sport
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["basketball", "football"]
+      - name: family
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["shots", "drives", "picks", "obr", "passing", "physical"]
+      - name: metric
+        data_tests: [not_null]
+      - name: kind
+        description: >
+          Counted on the real names: count 642, per_30_tip 122, fraction 241 (0 to 1,
+          basketball), percentage 5 (0 to 100, football), rate 137, per_unit 51,
+          distance 28, minutes 9, speed 5, time 2 (1,242 metrics).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["count", "per_30_tip", "fraction", "percentage", "rate", "per_unit", "distance", "minutes", "speed", "time"]
+
+  - name: fact_player_season_metric
+    description: >
+      One row per non-null numeric cell of the six aggregates. Rows with
+      `is_season_total` are the provider's totals of traded players: filter them
+      out before summing.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [sport, family, player_id, team_id, position_group, is_season_total, metric]
+    columns:
+      - name: sport
+        data_tests: [not_null]
+      - name: family
+        data_tests: [not_null]
+      - name: player_id
+        data_tests: [not_null]
+      - name: metric
+        data_tests: [not_null]
+      - name: value
+        data_tests: [not_null]

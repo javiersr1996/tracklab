@@ -1,10 +1,10 @@
 """`tracklab publish lineage`: the Dagster asset graph exported to
 `web/public/data/lineage.json` (task 33), so `/platform` draws the real graph
-instead of `dbt docs` (which only covers 12 of the 67 nodes: seeds and silver).
+instead of `dbt docs` (which only covers 22 of the 77 nodes: seeds, silver and gold).
 
-`lineage_from_defs` reads the graph `defs` already carries (67 keys: 66
+`lineage_from_defs` reads the graph `defs` already carries (77 keys: 76
 materializable assets plus `manifest_sources`, a spec no step writes) and, for
-the 12 dbt-backed nodes (10 silver models, 2 seeds), reads `dbt/target/
+the 22 dbt-backed nodes (10 silver models, 2 seeds, 10 gold models), reads `dbt/target/
 manifest.json` for their description, columns and test count -- the same file
 `dbt docs generate` builds from, without the 3 MB HTML or the `generated_at`
 that would break the clean clone. A dbt test's owner is `attached_node` when
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from dagster import Definitions
 
 SCHEMA_VERSION = 1
-GROUPS_IN_FLOW = ("ingest", "bronze", "silver", "quality", "publish")
+GROUPS_IN_FLOW = ("ingest", "bronze", "silver", "gold", "quality", "publish")
 DBT_MANIFEST = Path("dbt/target/manifest.json")
 SCHEMAS_DIR = Path(__file__).resolve().parent.parent / "bronze" / "schemas"
 LINEAGE_JSON = "lineage.json"
@@ -83,7 +83,8 @@ def dbt_nodes(manifest: dict[str, Any]) -> dict[str, DbtNode]:
     out: dict[str, DbtNode] = {}
     for uid, kind in owners.items():
         n = nodes[uid]
-        prefix = "seed" if kind == "seed" else "silver"
+        is_gold = kind == "model" and "gold" in n.get("tags", [])
+        prefix = "seed" if kind == "seed" else "gold" if is_gold else "silver"
         key = f"{prefix}_{n['name']}"
         out[key] = DbtNode(
             description=str(n.get("description") or ""),
@@ -118,7 +119,7 @@ def _bronze_schema(key: str, schemas_dir: Path) -> str:
 def schema_kind(key: str, group: str, schemas_dir: Path) -> str:
     if group == "bronze" and key.startswith("bronze_"):
         return _bronze_schema(key, schemas_dir)
-    if group == "silver":
+    if group in ("silver", "gold"):
         return "dbt"
     return "none"
 

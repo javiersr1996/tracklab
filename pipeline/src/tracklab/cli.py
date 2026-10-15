@@ -29,12 +29,16 @@ from tracklab.formats.football_report import freeze_football
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
+from tracklab.load.postgres import run_load_postgres
 from tracklab.paths import data_root
+from tracklab.publish.examples import run_publish_examples
 from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.platform import run_publish_platform
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.quality import run_publish_quality
 from tracklab.publish.stats import run_publish_stats
+from tracklab.publish.warehouse import run_publish_warehouse
+from tracklab.publish.warehouse_pg import WHERE, run_publish_warehouse_pg
 from tracklab.quality.run import CHECKS, run_quality
 from tracklab.silver.orientation import SPORTS, run_orientation
 from tracklab.silver.possessions import run_possessions
@@ -171,6 +175,28 @@ def _cmd_publish_platform(args: argparse.Namespace) -> int:
         record_dir=args.record_dir,
         out_dir=args.out_dir,
         check=args.check,
+    )
+
+
+def _cmd_publish_warehouse(args: argparse.Namespace) -> int:
+    return run_publish_warehouse(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
+
+
+def _cmd_publish_examples(args: argparse.Namespace) -> int:
+    return run_publish_examples(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
+
+
+def _cmd_publish_warehouse_pg(args: argparse.Namespace) -> int:
+    return run_publish_warehouse_pg(
+        data_dir=args.data_dir, out_dir=args.out_dir, dsn_env=args.dsn_env, where=args.where
+    )
+
+
+def _cmd_load_postgres(args: argparse.Namespace) -> int:
+    return run_load_postgres(
+        data_dir=args.data_dir,
+        dsn_env=args.dsn_env,
+        reader_password_env=args.reader_password_env,
     )
 
 
@@ -451,6 +477,112 @@ def build_parser() -> argparse.ArgumentParser:
         "stats.json, exit 1 if they differ.",
     )
     publish_platform.set_defaults(func=_cmd_publish_platform)
+
+    publish_warehouse = publish_sub.add_parser(
+        "warehouse",
+        help="Write web/public/data/warehouse/*.parquet and warehouse.json: the gold tables "
+        "the browser queries, byte-reproducible.",
+    )
+    publish_warehouse.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; gold is read from it (default: data).",
+    )
+    publish_warehouse.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where warehouse.json and warehouse/ go (default: ../web/public/data).",
+    )
+    publish_warehouse.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare rows and sha256 against the files on disk "
+        "and warehouse.json; write nothing.",
+    )
+    publish_warehouse.set_defaults(func=_cmd_publish_warehouse)
+
+    publish_examples = publish_sub.add_parser(
+        "examples",
+        help="Write warehouse_examples.json: what the /warehouse example queries must return, "
+        "computed from gold without SQL, and the basketball alias figures.",
+    )
+    publish_examples.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; gold and the bronze aliases are read from it (default: data).",
+    )
+    publish_examples.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where warehouse_examples.json goes (default: ../web/public/data).",
+    )
+    publish_examples.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare with the file on disk; write nothing.",
+    )
+    publish_examples.set_defaults(func=_cmd_publish_examples)
+
+    publish_warehouse_pg = publish_sub.add_parser(
+        "warehouse-pg",
+        help="Write warehouse_pg.json: rows, EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) and table "
+        "sizes of the example queries in the Postgres `tracklab load postgres` filled.",
+    )
+    publish_warehouse_pg.add_argument(
+        "--dsn-env",
+        default="TRACKLAB_PG_DSN",
+        help="Environment variable holding the connection string (default: TRACKLAB_PG_DSN).",
+    )
+    publish_warehouse_pg.add_argument(
+        "--where",
+        required=True,
+        choices=sorted(WHERE),
+        help="Which Postgres this is; the JSON says it in words, never the host.",
+    )
+    publish_warehouse_pg.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; gold is counted to check the load is current (default: data).",
+    )
+    publish_warehouse_pg.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where warehouse_pg.json goes and warehouse_examples.json is read from "
+        "(default: ../web/public/data).",
+    )
+    publish_warehouse_pg.set_defaults(func=_cmd_publish_warehouse_pg)
+
+    load = subparsers.add_parser("load", help="Load gold into a database outside the repo.")
+    load_sub = load.add_subparsers(dest="load_command", required=True)
+    load_postgres = load_sub.add_parser(
+        "postgres",
+        help="Apply pipeline/sql/ and load the gold dimensional model into Postgres, "
+        "incrementally: only new, changed and gone rows are written.",
+    )
+    load_postgres.add_argument(
+        "--dsn-env",
+        default="TRACKLAB_PG_DSN",
+        help="Environment variable holding the connection string (default: TRACKLAB_PG_DSN).",
+    )
+    load_postgres.add_argument(
+        "--reader-password-env",
+        default=None,
+        help="Environment variable holding a password for the read-only role "
+        "warehouse_reader; given, the role can log in with it (default: unchanged).",
+    )
+    load_postgres.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; gold is read from it (default: data).",
+    )
+    load_postgres.set_defaults(func=_cmd_load_postgres)
 
     publish_quality = publish_sub.add_parser(
         "quality",

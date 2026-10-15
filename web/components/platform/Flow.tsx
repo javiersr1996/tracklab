@@ -4,7 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { formatBytes } from "../../lib/format";
 import { counterKey, layerDurations, type PlatformLayer } from "../../lib/platform";
 
-// Five layers, one packet moving through them: each layer's counters climb
+// The layers, one packet moving through them: each layer's counters climb
 // from 0 to the exact figure in `platform.json` over a time proportional to
 // its own slowest step (`layerDurations`), the layer's time bar fills to
 // match, and the cycle loops. State lives on `figure.platform`'s own

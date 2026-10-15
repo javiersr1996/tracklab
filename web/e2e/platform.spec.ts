@@ -1,7 +1,7 @@
 import { expect, type Request, test } from "@playwright/test";
 
 // `figure.platform[data-state]` drives the flow the same way `figure.hook`
-// does in quality.spec.ts. The sequence itself (data-layer walking the five
+// does in quality.spec.ts. The sequence itself (data-layer walking the
 // layers, data-state never touching "playing" under reduced motion) is
 // recorded by a MutationObserver installed through an init script -- before
 // any of the page's own scripts run -- rather than sampled by polling or
@@ -77,12 +77,14 @@ interface PlatformLayerRecord {
 }
 
 interface PlatformJson {
+  title: string;
+  subtitle: string;
   layers: PlatformLayerRecord[];
 }
 
-const LAYER_ORDER = ["raw", "bronze", "silver", "quality", "publish"];
+const LAYER_ORDER = ["raw", "bronze", "silver", "gold", "quality", "publish"];
 
-test("plays on its own, walks the five layers in order, and finishes cycle 1 exact", async ({
+test("plays on its own, walks the layers in order, and finishes cycle 1 exact", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -119,6 +121,9 @@ test("plays on its own, walks the five layers in order, and finishes cycle 1 exa
   expect(snapshot.log?.layers.slice(0, LAYER_ORDER.length)).toEqual(LAYER_ORDER);
 
   const platform = (await (await page.request.get("/data/platform.json")).json()) as PlatformJson;
+  // The H1 and the line under it are the title and subtitle the script printed (task 46).
+  await expect(page.locator("h1")).toHaveText(platform.title);
+  await expect(page.locator("[data-subtitle]")).toHaveText(platform.subtitle);
   const count = snapshot.counters.length;
   expect(count).toBeGreaterThan(0);
 

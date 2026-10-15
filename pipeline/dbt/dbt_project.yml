@@ -59,6 +59,32 @@ models:
       views:
         +materialized: view
         +tags: ["views"]
+    # Gold: the six season aggregates as wide models, and the dimensional shape of
+    # the same data. One file per model under data/gold/<table>/, like silver.
+    gold:
+      +materialized: external
+      +format: parquet
+      +tags: ["gold"]
+      agg_bb_shots:
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold/agg_bb_shots/data.parquet"
+      agg_bb_drives:
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold/agg_bb_drives/data.parquet"
+      agg_bb_picks:
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold/agg_bb_picks/data.parquet"
+      agg_fb_obr:
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold/agg_fb_obr/data.parquet"
+      agg_fb_passing:
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold/agg_fb_passing/data.parquet"
+      agg_fb_physical:
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold/agg_fb_physical/data.parquet"
+      dim_player:
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold/dim_player/data.parquet"
+      dim_season_team:
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold/dim_season_team/data.parquet"
+      dim_metric:
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold/dim_metric/data.parquet"
+      fact_player_season_metric:
+        +location: "{{ env_var('TRACKLAB_DATA_ROOT', 'data') }}/gold/fact_player_season_metric/data.parquet"
 
 seeds:
   tracklab:

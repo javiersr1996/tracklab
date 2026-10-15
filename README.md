@@ -12,9 +12,9 @@ single Canvas renderer replays in the browser.
 ## Layers
 
 ```
-SkillCorner repos --ingest--> raw ------bronze------> Parquet ---dbt---> silver ---publish---> JSON ---> web
-(pinned commit,               (sha256 per file,        (native names,     (one schema,        (possessions,     (Next.js,
- manifest)                     receipt)                 typed)             both sports)        stats.json)       Canvas)
+SkillCorner repos --ingest--> raw ------bronze------> Parquet ---dbt---> silver ---dbt---> gold ---publish---> JSON + Parquet ---> web
+(pinned commit,               (sha256 per file,        (native names,     (one schema,       (season          (possessions,           (Next.js,
+ manifest)                     receipt)                 typed)             both sports)       aggregates)      stats.json, warehouse)  Canvas, DuckDB-WASM)
 ```
 
 - **raw**: the provider's bytes, each file checked against the sha256 in
@@ -22,8 +22,11 @@ SkillCorner repos --ingest--> raw ------bronze------> Parquet ---dbt---> silver 
 - **bronze**: one typed Parquet table per provider file family, native names and rows.
 - **silver**: the conformed schema, [`docs/schema.md`](docs/schema.md), with the six decisions
   behind it and the evidence for each in [`docs/decisions.md`](docs/decisions.md).
-- **publish**: `web/public/data/`, the possessions the site replays and `stats.json`, the only
-  figures the site and this README quote.
+- **gold**: the season aggregates as wide tables, one per sport and family, and a dimensional
+  model of them (players, teams, metrics and one long fact table), see [Warehouse](#warehouse).
+- **publish**: `web/public/data/`, the possessions the site replays, the Parquet the browser
+  queries and the JSON that describes them (`stats.json`, `warehouse.json`, `platform.json`),
+  the only figures the site and this README quote.
 
 The same query reads both sports: `SELECT * FROM frames WHERE sport = ?` returns 9,126,744 rows
 of basketball and 20,213,849 of football (`web/public/data/stats.json`). The provider bundles
@@ -62,33 +65,68 @@ BASE_URL=https://tracklab-sable.vercel.app npx playwright test   # the same suit
 The pipeline is a Dagster graph (`uv run dagster asset list -m tracklab.dagster_defs`):
 `raw_<sport>`, `bronze_<sport>_<table>` (one step per `tracklab bronze --tables` group),
 `bronze_common_orientation` and the `reports_orientation_<sport>` CSVs it writes, the dbt seeds
-and silver models, whose dbt tests run as asset checks, and `publish_possessions` and
+and silver models and the season-aggregate gold models (group `gold`), whose dbt tests run as asset checks, and `publish_possessions` and
 `publish_stats` (group `publish`). The job `build` runs all of them. From `pipeline/`:
 
 ```
 uv run dbt parse --project-dir dbt --profiles-dir dbt          # dagster-dbt reads target/manifest.json
 uv run dagster job execute -m tracklab.dagster_defs -j build
-TRACKLAB_DATA_ROOT=tests/fixtures/data uv run dagster asset materialize -m tracklab.dagster_defs --select "group:silver"
+TRACKLAB_DATA_ROOT=tests/fixtures/data uv run dagster asset materialize -m tracklab.dagster_defs --select "group:silver or group:gold"
 uv run dagster dev -m tracklab.dagster_defs                     # the UI
 ```
 
-On the fixtures only silver is materialized: the whole graph would ingest the full bundles and
+On the fixtures only silver and gold are materialized: the whole graph would ingest the full bundles and
 rebuild bronze over the slice. Select with groups rather than a bare `*`, which click expands
 against the working directory on Windows.
 
 ## Platform
 
 The pipeline as a product: [`/platform`](https://tracklab-sable.vercel.app/platform) draws the
-Dagster asset graph and animates the five layers with the numbers the latest `tracklab build`
-actually produced. Its H1 is the title `uv run tracklab publish platform` prints, from
-`web/public/data/platform.json`:
+Dagster asset graph and animates the layers, raw to publish, with the numbers the latest
+`tracklab build` actually produced. Its H1 and the line under it are the title and subtitle
+`uv run tracklab publish platform` prints, from `web/public/data/platform.json`. "Out" counts what
+`web/public/data` publishes, split by use: to watch, the possessions and the JSON the other pages
+are built from; to query, what only `/warehouse` uses, the Parquet and the `warehouse*.json` that
+describe them (`lineage.json` and `platform.json` excluded, as they describe the platform rather
+than its data).
 
 ```
-title: 2.3 GB in, 1.2 MB out
+title: 2.3 GB in, 3.3 MB out
+subtitle: 1.2 MB to watch, 2.1 MB to query
 ```
 
-`uv run dagster asset list -m tracklab.dagster_defs` lists `66` assets, the graph
+`uv run dagster asset list -m tracklab.dagster_defs` lists `76` assets, the graph
 `web/public/data/lineage.json` exports for the page.
+
+## Warehouse
+
+Gold is the season aggregates, queryable. `uv run tracklab publish warehouse` writes each gold
+table as a Parquet file with its content hash in the name (`web/public/data/warehouse/`), written by
+pyarrow with a fixed compression, row group size and row order so the bytes are reproducible, and
+describes them in `web/public/data/warehouse.json`: rows, row groups with their key ranges and bytes
+per table. The long fact table (one row per player, season and metric) has `366962` rows in row
+groups of `50000` ordered by metric, so a query for one metric skips the others.
+
+[`/warehouse`](web/app/warehouse) runs SQL over those files in the visitor's browser with DuckDB-WASM,
+loaded only when a query is run, and shows next to each result the bytes the engine and the data
+cost, counted by the engine itself. The example queries have their answers in
+`web/public/data/warehouse_examples.json`, and the page says what each percentile is a percentile
+of (people, not rows).
+
+The same model lives in Postgres as the second path: `uv run tracklab load postgres` loads it
+incrementally by row fingerprint (a second run prints `inserted=0 updated=0 deleted=0`), and
+`uv run tracklab publish warehouse-pg --where local|ci|neon` writes `warehouse_pg.json` with what
+Postgres answers to the same queries, its `EXPLAIN` plans and the size of each table. The numbers
+in the repository come from a local Postgres in Docker: `127792819` bytes for the whole database,
+`366962` rows in the fact table. The Neon project that would serve the queries live is pending the
+account: until it exists `/warehouse` runs without `DATABASE_URL` and shows that snapshot, dated
+and labelled with where it was measured.
+
+```
+uv run tracklab publish warehouse --check          # the Parquet are what gold would write
+uv run tracklab publish examples --check           # warehouse_examples.json is what gold answers
+uv run --env-file .env tracklab load postgres       # TRACKLAB_PG_DSN in pipeline/.env (ignored)
+```
 
 ## Data quality
 

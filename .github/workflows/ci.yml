@@ -1,13 +1,15 @@
-# Every push and pull request: lint, types, and the whole silver build with its
+# Every push and pull request: lint, types, and the whole silver and gold build with their
 # dbt tests, on the bronze slice versioned in pipeline/tests/fixtures (task 14).
 # The contract tests read pipeline/data, which CI does not have, so they skip
-# here and run in full-build.yml against the real bundles.
+# here and run in full-build.yml against the real bundles. The Postgres load of
+# task 44 runs against a service container, never against Neon.
 name: ci
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   pipeline:
@@ -16,8 +18,28 @@ jobs:
     defaults:
       run:
         working-directory: pipeline
+    # The Postgres of task 44's loader: the minor of 17 that Neon runs. The password changes with
+    # every run and the container lives as long as the job; it guards nothing worth a secret.
+    services:
+      postgres:
+        image: postgres:17.11
+        env:
+          POSTGRES_PASSWORD: ci-${{ github.run_id }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     env:
       TRACKLAB_DATA_ROOT: tests/fixtures/data
+      PGPASSWORD: ci-${{ github.run_id }}
+      TRACKLAB_PG_DSN: host=localhost port=5432 user=postgres dbname=postgres
+      # The Postgres tests create and drop their own databases here, and fail instead of
+      # skipping when the variable is missing.
+      TRACKLAB_TEST_PG_DSN: host=localhost port=5432 user=postgres dbname=postgres
+      TRACKLAB_REQUIRE_PG: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -29,21 +51,61 @@ jobs:
       - run: uv run mypy src
       # silver through `tracklab build` (task 32), so the same recorded run that CI checks
       # against `lineage.json` also builds the asset graph (task 15) on every push.
-      # `*` would ingest and rebuild bronze over the fixture slice: silver is what hangs from it.
+      # `*` would ingest and rebuild bronze over the fixture slice: silver and gold are what hang from it.
       # The record goes to $TRACKLAB_DATA_ROOT/build: a record under pipeline/data/ would flip
       # the contract tests' "no real bundle" skip (tests/publish/) and fail them against the
       # fixture-only rows (found by reproducing this job locally).
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
-      - run: uv run tracklab build --select "group:silver"
+      - run: uv run tracklab build --select "group:silver or group:gold"
       - run: uv run tracklab publish lineage --check
-      - run: uv run pytest -q
+      # Task 46: the committed Parquet and example answers are what gold writes, on Linux too
+      # (the fixtures carry the six season aggregates whole, so the bytes are the real ones).
+      - run: uv run tracklab publish warehouse --check
+      - run: uv run tracklab publish examples --check
+      # Task 44 by hand, as Javier will run it against Neon: two loads of the same gold (the
+      # second prints inserted=0 updated=0 deleted=0) and the snapshot, to a scratch directory.
+      # The tests below assert all of it.
+      - run: uv run tracklab load postgres
+      - run: uv run tracklab load postgres
+      - run: |
+          cp ../web/public/data/warehouse_examples.json "$RUNNER_TEMP/"
+          uv run tracklab publish warehouse-pg --where ci --out-dir "$RUNNER_TEMP"
+      - run: uv run pytest -q -rs
 
   web:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 20, not 15: a slow `playwright install` (690 s once) left the job 36 s short of 15 min, and
+    # task 45 adds about 40 s (service container, route tests, three more e2e). Task 46 caches
+    # the browser, so the install no longer varies on a cache hit; the 20 stays for a miss.
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: web
+    # Task 45: the route of /warehouse is tested against a real Postgres, as the read-only role.
+    # Only the migrations of task 44 go in (psql below, no pipeline): the route tests check that the
+    # five queries run as that role and return their columns, not their rows, which the
+    # pipeline job and the local run against the real gold cover. The e2e needs no database.
+    services:
+      postgres:
+        image: postgres:17.11
+        env:
+          POSTGRES_PASSWORD: ci-${{ github.run_id }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    # The read-only role's password, like the server's, is ci-<run id>. It goes in PGPASSWORD, which
+    # `pg` reads when the URL carries none, so no connection string here holds a password
+    # (review V of P4, B6; `tests/warehouse-pg-secret.test.ts` looks for one in every file).
+    env:
+      PGPASSWORD: ci-${{ github.run_id }}
+      TRACKLAB_TEST_WEB_PG_URL: postgresql://warehouse_reader@localhost:5432/postgres
+      # The owner's login, for the test that checks no lock outlives a request (review V of P4, S5).
+      TRACKLAB_TEST_WEB_PG_ADMIN_URL: postgresql://postgres@localhost:5432/postgres
+      TRACKLAB_REQUIRE_PG: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -52,11 +114,36 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+      - name: Schema and read-only login for the route tests
+        env:
+          PGHOST: localhost
+          PGUSER: postgres
+          PGDATABASE: postgres
+          PGPASSWORD: ci-${{ github.run_id }}
+        run: |
+          psql -v ON_ERROR_STOP=1 -c "CREATE SCHEMA warehouse"
+          for migration in ../pipeline/sql/[0-9][0-9][0-9]_*.sql; do psql -v ON_ERROR_STOP=1 -f "$migration"; done
+          psql -v ON_ERROR_STOP=1 -c "ALTER ROLE warehouse_reader WITH LOGIN PASSWORD 'ci-${{ github.run_id }}'"
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
+      # The tests ran before the build, so this one reads the bundle it made (task 45).
+      - run: npx vitest run tests/warehouse-pg-secret.test.ts
+      # The browser download is what took from 26 s to 690 s. Cached by Playwright's own version;
+      # the system libraries are not cached (they live outside ~/.cache), so a hit still runs
+      # `install-deps`.
+      - id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - id: browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - if: steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - if: steps.browsers.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       - run: npm run e2e
       # Screenshots are for looking at, not assertions (task 21).
       - uses: actions/upload-artifact@v4

@@ -12,7 +12,7 @@ the record directory instead, gone when the command exits.
 The record (`<data root>/build/<utc>_<sha7>.json`, ignored by git) holds what only the
 run itself can know: the duration of each step from `StepSuccessData`, the
 seconds per dbt model from dagster-dbt's `Execution Duration`, and a measure
-of the disk after the run (raw, bronze, silver, quality, publish). Steps run in
+of the disk after the run (raw, bronze, silver, gold, quality, publish). Steps run in
 parallel, so their durations are reported per step and never summed. A step
 the plan holds but no event names (downstream of a failure, the multiprocess
 executor abandons it without a `STEP_SKIPPED`) is recorded as `not_run`. Row
@@ -21,7 +21,7 @@ in the record names this machine: no host name, no path outside the data
 root, and the receipt's `source_path` is read to find the raw bytes but never
 written. `tracklab publish platform` (task 34) turns a record into
 `platform.json`; this command writes nothing under `web/`, and it measures
-`web/public/data` without `lineage.json` and `platform.json`: the job does not
+`web/public/data` (JSON and Parquet) without `lineage.json` and `platform.json`: the job does not
 write them, they describe the platform (its graph, its measure) rather than
 the data it publishes, and `platform.json` counted would make the next title
 depend on the previous one. A measurement that fails (a truncated Parquet) is
@@ -289,6 +289,14 @@ def _layer_totals(tables: Sequence[Mapping[str, Any]]) -> dict[str, int]:
     }
 
 
+def measure_gold(data_dir: Path) -> list[dict[str, Any]]:
+    """`gold/<model>/`: the season aggregates and the dimensional model of task 40."""
+    return [
+        _table_entry("gold", None, table.name, measure_table(table))
+        for table in _subdirs(data_dir / "gold")
+    ]
+
+
 def measure_raw(data_dir: Path, manifest_path: Path) -> dict[str, Any]:
     """The manifest's files and bytes, the receipts' `downloaded` and `verified`,
     and the bytes a reader gets from each file that is on disk (a `.gz` counted
@@ -351,23 +359,57 @@ def measure_quality(reports_dir: Path) -> dict[str, Any]:
     }
 
 
+def serves_query(name: str) -> bool:
+    """The one rule of the split behind "out" (decision 10, option C, by use): a published file
+    that only `/warehouse` uses is "to query", the Parquet and the `warehouse*.json` that
+    describe them, their example answers and the Postgres snapshot; anything else is "to watch"."""
+    return name.endswith(".parquet") or (name.startswith("warehouse") and name.endswith(".json"))
+
+
 def measure_publish(web_data_dir: Path) -> dict[str, Any]:
-    files = [
-        {"path": path.relative_to(web_data_dir).as_posix(), "bytes": path.stat().st_size}
-        for path in sorted(web_data_dir.rglob("*.json"))
+    """What `web/public/data` publishes, split by use (task 41; decision 10, option C): what the
+    site watches and what `/warehouse` queries (`serves_query`). `lineage.json` and
+    `platform.json` are left out by name at any depth, the Parquet are not."""
+    paths = sorted(
+        path
+        for pattern in ("*.json", "*.parquet")
+        for path in web_data_dir.rglob(pattern)
         if path.name not in ABOUT_PLATFORM
-    ]
-    return {"files": len(files), "bytes": sum(f["bytes"] for f in files), "json": files}
+    )
+
+    def listing(to_query: bool) -> list[dict[str, Any]]:
+        return [
+            {"path": path.relative_to(web_data_dir).as_posix(), "bytes": path.stat().st_size}
+            for path in paths
+            if serves_query(path.name) == to_query
+        ]
+
+    watch, query = listing(False), listing(True)
+    watch_bytes = sum(f["bytes"] for f in watch)
+    query_bytes = sum(f["bytes"] for f in query)
+    return {
+        "files": len(paths),
+        "bytes": watch_bytes + query_bytes,
+        "watch_bytes": watch_bytes,
+        "query_bytes": query_bytes,
+        "watch": watch,
+        "query": query,
+    }
 
 
 def measure_disk(
     data_dir: Path, manifest_path: Path, reports_dir: Path, web_data_dir: Path
 ) -> dict[str, Any]:
-    bronze, silver = measure_bronze(data_dir), measure_silver(data_dir)
+    bronze, silver, gold = (
+        measure_bronze(data_dir),
+        measure_silver(data_dir),
+        measure_gold(data_dir),
+    )
     return {
         "raw": measure_raw(data_dir, manifest_path),
         "bronze": {**_layer_totals(bronze), "tables": bronze},
         "silver": {**_layer_totals(silver), "tables": silver},
+        "gold": {**_layer_totals(gold), "tables": gold},
         "quality": measure_quality(reports_dir),
         "publish": measure_publish(web_data_dir),
     }

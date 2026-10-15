@@ -36,3 +36,12 @@ sources:
           One row per phase of play. A phase is not a team possession: 3,986 of
           the 8,834 carry `team_possession_loss_in_phase`, which is why the
           chain rule won over merging them.
+      - name: aggregates_obr
+        description: >
+          Season table, one row per player, team and `position_group` of the A-League 2024/2025 (not per player and team: that pair repeats).
+      - name: aggregates_passing
+        description: >
+          Season table, one row per player, team and `position_group` of the A-League 2024/2025 (not per player and team: that pair repeats).
+      - name: aggregates_physical
+        description: >
+          Season table, one row per player, team and `position_group` of the A-League 2024/2025 (not per player and team: that pair repeats).

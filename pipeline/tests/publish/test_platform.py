@@ -56,6 +56,30 @@ def test_title_is_fmt_of_bytes_pinned_and_the_publish_layers_bytes() -> None:
     assert payload["title"] == expected
 
 
+def test_subtitle_is_fmt_of_what_the_site_watches_and_what_warehouse_queries() -> None:
+    payload = _payload()
+    publish_layer = next(layer for layer in payload["layers"] if layer["layer"] == "publish")
+    print(f"subtitle: {payload['subtitle']}")
+    assert publish_layer["watch_bytes"] + publish_layer["query_bytes"] == publish_layer["bytes"]
+    watch, query = fmt(publish_layer["watch_bytes"]), fmt(publish_layer["query_bytes"])
+    expected = f"{watch} to watch, {query} to query"
+    assert payload["subtitle"] == expected
+
+
+def test_to_query_is_the_parquet_and_the_warehouse_json_on_disk() -> None:
+    """Counted again from the folder, by name and not by `serves_query`: the seven Parquet of
+    warehouse.json and every `warehouse*.json` (review V of P4, A1). A publish of a new
+    warehouse JSON without a new build also fails here."""
+    publish_layer = next(layer for layer in _payload()["layers"] if layer["layer"] == "publish")
+    data = PLATFORM_JSON.parent
+    warehouse = json.loads((data / "warehouse.json").read_text(encoding="utf-8"))
+    parquet = [data / "warehouse" / t["file"] for t in warehouse["tables"]]
+    described = sorted(data.glob("warehouse*.json"))
+    assert len(parquet) == 7 and len(described) == 3
+    on_disk = sum(p.stat().st_size for p in parquet + described)
+    assert (publish_layer["query_files"], publish_layer["query_bytes"]) == (10, on_disk)
+
+
 def test_raw_bytes_over_matches_plus_season_files_is_bytes_pinned() -> None:
     payload = _payload()
     total = sum(m["raw_bytes"] for m in payload["matches"]) + payload["season_files"]["bytes"]
