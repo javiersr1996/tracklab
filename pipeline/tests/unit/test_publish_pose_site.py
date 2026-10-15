@@ -489,8 +489,7 @@ def test_the_bronze_path_gives_the_samples_skeletons_within_a_centimetre(real_da
     from tracklab.pose.data import load_players
 
     rows = load_players(real_data, 1925299)
-    flags = pose_hook.detected_flags(real_data, 1925299, lo, hi)
-    frames = pose_hook.pose_frames(rows, table, flags, lo, hi)
+    frames = pose_hook.pose_frames(rows, table, lo, hi)
     ids = [p["player_id"] for p in sample["players"]]
     worst = 0
     compared = flipped = 0
