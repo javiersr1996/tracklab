@@ -36,7 +36,9 @@ export default function HomePage() {
         </tbody>
       </table>
       <p>
-        <Link href="/replay">Replay any possession</Link> · <a href={REPO}>Repository</a> ·{" "}
+        <Link href="/replay">Replay any possession</Link> ·{" "}
+        <Link href="/platform">How this was built</Link> ·{" "}
+        <Link href="/quality">Data quality</Link> · <a href={REPO}>Repository</a> ·{" "}
         <a href={`${REPO}/blob/main/docs/schema.md`}>Schema</a>
       </p>
     </main>

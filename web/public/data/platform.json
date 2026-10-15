@@ -1,0 +1,1142 @@
+{
+  "schema_version": 1,
+  "title": "2.3 GB in, 1.2 MB out",
+  "run": {
+    "git_sha": "e0961e8875bd24c34623f5b50278edef87e49d8a",
+    "started_utc": "2026-09-26T16:33:35+00:00",
+    "finished_utc": "2026-09-26T16:41:39+00:00",
+    "wall_seconds": 484.529,
+    "host": {
+      "system": "Windows",
+      "cpus": 22,
+      "ram_gb": 31.7
+    },
+    "versions": {
+      "python": "3.13.5",
+      "dagster": "1.13.23",
+      "dagster-dbt": "0.29.23",
+      "dbt-core": "1.12.5",
+      "duckdb": "1.5.5"
+    }
+  },
+  "layers": [
+    {
+      "layer": "raw",
+      "files": 120,
+      "rows": null,
+      "bytes": 2316182304,
+      "seconds": 6.0,
+      "seconds_sum": 7.0,
+      "bytes_pinned": 2316182304,
+      "bytes_read": 3736408087,
+      "downloaded": 0,
+      "verified": 120
+    },
+    {
+      "layer": "bronze",
+      "files": 390,
+      "rows": 31358054,
+      "bytes": 445275560,
+      "seconds": 145.3,
+      "seconds_sum": 363.4
+    },
+    {
+      "layer": "silver",
+      "files": 66,
+      "rows": 29521069,
+      "bytes": 251125051,
+      "seconds": 141.7,
+      "seconds_sum": 141.7
+    },
+    {
+      "layer": "quality",
+      "files": 6,
+      "rows": 910,
+      "bytes": 57648,
+      "seconds": 116.6,
+      "seconds_sum": 192.6
+    },
+    {
+      "layer": "publish",
+      "files": 15,
+      "rows": null,
+      "bytes": 1230786,
+      "seconds": 7.6,
+      "seconds_sum": 14.1,
+      "note": "measured by `tracklab build`, without lineage.json and platform.json: the build job writes neither, they describe the platform rather than the data it publishes, and counting platform.json would make the title depend on its own previous value (decision 1)"
+    }
+  ],
+  "steps": [
+    {
+      "step_key": "raw_basketball",
+      "assets": [
+        "raw_basketball"
+      ],
+      "group": "ingest",
+      "status": "success",
+      "duration_ms": 980.6351000443101,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "raw_football",
+      "assets": [
+        "raw_football"
+      ],
+      "group": "ingest",
+      "status": "success",
+      "duration_ms": 5971.933200024068,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "bronze_basketball_aggregates",
+      "assets": [
+        "bronze_basketball_aggregates_drives",
+        "bronze_basketball_aggregates_picks",
+        "bronze_basketball_aggregates_shots"
+      ],
+      "group": "bronze",
+      "status": "success",
+      "duration_ms": 6030.494600068778,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "bronze_basketball_events",
+      "assets": [
+        "bronze_basketball_events_chance_players",
+        "bronze_basketball_events_chances",
+        "bronze_basketball_events_closeouts",
+        "bronze_basketball_events_dribbles",
+        "bronze_basketball_events_drives",
+        "bronze_basketball_events_fouls",
+        "bronze_basketball_events_free_throws",
+        "bronze_basketball_events_handoffs",
+        "bronze_basketball_events_isolations",
+        "bronze_basketball_events_matchups",
+        "bronze_basketball_events_off_ball_screens",
+        "bronze_basketball_events_passes",
+        "bronze_basketball_events_picks",
+        "bronze_basketball_events_possessions",
+        "bronze_basketball_events_posts",
+        "bronze_basketball_events_rebounds",
+        "bronze_basketball_events_shots",
+        "bronze_basketball_events_timeouts",
+        "bronze_basketball_events_touches",
+        "bronze_basketball_events_turnovers"
+      ],
+      "group": "bronze",
+      "status": "success",
+      "duration_ms": 34678.54300001636,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "bronze_basketball_meta",
+      "assets": [
+        "bronze_basketball_game_players",
+        "bronze_basketball_games",
+        "bronze_basketball_matches",
+        "bronze_basketball_player_id_aliases"
+      ],
+      "group": "bronze",
+      "status": "success",
+      "duration_ms": 2984.333600034006,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "bronze_basketball_tracking",
+      "assets": [
+        "bronze_basketball_tracking_frames",
+        "bronze_basketball_tracking_objects"
+      ],
+      "group": "bronze",
+      "status": "success",
+      "duration_ms": 145258.51239997428,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "bronze_football_aggregates",
+      "assets": [
+        "bronze_football_aggregates_obr",
+        "bronze_football_aggregates_passing",
+        "bronze_football_aggregates_physical"
+      ],
+      "group": "bronze",
+      "status": "success",
+      "duration_ms": 3904.342200024985,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "bronze_football_events",
+      "assets": [
+        "bronze_football_dynamic_events",
+        "bronze_football_phases_of_play"
+      ],
+      "group": "bronze",
+      "status": "success",
+      "duration_ms": 37643.38360005058,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "bronze_football_meta",
+      "assets": [
+        "bronze_football_match",
+        "bronze_football_match_periods",
+        "bronze_football_match_players",
+        "bronze_football_matches"
+      ],
+      "group": "bronze",
+      "status": "success",
+      "duration_ms": 4835.493399994448,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "bronze_football_tracking",
+      "assets": [
+        "bronze_football_tracking_frames",
+        "bronze_football_tracking_objects"
+      ],
+      "group": "bronze",
+      "status": "success",
+      "duration_ms": 118152.53660001326,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "orientation",
+      "assets": [
+        "bronze_common_orientation",
+        "reports_orientation_basketball",
+        "reports_orientation_football"
+      ],
+      "group": "bronze",
+      "status": "success",
+      "duration_ms": 9919.910800061189,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "quality_clock",
+      "assets": [
+        "quality_clock"
+      ],
+      "group": "quality",
+      "status": "success",
+      "duration_ms": 37179.49379992206,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "quality_partitions",
+      "assets": [
+        "quality_partitions"
+      ],
+      "group": "quality",
+      "status": "success",
+      "duration_ms": 632.8552999766544,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "silver",
+      "assets": [
+        "seed_event_type_map",
+        "seed_surface_spec",
+        "silver_dim_entity",
+        "silver_dim_match",
+        "silver_dim_period",
+        "silver_dim_sport",
+        "silver_dim_team",
+        "silver_dim_team_period",
+        "silver_events",
+        "silver_frame_possession",
+        "silver_frames",
+        "silver_frames_attacking"
+      ],
+      "group": "silver",
+      "status": "success",
+      "duration_ms": 141721.95969999302,
+      "dbt_seconds": {
+        "seed_event_type_map": 0.334651,
+        "seed_surface_spec": 0.331714,
+        "silver_dim_entity": 0.618482,
+        "silver_dim_match": 0.454662,
+        "silver_dim_period": 0.828687,
+        "silver_dim_sport": 0.569807,
+        "silver_dim_team": 0.807315,
+        "silver_dim_team_period": 0.724951,
+        "silver_events": 7.282,
+        "silver_frame_possession": 0.12384,
+        "silver_frames": 57.061429,
+        "silver_frames_attacking": 0.090434
+      }
+    },
+    {
+      "step_key": "publish_possessions",
+      "assets": [
+        "publish_possessions"
+      ],
+      "group": "publish",
+      "status": "success",
+      "duration_ms": 7649.74139991682,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "quality_detection",
+      "assets": [
+        "quality_detection"
+      ],
+      "group": "quality",
+      "status": "success",
+      "duration_ms": 2101.7253999598324,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "quality_entry_angle",
+      "assets": [
+        "quality_entry_angle"
+      ],
+      "group": "quality",
+      "status": "success",
+      "duration_ms": 18050.182499922812,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "quality_gravity",
+      "assets": [
+        "quality_gravity"
+      ],
+      "group": "quality",
+      "status": "success",
+      "duration_ms": 18105.70259997621,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "quality_noise",
+      "assets": [
+        "quality_noise"
+      ],
+      "group": "quality",
+      "status": "success",
+      "duration_ms": 116569.85890003853,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "publish_stats",
+      "assets": [
+        "publish_stats"
+      ],
+      "group": "publish",
+      "status": "success",
+      "duration_ms": 707.1647000266239,
+      "dbt_seconds": {}
+    },
+    {
+      "step_key": "publish_quality",
+      "assets": [
+        "publish_quality"
+      ],
+      "group": "publish",
+      "status": "success",
+      "duration_ms": 5756.717600044794,
+      "dbt_seconds": {}
+    }
+  ],
+  "tables": [
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "aggregates_drives",
+      "files": 1,
+      "rows": 301,
+      "bytes": 83518
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "aggregates_picks",
+      "files": 1,
+      "rows": 319,
+      "bytes": 494089
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "aggregates_shots",
+      "files": 1,
+      "rows": 326,
+      "bytes": 322755
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_chance_players",
+      "files": 10,
+      "rows": 20540,
+      "bytes": 863330
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_chances",
+      "files": 10,
+      "rows": 2055,
+      "bytes": 262449
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_closeouts",
+      "files": 10,
+      "rows": 601,
+      "bytes": 232500
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_dribbles",
+      "files": 10,
+      "rows": 13962,
+      "bytes": 573073
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_drives",
+      "files": 10,
+      "rows": 660,
+      "bytes": 176324
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_fouls",
+      "files": 10,
+      "rows": 443,
+      "bytes": 120279
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_free_throws",
+      "files": 10,
+      "rows": 430,
+      "bytes": 81278
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_handoffs",
+      "files": 10,
+      "rows": 417,
+      "bytes": 127942
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_isolations",
+      "files": 10,
+      "rows": 180,
+      "bytes": 119122
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_matchups",
+      "files": 10,
+      "rows": 14416,
+      "bytes": 373977
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_off_ball_screens",
+      "files": 10,
+      "rows": 1103,
+      "bytes": 164720
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_passes",
+      "files": 10,
+      "rows": 4786,
+      "bytes": 505975
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_picks",
+      "files": 10,
+      "rows": 1520,
+      "bytes": 179666
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_possessions",
+      "files": 10,
+      "rows": 1564,
+      "bytes": 188171
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_posts",
+      "files": 10,
+      "rows": 105,
+      "bytes": 115230
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_rebounds",
+      "files": 10,
+      "rows": 768,
+      "bytes": 122550
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_shots",
+      "files": 10,
+      "rows": 1459,
+      "bytes": 282157
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_timeouts",
+      "files": 10,
+      "rows": 65,
+      "bytes": 55848
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_touches",
+      "files": 10,
+      "rows": 6662,
+      "bytes": 807479
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "events_turnovers",
+      "files": 10,
+      "rows": 248,
+      "bytes": 95583
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "game_players",
+      "files": 10,
+      "rows": 234,
+      "bytes": 44901
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "games",
+      "files": 10,
+      "rows": 10,
+      "bytes": 68120
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "matches",
+      "files": 1,
+      "rows": 10,
+      "bytes": 6944
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "player_id_aliases",
+      "files": 1,
+      "rows": 18,
+      "bytes": 4089
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "tracking_frames",
+      "files": 10,
+      "rows": 1472932,
+      "bytes": 15519217
+    },
+    {
+      "layer": "bronze",
+      "sport": "basketball",
+      "table": "tracking_objects",
+      "files": 10,
+      "rows": 9126744,
+      "bytes": 293405252
+    },
+    {
+      "layer": "bronze",
+      "sport": "common",
+      "table": "orientation",
+      "files": 1,
+      "rows": 162,
+      "bytes": 4811
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "aggregates_obr",
+      "files": 1,
+      "rows": 407,
+      "bytes": 157089
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "aggregates_passing",
+      "files": 1,
+      "rows": 407,
+      "bytes": 77875
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "aggregates_physical",
+      "files": 1,
+      "rows": 406,
+      "bytes": 104835
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "dynamic_events",
+      "files": 20,
+      "rows": 94361,
+      "bytes": 18821946
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "match",
+      "files": 20,
+      "rows": 20,
+      "bytes": 444721
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "match_periods",
+      "files": 20,
+      "rows": 40,
+      "bytes": 82064
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "match_players",
+      "files": 20,
+      "rows": 719,
+      "bytes": 358980
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "matches",
+      "files": 1,
+      "rows": 20,
+      "bytes": 5961
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "phases_of_play",
+      "files": 20,
+      "rows": 8834,
+      "bytes": 1074829
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "tracking_frames",
+      "files": 20,
+      "rows": 1244814,
+      "bytes": 26328096
+    },
+    {
+      "layer": "bronze",
+      "sport": "football",
+      "table": "tracking_objects",
+      "files": 20,
+      "rows": 19334986,
+      "bytes": 82417815
+    },
+    {
+      "layer": "silver",
+      "sport": null,
+      "table": "dim_entity",
+      "files": 1,
+      "rows": 983,
+      "bytes": 25660
+    },
+    {
+      "layer": "silver",
+      "sport": null,
+      "table": "dim_match",
+      "files": 1,
+      "rows": 30,
+      "bytes": 4708
+    },
+    {
+      "layer": "silver",
+      "sport": null,
+      "table": "dim_period",
+      "files": 1,
+      "rows": 81,
+      "bytes": 3180
+    },
+    {
+      "layer": "silver",
+      "sport": null,
+      "table": "dim_sport",
+      "files": 1,
+      "rows": 2,
+      "bytes": 1221
+    },
+    {
+      "layer": "silver",
+      "sport": null,
+      "table": "dim_team",
+      "files": 1,
+      "rows": 30,
+      "bytes": 1951
+    },
+    {
+      "layer": "silver",
+      "sport": null,
+      "table": "dim_team_period",
+      "files": 1,
+      "rows": 162,
+      "bytes": 4421
+    },
+    {
+      "layer": "silver",
+      "sport": null,
+      "table": "events",
+      "files": 30,
+      "rows": 179188,
+      "bytes": 6983741
+    },
+    {
+      "layer": "silver",
+      "sport": null,
+      "table": "frames",
+      "files": 30,
+      "rows": 29340593,
+      "bytes": 244100169
+    }
+  ],
+  "matches": [
+    {
+      "sport": "basketball",
+      "match_id": 114086,
+      "raw_bytes": 43189208,
+      "raw_bytes_read": 193696513,
+      "bronze_tracking_rows": 124796,
+      "silver_frames_rows": 1014068,
+      "silver_events_rows": 6975,
+      "published_possessions": 1,
+      "published_bytes": 91458
+    },
+    {
+      "sport": "basketball",
+      "match_id": 114099,
+      "raw_bytes": 36454952,
+      "raw_bytes_read": 167542161,
+      "bronze_tracking_rows": 147892,
+      "silver_frames_rows": 832205,
+      "silver_events_rows": 7174,
+      "published_possessions": 1,
+      "published_bytes": 99127
+    },
+    {
+      "sport": "basketball",
+      "match_id": 114169,
+      "raw_bytes": 49041983,
+      "raw_bytes_read": 227735887,
+      "bronze_tracking_rows": 172257,
+      "silver_frames_rows": 1167936,
+      "silver_events_rows": 7367,
+      "published_possessions": 1,
+      "published_bytes": 73652
+    },
+    {
+      "sport": "basketball",
+      "match_id": 114234,
+      "raw_bytes": 35164843,
+      "raw_bytes_read": 162953999,
+      "bronze_tracking_rows": 158923,
+      "silver_frames_rows": 793452,
+      "silver_events_rows": 7419,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "basketball",
+      "match_id": 114243,
+      "raw_bytes": 37236521,
+      "raw_bytes_read": 170057835,
+      "bronze_tracking_rows": 146870,
+      "silver_frames_rows": 847253,
+      "silver_events_rows": 7346,
+      "published_possessions": 1,
+      "published_bytes": 80241
+    },
+    {
+      "sport": "basketball",
+      "match_id": 178442,
+      "raw_bytes": 42642338,
+      "raw_bytes_read": 195667807,
+      "bronze_tracking_rows": 162479,
+      "silver_frames_rows": 986062,
+      "silver_events_rows": 7607,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "basketball",
+      "match_id": 179612,
+      "raw_bytes": 39608524,
+      "raw_bytes_read": 180089740,
+      "bronze_tracking_rows": 140856,
+      "silver_frames_rows": 917807,
+      "silver_events_rows": 7175,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "basketball",
+      "match_id": 184439,
+      "raw_bytes": 37154036,
+      "raw_bytes_read": 171520209,
+      "bronze_tracking_rows": 154021,
+      "silver_frames_rows": 851708,
+      "silver_events_rows": 7145,
+      "published_possessions": 1,
+      "published_bytes": 89788
+    },
+    {
+      "sport": "basketball",
+      "match_id": 188630,
+      "raw_bytes": 35055658,
+      "raw_bytes_read": 157999854,
+      "bronze_tracking_rows": 121793,
+      "silver_frames_rows": 804518,
+      "silver_events_rows": 6729,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "basketball",
+      "match_id": 191313,
+      "raw_bytes": 39183432,
+      "raw_bytes_read": 179534977,
+      "bronze_tracking_rows": 143045,
+      "silver_frames_rows": 911735,
+      "silver_events_rows": 7047,
+      "published_possessions": 1,
+      "published_bytes": 89041
+    },
+    {
+      "sport": "football",
+      "match_id": 1874553,
+      "raw_bytes": 95617845,
+      "raw_bytes_read": 95617845,
+      "bronze_tracking_rows": 60301,
+      "silver_frames_rows": 1017612,
+      "silver_events_rows": 5531,
+      "published_possessions": 1,
+      "published_bytes": 87914
+    },
+    {
+      "sport": "football",
+      "match_id": 1886347,
+      "raw_bytes": 94348843,
+      "raw_bytes_read": 94348843,
+      "bronze_tracking_rows": 59061,
+      "silver_frames_rows": 999534,
+      "silver_events_rows": 5751,
+      "published_possessions": 1,
+      "published_bytes": 73996
+    },
+    {
+      "sport": "football",
+      "match_id": 1899585,
+      "raw_bytes": 90072987,
+      "raw_bytes_read": 90072987,
+      "bronze_tracking_rows": 60530,
+      "silver_frames_rows": 935663,
+      "silver_events_rows": 5227,
+      "published_possessions": 1,
+      "published_bytes": 62747
+    },
+    {
+      "sport": "football",
+      "match_id": 1925299,
+      "raw_bytes": 102294620,
+      "raw_bytes_read": 102294620,
+      "bronze_tracking_rows": 61301,
+      "silver_frames_rows": 1102666,
+      "silver_events_rows": 5909,
+      "published_possessions": 1,
+      "published_bytes": 144419
+    },
+    {
+      "sport": "football",
+      "match_id": 1927964,
+      "raw_bytes": 96709603,
+      "raw_bytes_read": 96709603,
+      "bronze_tracking_rows": 59070,
+      "silver_frames_rows": 1029457,
+      "silver_events_rows": 6264,
+      "published_possessions": 1,
+      "published_bytes": 131673
+    },
+    {
+      "sport": "football",
+      "match_id": 1953632,
+      "raw_bytes": 94813743,
+      "raw_bytes_read": 94813743,
+      "bronze_tracking_rows": 59250,
+      "silver_frames_rows": 1009976,
+      "silver_events_rows": 5362,
+      "published_possessions": 1,
+      "published_bytes": 86453
+    },
+    {
+      "sport": "football",
+      "match_id": 1959846,
+      "raw_bytes": 92371364,
+      "raw_bytes_read": 92371364,
+      "bronze_tracking_rows": 58541,
+      "silver_frames_rows": 982997,
+      "silver_events_rows": 5320,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 1986691,
+      "raw_bytes": 92971566,
+      "raw_bytes_read": 92971566,
+      "bronze_tracking_rows": 59090,
+      "silver_frames_rows": 990748,
+      "silver_events_rows": 5044,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 1996435,
+      "raw_bytes": 93746713,
+      "raw_bytes_read": 93746713,
+      "bronze_tracking_rows": 57621,
+      "silver_frames_rows": 1001213,
+      "silver_events_rows": 5819,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 1996436,
+      "raw_bytes": 92843799,
+      "raw_bytes_read": 92843799,
+      "bronze_tracking_rows": 60280,
+      "silver_frames_rows": 990518,
+      "silver_events_rows": 4507,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 2006229,
+      "raw_bytes": 95007406,
+      "raw_bytes_read": 95007406,
+      "bronze_tracking_rows": 59270,
+      "silver_frames_rows": 1015933,
+      "silver_events_rows": 5589,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 2006363,
+      "raw_bytes": 95540042,
+      "raw_bytes_read": 95540042,
+      "bronze_tracking_rows": 59101,
+      "silver_frames_rows": 1019981,
+      "silver_events_rows": 5612,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 2007448,
+      "raw_bytes": 94318653,
+      "raw_bytes_read": 94318653,
+      "bronze_tracking_rows": 58081,
+      "silver_frames_rows": 1018509,
+      "silver_events_rows": 4898,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 2007721,
+      "raw_bytes": 97676487,
+      "raw_bytes_read": 97676487,
+      "bronze_tracking_rows": 57571,
+      "silver_frames_rows": 1064831,
+      "silver_events_rows": 5448,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 2010085,
+      "raw_bytes": 97149777,
+      "raw_bytes_read": 97149777,
+      "bronze_tracking_rows": 58991,
+      "silver_frames_rows": 1046983,
+      "silver_events_rows": 5228,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 2011166,
+      "raw_bytes": 91437577,
+      "raw_bytes_read": 91437577,
+      "bronze_tracking_rows": 71851,
+      "silver_frames_rows": 897345,
+      "silver_events_rows": 4673,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 2013725,
+      "raw_bytes": 100726051,
+      "raw_bytes_read": 100726051,
+      "bronze_tracking_rows": 70251,
+      "silver_frames_rows": 1034816,
+      "silver_events_rows": 5432,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 2015213,
+      "raw_bytes": 106610351,
+      "raw_bytes_read": 106610351,
+      "bronze_tracking_rows": 72101,
+      "silver_frames_rows": 1116466,
+      "silver_events_rows": 5329,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 2016236,
+      "raw_bytes": 99448255,
+      "raw_bytes_read": 99448255,
+      "bronze_tracking_rows": 71101,
+      "silver_frames_rows": 1009309,
+      "silver_events_rows": 5466,
+      "published_possessions": 0,
+      "published_bytes": 0
+    },
+    {
+      "sport": "football",
+      "match_id": 2017461,
+      "raw_bytes": 93647666,
+      "raw_bytes_read": 93647666,
+      "bronze_tracking_rows": 71451,
+      "silver_frames_rows": 929292,
+      "silver_events_rows": 4795,
+      "published_possessions": 0,
+      "published_bytes": 0
+    }
+  ],
+  "season_files": {
+    "files": 10,
+    "bytes": 4097461,
+    "bytes_read": 12255757,
+    "items": [
+      {
+        "sport": "basketball",
+        "role": "aggregate",
+        "path": "data/aggregates/acb_drivesaggregates_20252026.csv",
+        "bytes": 162072,
+        "bytes_read": 162072
+      },
+      {
+        "sport": "basketball",
+        "role": "aggregate",
+        "path": "data/aggregates/acb_picksaggregates_20252026.csv",
+        "bytes": 839870,
+        "bytes_read": 839870
+      },
+      {
+        "sport": "basketball",
+        "role": "aggregate",
+        "path": "data/aggregates/acb_shotsaggregates_20252026.csv",
+        "bytes": 601318,
+        "bytes_read": 601318
+      },
+      {
+        "sport": "basketball",
+        "role": "matches",
+        "path": "data/matches.json",
+        "bytes": 4324,
+        "bytes_read": 4324
+      },
+      {
+        "sport": "basketball",
+        "role": "player_aliases",
+        "path": "data/player_id_aliases.csv",
+        "bytes": 1062,
+        "bytes_read": 1062
+      },
+      {
+        "sport": "football",
+        "role": "aggregate",
+        "path": "data/aggregates/aus1league_obraggregates_20242025.csv",
+        "bytes": 263921,
+        "bytes_read": 263921
+      },
+      {
+        "sport": "football",
+        "role": "aggregate",
+        "path": "data/aggregates/aus1league_passingaggregates_20242025.csv",
+        "bytes": 124039,
+        "bytes_read": 124039
+      },
+      {
+        "sport": "football",
+        "role": "aggregate",
+        "path": "data/aggregates/aus1league_physicalaggregates_20242025.csv",
+        "bytes": 167312,
+        "bytes_read": 167312
+      },
+      {
+        "sport": "football",
+        "role": "bodypose_sample",
+        "path": "data/bodypose/sample_1925299_phase406.jsonl.gz",
+        "bytes": 1926895,
+        "bytes_read": 10085191
+      },
+      {
+        "sport": "football",
+        "role": "matches",
+        "path": "data/matches.json",
+        "bytes": 6648,
+        "bytes_read": 6648
+      }
+    ]
+  }
+}

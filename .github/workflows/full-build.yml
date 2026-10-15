@@ -36,12 +36,23 @@ jobs:
         with:
           path: pipeline/data/raw
           key: raw-${{ hashFiles('pipeline/manifest/sources.json') }}
-      # Bronze, orientation and silver as one Dagster run over every asset (task 15);
-      # raw_* verifies the bytes the two steps above left, it downloads nothing.
+      # Bronze, orientation and silver as one Dagster run over every asset (task 15),
+      # through `tracklab build` (task 32) so the runner leaves a record of its own seconds
+      # and disk; raw_* verifies the bytes the two steps above left, it downloads nothing.
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
-      - run: uv run dagster job execute -m tracklab.dagster_defs -j build
+      - run: uv run tracklab build
+      - id: build_record
+        run: echo "path=$(ls -t data/build/*.json | head -n1)" >> "$GITHUB_OUTPUT"
+      # Compares the runner's fresh rows against the versioned platform.json and stats.json
+      # (task 34); never the runner's seconds or bytes, which are of this one machine (task 37).
+      - run: uv run tracklab publish platform --check --run "${{ steps.build_record.outputs.path }}"
       - run: uv run pytest -q
       - run: uv run tracklab stats
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-record
+          path: pipeline/data/build/
       - uses: actions/upload-artifact@v4
         if: always()
         with:

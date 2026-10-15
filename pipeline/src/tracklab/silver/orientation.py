@@ -1825,7 +1825,9 @@ def run_orientation(
     doc_path = docs_dir / DOC_NAME
     doc_path.parent.mkdir(parents=True, exist_ok=True)
     existing = doc_path.read_text(encoding="utf-8") if doc_path.is_file() else None
-    doc_path.write_text(merge_doc(existing, render_doc(reports, table_counts)), encoding="utf-8")
+    doc_path.write_text(
+        merge_doc(existing, render_doc(reports, table_counts)), encoding="utf-8", newline="\n"
+    )
     log(f"doc: {doc_path}")
 
     for failure in failed:

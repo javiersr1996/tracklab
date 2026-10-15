@@ -27,10 +27,15 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy src
-      # silver through Dagster, so the asset graph (task 15) is built on every push.
+      # silver through `tracklab build` (task 32), so the same recorded run that CI checks
+      # against `lineage.json` also builds the asset graph (task 15) on every push.
       # `*` would ingest and rebuild bronze over the fixture slice: silver is what hangs from it.
+      # The record goes to $TRACKLAB_DATA_ROOT/build: a record under pipeline/data/ would flip
+      # the contract tests' "no real bundle" skip (tests/publish/) and fail them against the
+      # fixture-only rows (found by reproducing this job locally).
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
-      - run: uv run dagster asset materialize -m tracklab.dagster_defs --select "group:silver"
+      - run: uv run tracklab build --select "group:silver"
+      - run: uv run tracklab publish lineage --check
       - run: uv run pytest -q
 
   web:

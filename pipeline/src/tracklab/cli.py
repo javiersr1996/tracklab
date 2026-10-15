@@ -22,6 +22,7 @@ from tracklab.bronze.football.aggregates import build_aggregates as build_footba
 from tracklab.bronze.football.events import build_events as build_football_events
 from tracklab.bronze.football.meta import build_meta as build_football_meta
 from tracklab.bronze.football.tracking import build_tracking as build_football_tracking
+from tracklab.build import default_record_dir, run_build
 from tracklab.fixtures import run_fixtures
 from tracklab.formats.basketball import freeze_basketball
 from tracklab.formats.football_report import freeze_football
@@ -29,6 +30,8 @@ from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.paths import data_root
+from tracklab.publish.lineage import run_publish_lineage
+from tracklab.publish.platform import run_publish_platform
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.quality import run_publish_quality
 from tracklab.publish.stats import run_publish_stats
@@ -154,8 +157,21 @@ def _cmd_publish_possessions(args: argparse.Namespace) -> int:
     return run_publish_possessions(data_dir=args.data_dir, out_dir=args.out_dir)
 
 
+def _cmd_publish_lineage(args: argparse.Namespace) -> int:
+    return run_publish_lineage(args.out_dir, check=args.check)
+
+
 def _cmd_publish_stats(args: argparse.Namespace) -> int:
     return run_publish_stats(data_dir=args.data_dir, out_dir=args.out_dir)
+
+
+def _cmd_publish_platform(args: argparse.Namespace) -> int:
+    return run_publish_platform(
+        record_path=args.run,
+        record_dir=args.record_dir,
+        out_dir=args.out_dir,
+        check=args.check,
+    )
 
 
 def _cmd_publish_quality(args: argparse.Namespace) -> int:
@@ -178,6 +194,10 @@ def _cmd_quality(args: argparse.Namespace) -> int:
 
 def _cmd_fixtures(args: argparse.Namespace) -> int:
     return run_fixtures(data_dir=args.data_dir, out_dir=args.out_dir)
+
+
+def _cmd_build(args: argparse.Namespace) -> int:
+    return run_build(select=args.select, record_dir=args.record_dir, data_dir=data_root())
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -364,6 +384,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     publish_possessions.set_defaults(func=_cmd_publish_possessions)
 
+    publish_lineage = publish_sub.add_parser(
+        "lineage",
+        help="Write web/public/data/lineage.json: the Dagster asset graph, dbt tests included. "
+        "Needs `dbt parse` first.",
+    )
+    publish_lineage.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where lineage.json goes (default: ../web/public/data).",
+    )
+    publish_lineage.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare against the versioned file; write nothing.",
+    )
+    publish_lineage.set_defaults(func=_cmd_publish_lineage)
+
     publish_stats = publish_sub.add_parser(
         "stats", help="Write stats.json: rows per table and sport, bronze/silver bytes."
     )
@@ -380,6 +418,39 @@ def build_parser() -> argparse.ArgumentParser:
         help="Where stats.json goes (default: ../web/public/data).",
     )
     publish_stats.set_defaults(func=_cmd_publish_stats)
+
+    publish_platform = publish_sub.add_parser(
+        "platform",
+        help="Write web/public/data/platform.json: the measured title, layers, tables and "
+        "per-match numbers from the newest `tracklab build` record.",
+    )
+    publish_platform.add_argument(
+        "--run",
+        type=Path,
+        default=None,
+        help="A specific build/<utc>_<sha7>.json record (default: the newest one).",
+    )
+    publish_platform.add_argument(
+        "--record-dir",
+        type=Path,
+        default=default_record_dir(),
+        help="Where to look for the newest record when --run is not given "
+        "(default: $TRACKLAB_DATA_ROOT/build, else data/build).",
+    )
+    publish_platform.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where platform.json goes, and where index.json/stats.json are read from "
+        "(default: ../web/public/data).",
+    )
+    publish_platform.add_argument(
+        "--check",
+        action="store_true",
+        help="Write nothing; compare rows per table and per match against the record and "
+        "stats.json, exit 1 if they differ.",
+    )
+    publish_platform.set_defaults(func=_cmd_publish_platform)
 
     publish_quality = publish_sub.add_parser(
         "quality",
@@ -464,6 +535,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Data root the cut lands in (default: tests/fixtures/data).",
     )
     fixtures.set_defaults(func=_cmd_fixtures)
+
+    build = subparsers.add_parser(
+        "build",
+        help="Run the Dagster `build` job (multiprocess, like `dagster job execute`) and "
+        "record its steps, seconds and the disk after it. Needs `dbt parse` first.",
+    )
+    build.add_argument(
+        "--select",
+        default=None,
+        help='Asset selection, e.g. "group:silver" (default: every asset of the job).',
+    )
+    build.add_argument(
+        "--record-dir",
+        type=Path,
+        default=default_record_dir(),
+        help="Where <utc>_<sha7>.json goes "
+        "(default: $TRACKLAB_DATA_ROOT/build, else data/build; ignored by git).",
+    )
+    build.set_defaults(func=_cmd_build)
 
     return parser
 

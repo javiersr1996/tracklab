@@ -65,3 +65,195 @@ body {
   gap: 1rem;
   margin-top: 0.5rem;
 }
+
+.platform {
+  margin: 1.5rem 0;
+}
+
+.platform-layers {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .platform-layers {
+    grid-template-columns: 1fr;
+  }
+}
+
+.platform-layer {
+  min-width: 0;
+  border: 1px solid #3a4149;
+  border-radius: 4px;
+  padding: 0.75rem;
+  transition: border-color 0.2s;
+}
+
+.platform-layer[data-phase="active"] {
+  border-color: #e0883a;
+}
+
+.platform-layer h3 {
+  margin: 0 0 0.5rem;
+  text-transform: capitalize;
+}
+
+.platform-bar {
+  height: 4px;
+  background: #3a4149;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.platform-bar-fill {
+  height: 100%;
+  background: #e0883a;
+}
+
+.platform-counters {
+  margin: 0;
+}
+
+.platform-counters div {
+  margin-bottom: 0.4rem;
+}
+
+.platform-counters dt {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.platform-counters dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+
+.platform-bytes-human {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.platform-note {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin: 0.5rem 0 0;
+}
+
+.platform-footer {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.lineage {
+  margin: 1.5rem 0;
+}
+
+/* The graph itself can be far wider than any phone (43 bronze nodes, one
+   column per group); this box scrolls on its own so the page never gets a
+   horizontal scrollbar of its own. */
+.lineage-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #3a4149;
+  border-radius: 4px;
+}
+
+.lineage-scroll svg {
+  display: block;
+}
+
+.lineage-node text {
+  font-size: 8px;
+  font-family: ui-monospace, "Cascadia Code", monospace;
+  fill: #0e1114;
+  pointer-events: none;
+}
+
+.lineage-node {
+  cursor: pointer;
+}
+
+.lineage-node[data-selected="true"] rect {
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.lineage-node[data-lit="ancestor"] rect,
+.lineage-node[data-lit="descendant"] rect {
+  stroke: #ffffff;
+  stroke-width: 1;
+  opacity: 1;
+}
+
+.lineage-nodes .lineage-node:not([data-selected]):not([data-lit]) rect {
+  opacity: 0.35;
+}
+
+.lineage-edges path {
+  stroke: #3a4149;
+  stroke-width: 1;
+}
+
+.lineage-edges path[data-lit="ancestor"],
+.lineage-edges path[data-lit="descendant"] {
+  stroke: #e0883a;
+  stroke-width: 1.5;
+}
+
+.lineage-test-badge {
+  font-size: 6px;
+  fill: #9aa2ab;
+}
+
+.lineage-legend {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.lineage-swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  vertical-align: -1px;
+}
+
+.lineage-swatch-badge {
+  width: auto;
+  height: auto;
+  padding: 0 0.3rem;
+  background: #23272b;
+  border: 1px solid #9aa2ab;
+  font-size: 0.7rem;
+  line-height: 1.1rem;
+}
+
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table-scroll table {
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.table-scroll th,
+.table-scroll td {
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid #3a4149;
+  text-align: right;
+}
+
+.table-scroll th:first-child,
+.table-scroll th:nth-child(2),
+.table-scroll td:first-child,
+.table-scroll td:nth-child(2) {
+  text-align: left;
+}

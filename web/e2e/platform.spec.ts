@@ -1,0 +1,196 @@
+import { expect, type Request, test } from "@playwright/test";
+
+// `figure.platform[data-state]` drives the flow the same way `figure.hook`
+// does in quality.spec.ts. The sequence itself (data-layer walking the five
+// layers, data-state never touching "playing" under reduced motion) is
+// recorded by a MutationObserver installed through an init script -- before
+// any of the page's own scripts run -- rather than sampled by polling or
+// slept past, so a layer skipped between two polls still shows up in the log.
+// The idle render carries no data-layer at all (Flow.tsx), so the first layer
+// logged is the first one the animation actually played.
+
+declare global {
+  interface Window {
+    __platformLog?: { states: string[]; layers: string[] };
+  }
+}
+
+// Runs in the page (stringified by Playwright), not in this test's own scope.
+function installPlatformLogger(): void {
+  const log: { states: string[]; layers: string[] } = { states: [], layers: [] };
+  window.__platformLog = log;
+
+  const record = (list: string[], value: string | null) => {
+    if (value !== null && list[list.length - 1] !== value) list.push(value);
+  };
+
+  const watch = (figure: Element) => {
+    const current = {
+      "data-state": figure.getAttribute("data-state"),
+      "data-layer": figure.getAttribute("data-layer"),
+    };
+    const note = () => {
+      record(log.states, current["data-state"]);
+      record(log.layers, current["data-layer"]);
+    };
+    note();
+    new MutationObserver((mutations) => {
+      // One batch can hold several changes to the same attribute. Each change's
+      // new value is the next change's oldValue (the live value for the last),
+      // so a "playing" that lasted less than a batch is still replayed here.
+      mutations.forEach((mutation, i) => {
+        const name = mutation.attributeName as "data-state" | "data-layer";
+        const later = mutations.slice(i + 1).find((m) => m.attributeName === name);
+        current[name] = later ? later.oldValue : figure.getAttribute(name);
+        note();
+      });
+    }).observe(figure, {
+      attributes: true,
+      attributeOldValue: true,
+      attributeFilter: ["data-state", "data-layer"],
+    });
+  };
+
+  const existing = document.querySelector("figure.platform");
+  if (existing) {
+    watch(existing);
+    return;
+  }
+  const bootstrap = new MutationObserver(() => {
+    const figure = document.querySelector("figure.platform");
+    if (figure) {
+      bootstrap.disconnect();
+      watch(figure);
+    }
+  });
+  // `document`, not `document.documentElement`: an init script runs before the
+  // page has a document element at all, so observing that would throw.
+  bootstrap.observe(document, { childList: true, subtree: true });
+}
+
+interface PlatformLayerRecord {
+  layer: string;
+  files: number;
+  rows: number | null;
+  bytes: number;
+  seconds: number;
+}
+
+interface PlatformJson {
+  layers: PlatformLayerRecord[];
+}
+
+const LAYER_ORDER = ["raw", "bronze", "silver", "quality", "publish"];
+
+test("plays on its own, walks the five layers in order, and finishes cycle 1 exact", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+  page.on("pageerror", (e) => errors.push(e.message));
+  const requests: Request[] = [];
+  page.on("requestfinished", (r) => requests.push(r));
+
+  await page.addInitScript(installPlatformLogger);
+  await page.goto("/platform");
+
+  await expect(page.locator("figure.platform")).toHaveAttribute("data-state", "playing", {
+    timeout: 2_000,
+  });
+
+  // State, cycle, log and every counter read in one page evaluation: "done"
+  // holds for 700 ms, and separate Playwright round-trips could straddle the
+  // start of cycle 2 and read interpolated counters.
+  const snapshot = await (
+    await page.waitForFunction(() => {
+      const figure = document.querySelector("figure.platform");
+      if (figure?.getAttribute("data-state") !== "done" || figure.getAttribute("data-cycle") !== "1") {
+        return null;
+      }
+      const counters = [...document.querySelectorAll("[data-counter]")].map((cell) => ({
+        key: cell.getAttribute("data-counter") ?? "",
+        text: (cell.textContent ?? "").trim(),
+      }));
+      return { log: window.__platformLog, counters };
+    })
+  ).jsonValue();
+  if (!snapshot) throw new Error("waitForFunction resolved without a snapshot");
+
+  expect(snapshot.log?.layers.slice(0, LAYER_ORDER.length)).toEqual(LAYER_ORDER);
+
+  const platform = (await (await page.request.get("/data/platform.json")).json()) as PlatformJson;
+  const count = snapshot.counters.length;
+  expect(count).toBeGreaterThan(0);
+
+  let compared = 0;
+  for (const { key, text } of snapshot.counters) {
+    const [layerName, field] = key.split(".");
+    const layer = platform.layers.find((l) => l.layer === layerName);
+    expect(layer, `platform.json has no layer "${layerName}" for data-counter="${key}"`).toBeTruthy();
+    const value = (layer as unknown as Record<string, number>)[field];
+    const stripped = text.replace(/,/g, "");
+    const expected = field === "seconds" ? value.toFixed(1) : String(value);
+    expect(stripped, `${key}: page shows "${text}", platform.json has ${value}`).toBe(expected);
+    compared++;
+  }
+  console.log(`/platform: ${compared} counters checked against platform.json at data-state="done"`);
+  expect(compared).toBe(count);
+
+  await page.waitForLoadState("networkidle");
+  let transferred = 0;
+  for (const r of requests) {
+    const sizes = await r.sizes();
+    transferred += sizes.responseBodySize + sizes.responseHeadersSize;
+  }
+  console.log(`/platform: ${transferred} bytes transferred`);
+  expect(transferred).toBeLessThan(400_000);
+
+  expect(errors).toEqual([]);
+});
+
+test.describe("prefers-reduced-motion", () => {
+  test.use({ reducedMotion: "reduce" });
+
+  test("jumps straight to done, never through playing", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+    page.on("pageerror", (e) => errors.push(e.message));
+
+    await page.addInitScript(installPlatformLogger);
+    await page.goto("/platform");
+
+    await expect(page.locator("figure.platform")).toHaveAttribute("data-state", "done");
+    await expect(page.locator("figure.platform")).toHaveAttribute("data-cycle", "1");
+
+    const log = await page.evaluate(() => window.__platformLog);
+    expect(log?.states ?? []).not.toContain("playing");
+    expect(log?.states.at(-1)).toBe("done");
+
+    expect(errors).toEqual([]);
+  });
+});
+
+test("the logger keeps a state that lasted less than one mutation batch", async ({ page }) => {
+  await page.setContent('<figure class="platform" data-state="idle"></figure>');
+  await page.evaluate(installPlatformLogger);
+
+  const states = await page.evaluate(async () => {
+    const figure = document.querySelector("figure.platform") as Element;
+    // Two changes in one task land in the same MutationObserver batch.
+    figure.setAttribute("data-state", "playing");
+    figure.setAttribute("data-state", "done");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return window.__platformLog?.states;
+  });
+
+  expect(states).toEqual(["idle", "playing", "done"]);
+});
+
+test("the home page links to /platform and /quality", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "How this was built" })).toHaveAttribute(
+    "href",
+    "/platform",
+  );
+  await expect(page.getByRole("link", { name: "Data quality" })).toHaveAttribute("href", "/quality");
+});
