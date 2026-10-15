@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "stage": "design",
+  "stage": "frozen",
   "written": "2026-10-15",
   "plan": "tasks/todo.md, P6, task 60, 'Protocolo que vale tras las seis pasadas'",
   "fingerprint": "8d1e7362d8ffb1b479ee05fed792d4130901f49adc330fedba142c68f5ae8449",
@@ -208,7 +208,24 @@
       "task": 60,
       "date": "2026-10-15",
       "note": "second review of phase B2's first part, before the freeze: the sane instrument printed and read by no rule; the metric's step, separation and ratio with their propagated sd; the guard reading alive from the verdict's figures and its rows against pose_calibration.json; the verdict on the design's numpy; duplicated player-frames refused and counted; the probe is run again"
+    },
+    {
+      "stage": "frozen",
+      "task": 60,
+      "date": "2026-10-15",
+      "note": "frozen with the (W, cap) the rule chose in reports/pose_calibration.json (first time of the probe, no cadence) and the sha of the committed pose/ tree; the design is untouched, same fingerprint; next, the second time on 1925299 (pose verdict) in a commit of its own, and only then 1996435"
     }
   ],
-  "content_sha256": "383fc248ad3b269ed68a07e49e54faa1ebbb2733b86194ac053ced69ba17f080"
+  "frozen": {
+    "task": 60,
+    "date": "2026-10-15",
+    "width": 50,
+    "cap_cm": 25,
+    "code_tree_sha": "f4c25cd0a2265b14dbf9bf81e522576fbd420097",
+    "calibration_from": {
+      "file": "pipeline/reports/pose_calibration.json",
+      "content_sha256": "271fa460f1c6f91a51e843c1b4dc6d8a1c9e791f350058f7a1f6afb7a82ab548"
+    }
+  },
+  "content_sha256": "3d72d5b7c727da641f3484cb47ef0f53b6fe004c0fe8f90a9d5d310f8bcee5c4"
 }
