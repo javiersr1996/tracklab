@@ -444,6 +444,191 @@ a.wordmark:hover {
   margin-bottom: var(--space-2);
 }
 
+.band {
+  padding-block: var(--band-pad);
+}
+
+/* Two bands of the same tone in a row are split by a hairline. */
+.band:not(.surface-dark) + .band:not(.surface-dark),
+.band.surface-dark + .band.surface-dark {
+  border-top: 1px solid var(--rule);
+}
+
+.wrap > :first-child {
+  margin-top: 0;
+}
+
+.wrap > :last-child {
+  margin-bottom: 0;
+}
+
+/* The small uppercase label above a headline, after a short rule in the accent. */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--step-0);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--tag);
+}
+
+.eyebrow::before {
+  content: "";
+  flex: none;
+  width: 1.5rem;
+  height: 2px;
+  background: var(--accent);
+}
+
+.accent {
+  color: var(--tag);
+}
+
+.lede {
+  max-width: 44rem;
+  font-size: var(--step-2);
+  line-height: var(--leading-snug);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6) var(--space-7);
+  align-items: center;
+}
+
+@media (min-width: 1100px) {
+  .hero-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+}
+
+.hero-grid > * {
+  min-width: 0;
+}
+
+.hero .lede {
+  margin-bottom: 0;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5) var(--space-7);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .split {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
+
+.split table {
+  width: 100%;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* The whole card is the link's target; the link's own text stays its name. */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 15rem;
+  padding: var(--space-5);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.card:hover {
+  border-color: var(--accent);
+}
+
+.card:has(a:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: var(--step-3);
+}
+
+.card h3 a {
+  color: var(--fg-strong);
+  text-decoration: none;
+}
+
+.card h3 a:focus-visible {
+  outline: none;
+}
+
+.card h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.card p {
+  margin: 0;
+  color: var(--fg-muted);
+}
+
+.card .card-tag {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--tag);
+}
+
+.card-arrow {
+  margin-top: auto;
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  line-height: 1;
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    transition: border-color 0.15s;
+  }
+
+  .card-arrow {
+    transition: transform 0.15s;
+  }
+
+  .card:hover .card-arrow {
+    transform: translateX(0.25rem);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   a,
   button {
