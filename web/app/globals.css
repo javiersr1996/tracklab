@@ -831,6 +831,10 @@ a.wordmark:hover {
   color: var(--fg-muted);
 }
 
+.platform-footer p {
+  overflow-wrap: anywhere; /* the 40-hex git sha has no break opportunity */
+}
+
 .lineage {
   margin: var(--space-5) 0;
 }
