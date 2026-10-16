@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "stage": "frozen",
+  "written": "2026-10-15",
+  "plan": "tasks/todo.md, P6, task 60, 'Protocolo que vale tras las seis pasadas'",
+  "fingerprint": "8d1e7362d8ffb1b479ee05fed792d4130901f49adc330fedba142c68f5ae8449",
+  "design": {
+    "question": "Cadence and step length in the high-speed stretches, per match and per player, with their propagated error, from the Body Pose of two full matches.",
+    "unit": "the player: the windows of one player are not independent, so they are reported per player; there is no null, P6 measures and tests no effect",
+    "split": {
+      "calibration": [
+        1925299
+      ],
+      "confirmation": [
+        1996435
+      ],
+      "rule": "the plan's (task 60): 1925299 calibrates, 1996435 confirms",
+      "matches": [
+        1925299,
+        1996435
+      ],
+      "source": "manifest/sources.json"
+    },
+    "seen_of_confirmation": {
+      "seen": [
+        "from P5 (runs_protocol.json, design.split.calibration): its whole tracking at 10 fps, its runs, its speeds and P5's metric per match",
+        "from task 57: the bytes and sha of the zip",
+        "from task 58: pose_coverage.json whole (frames, coverage per period and player, players, stretches >= 25, 37 and 50 frames per player, mae per joint, the range of z)"
+      ],
+      "not_seen": "no coordinate of any joint of 1996435, and none of its x, y at 25 fps of the pose file",
+      "consequence": "the speed bands are not blind to 1996435 (P5 saw its speeds); what M4 confirms blind is the kinematics of the pose",
+      "coverage": {
+        "file": "pipeline/reports/pose_coverage.json",
+        "sha256": "1e1b16c6605cd857284f82d1c1525d198c9995aa7818f78e91bd15c023ba70f7"
+      }
+    },
+    "signals": {
+      "s": "(lAnkle - rAnkle) . d, d the unit (x, y) displacement of the window",
+      "h": "z(lAnkle) - z(rAnkle)",
+      "centred_on": "midHip, frame by frame (only differences inside one body survive)",
+      "cadence": "gait.cadence_hz of each signal: 2 x fps / the lag of the first peak",
+      "nan_rule": "the first local maximum with r[k] > 0 after the first r[k] < 0; NaN if there is none or if r[k] / r[0] <= band_z / sqrt(n - k) (reading A)",
+      "band_z": 1.96,
+      "ankle_separation_m": "the amplitude of s, the mean of its maxima, with its sd",
+      "step_length_m": "mean_speed_m_s / cad_s, the only step length",
+      "fps": 25.0
+    },
+    "windows": {
+      "widths": [
+        25,
+        37,
+        50
+      ],
+      "caps_cm": [
+        15,
+        20,
+        25
+      ],
+      "cap_joints": [
+        "lAnkle",
+        "rAnkle"
+      ],
+      "tiling": "from the start of each stretch, without overlap (gait.windows)",
+      "inside_one_period": true,
+      "w_and_cap": "chosen by rule_w_cap, blind, after the probe; written at the freeze",
+      "is_detected": "a pose whose player the provider did not detect in that frame (is_detected false) enters the windows as delivered: the pose exists and its mae is the file's; how many there are per match is in pose_coverage.json",
+      "duplicates": "a (player_id, frame) that appears twice among a match's pose rows is refused where they are read (an error), never resolved by keeping or dropping a row; the rows beyond the first per match are counted by the CountingHandle (evidence.denominators.per_match.duplicate_player_frames)"
+    },
+    "bands": {
+      "low_m_s": [
+        3.0,
+        5.5
+      ],
+      "high_m_s_from": 5.5,
+      "low_rule": "3.0 <= v < 5.5",
+      "assigned_by": "mean_speed_m_s: the net displacement of the pose file's x, y over (W - 1) / fps, the denominator of v / cadence",
+      "source": "the plan's hypotheses, fixed by the second review; no provider threshold is in the repository; the probe's (f) reports their kinematics and moves nothing"
+    },
+    "sweep": {
+      "file": "pipeline/reports/pose_sweep.json",
+      "sha256": "9457ed7916c7c05f7320dc88babb05174f868edee6f7aa6ece1fea527dc85a87",
+      "bar": {
+        "p95_rel_err_max": 0.05,
+        "nan_s_max": 0.1,
+        "rho": 0.0,
+        "cadences_hz": [
+          2.5,
+          3.0,
+          3.5,
+          4.3
+        ],
+        "rule": "a (W, cap) cell passes when every cadence meets the bar at rho 0"
+      },
+      "noise_twin": "one per (W, cap, rho), the same body travelling with no gait",
+      "rhos": [
+        0.0,
+        0.5,
+        0.8,
+        0.9
+      ],
+      "windows_per_row": 40000,
+      "separation_m": 1.27907,
+      "seed": 60
+    },
+    "rule_w_cap": {
+      "rule": "among the cells that pass the bar in the sweep (separation 5.5 / 4.3 m), pass it again at the separation the probe measures, and in which M1 + M2 kill the noise, the one of least W and, at equal W, of greatest cap; if none, P6 dies",
+      "adjusted_bar": "per cell and cadence, on the very windows of the sweep's row at rho 0 (same generator, seed and 40,000 windows), the separation A whose median sd of s (ddof 0) equals the median sd of s of the probe's (a') in the high band of that cell (both periods), by bisection; the bar judged again at A; it reads no cadence and only hardens the bar: a cell must pass both",
+      "spares_the_sane": "printed per cell, read by no rule (a criterion calibrated only on suppositions is reported as a number: delta and sigma_b have no source, and P6 must not die of them before it measures): M1 and M2 simulated (criteria.simulate_sane) with the same counts on sane pools of (W, cap, cadence, rho) drawn by the sweep's generator at the adjusted separation of each band (the low band's from its own (a') sd), 4000 windows each, the high ones with their Monte Carlo copies; player i runs at c_i = cadence + 0.1 Hz x N(0, 1) in the high band and c_i - 0.05 Hz in the low one, a window scaled by c_i / cadence (the estimator's relative error, not its error at c_i); spares_the_sane is P(P6 dies | sane) <= sane_p_dies_max in every cadence and rho; the separation is matched at rho 0, which at rho > 0 gives a smaller signal (conservative); delta and sigma_b have no source: PENDIENTE DE CONFIRMAR",
+      "sane_p_dies_max": 0.05,
+      "sane_delta_hz": 0.05,
+      "sane_sigma_b_hz": 0.1,
+      "sane_pool_windows": 4000,
+      "kills_the_noise": "M1 and M2 simulated as they are applied (criteria.simulate_m1_m2) with the counts of admitted windows per player and band of the probe's (a), cap on the ankles, both periods summed, resampling windows of the noise twin of (W, cap, rho) in both bands, NaN included, each window with its Monte Carlo copies (sweep.noise_pool): P(P6 dies | noise) >= p_dies_min in each rho",
+      "p_dies_min": 0.95,
+      "reps": 200,
+      "draws": 200,
+      "seed": 60,
+      "if_none": "P6 dies: the instrument cannot be told from the noise",
+      "reads": "the probe's (a) and (a') and the sweep, never a cadence or a discrepancy of data"
+    },
+    "monte_carlo": {
+      "noise": "every joint of every frame N(0, its p90_mae_cm) per axis; the x, y of the file carry no predicted error and get none",
+      "draws": 200,
+      "seed_per_window": "gait.window_seed: numpy default_rng([59, match_id, player_id, first frame of the window]), every window its own stream (record of phase B1)",
+      "invalid_draw": "in a player's draw, the median ignores his NaN windows (nanmedian); a draw with all of them NaN is not valid; the sd (ddof 1) is over the valid draws, and fewer than 2 valid draws count as an infinite sd"
+    },
+    "numbers": {
+      "min_players": 10,
+      "min_windows": 5,
+      "sign_share": 0.75,
+      "half_iqr": 0.5,
+      "precision_windows": "the first 5 high windows finite in s, by frame",
+      "iqr": "numpy linear-interpolation percentiles 75 minus 25"
+    },
+    "death_criteria": {
+      "noise": "rule_w_cap finds no cell -> P6 dies: the instrument is not told from noise",
+      "M1": "in 1925299, fewer than 10 players with >= 5 windows finite in s in the high band -> P6 dies: the coverage does not pay for the question",
+      "M2": "among the players with >= 5 windows finite in s in both bands (n printed; n < 10 dies by coverage), fewer than 0.75 with cad_s high > cad_s low (medians of their finite windows) -> dies; or, among the players of M1, the median of the propagated sd of the median of their first 5 finite high windows above 0.5 x the IQR between players of that same median -> dies: the instrument does not see even what is forced, or the cadence does not rise 0.05 Hz between the bands, or the squad does not spread 0.1 Hz (the sane instrument printed beside the rule)",
+      "M3": "no verdict (decision of Javier, fourth review): per player, the median of |cad_s - cad_h| and the share of NaN in h in the high band, published with the sweep's rows of h beside it, without a propagated error",
+      "M4": "M2 in 1996435 with the same numbers; its second clause compares the propagated sd of 1996435 with 0.5 x the IQR of 1925299, written as m4.half_iqr_hz in pose_verdict.json (second time) before 1996435 is opened, never with the IQR of its own squad; if its admitted windows (before the NaN rule) do not reach any of the minima of M1 and M2, 'not evaluable by coverage' and P6 is unreplicated, not dead; 'replication failed' only if they reach them and M2 fails",
+      "blind_spots": [
+        "the forward foot called left in every frame doubles cad_s and cad_h together (sweep row swap)",
+        "s leaning towards z (sweep rows lean, 10 and 20 degrees)"
+      ]
+    },
+    "probe": {
+      "match": [
+        1925299
+      ],
+      "first_time": [
+        "(a) admitted windows (before the NaN rule) per player, period and band for every W and cap, cap on the ankles and on ankles and heels",
+        "(a') sd of h(t) and of s(t) per band, W and cap, with the ankles' mae",
+        "(b) the distribution of mae per joint",
+        "(f) per band: the speed of the first and last 5 frames, accelerating / plateau / braking (tail against head within +-0.1 of the window's speed: descriptive, read by no rule), path / chord",
+        "(g) z(nose) - z(midHip) and z(ankles) - z(midHip) per player: sign and median",
+        "rule_w_cap, with its figures"
+      ],
+      "second_time": [
+        "after the freeze, tracklab pose verdict, reports/pose_verdict.json in a commit of its own: (c) cad_s per player and band, the sign of high - low; (d) the concordance of M3 with the sweep's rows of h; (e) the propagated error against the spread between players; the NaN rates; the distribution of cad_s with the sweep's swap rows; the slope of h on s by heading; the verdict of M1 and M2 and m4.half_iqr_hz; sealed, with the frozen protocol's content_sha256, a code_tree_sha equal to frozen.code_tree_sha and inputs.rows; it runs only with the numpy of dependencies.numpy; the first time is never written again once the protocol is frozen"
+      ],
+      "metric": "task 61, tracklab pose metric: per match, period and player, ordered by team and number, the windows per band and the medians of cad_s, the step and the ankle separation and their ratio, each over the windows with that value finite and with its sd propagated over the draws of the same windows; M3's concordance and speed_mean_m_s without a propagated error, said in the file; 1925299 is recomputed first and 1996435 is loaded only if it gives the committed verdict"
+    },
+    "guard": "1996435 opens only when HEAD's protocol is frozen with a frozen entry after the design ones; HEAD's pose/ tree is frozen.code_tree_sha; the installed numpy is dependencies.numpy; HEAD holds pose_verdict.json sealed, answering to the frozen protocol's content_sha256 and computed by frozen.code_tree_sha on as many rows as the sealed pose_calibration.json in HEAD counted, with P6 alive as the verdict's own figures of M1 and M2 say (criteria.verdict_dies_at) and a finite m4.half_iqr_hz (if M1 or M2 kill on 1925299, 1996435 never opens); and the working tree is clean",
+    "order": [
+      "sweep (committed)",
+      "protocol in design (committed)",
+      "probe, first time, and rule_w_cap (committed)",
+      "frozen at the chosen (W, cap) (pose freeze, its own commit)",
+      "second time on 1925299: M1, M2 and m4.half_iqr_hz (pose verdict, its own commit)",
+      "1996435, only if alive: the metric and M4 (pose metric, task 61)"
+    ],
+    "dependencies": {
+      "numpy": "2.5.3"
+    }
+  },
+  "evidence": {
+    "denominators": {
+      "what": "per match, the players the file lists and the players with a pose (the denominator printed beside M1) and the rows of a duplicated (player_id, frame), which design.windows.duplicates refuses; counted, never a position",
+      "per_match": {
+        "1925299": {
+          "players_listed": 32,
+          "players_with_pose": 32,
+          "duplicate_player_frames": 0
+        },
+        "1996435": {
+          "players_listed": 30,
+          "players_with_pose": 30,
+          "duplicate_player_frames": 0
+        }
+      }
+    }
+  },
+  "history": [
+    {
+      "stage": "design",
+      "task": 60,
+      "date": "2026-10-15",
+      "note": "phase B2, first part: the protocol after the six reviews, as code, after the sweep and before the probe"
+    },
+    {
+      "stage": "design",
+      "task": 60,
+      "date": "2026-10-15",
+      "note": "review of phase B2's first part, before the freeze: the bar judged again at the separation the probe's (a') measures (it had been judged at 5.5 / 4.3 m only), a sane instrument against M1 and M2 printed beside the rule and read by none, the second time and its verdict file, M4's half IQR written there, the guard's conditions on it and on numpy, and the poses with is_detected false declared; the probe is run again"
+    },
+    {
+      "stage": "design",
+      "task": 60,
+      "date": "2026-10-15",
+      "note": "second review of phase B2's first part, before the freeze: the sane instrument printed and read by no rule; the metric's step, separation and ratio with their propagated sd; the guard reading alive from the verdict's figures and its rows against pose_calibration.json; the verdict on the design's numpy; duplicated player-frames refused and counted; the probe is run again"
+    },
+    {
+      "stage": "frozen",
+      "task": 60,
+      "date": "2026-10-15",
+      "note": "frozen with the (W, cap) the rule chose in reports/pose_calibration.json (first time of the probe, no cadence) and the sha of the committed pose/ tree; the design is untouched, same fingerprint; next, the second time on 1925299 (pose verdict) in a commit of its own, and only then 1996435"
+    }
+  ],
+  "frozen": {
+    "task": 60,
+    "date": "2026-10-15",
+    "width": 50,
+    "cap_cm": 25,
+    "code_tree_sha": "f4c25cd0a2265b14dbf9bf81e522576fbd420097",
+    "calibration_from": {
+      "file": "pipeline/reports/pose_calibration.json",
+      "content_sha256": "271fa460f1c6f91a51e843c1b4dc6d8a1c9e791f350058f7a1f6afb7a82ab548"
+    }
+  },
+  "content_sha256": "3d72d5b7c727da641f3484cb47ef0f53b6fe004c0fe8f90a9d5d310f8bcee5c4"
+}

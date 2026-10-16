@@ -22,6 +22,7 @@ from tracklab.publish.platform import (
     layers_from_record,
     matches_from_record,
     platform_from_record,
+    raw_sources_from_record,
     run_publish_platform,
     season_files_from_record,
     subtitle_from_record,
@@ -42,8 +43,16 @@ def _raw_entry(
     }
 
 
-def _source(sport: str, entries: list[dict[str, Any]]) -> dict[str, Any]:
-    return {"sport": sport, "manifest": entries}
+def _source(
+    sport: str, entries: list[dict[str, Any]], source_id: str | None = None
+) -> dict[str, Any]:
+    return {
+        "source_id": source_id or f"opendata-{sport}",
+        "sport": sport,
+        "files": len(entries),
+        "bytes_pinned": sum(e["bytes"] for e in entries),
+        "manifest": entries,
+    }
 
 
 def _parquet(path: str, rows: int, bytes_: int) -> dict[str, Any]:
@@ -295,6 +304,32 @@ def test_raw_bytes_plus_season_files_reconciles_to_bytes_pinned() -> None:
     assert reconciled == record["disk"]["raw"]["bytes_pinned"]
 
 
+def test_raw_sources_break_the_raw_layer_down_by_source_and_add_up_to_it() -> None:
+    record = _record()
+    pose = _source(
+        "football",
+        [_raw_entry("pose/a.zip", "pose", None, 700), _raw_entry("pose/b.zip", "pose", None, 70)],
+        source_id="opendata-bodypose",
+    )
+    record["disk"]["raw"]["sources"].append(pose)
+    record["disk"]["raw"]["bytes_pinned"] += 770
+    sources = platform_from_record(record, _index())["raw_sources"]
+    assert [s["source_id"] for s in sources] == [
+        "opendata-basketball",
+        "opendata-football",
+        "opendata-bodypose",
+    ]
+    assert sources[-1] == {
+        "source_id": "opendata-bodypose",
+        "sport": "football",
+        "files": 2,
+        "bytes": 770,
+    }
+    assert sum(s["bytes"] for s in sources) == record["disk"]["raw"]["bytes_pinned"]
+    assert sum(s["bytes"] for s in sources) == layers_from_record(record)[0]["bytes"]
+    assert sources == raw_sources_from_record(record)
+
+
 def test_raw_bytes_read_plus_season_files_reconciles_to_the_raw_bytes_read() -> None:
     record = _record()
     matches = matches_from_record(record, {"possessions": []})
@@ -437,6 +472,32 @@ def test_check_is_0_against_a_freshly_written_platform_json_and_1_after_a_hand_e
         record_path=None, record_dir=record_dir, out_dir=out_dir, check=True
     )
     assert broken == 1
+
+
+def test_check_is_1_when_raw_sources_on_disk_drift_from_the_record(tmp_path: Path) -> None:
+    """The `/platform` body-pose line reads `raw_sources`; a stale or hand-edited
+    breakdown must fail `--check` like a stale match row does."""
+    record_dir = tmp_path / "build"
+    out_dir = tmp_path / "web"
+    out_dir.mkdir(parents=True)
+    _write_record(record_dir, _record())
+    (out_dir / "index.json").write_text(json.dumps(_index()), encoding="utf-8")
+    assert run_publish_platform(record_path=None, record_dir=record_dir, out_dir=out_dir) == 0
+
+    payload = json.loads((out_dir / "platform.json").read_text(encoding="utf-8"))
+    payload["raw_sources"][0]["bytes"] += 1  # a hand edit
+    (out_dir / "platform.json").write_text(json.dumps(payload), encoding="utf-8")
+    assert (
+        run_publish_platform(record_path=None, record_dir=record_dir, out_dir=out_dir, check=True)
+        == 1
+    )
+
+    del payload["raw_sources"]  # an older platform.json, written before the field
+    (out_dir / "platform.json").write_text(json.dumps(payload), encoding="utf-8")
+    assert (
+        run_publish_platform(record_path=None, record_dir=record_dir, out_dir=out_dir, check=True)
+        == 1
+    )
 
 
 def test_check_cross_validates_silver_rows_against_an_independent_stats_json(

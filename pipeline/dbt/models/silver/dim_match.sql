@@ -25,7 +25,7 @@
 
 WITH commits AS (
     SELECT
-        s.sport::VARCHAR AS sport,
+        s.source_id::VARCHAR AS source_id,
         s."commit"::VARCHAR AS source_commit
     FROM (SELECT unnest(sources) AS s FROM {{ source('manifest', 'sources') }})
 ),
@@ -99,4 +99,6 @@ SELECT
 FROM matches m
 JOIN {{ ref('dim_sport') }} s ON s.sport = m.sport
 JOIN periods p ON p.match_id = s.id_prefix || ':' || m.native_match_id
-JOIN commits c ON c.sport = m.sport
+-- The sport's own bundle: a sport can have another source (football's body pose), whose
+-- commit is not the one the match rows came from.
+JOIN commits c ON c.source_id = 'opendata-' || m.sport

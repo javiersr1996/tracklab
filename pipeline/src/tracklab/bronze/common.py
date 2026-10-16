@@ -105,8 +105,8 @@ def batch_from_columns(
 ) -> pa.RecordBatch:
     """A RecordBatch of ``schema`` from named columns, failing with the column's name.
 
-    A value that is not a list is a per-batch constant (the lineage columns) and is
-    repeated ``n_rows`` times.
+    A pyarrow array is taken as built (a fixed-size list column); any other value that is not a
+    list is a per-batch constant (the lineage columns) and is repeated ``n_rows`` times.
     """
     missing = [f.name for f in schema if f.name not in columns]
     extra = sorted(set(columns) - set(schema.names))
@@ -118,6 +118,8 @@ def batch_from_columns(
         try:
             if isinstance(values, list):
                 array = pa.array(values, type=field.type)
+            elif isinstance(values, pa.Array):  # built by the caller (a fixed-size list column)
+                array = values.cast(field.type)
             else:
                 array = pa.repeat(pa.scalar(values, type=field.type), n_rows)
         except (pa.ArrowInvalid, pa.ArrowTypeError, OverflowError, TypeError) as exc:

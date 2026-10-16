@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { layerDurations, silverModelRows, type LineageData, type PlatformData } from "../lib/platform";
+import { layerDurations, poseShare, silverModelRows, type LineageData, type PlatformData } from "../lib/platform";
 
 // `layerDurations` (task 35): on-screen seconds per layer for the flow
 // animation. Five layers, one at 0 s (a step that never ran in the fixture
@@ -68,6 +68,7 @@ describe("silverModelRows", () => {
       versions: {},
     },
     layers: [],
+    raw_sources: [],
     steps: [
       {
         step_key: "silver",
@@ -120,5 +121,27 @@ describe("layerDurations", () => {
       const sum = durations.reduce((total, d) => total + d, 0);
       expect(sum).toBeCloseTo(8, 9);
     }
+  });
+});
+
+// `poseShare`: the body-pose zips' slice of "in", read from `raw_sources[]`. Fabricated, with
+// the pose source in the middle, so picking the first or last source instead of matching on
+// `source_id` fails.
+describe("poseShare", () => {
+  const platform = {
+    raw_sources: [
+      { source_id: "opendata-football", sport: "football", files: 5, bytes: 500 },
+      { source_id: "opendata-bodypose", sport: "football", files: 2, bytes: 70 },
+      { source_id: "opendata-basketball", sport: "basketball", files: 3, bytes: 30 },
+    ],
+  } as unknown as PlatformData;
+
+  it("returns the pose source's files and bytes and the sum of every other source", () => {
+    expect(poseShare(platform)).toEqual({ files: 2, bytes: 70, otherBytes: 530 });
+  });
+
+  it("is null when the pose source is not in the ingest", () => {
+    const without = { raw_sources: platform.raw_sources.filter((s) => s.sport === "basketball") };
+    expect(poseShare(without as unknown as PlatformData)).toBeNull();
   });
 });

@@ -1,7 +1,8 @@
 # The real bundles end to end: download (verified against the manifest), bronze,
 # the orientation probe, silver, and every contract test. Weekly and by hand.
 # data/raw is cached by the manifest's hash, so a week with no manifest change
-# verifies 2.3 GB on disk instead of downloading it again.
+# verifies 3.6 GB on disk instead of downloading it again (the week the manifest changes
+# downloads it all: task 64 added the two pose zips, 1.27 GB of them).
 name: full-build
 
 on:
@@ -12,7 +13,7 @@ on:
 jobs:
   pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     defaults:
       run:
         working-directory: pipeline
@@ -31,6 +32,9 @@ jobs:
           key: raw-${{ hashFiles('pipeline/manifest/sources.json') }}
       - run: uv run tracklab ingest opendata-football
       - run: uv run tracklab ingest opendata-basketball
+      # Task 64: the two full-match pose zips (P6), pinned and verified like the rest. They are
+      # read as streams by the bronze below and never extracted.
+      - run: uv run tracklab ingest opendata-bodypose
       - if: steps.raw.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
@@ -40,9 +44,14 @@ jobs:
       # through `tracklab build` (task 32) so the runner leaves a record of its own seconds
       # and disk; raw_* verifies the bytes the two steps above left, it downloads nothing.
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
-      # Everything but group `runs` (task 54): its five assets are the checks of P5, run below as
-      # steps of their own, so the probe's minutes are spent once and a failure names its step.
-      - run: uv run tracklab build --select "not group:runs"
+      # Everything but groups `runs` and `pose` (tasks 54 and 64): their assets are the checks of
+      # P5 and P6, run below as steps of their own, so the probe's and the metric's minutes are
+      # spent once and a failure names its step. The bronze of the pose (about 4 minutes locally)
+      # is inside this build; the disk is printed before and after it, and what it left, because
+      # the inflated JSON (gigabytes per match) must never be written: only its Parquet may be.
+      - run: df -h .
+      - run: uv run tracklab build --select "not group:runs and not group:pose"
+      - run: df -h . && du -sh data/bronze/football/bodypose_frames data/bronze/football/bodypose_players
       - id: build_record
         run: echo "path=$(ls -t data/build/*.json | head -n1)" >> "$GITHUB_OUTPUT"
       # Compares the runner's fresh rows against the versioned platform.json and stats.json
@@ -61,6 +70,24 @@ jobs:
       - run: uv run tracklab runs probe --check
       - run: uv run tracklab runs effect --check
       - run: uv run tracklab publish runs --check
+      # Task 64: P6's reports and pose.json recomputed from the whole bronze this job built (FULL
+      # 2/2 and 3/3, never PARTIAL) and compared byte for byte with the versioned ones. The metric
+      # and the publication read the confirmation match only past the guard, which refuses a dirty
+      # tree: what the build left in the working tree is printed first. `pose metric --check`
+      # takes about half an hour.
+      - name: The working tree must be clean for the guard of P6
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --short
+            git --no-pager diff --stat
+            git --no-pager diff | cat -A | head -n 40
+            echo "the build left the working tree dirty: the confirmation match would stay closed"
+            exit 1
+          fi
+      - run: uv run tracklab pose coverage --check
+      - run: uv run tracklab pose protocol --check
+      - run: uv run tracklab pose metric --check
+      - run: uv run tracklab publish pose --check
       - run: uv run pytest -q
       - run: uv run tracklab stats
       - uses: actions/upload-artifact@v4

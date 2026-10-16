@@ -1,7 +1,7 @@
 import { Flow } from "../../components/platform/Flow";
 import { Lineage } from "../../components/platform/Lineage";
 import { pluralize } from "../../lib/format";
-import { LINEAGE, PLATFORM, silverModelRows } from "../../lib/platform";
+import { LINEAGE, PLATFORM, poseShare, silverModelRows } from "../../lib/platform";
 
 const REPO = "https://github.com/javiersr1996/tracklab";
 
@@ -27,6 +27,7 @@ function formatMatchField(field: (typeof MATCH_FIELDS)[number], value: string | 
 
 export default function PlatformPage() {
   const { run, matches, season_files: seasonFiles } = PLATFORM;
+  const pose = poseShare();
   const modelRows = silverModelRows();
   const seedCount = modelRows.filter((r) => r.key.startsWith("seed_")).length;
   const viewCount = modelRows.filter((r) => r.rows === null && !r.key.startsWith("seed_")).length;
@@ -44,6 +45,15 @@ export default function PlatformPage() {
         platform</code> measured on this run, read from{" "}
         <a href="/data/platform.json">platform.json</a>, never typed by hand.
       </p>
+      {pose && (
+        <p data-pose-share>
+          Of the {(pose.bytes + pose.otherBytes).toLocaleString("en-US")} raw bytes,{" "}
+          {pose.bytes.toLocaleString("en-US")} come from the{" "}
+          {pluralize(pose.files, "body-pose zip")} of opendata-bodypose that P6 added (see{" "}
+          <a href="/pose">/pose</a>); the other sources account for{" "}
+          {pose.otherBytes.toLocaleString("en-US")}.
+        </p>
+      )}
       <Flow layers={PLATFORM.layers} />
       <footer className="platform-footer">
         <p>

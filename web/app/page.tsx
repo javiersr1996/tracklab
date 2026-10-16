@@ -39,7 +39,7 @@ export default function HomePage() {
         <Link href="/replay">Replay any possession</Link> ·{" "}
         <Link href="/platform">How this was built</Link> ·{" "}
         <Link href="/quality">Data quality</Link> · <Link href="/warehouse">Warehouse</Link> ·{" "}
-        <Link href="/runs">The run that moves nobody</Link> ·{" "}
+        <Link href="/runs">The run that moves nobody</Link> · <Link href="/pose">Body pose</Link> ·{" "}
         <a href={REPO}>Repository</a> ·{" "}
         <a href={`${REPO}/blob/main/docs/schema.md`}>Schema</a>
       </p>

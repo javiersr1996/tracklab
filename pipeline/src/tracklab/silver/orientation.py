@@ -1286,7 +1286,7 @@ def report_path(reports_dir: Path, name: str) -> Path:
 def write_report_csv(rows: Sequence[Row], path: Path, columns: Sequence[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(columns))
+        writer = csv.DictWriter(fh, fieldnames=list(columns), lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow(row)

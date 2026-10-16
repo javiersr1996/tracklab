@@ -20,6 +20,7 @@ from tracklab.bronze.basketball.meta import build_meta as build_basketball_meta
 from tracklab.bronze.basketball.tracking import build_tracking as build_basketball_tracking
 from tracklab.bronze.common import raw_root_for
 from tracklab.bronze.football.aggregates import build_aggregates as build_football_aggregates
+from tracklab.bronze.football.bodypose import build_bodypose as build_football_bodypose
 from tracklab.bronze.football.events import build_events as build_football_events
 from tracklab.bronze.football.meta import build_meta as build_football_meta
 from tracklab.bronze.football.tracking import build_tracking as build_football_tracking
@@ -32,9 +33,18 @@ from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.load.postgres import run_load_postgres
 from tracklab.paths import data_root
+from tracklab.pose.coverage import run_pose_coverage
+from tracklab.pose.freeze import run_pose_freeze
+from tracklab.pose.metric import run_pose_metric
+from tracklab.pose.probe import run_pose_probe
+from tracklab.pose.protocol import run_pose_protocol
+from tracklab.pose.sweep import CLIP as POSE_CLIP
+from tracklab.pose.sweep import run_pose_sweep
+from tracklab.pose.verdict import run_pose_verdict
 from tracklab.publish.examples import run_publish_examples
 from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.platform import run_publish_platform
+from tracklab.publish.pose import run_publish_pose
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.quality import run_publish_quality
 from tracklab.publish.runs import run_publish_runs
@@ -65,7 +75,14 @@ BRONZE_BUILDERS: dict[tuple[str, str], _BronzeBuilder] = {
     ("football", "meta"): build_football_meta,
     ("football", "events"): build_football_events,
     ("football", "aggregates"): build_football_aggregates,
+    ("football", "bodypose"): build_football_bodypose,
 }
+# The source a group reads when it is not the sport's own bundle `opendata-<sport>`.
+BRONZE_SOURCE_IDS: dict[tuple[str, str], str] = {("football", "bodypose"): "opendata-bodypose"}
+
+
+def bronze_source_id(sport: str, group: str) -> str:
+    return BRONZE_SOURCE_IDS.get((sport, group), f"opendata-{sport}")
 
 
 def _source(args: argparse.Namespace) -> Source:
@@ -126,22 +143,19 @@ def _cmd_freeze_schema(args: argparse.Namespace) -> int:
 
 def _cmd_bronze(args: argparse.Namespace) -> int:
     manifest = load_manifest(args.manifest)
-    sources = [s for s in manifest.sources if s.sport == args.sport]
-    if len(sources) != 1:
-        sys.exit(
-            f"tracklab: expected one {args.sport} source in the manifest, found {len(sources)}"
-        )
-    source = sources[0]
     groups = [g for g in args.tables.split(",") if g] if args.tables else None
     known = sorted(g for sport, g in BRONZE_BUILDERS if sport == args.sport)
     if groups is None:
-        groups = known
+        # Without --tables: the sport's own bundle. A group on another source (the body pose's
+        # 2.5 GB of zips) is asked for by name.
+        groups = [g for g in known if (args.sport, g) not in BRONZE_SOURCE_IDS]
     unknown = [g for g in groups if (args.sport, g) not in BRONZE_BUILDERS]
     if unknown:
         sys.exit(f"tracklab: no bronze builder for {args.sport} {unknown} (known: {known})")
-    raw_root = raw_root_for(args.data_dir, source.source_id)
     started = time.perf_counter()
     for group in groups:
+        source = manifest.source(bronze_source_id(args.sport, group))
+        raw_root = raw_root_for(args.data_dir, source.source_id)
         print(f"bronze {args.sport} {group}: {raw_root}")
         BRONZE_BUILDERS[(args.sport, group)](source, raw_root, args.data_dir)
     print(f"total seconds={time.perf_counter() - started:.1f}")
@@ -194,6 +208,45 @@ def _cmd_publish_examples(args: argparse.Namespace) -> int:
 
 def _cmd_publish_runs(args: argparse.Namespace) -> int:
     return run_publish_runs(args.data_dir, args.reports_dir, args.out_dir, check=args.check)
+
+
+def _cmd_pose_coverage(args: argparse.Namespace) -> int:
+    return run_pose_coverage(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_pose_sweep(args: argparse.Namespace) -> int:
+    return run_pose_sweep(args.reports_dir, args.clip, check=args.check)
+
+
+def _cmd_pose_protocol(args: argparse.Namespace) -> int:
+    return run_pose_protocol(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_pose_probe(args: argparse.Namespace) -> int:
+    return run_pose_probe(args.data_dir, args.reports_dir, args.clip, check=args.check)
+
+
+def _cmd_pose_freeze(args: argparse.Namespace) -> int:
+    return run_pose_freeze(args.reports_dir, date=args.date)
+
+
+def _cmd_pose_verdict(args: argparse.Namespace) -> int:
+    return run_pose_verdict(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_pose_metric(args: argparse.Namespace) -> int:
+    return run_pose_metric(args.data_dir, args.reports_dir, check=args.check)
+
+
+def _cmd_publish_pose(args: argparse.Namespace) -> int:
+    return run_publish_pose(
+        args.data_dir,
+        args.reports_dir,
+        args.out_dir,
+        args.manifest,
+        args.schema,
+        check=args.check,
+    )
 
 
 def _cmd_publish_warehouse_pg(args: argparse.Namespace) -> int:
@@ -349,7 +402,8 @@ def build_parser() -> argparse.ArgumentParser:
     bronze.add_argument(
         "--tables",
         default=None,
-        help="Comma-separated table groups to build, e.g. tracking (default: every group).",
+        help="Comma-separated table groups to build, e.g. tracking (default: every group of the "
+        "sport's own bundle; `football bodypose` reads other zips and is asked for by name).",
     )
     bronze.add_argument(
         "--manifest",
@@ -587,6 +641,48 @@ def build_parser() -> argparse.ArgumentParser:
     )
     publish_runs.set_defaults(func=_cmd_publish_runs)
 
+    publish_pose = publish_sub.add_parser(
+        "pose",
+        help="Write the Body Pose sample's clip (P6) under pose/ and its record, "
+        "reports/pose_clip.json.",
+    )
+    publish_pose.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; the sample and the bronze of the match are read from it.",
+    )
+    publish_pose.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where pose_clip.json goes (default: reports).",
+    )
+    publish_pose.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where pose/ goes (default: ../web/public/data).",
+    )
+    publish_pose.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path("manifest/sources.json"),
+        help="Path to sources.json, which pins the sample's sha256.",
+    )
+    publish_pose.add_argument(
+        "--schema",
+        type=Path,
+        default=Path("../web/lib/pose/schema.json"),
+        help="JSON schema the clip must validate against.",
+    )
+    publish_pose.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare with the files on disk; write nothing.",
+    )
+    publish_pose.set_defaults(func=_cmd_publish_pose)
+
     publish_warehouse_pg = publish_sub.add_parser(
         "warehouse-pg",
         help="Write warehouse_pg.json: rows, EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) and table "
@@ -727,6 +823,163 @@ def build_parser() -> argparse.ArgumentParser:
         help="Data root the cut lands in (default: tests/fixtures/data).",
     )
     fixtures.set_defaults(func=_cmd_fixtures)
+
+    pose = subparsers.add_parser("pose", help="P6: the Body Pose of the full matches.")
+    pose_sub = pose.add_subparsers(dest="pose_command", required=True)
+    pose_coverage = pose_sub.add_parser(
+        "coverage",
+        help="Write reports/pose_coverage.json: frames, frame-players with pose and joint "
+        "observations per match, period and player, with the denominator of each.",
+    )
+    pose_coverage.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; bronze/football/bodypose_* are read from it (default: data).",
+    )
+    pose_coverage.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where pose_coverage.json goes (default: reports).",
+    )
+    pose_coverage.add_argument(
+        "--check",
+        action="store_true",
+        help="Recount the whole matches at hand and compare with the versioned file; write "
+        "nothing. FULL n/n if every match was recounted, PARTIAL k/n on a slice.",
+    )
+    pose_coverage.set_defaults(func=_cmd_pose_coverage)
+    pose_sweep = pose_sub.add_parser(
+        "sweep",
+        help="Write reports/pose_sweep.json: task 60's synthetic sweep of the cadence of s (and, "
+        "for information, of h), from the mae of the versioned clip; no data is read.",
+    )
+    pose_sweep.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where pose_sweep.json goes (default: reports).",
+    )
+    pose_sweep.add_argument(
+        "--clip",
+        type=Path,
+        default=POSE_CLIP,
+        help="The versioned clip whose skeletons give the mae (default: "
+        "../web/public/data/pose/1925299_phase406.json).",
+    )
+    pose_sweep.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate the whole sweep in memory and compare the bytes; write nothing.",
+    )
+    pose_sweep.set_defaults(func=_cmd_pose_sweep)
+    pose_protocol = pose_sub.add_parser(
+        "protocol",
+        help="Write reports/pose_protocol.json in stage design: task 60's protocol after the six "
+        "reviews, with the sha256 of the sweep and the coverage inside its fingerprint.",
+    )
+    pose_protocol.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; the denominators are counted from bronze/football/bodypose_* "
+        "(default: data).",
+    )
+    pose_protocol.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where pose_protocol.json goes and pose_sweep.json, pose_coverage.json are read "
+        "from (default: reports).",
+    )
+    pose_protocol.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare the bytes; write nothing. FULL 2/2 when both "
+        "matches' bronze is whole, PARTIAL k/2 otherwise.",
+    )
+    pose_protocol.set_defaults(func=_cmd_pose_protocol)
+    pose_probe = pose_sub.add_parser(
+        "probe",
+        help="Write reports/pose_calibration.json: task 60's probe on 1925299, first time (no "
+        "cadence), and the rule of (W, cap) applied blind.",
+    )
+    pose_probe.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; the Body Pose bronze of 1925299 is read from it (default: data).",
+    )
+    pose_probe.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where pose_calibration.json goes and pose_sweep.json is read from "
+        "(default: reports).",
+    )
+    pose_probe.add_argument(
+        "--clip",
+        type=Path,
+        default=POSE_CLIP,
+        help="The versioned clip the sweep's noise twins are drawn from (default: "
+        "../web/public/data/pose/1925299_phase406.json).",
+    )
+    pose_probe.add_argument(
+        "--check",
+        action="store_true",
+        help="Recompute where 1925299's bronze is whole and compare the bytes (FULL 1/1); "
+        "elsewhere check the seal, the protocol and the rule as written (PARTIAL 0/1).",
+    )
+    pose_probe.set_defaults(func=_cmd_pose_probe)
+    pose_freeze = pose_sub.add_parser(
+        "freeze",
+        help="Turn reports/pose_protocol.json to stage frozen at the (W, cap) the rule chose, "
+        "with the sha of the committed pose/ tree; refuses anything uncommitted.",
+    )
+    pose_freeze.add_argument(
+        "--reports-dir",
+        type=Path,
+        default=Path("reports"),
+        help="Where pose_protocol.json, pose_calibration.json and pose_sweep.json live "
+        "(default: reports).",
+    )
+    pose_freeze.add_argument("--date", required=True, help="The freeze's date, YYYY-MM-DD.")
+    pose_freeze.set_defaults(func=_cmd_pose_freeze)
+    for name, func, what in (
+        (
+            "verdict",
+            _cmd_pose_verdict,
+            "Write reports/pose_verdict.json: the probe's second time on 1925299 after the "
+            "freeze, M1 and M2's verdict and M4's half IQR.",
+        ),
+        (
+            "metric",
+            _cmd_pose_metric,
+            "Write reports/pose_metric.json (task 61): the metric per match, period and player, "
+            "and the verdicts of M1, M2 and M4; 1996435 only past the guard.",
+        ),
+    ):
+        sub = pose_sub.add_parser(name, help=what)
+        sub.add_argument(
+            "--data-dir",
+            type=Path,
+            default=data_root(),
+            help="Data root; the Body Pose bronze is read from it (default: data).",
+        )
+        sub.add_argument(
+            "--reports-dir",
+            type=Path,
+            default=Path("reports"),
+            help="Where the reports are read and written (default: reports).",
+        )
+        sub.add_argument(
+            "--check",
+            action="store_true",
+            help="Recompute where the bronze is whole and compare the bytes; elsewhere check the "
+            "seal and what the file answered to (PARTIAL).",
+        )
+        sub.set_defaults(func=func)
 
     runs = subparsers.add_parser(
         "runs", help="P5: off-ball runs against the defence's displacement in the tracking."

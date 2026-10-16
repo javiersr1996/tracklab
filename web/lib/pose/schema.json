@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tracklab.dev/pose/clip.schema.json",
+  "title": "Track Lab pose clip",
+  "description": "A clip of SkillCorner Body Pose (task 55 of tasks/todo.md, P6): 29 joints per detected player at 25 fps. Per frame, each player is [idx, x_cm, y_cm, detected, joints|null]: idx points into `players`, (x_cm, y_cm) is the player's position in the pose file (not the tracking's), `joints` is null when the file has no pose for that player in that frame (it is never interpolated or carried over) and otherwise [xyz, mae]: xyz is 29 [dx, dy, dz] in whole centimetres from the player's own (x, y, 0), in the order of the clip's `joints`; z is relative to the player's centroid, not a height above the pitch; mae is the 29 p90_mae_cm in whole millimetres.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "match_id",
+    "period",
+    "frame_lo",
+    "frame_hi",
+    "fps",
+    "tracking_frame_factor",
+    "surface",
+    "source",
+    "units",
+    "joints",
+    "bones",
+    "limits",
+    "teams",
+    "players",
+    "coverage",
+    "frames"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "match_id": { "type": "integer" },
+    "period": { "type": "integer", "minimum": 1 },
+    "frame_lo": { "type": "integer" },
+    "frame_hi": { "type": "integer" },
+    "fps": { "const": 25 },
+    "tracking_frame_factor": { "const": 2.5 },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spec", "length_m", "width_m"],
+      "properties": {
+        "spec": { "type": "string", "pattern": "^provider_[0-9]+x[0-9]+$" },
+        "length_m": { "type": "number", "exclusiveMinimum": 0 },
+        "width_m": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "bytes", "sha256"],
+      "properties": {
+        "file": { "type": "string" },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["xy", "joints", "mae"],
+      "properties": {
+        "xy": { "type": "string" },
+        "joints": { "type": "string" },
+        "mae": { "type": "string" }
+      }
+    },
+    "joints": {
+      "type": "array",
+      "minItems": 29,
+      "maxItems": 29,
+      "uniqueItems": true,
+      "items": { "type": "string" }
+    },
+    "bones": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": { "type": "integer", "minimum": 0, "maximum": 28 }
+      }
+    },
+    "limits": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "readme", "text"],
+        "properties": {
+          "id": { "type": "string" },
+          "readme": { "type": "string", "pattern": "^readme[.]md:[0-9]+(-[0-9]+)?$" },
+          "text": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "teams": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["team_id", "side"],
+        "properties": {
+          "team_id": { "type": "integer" },
+          "side": { "enum": ["home", "away"] }
+        }
+      }
+    },
+    "players": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["player_id", "team_id", "number"],
+        "properties": {
+          "player_id": { "type": "integer" },
+          "team_id": { "type": "integer" },
+          "number": { "type": "integer" }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frames",
+        "player_frames",
+        "with_joints",
+        "with_joints_share",
+        "joint_observations",
+        "skeletons_per_frame",
+        "p90_mae_cm"
+      ],
+      "properties": {
+        "frames": { "type": "integer", "minimum": 1 },
+        "player_frames": { "type": "integer", "minimum": 1 },
+        "with_joints": { "type": "integer", "minimum": 0 },
+        "with_joints_share": { "type": "number", "minimum": 0, "maximum": 1 },
+        "joint_observations": { "type": "integer", "minimum": 0 },
+        "skeletons_per_frame": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min", "max"],
+          "properties": {
+            "min": { "type": "integer", "minimum": 0 },
+            "max": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "p90_mae_cm": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min", "median", "p90", "max"],
+          "properties": {
+            "min": { "type": "number" },
+            "median": { "type": "number" },
+            "p90": { "type": "number" },
+            "max": { "type": "number" }
+          }
+        }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "description": "Only in the clips of a whole match (task 62): the rule that chose the 4 s and what it picked.",
+      "required": ["kind", "rule"],
+      "properties": {
+        "kind": { "enum": ["hook", "stretch"] },
+        "rule": { "type": "string", "minLength": 1 }
+      }
+    },
+    "windows": {
+      "type": "array",
+      "description": "Only in the clips of a whole match: the windows of the hook player inside the clip. s_mm is s(t) in whole millimetres, one value per frame from frame_lo to frame_hi; cadence_hz and its sd are those of the metric (null when it is NaN).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["player", "band", "frame_lo", "frame_hi", "speed_m_s", "cadence_hz", "cadence_sd_hz", "s_mm"],
+        "properties": {
+          "player": { "type": "integer", "minimum": 0 },
+          "band": { "enum": ["low", "high"] },
+          "frame_lo": { "type": "integer" },
+          "frame_hi": { "type": "integer" },
+          "speed_m_s": { "type": "number" },
+          "cadence_hz": { "type": ["number", "null"] },
+          "cadence_sd_hz": { "type": ["number", "null"] },
+          "s_mm": { "type": "array", "minItems": 2, "items": { "type": "integer" } }
+        }
+      }
+    },
+    "frames": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["f", "t", "ball", "p"],
+        "properties": {
+          "f": { "type": "integer" },
+          "t": { "type": "integer", "minimum": 0 },
+          "ball": {
+            "type": "array",
+            "prefixItems": [
+              { "type": "integer" },
+              { "type": "integer" },
+              { "enum": [0, 1] }
+            ],
+            "items": false,
+            "minItems": 3
+          },
+          "p": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer", "minimum": 0 },
+                { "type": "integer" },
+                { "type": "integer" },
+                { "enum": [0, 1, null] },
+                {
+                  "oneOf": [
+                    { "type": "null" },
+                    {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "array",
+                          "minItems": 29,
+                          "maxItems": 29,
+                          "items": {
+                            "type": "array",
+                            "minItems": 3,
+                            "maxItems": 3,
+                            "items": { "type": "integer" }
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "minItems": 29,
+                          "maxItems": 29,
+                          "items": { "type": "integer", "minimum": 0 }
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 2
+                    }
+                  ]
+                }
+              ],
+              "items": false,
+              "minItems": 5
+            }
+          }
+        }
+      }
+    }
+  }
+}

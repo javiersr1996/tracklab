@@ -42,10 +42,10 @@ _TRACKING = (
 Check = Callable[[Path, Path], int]
 
 
-def _check_asset(
-    name: str, command: str, run: Check, deps: list[str], description: str
+def check_asset(
+    name: str, command: str, run: Check, deps: list[str], description: str, group: str = "runs"
 ) -> AssetsDefinition:
-    @asset(name=name, group_name="runs", deps=deps, description=description)
+    @asset(name=name, group_name=group, deps=deps, description=description)
     def _run(context: AssetExecutionContext) -> None:
         if run(data_root(), REPORTS_DIR) != 0:
             raise Failure(f"tracklab {command} --check failed")
@@ -53,28 +53,28 @@ def _check_asset(
     return _run
 
 
-runs_protocol = _check_asset(
+runs_protocol = check_asset(
     "runs_protocol",
     "runs protocol",
     lambda data, reports: run_runs_protocol(data, reports, check=True),
     ["silver_dim_match", "quality_partitions", "bronze_football_dynamic_events"],
     "reports/runs_protocol.json: the split, the windows and the death criteria, checked.",
 )
-runs_coverage = _check_asset(
+runs_coverage = check_asset(
     "runs_coverage",
     "runs coverage",
     lambda data, reports: run_runs_coverage(data, reports, check=True),
     [*_TRACKING, "runs_protocol"],
     "reports/runs_coverage.csv: runs, windows and placebos per match, checked.",
 )
-runs_probe = _check_asset(
+runs_probe = check_asset(
     "runs_probe",
     "runs probe",
     lambda data, reports: run_runs_probe(data, reports, check=True),
     [*_TRACKING, "runs_coverage"],
     "reports/runs_calibration.json, section probe (M1, M2), recomputed and compared.",
 )
-runs_effect = _check_asset(
+runs_effect = check_asset(
     "runs_effect",
     "runs effect",
     lambda data, reports: run_runs_effect(data, reports, check=True),

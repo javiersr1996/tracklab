@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tracklab.dev/pose/summary.schema.json",
+  "title": "Track Lab pose summary",
+  "description": "What /pose says (task 62 of tasks/todo.md, P6): the state of the project, the three limits of SkillCorner with their README line, the coverage, the protocol with the sha of each stage, the tables per match and per player of pose_metric.json when P6 lives or is unreplicated, and the clips under pose/. Every figure is read from a report in pipeline/reports/; the clip schema is schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "dead_at",
+    "limits",
+    "protocol",
+    "verdict",
+    "opened",
+    "coverage",
+    "phase406",
+    "clips",
+    "tables"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "status": { "enum": ["alive", "unreplicated", "dead"] },
+    "dead_at": { "enum": [null, "noise", "M1", "M2", "M4"] },
+    "limits": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "readme", "text"],
+        "properties": {
+          "id": { "type": "string" },
+          "readme": { "type": "string", "pattern": "^readme[.]md:[0-9]+(-[0-9]+)?$" },
+          "text": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "required": ["stage", "calibration", "confirmation", "width", "cap_cm", "bands", "numbers", "stages"],
+      "properties": {
+        "stage": { "enum": ["design", "frozen"] },
+        "calibration": { "type": "integer" },
+        "confirmation": { "type": "integer" },
+        "width": { "type": ["integer", "null"], "minimum": 1 },
+        "cap_cm": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "bands": { "type": "object" },
+        "numbers": { "type": "object" },
+        "stages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["stage", "sha256", "what"],
+            "properties": {
+              "stage": { "enum": ["design", "frozen", "verdict", "metric"] },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "what": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "verdict": { "type": "object", "required": ["source"] },
+    "opened": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confirmation_match_opened", "at_the_freeze", "not_opened"],
+      "properties": {
+        "confirmation_match_opened": { "type": "boolean" },
+        "at_the_freeze": {
+          "type": "object",
+          "required": ["not_seen", "consequence"],
+          "properties": {
+            "not_seen": { "type": "string" },
+            "consequence": { "type": "string" }
+          }
+        },
+        "not_opened": { "type": "array", "items": { "type": "integer" } }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "minProperties": 2,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["periods", "total", "players_with_pose", "mae_cm"],
+        "properties": {
+          "periods": { "type": "object" },
+          "total": {
+            "type": "object",
+            "required": [
+              "frames",
+              "frames_with_pose",
+              "player_frames",
+              "with_pose",
+              "share_frames_with_pose",
+              "share_player_frames_with_pose",
+              "skeletons_per_frame"
+            ]
+          },
+          "players_with_pose": { "type": "integer", "minimum": 1 },
+          "mae_cm": { "type": "object", "required": ["all", "ankles"] }
+        }
+      }
+    },
+    "phase406": {
+      "type": "object",
+      "required": ["file", "bytes", "sha256", "coverage"],
+      "properties": {
+        "file": { "type": "string" },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "coverage": { "type": "object" }
+      }
+    },
+    "clips": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "match_id",
+          "kind",
+          "file",
+          "bytes",
+          "sha256",
+          "period",
+          "frame_lo",
+          "frame_hi",
+          "coverage",
+          "selection",
+          "windows"
+        ],
+        "properties": {
+          "match_id": { "type": "integer" },
+          "kind": { "enum": ["hook", "stretch"] },
+          "file": { "type": "string", "pattern": "^pose/[a-z]+_[0-9]+[.]json$" },
+          "bytes": { "type": "integer", "minimum": 1 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "period": { "type": "integer", "minimum": 1 },
+          "frame_lo": { "type": "integer" },
+          "frame_hi": { "type": "integer" },
+          "coverage": { "type": "object" },
+          "selection": { "type": "object", "required": ["kind", "rule"] },
+          "windows": { "type": "array" }
+        }
+      }
+    },
+    "tables": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["note", "columns", "matches", "m3", "order"],
+          "properties": {
+            "note": { "type": "string" },
+            "columns": { "type": "array", "items": { "type": "string" } },
+            "matches": {
+              "type": "object",
+              "minProperties": 2,
+              "additionalProperties": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "array" }
+              }
+            },
+            "m3": { "type": "string" },
+            "order": { "type": "string" }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "dead" } } },
+      "then": { "properties": { "dead_at": { "type": "string" }, "tables": { "type": "null" } } },
+      "else": { "properties": { "dead_at": { "type": "null" }, "tables": { "type": "object" } } }
+    }
+  ]
+}

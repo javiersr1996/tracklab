@@ -30,7 +30,7 @@ SkillCorner repos --ingest--> raw ------bronze------> Parquet ---dbt---> silver 
 
 The same query reads both sports: `SELECT * FROM frames WHERE sport = ?` returns 9,126,744 rows
 of basketball and 20,213,849 of football (`web/public/data/stats.json`). The provider bundles
-weigh 2,316,182,304 bytes as pinned (`bytes.raw.total`); the site ships 1,110,509 bytes of
+weigh 3,583,918,346 bytes as pinned (`bytes.raw.total`); the site ships 1,110,509 bytes of
 possessions (`bytes.published.total`).
 
 ## Layout
@@ -66,8 +66,8 @@ The pipeline is a Dagster graph (`uv run dagster asset list -m tracklab.dagster_
 `raw_<sport>`, `bronze_<sport>_<table>` (one step per `tracklab bronze --tables` group),
 `bronze_common_orientation` and the `reports_orientation_<sport>` CSVs it writes, the dbt seeds
 and silver models and the season-aggregate gold models (group `gold`), whose dbt tests run as asset checks, and `publish_possessions` and
-`publish_stats` (group `publish`), and the five assets of [P5](#the-run-that-moves-nobody) (group
-`runs`). The job `build` runs all of them. From `pipeline/`:
+`publish_stats` (group `publish`), the five assets of [P5](#the-run-that-moves-nobody) (group
+`runs`) and the four of [P6](#body-pose) (group `pose`). The job `build` runs all of them. From `pipeline/`:
 
 ```
 uv run dbt parse --project-dir dbt --profiles-dir dbt          # dagster-dbt reads target/manifest.json
@@ -92,11 +92,11 @@ describe them (`lineage.json` and `platform.json` excluded, as they describe the
 than its data).
 
 ```
-title: 2.3 GB in, 3.5 MB out
-subtitle: 1.5 MB to watch, 2.1 MB to query
+title: 3.6 GB in, 7.5 MB out
+subtitle: 5.4 MB to watch, 2.1 MB to query
 ```
 
-`uv run dagster asset list -m tracklab.dagster_defs` lists `81` assets, the graph
+`uv run dagster asset list -m tracklab.dagster_defs` lists `88` assets, the graph
 `web/public/data/lineage.json` exports for the page.
 
 ## The run that moves nobody
@@ -133,6 +133,42 @@ uv run tracklab runs coverage --check      # runs, windows and placebos per matc
 uv run tracklab runs probe --check         # M1 and M2 (takes minutes)
 uv run tracklab runs effect --check        # M3 to M5a
 uv run tracklab publish runs --check       # runs.json and the two clips
+```
+
+## Body pose
+
+[`/pose`](https://tracklab-sable.vercel.app/pose) is the Body Pose SkillCorner publishes for two
+full matches: the joints of the players it resolves in each frame, each with its predicted error. It
+is meant for detected players, but a few rows with a pose are not flagged as detected (counted below). The question is narrow, the cadence and the step in the high-speed stretches,
+per match and per player, and the instrument is the signal of the ankles' separation along the
+run. The protocol (`pipeline/reports/pose_protocol.json`) was written and frozen on one match
+before the other was read, and the other was read once. The page says the state the project
+reached, and what the data do not say: pose exists only for detected players, z is relative to the
+player's centroid and is no height, and the tracking and the pose are generated apart. The tables
+carry the number of windows behind every value and the error propagated from the joints' predicted
+error beside it. Nothing on the page ranks players, reads intent or measures an absolute height.
+
+```
+status: alive
+M4: 27 of 27 players, median propagated sd 0.040166 Hz against 0.131793 Hz
+pose in the player-frames: 0.3143 of 1925299 and 0.3638 of 1996435
+pose.json: 51570 bytes, hook clips: 784665 and 696714 bytes
+pose rows not flagged as detected: 2 of 1540715 in 1925299 and 1357 of 1571830 in 1996435
+```
+
+The clips are a few seconds of each match, chosen by rule (the window of the high band whose cadence
+is nearest to the match's median, never the maximum) and drawn from the Parquet the pose zips become;
+the inflated JSON is read as a stream and never reaches the disk.
+In the graph the four assets of group `pose` only check, like the runs ones; CI runs the checks on
+the fixtures and `full-build` on the whole bronze.
+
+```
+uv run tracklab ingest opendata-bodypose        # the two zips, verified against the manifest
+uv run tracklab bronze football --tables bodypose
+uv run tracklab pose coverage --check           # frames and joints with a pose, per match
+uv run tracklab pose protocol --check           # the frozen protocol against the code
+uv run tracklab pose metric --check             # the metric in both matches (takes a while)
+uv run tracklab publish pose --check            # pose.json and the clips
 ```
 
 ## Warehouse

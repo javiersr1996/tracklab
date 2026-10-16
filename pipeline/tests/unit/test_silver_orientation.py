@@ -694,3 +694,14 @@ def test_cli_returns_1_when_the_opposite_rotation_hits(bundle: dict[str, Path]) 
     assert orientation_path(bundle["data"]).is_file(), "the table is still written"
     doc = (bundle["docs"] / "decisions.md").read_text(encoding="utf-8")
     assert f"**Orientation NOT consistent: 1 of 4 groups fail** ({BB_MATCH} p1 team 10)" in doc
+
+
+def test_the_reports_are_written_with_lf_whatever_the_platform(tmp_path: Path) -> None:
+    """The repository keeps these CSV with LF (`.gitattributes`); the csv module's default is CRLF,
+    which left the tree dirty after `tracklab build` on a Linux runner and closed the guard of
+    P6 (full-build, task 64)."""
+    from tracklab.silver.orientation import write_report_csv
+
+    path = tmp_path / "orientation_x.csv"
+    write_report_csv([{"a": "1", "b": "2"}, {"a": "3", "b": "4"}], path, ["a", "b"])
+    assert path.read_bytes() == b"a,b\n1,2\n3,4\n"

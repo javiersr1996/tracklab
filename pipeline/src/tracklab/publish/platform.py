@@ -224,6 +224,24 @@ def season_files_from_record(record: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# --- raw sources: where the "in" comes from, one row per ingest source ------------------
+
+
+def raw_sources_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
+    """`disk.raw.sources[]`, the same per-source pins `bytes_pinned` is the sum of, so
+    `sum(raw_sources[].bytes) == layers.raw.bytes_pinned` by the record's own construction
+    (and a test proves it). `/platform` reads the P6 body-pose share from here, not from prose."""
+    return [
+        {
+            "source_id": s["source_id"],
+            "sport": s["sport"],
+            "files": s["files"],
+            "bytes": s["bytes_pinned"],
+        }
+        for s in record["disk"]["raw"]["sources"]
+    ]
+
+
 # --- matches: raw bytes from the manifest, bronze from the filename, silver from the
 # --- partition ------------------------------------------------------------------
 
@@ -369,6 +387,7 @@ def platform_from_record(record: dict[str, Any], index_payload: dict[str, Any]) 
         "subtitle": subtitle_from_record(record),
         "run": run_block(record),
         "layers": layers_from_record(record),
+        "raw_sources": raw_sources_from_record(record),
         "steps": record["steps"],
         "tables": tables_from_record(record),
         "matches": matches_from_record(record, index_payload),
@@ -470,6 +489,11 @@ def run_publish_platform(
         problems = _diff_tables(on_disk.get("tables", []), payload["tables"]) + _diff_matches(
             on_disk.get("matches", []), payload["matches"], stats_rows
         )
+        if on_disk.get("raw_sources") != payload["raw_sources"]:
+            problems.append(
+                f"raw_sources: on disk {on_disk.get('raw_sources')},"
+                f" record {payload['raw_sources']}"
+            )
         if problems:
             detail = "\n  ".join(problems)
             print(

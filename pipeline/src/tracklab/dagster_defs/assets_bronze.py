@@ -19,8 +19,8 @@ from dagster import (
 )
 
 from tracklab.bronze.common import raw_root_for
-from tracklab.cli import BRONZE_BUILDERS
-from tracklab.dagster_defs.assets_ingest import MANIFEST, manifest_sources
+from tracklab.cli import BRONZE_BUILDERS, bronze_source_id
+from tracklab.dagster_defs.assets_ingest import MANIFEST, manifest_sources, raw_asset_name
 from tracklab.ingest.manifest import load_manifest
 from tracklab.paths import data_root
 from tracklab.silver.orientation import SPORTS, run_orientation
@@ -56,6 +56,7 @@ BRONZE_TABLES: dict[tuple[str, str], tuple[str, ...]] = {
     ("football", "events"): ("dynamic_events", "phases_of_play"),
     ("football", "meta"): ("match", "match_periods", "match_players", "matches"),
     ("football", "aggregates"): ("aggregates_obr", "aggregates_passing", "aggregates_physical"),
+    ("football", "bodypose"): ("bodypose_frames", "bodypose_players"),
 }
 
 # What the orientation probe reads (task 9); it writes bronze.common.orientation and
@@ -80,15 +81,24 @@ def bronze_key(sport: str, table: str) -> AssetKey:
     return AssetKey(f"bronze_{sport}_{table}")
 
 
+# The keys of the football pose bronze, for the group whose checks read it (task 64). Only
+# this module and the guard name the tables (tests/unit/test_pose_data.py).
+BODYPOSE_KEYS = [
+    bronze_key("football", table).to_user_string()
+    for table in BRONZE_TABLES[("football", "bodypose")]
+]
+
+
 def _bronze_asset(sport: str, group: str, tables: tuple[str, ...]) -> AssetsDefinition:
+    source_id = bronze_source_id(sport, group)
+    raw = raw_asset_name(load_manifest(MANIFEST).source(source_id))
     specs = [
-        AssetSpec(bronze_key(sport, table), group_name="bronze", deps=[f"raw_{sport}"])
-        for table in tables
+        AssetSpec(bronze_key(sport, table), group_name="bronze", deps=[raw]) for table in tables
     ]
 
     @multi_asset(name=f"bronze_{sport}_{group}", specs=specs)
     def _build(context: AssetExecutionContext) -> Iterator[MaterializeResult[None]]:
-        (source,) = (s for s in load_manifest(MANIFEST).sources if s.sport == sport)
+        source = load_manifest(MANIFEST).source(source_id)
         root = data_root()
         BRONZE_BUILDERS[(sport, group)](source, raw_root_for(root, source.source_id), root)
         for table in tables:

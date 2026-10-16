@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "clip": {
+    "file": "web/public/data/pose/1925299_phase406.json",
+    "bytes": 2410928,
+    "sha256": "58a2d2332aeb7f2e5fa6ed7012bbeaf502e1812f453386539d32ffb69710983c",
+    "max_bytes_hypothesis": 3000000,
+    "within_hypothesis": true
+  },
+  "source": {
+    "file": "data/bodypose/sample_1925299_phase406.jsonl.gz",
+    "bytes": 1926895,
+    "sha256": "eb10f537c5c3b3c80018d5670f16cb788b14a3529d0be0b36a077bd1b41aeb4a"
+  },
+  "coverage": {
+    "frames": 309,
+    "player_frames": 9888,
+    "with_joints": 4953,
+    "with_joints_share": 0.5009,
+    "joint_observations": 143637,
+    "skeletons_per_frame": {
+      "min": 13,
+      "max": 18
+    },
+    "p90_mae_cm": {
+      "min": 3.97,
+      "median": 11.35,
+      "p90": 18.92,
+      "max": 43.01
+    }
+  },
+  "midhip_horizontal_cm": {
+    "skeletons": 4953,
+    "median": 8.6,
+    "p99": 23.27,
+    "max": 38.64
+  },
+  "quantisation": {
+    "joint_offset_max_abs_cm": 0.5,
+    "player_xy_max_abs_cm": 0.4,
+    "mae_max_abs_cm": 0.05
+  },
+  "alignment": {
+    "pose_frame": 124490,
+    "tracking_frame": 49796,
+    "players": 22,
+    "max_distance_m": 0.984,
+    "median_distance_m": 0.442,
+    "aligned_frames": {
+      "frames": 62,
+      "pairs": 1364,
+      "max_distance_m": 3.589,
+      "median_distance_m": 0.361,
+      "pairs_over_1_5_m": 78,
+      "detected_in_pose": {
+        "pairs": 1000,
+        "max_distance_m": 2.19,
+        "pairs_over_1_5_m": 11
+      }
+    }
+  },
+  "skeletons_per_frame_histogram": {
+    "13": 4,
+    "14": 3,
+    "15": 57,
+    "16": 167,
+    "17": 72,
+    "18": 6
+  }
+}

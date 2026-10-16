@@ -81,12 +81,22 @@ export interface PlatformSeasonFiles {
   items: PlatformSeasonFileItem[];
 }
 
+// One ingest source's share of the raw layer (`disk.raw.sources[]` of the build record); the
+// bytes add up to `layers[raw].bytes`.
+export interface PlatformRawSource {
+  source_id: string;
+  sport: string;
+  files: number;
+  bytes: number;
+}
+
 export interface PlatformData {
   schema_version: number;
   title: string;
   subtitle: string;
   run: PlatformRun;
   layers: PlatformLayer[];
+  raw_sources: PlatformRawSource[];
   steps: PlatformStep[];
   tables: PlatformTable[];
   matches: PlatformMatch[];
@@ -95,6 +105,21 @@ export interface PlatformData {
 
 // Via unknown: the JSON's inferred `steps` type is a union of the steps' own `dbt_seconds` keys.
 export const PLATFORM = platformJson as unknown as PlatformData;
+
+export const POSE_SOURCE_ID = "opendata-bodypose";
+
+// What the P6 body-pose zips add to "in": their files and bytes, and the bytes of every other
+// raw source, all read from `raw_sources[]`, never typed. `null` if the source is not there.
+export function poseShare(
+  platform: PlatformData = PLATFORM,
+): { files: number; bytes: number; otherBytes: number } | null {
+  const pose = platform.raw_sources.find((s) => s.source_id === POSE_SOURCE_ID);
+  if (!pose) return null;
+  const otherBytes = platform.raw_sources
+    .filter((s) => s.source_id !== POSE_SOURCE_ID)
+    .reduce((sum, s) => sum + s.bytes, 0);
+  return { files: pose.files, bytes: pose.bytes, otherBytes };
+}
 
 export interface LineageNode {
   key: string;

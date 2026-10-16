@@ -27,6 +27,8 @@ _ROLE_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"^data/aggregates/[^/]+\.csv$"), "aggregate"),
     (re.compile(r"^data/matches\.json$"), "matches"),
     (re.compile(r"^data/bodypose/[^/]+\.jsonl\.gz$"), "bodypose_sample"),
+    # The full-match body pose on HuggingFace (opendata-bodypose): one zip per match.
+    (re.compile(r"^raw/(\d+)\.jsonl\.zip$"), "bodypose_zip"),
     # Basketball (opendata-basketball): same bundle shape, different filenames.
     (re.compile(r"^data/matches/(\d+)/\1_tracking_data\.jsonl\.gz$"), "tracking"),
     (re.compile(r"^data/matches/(\d+)/\1_game_data\.json$"), "game_data"),
@@ -34,6 +36,7 @@ _ROLE_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"^data/player_id_aliases\.csv$"), "player_aliases"),
 )
 _MATCH_DIR = re.compile(r"^data/matches/(\d+)/")
+_MATCH_ZIP = re.compile(r"^raw/(\d+)\.jsonl\.zip$")
 
 
 @dataclass
@@ -96,8 +99,8 @@ def role_for(path: str) -> str | None:
 
 
 def match_id_for(path: str) -> int | None:
-    """Match id for paths under data/matches/{id}/, else None."""
-    found = _MATCH_DIR.match(path)
+    """Match id for paths under data/matches/{id}/ and for raw/{id}.jsonl.zip, else None."""
+    found = _MATCH_DIR.match(path) or _MATCH_ZIP.match(path)
     return int(found.group(1)) if found else None
 
 
