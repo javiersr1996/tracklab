@@ -27,6 +27,7 @@
   --canvas-muted: #9aa4ad;
   --canvas-ink: #0e1114;
   --canvas-hi: #ffffff;
+  --canvas-edge: #7b858d;
 
   /* Type */
   --font-display: var(--font-display-face, system-ui), system-ui, sans-serif;
@@ -878,11 +879,11 @@ a.wordmark:hover {
 }
 
 .lineage-nodes .lineage-node:not([data-selected]):not([data-lit]) rect {
-  opacity: 0.35;
+  opacity: 0.8; /* resting: node text >= 5.0:1, node vs canvas >= 3.8:1 */
 }
 
 .lineage-edges path {
-  stroke: var(--canvas-line);
+  stroke: var(--canvas-edge); /* 4.2:1 on the canvas */
   stroke-width: 1;
 }
 
