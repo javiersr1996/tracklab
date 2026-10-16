@@ -79,6 +79,26 @@
       "note": "split by use: to watch, the possessions and the JSON the other pages are built from; to query, what only /warehouse uses, the Parquet and the warehouse*.json that describe them; as `tracklab build` measured them, without lineage.json and platform.json (counting platform.json would make the title depend on its own previous value, decision 1); the query engine is not data and is not counted"
     }
   ],
+  "raw_sources": [
+    {
+      "source_id": "opendata-football",
+      "sport": "football",
+      "files": 85,
+      "bytes": 1919842163
+    },
+    {
+      "source_id": "opendata-basketball",
+      "sport": "basketball",
+      "files": 35,
+      "bytes": 396340141
+    },
+    {
+      "source_id": "opendata-bodypose",
+      "sport": "football",
+      "files": 2,
+      "bytes": 1267736042
+    }
+  ],
   "steps": [
     {
       "step_key": "raw_basketball",

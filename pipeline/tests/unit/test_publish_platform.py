@@ -22,6 +22,7 @@ from tracklab.publish.platform import (
     layers_from_record,
     matches_from_record,
     platform_from_record,
+    raw_sources_from_record,
     run_publish_platform,
     season_files_from_record,
     subtitle_from_record,
@@ -42,8 +43,16 @@ def _raw_entry(
     }
 
 
-def _source(sport: str, entries: list[dict[str, Any]]) -> dict[str, Any]:
-    return {"sport": sport, "manifest": entries}
+def _source(
+    sport: str, entries: list[dict[str, Any]], source_id: str | None = None
+) -> dict[str, Any]:
+    return {
+        "source_id": source_id or f"opendata-{sport}",
+        "sport": sport,
+        "files": len(entries),
+        "bytes_pinned": sum(e["bytes"] for e in entries),
+        "manifest": entries,
+    }
 
 
 def _parquet(path: str, rows: int, bytes_: int) -> dict[str, Any]:
@@ -293,6 +302,32 @@ def test_raw_bytes_plus_season_files_reconciles_to_bytes_pinned() -> None:
     season = season_files_from_record(record)
     reconciled = sum(m["raw_bytes"] for m in matches) + season["bytes"]
     assert reconciled == record["disk"]["raw"]["bytes_pinned"]
+
+
+def test_raw_sources_break_the_raw_layer_down_by_source_and_add_up_to_it() -> None:
+    record = _record()
+    pose = _source(
+        "football",
+        [_raw_entry("pose/a.zip", "pose", None, 700), _raw_entry("pose/b.zip", "pose", None, 70)],
+        source_id="opendata-bodypose",
+    )
+    record["disk"]["raw"]["sources"].append(pose)
+    record["disk"]["raw"]["bytes_pinned"] += 770
+    sources = platform_from_record(record, _index())["raw_sources"]
+    assert [s["source_id"] for s in sources] == [
+        "opendata-basketball",
+        "opendata-football",
+        "opendata-bodypose",
+    ]
+    assert sources[-1] == {
+        "source_id": "opendata-bodypose",
+        "sport": "football",
+        "files": 2,
+        "bytes": 770,
+    }
+    assert sum(s["bytes"] for s in sources) == record["disk"]["raw"]["bytes_pinned"]
+    assert sum(s["bytes"] for s in sources) == layers_from_record(record)[0]["bytes"]
+    assert sources == raw_sources_from_record(record)
 
 
 def test_raw_bytes_read_plus_season_files_reconciles_to_the_raw_bytes_read() -> None:

@@ -80,6 +80,7 @@ interface PlatformJson {
   title: string;
   subtitle: string;
   layers: PlatformLayerRecord[];
+  raw_sources: { source_id: string; files: number; bytes: number }[];
 }
 
 const LAYER_ORDER = ["raw", "bronze", "silver", "gold", "quality", "publish"];
@@ -189,6 +190,24 @@ test("the logger keeps a state that lasted less than one mutation batch", async 
   });
 
   expect(states).toEqual(["idle", "playing", "done"]);
+});
+
+test("the raw bytes line names the body-pose share, with the figures platform.json holds", async ({
+  page,
+}) => {
+  const platform = (await (await page.request.get("/data/platform.json")).json()) as PlatformJson;
+  const pose = platform.raw_sources.find((s) => s.source_id === "opendata-bodypose");
+  expect(pose, "platform.json has no opendata-bodypose in raw_sources").toBeTruthy();
+  const raw = platform.layers.find((l) => l.layer === "raw");
+  const others = raw!.bytes - pose!.bytes;
+  const n = (v: number) => v.toLocaleString("en-US");
+  await page.goto("/platform");
+  const line = page.locator("[data-pose-share]");
+  await expect(line).toHaveText(
+    `Of those raw bytes, ${n(pose!.bytes)} come from the ${pose!.files} body-pose zips of ` +
+      `opendata-bodypose that P6 added (see /pose); the other sources account for ${n(others)}.`,
+  );
+  await expect(line.getByRole("link", { name: "/pose" })).toHaveAttribute("href", "/pose");
 });
 
 test("the home page links to /platform and /quality", async ({ page }) => {
