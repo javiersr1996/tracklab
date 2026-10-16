@@ -1,16 +1,21 @@
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Nav } from "../components/site/Nav";
-import { DATA_SOURCES, REPO } from "../lib/sections";
+import { DATA_SOURCES } from "../lib/sections";
 import "./globals.css";
 
-// The one webfont: headings, eyebrows, buttons and the big figures. next/font downloads it at
-// build time and serves it from this site, so no page asks a font CDN; the Latin subset of the
-// variable file is 22,288 B, measured against the 400,000 B page budgets. Body text stays on the
-// system stack.
-const display = Space_Grotesk({ subsets: ["latin"], variable: "--font-display-face", display: "swap" });
+// The one webfont: headings, eyebrows, buttons and the big figures. It is the Latin subset of the
+// Space Grotesk variable file (OFL, see fonts/OFL.txt) committed in this repo, so the build needs
+// no network and no page asks a font CDN; it is preloaded and counts against the 400,000 B page
+// budgets. Body text stays on the system stack.
+const display = localFont({
+  src: "./fonts/SpaceGrotesk-latin-variable.woff2",
+  weight: "300 700",
+  variable: "--font-display-face",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Track Lab",
@@ -48,12 +53,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <p className="site-footer-note">Not affiliated with SkillCorner.</p>
             </div>
             <ul className="site-footer-links">
-              <li>
-                <a href={REPO}>Repository</a>
-              </li>
-              <li>
-                <a href={`${REPO}/blob/main/docs/schema.md`}>Schema</a>
-              </li>
               <li>Code under the MIT license</li>
             </ul>
           </div>
