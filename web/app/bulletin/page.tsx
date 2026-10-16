@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { Band, PageHead } from "../../components/site/Band";
 
 // `docs/bulletin.md`, one directory up from `web/` (`tracklab publish quality`
 // writes it there from the CSVs), read at build time like `quality.json` in
@@ -11,9 +12,15 @@ const BULLETIN_PATH = join(process.cwd(), "..", "docs", "bulletin.md");
 
 export default function BulletinPage() {
   const bulletin = readFileSync(BULLETIN_PATH, "utf-8");
+  // The file's own title line is the page's heading; the rest is shown as written.
+  const [first, ...rest] = bulletin.split("\n");
+  const title = first.startsWith("# ") ? first.slice(2) : null;
   return (
     <main className="page">
-      <pre className="bulletin">{bulletin}</pre>
+      <PageHead eyebrow="Data quality">{title ? <h1>{title}</h1> : null}</PageHead>
+      <Band>
+        <pre className="bulletin">{title ? rest.join("\n").trimStart() : bulletin}</pre>
+      </Band>
     </main>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { RunsView } from "../../components/runs/RunsView";
+import { PageHead } from "../../components/site/Band";
 import type { Runs } from "../../lib/runs/types";
 
 // `runs.json` is fetched, like the possessions the replay pages play, so the page renders
@@ -23,10 +24,10 @@ export default function RunsPage() {
   return (
     <main className="page runs" data-loaded={runs === null ? "false" : "true"}>
       {runs === null || runs === "failed" ? (
-        <>
+        <PageHead eyebrow="Off-ball runs">
           <h1>The run that moves nobody</h1>
           {runs === "failed" ? <p role="alert">runs.json could not be loaded.</p> : null}
-        </>
+        </PageHead>
       ) : (
         <RunsView runs={runs} />
       )}

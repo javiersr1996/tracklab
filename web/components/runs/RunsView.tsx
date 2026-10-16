@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { at, type Runs, STAGES, type Stage } from "../../lib/runs/types";
+import { Band, PageHead } from "../site/Band";
 import { RunsHook } from "./Hook";
 
 // `/runs` (task 53): P5 published with the outcome it had. Every figure is an element
@@ -675,7 +676,7 @@ function Scope({ runs }: { runs: Runs }) {
   const total = runs.funnel.coverage.length;
   const calibration = runs.funnel.coverage.filter((r) => r.half === "calibration").length;
   return (
-    <p data-section="scope" className="runs-scope">
+    <p data-section="scope" className="runs-scope wrap">
       Scope: <span data-scope="matches">{total}</span> matches,{" "}
       <span data-scope="calibration">{calibration}</span> read as calibration and{" "}
       <span data-scope="held-out">{total - calibration}</span> set aside. It reports displacement
@@ -688,16 +689,24 @@ function Scope({ runs }: { runs: Runs }) {
 export function RunsView({ runs }: { runs: Runs }) {
   return (
     <>
-      <h1>The run that moves nobody</h1>
-      <Status runs={runs} />
-      <RunsHook runs={runs} />
-      <Stages runs={runs} />
-      <Negative runs={runs} />
-      <Effects runs={runs} />
-      <Calibration runs={runs} />
-      <Held runs={runs} />
-      <Reason runs={runs} />
-      <Protocol runs={runs} />
+      <PageHead eyebrow="Off-ball runs">
+        <h1>The run that moves nobody</h1>
+        <Status runs={runs} />
+      </PageHead>
+      <Band dark>
+        <RunsHook runs={runs} />
+      </Band>
+      <Band>
+        <Stages runs={runs} />
+        <Negative runs={runs} />
+        <Effects runs={runs} />
+        <Calibration runs={runs} />
+        <Held runs={runs} />
+        <Reason runs={runs} />
+        <Protocol runs={runs} />
+      </Band>
+      {/* A child of main itself: the e2e reads the words of main's other children, and this line
+          names what the page does not do. */}
       <Scope runs={runs} />
     </>
   );

@@ -164,6 +164,7 @@ export function Pose({ clip }: { clip: PoseClip }) {
       <div className="controls">
         <button
           type="button"
+          className="primary"
           onClick={() => {
             if (playing) engine.pause();
             else engine.play();

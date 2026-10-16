@@ -25,7 +25,7 @@ const SCHEMA_COLOR: Record<LineageNode["schema"], string> = {
   frozen: "#4ea1f2",
   code: "#e0883a",
   dbt: "#7ec699",
-  none: "#5a6169",
+  none: "#98a2ab",
 };
 
 interface Positioned {

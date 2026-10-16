@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useState } from "react";
 import { Pose } from "../../components/pose/Pose";
+import { Band, PageHead } from "../../components/site/Band";
 import type { PoseClip, PoseSummary } from "../../lib/pose/types";
 
 // `/pose` (tasks 56 and 63): the Body Pose of two matches in a viewer with its own projection,
@@ -366,111 +367,117 @@ function View({
   const mae = "coverage.p90_mae_cm";
   return (
     <>
-      <h1>{clip ? <><C clip={clip} p="joints.length" /> joints</> : "Body pose"}</h1>
-      <Status doc={doc} />
-      <div className="pose-layout">
-        <div className="pose-stage">
-          <div className="pose-clips">
-            <label>
-              Clip{" "}
-              <select aria-label="Clip" value={clipFile} onChange={(e) => onClip(e.target.value)}>
-                <option value={SAMPLE}>the provider&apos;s sample</option>
-                {doc.clips.map((c) => (
-                  <option key={c.file} value={c.file}>
-                    {c.kind} of match {c.match_id}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          {clip ? (
-            <Pose key={clipFile} clip={clip} />
-          ) : failed ? (
-            <p role="alert">The clip could not be loaded.</p>
-          ) : (
-            <p role="status">Loading the clip.</p>
-          )}
-        </div>
-        <aside className="pose-limits" data-section="limits">
-          <h2>What the data does not say</h2>
-          {doc.limits.map((limit, j) => (
-            <div key={limit.id} data-limit={limit.id}>
-              <blockquote data-fig={`limits.${j}.text`}>{limit.text}</blockquote>
-              <p>
-                SkillCorner, <cite data-fig={`limits.${j}.readme`}>{limit.readme}</cite>.
-                {limit.id in IN_THIS_VIEWER ? ` In this viewer: ${IN_THIS_VIEWER[limit.id]}` : null}
-              </p>
+      <PageHead eyebrow="Body pose">
+        <h1>{clip ? <><C clip={clip} p="joints.length" /> joints</> : "Body pose"}</h1>
+        <Status doc={doc} />
+      </PageHead>
+      <Band dark>
+        <div className="pose-layout">
+          <div className="pose-stage">
+            <div className="pose-clips">
+              <label>
+                Clip{" "}
+                <select aria-label="Clip" value={clipFile} onChange={(e) => onClip(e.target.value)}>
+                  <option value={SAMPLE}>the provider&apos;s sample</option>
+                  {doc.clips.map((c) => (
+                    <option key={c.file} value={c.file}>
+                      {c.kind} of match {c.match_id}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
-          ))}
-        </aside>
-      </div>
-      {clip ? (
-        <>
-          <section data-section="clip">
-            <h2>The clip on show</h2>
-            <p>
-              Match <C clip={clip} p="match_id" />, period <C clip={clip} p="period" />, frames{" "}
-              <C clip={clip} p="frame_lo" /> to <C clip={clip} p="frame_hi" /> at <C clip={clip} p="fps" /> fps.
-              Orange is the home team, blue the away team. Bodies are drawn to the pitch&apos;s scale; follow a
-              player to see one enlarged.{" "}
-              {clip.selection ? (
-                <>
-                  Chosen by rule: <span data-clip-fig="selection.rule">{clip.selection.rule}</span>.
-                </>
-              ) : (
-                <>It is the provider&apos;s own sample of one phase.</>
-              )}
-            </p>
-            <p>
-              <C clip={clip} p="coverage.frames" /> frames and <C clip={clip} p="coverage.player_frames" />{" "}
-              player-frames, of which <C clip={clip} p="coverage.with_joints" /> have a pose (a share of{" "}
-              <C clip={clip} p="coverage.with_joints_share" />), from{" "}
-              <C clip={clip} p="coverage.skeletons_per_frame.min" /> to{" "}
-              <C clip={clip} p="coverage.skeletons_per_frame.max" /> skeletons per frame and{" "}
-              <C clip={clip} p="coverage.joint_observations" /> joint observations.
-            </p>
-          </section>
-          <section data-section="error">
-            <h2>The predicted error travels with each joint</h2>
-            <p>
-              Every joint comes with SkillCorner&apos;s predicted error, <code>p90_mae_cm</code>. The viewer
-              draws a joint and its bones solid up to the clip&apos;s median,{" "}
-              <C clip={clip} p={`${mae}.median`} /> cm, fainter up to its <code>p90</code>,{" "}
-              <C clip={clip} p={`${mae}.p90`} /> cm, and faintest beyond, up to{" "}
-              <C clip={clip} p={`${mae}.max`} /> cm (the smallest is <C clip={clip} p={`${mae}.min`} /> cm).
-            </p>
-          </section>
-        </>
-      ) : null}
-      <section data-section="coverage">
-        <h2>How much of each match has a pose</h2>
-        <p>
-          Pose exists only where the provider resolved a player: in{" "}
-          <S doc={doc} p={`coverage.${doc.protocol.calibration}.total.share_player_frames_with_pose`} /> of the
-          player-frames of match <S doc={doc} p="protocol.calibration" /> and in{" "}
-          <S doc={doc} p={`coverage.${doc.protocol.confirmation}.total.share_player_frames_with_pose`} /> of
-          match <S doc={doc} p="protocol.confirmation" />.
-        </p>
-        <CoverageTable doc={doc} />
-      </section>
-      {doc.tables === null ? (
-        <section data-section="no-tables">
-          <h2>No table is published</h2>
-          <p>A project that died is published without per-player tables.</p>
-        </section>
-      ) : (
-        <section data-section="tables">
-          <h2>Cadence and step, per match and per player</h2>
+            {clip ? (
+              <Pose key={clipFile} clip={clip} />
+            ) : failed ? (
+              <p role="alert">The clip could not be loaded.</p>
+            ) : (
+              <p role="status">Loading the clip.</p>
+            )}
+          </div>
+          <aside className="pose-limits" data-section="limits">
+            <h2>What the data does not say</h2>
+            {doc.limits.map((limit, j) => (
+              <div key={limit.id} data-limit={limit.id}>
+                <blockquote data-fig={`limits.${j}.text`}>{limit.text}</blockquote>
+                <p>
+                  SkillCorner, <cite data-fig={`limits.${j}.readme`}>{limit.readme}</cite>.
+                  {limit.id in IN_THIS_VIEWER ? ` In this viewer: ${IN_THIS_VIEWER[limit.id]}` : null}
+                </p>
+              </div>
+            ))}
+          </aside>
+        </div>
+      </Band>
+      <Band>
+        {clip ? (
+          <>
+            <section data-section="clip">
+              <h2>The clip on show</h2>
+              <p>
+                Match <C clip={clip} p="match_id" />, period <C clip={clip} p="period" />, frames{" "}
+                <C clip={clip} p="frame_lo" /> to <C clip={clip} p="frame_hi" /> at <C clip={clip} p="fps" /> fps.
+                Orange is the home team, blue the away team. Bodies are drawn to the pitch&apos;s scale; follow a
+                player to see one enlarged.{" "}
+                {clip.selection ? (
+                  <>
+                    Chosen by rule: <span data-clip-fig="selection.rule">{clip.selection.rule}</span>.
+                  </>
+                ) : (
+                  <>It is the provider&apos;s own sample of one phase.</>
+                )}
+              </p>
+              <p>
+                <C clip={clip} p="coverage.frames" /> frames and <C clip={clip} p="coverage.player_frames" />{" "}
+                player-frames, of which <C clip={clip} p="coverage.with_joints" /> have a pose (a share of{" "}
+                <C clip={clip} p="coverage.with_joints_share" />), from{" "}
+                <C clip={clip} p="coverage.skeletons_per_frame.min" /> to{" "}
+                <C clip={clip} p="coverage.skeletons_per_frame.max" /> skeletons per frame and{" "}
+                <C clip={clip} p="coverage.joint_observations" /> joint observations.
+              </p>
+            </section>
+            <section data-section="error">
+              <h2>The predicted error travels with each joint</h2>
+              <p>
+                Every joint comes with SkillCorner&apos;s predicted error, <code>p90_mae_cm</code>. The viewer
+                draws a joint and its bones solid up to the clip&apos;s median,{" "}
+                <C clip={clip} p={`${mae}.median`} /> cm, fainter up to its <code>p90</code>,{" "}
+                <C clip={clip} p={`${mae}.p90`} /> cm, and faintest beyond, up to{" "}
+                <C clip={clip} p={`${mae}.max`} /> cm (the smallest is <C clip={clip} p={`${mae}.min`} /> cm).
+              </p>
+            </section>
+          </>
+        ) : null}
+        <section data-section="coverage">
+          <h2>How much of each match has a pose</h2>
           <p>
-            Each value is the median over that player&apos;s windows with a cadence, with the sd propagated
-            from the joints&apos; predicted error beside it, and the number of windows it comes from in the
-            same row. The windows of one player are not independent. <S doc={doc} p="tables.note" />.
+            Pose exists only where the provider resolved a player: in{" "}
+            <S doc={doc} p={`coverage.${doc.protocol.calibration}.total.share_player_frames_with_pose`} /> of the
+            player-frames of match <S doc={doc} p="protocol.calibration" /> and in{" "}
+            <S doc={doc} p={`coverage.${doc.protocol.confirmation}.total.share_player_frames_with_pose`} /> of
+            match <S doc={doc} p="protocol.confirmation" />.
           </p>
-          <MetricTables doc={doc} />
+          <CoverageTable doc={doc} />
         </section>
-      )}
-      <Concordance doc={doc} />
-      <Protocol doc={doc} />
+        {doc.tables === null ? (
+          <section data-section="no-tables">
+            <h2>No table is published</h2>
+            <p>A project that died is published without per-player tables.</p>
+          </section>
+        ) : (
+          <section data-section="tables">
+            <h2>Cadence and step, per match and per player</h2>
+            <p>
+              Each value is the median over that player&apos;s windows with a cadence, with the sd propagated
+              from the joints&apos; predicted error beside it, and the number of windows it comes from in the
+              same row. The windows of one player are not independent. <S doc={doc} p="tables.note" />.
+            </p>
+            <MetricTables doc={doc} />
+          </section>
+        )}
+        <Concordance doc={doc} />
+        <Protocol doc={doc} />
+      </Band>
     </>
   );
 }
@@ -516,12 +523,12 @@ export default function PosePage() {
       {ready ? (
         <View doc={doc} clip={clip} clipFile={file} failed={loaded === "failed"} onClip={setFile} />
       ) : (
-        <>
+        <PageHead eyebrow="Body pose">
           <h1>Body pose</h1>
           {doc === "failed" || loaded === "failed" ? (
             <p role="alert">The pose data could not be loaded.</p>
           ) : null}
-        </>
+        </PageHead>
       )}
     </main>
   );
