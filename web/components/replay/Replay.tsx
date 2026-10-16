@@ -95,6 +95,7 @@ export function Replay({ possession, autoplay = false, onEnded, overlay, name }:
       <div className="controls">
         <button
           type="button"
+          className="primary"
           onClick={() => {
             if (playing) engine.pause();
             else engine.play();

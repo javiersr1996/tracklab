@@ -102,7 +102,7 @@ export function Console({ pg }: { pg: PgSnapshotSummary }) {
         }}
       />
       <p>
-        <button type="button" disabled={s.query === "running"} onClick={() => run(sql)}>
+        <button type="button" className="primary" disabled={s.query === "running"} onClick={() => run(sql)}>
           Run
         </button>
         {s.query === "running" || s.explaining ? (
