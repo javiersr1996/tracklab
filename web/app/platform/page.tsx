@@ -47,9 +47,11 @@ export default function PlatformPage() {
       </p>
       {pose && (
         <p data-pose-share>
-          Of those raw bytes, {pose.bytes.toLocaleString("en-US")} come from the {pose.files}{" "}
-          body-pose zips of opendata-bodypose that P6 added (see <a href="/pose">/pose</a>); the
-          other sources account for {pose.otherBytes.toLocaleString("en-US")}.
+          Of the {(pose.bytes + pose.otherBytes).toLocaleString("en-US")} raw bytes,{" "}
+          {pose.bytes.toLocaleString("en-US")} come from the{" "}
+          {pluralize(pose.files, "body-pose zip")} of opendata-bodypose that P6 added (see{" "}
+          <a href="/pose">/pose</a>); the other sources account for{" "}
+          {pose.otherBytes.toLocaleString("en-US")}.
         </p>
       )}
       <Flow layers={PLATFORM.layers} />

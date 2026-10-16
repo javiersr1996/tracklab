@@ -474,6 +474,32 @@ def test_check_is_0_against_a_freshly_written_platform_json_and_1_after_a_hand_e
     assert broken == 1
 
 
+def test_check_is_1_when_raw_sources_on_disk_drift_from_the_record(tmp_path: Path) -> None:
+    """The `/platform` body-pose line reads `raw_sources`; a stale or hand-edited
+    breakdown must fail `--check` like a stale match row does."""
+    record_dir = tmp_path / "build"
+    out_dir = tmp_path / "web"
+    out_dir.mkdir(parents=True)
+    _write_record(record_dir, _record())
+    (out_dir / "index.json").write_text(json.dumps(_index()), encoding="utf-8")
+    assert run_publish_platform(record_path=None, record_dir=record_dir, out_dir=out_dir) == 0
+
+    payload = json.loads((out_dir / "platform.json").read_text(encoding="utf-8"))
+    payload["raw_sources"][0]["bytes"] += 1  # a hand edit
+    (out_dir / "platform.json").write_text(json.dumps(payload), encoding="utf-8")
+    assert (
+        run_publish_platform(record_path=None, record_dir=record_dir, out_dir=out_dir, check=True)
+        == 1
+    )
+
+    del payload["raw_sources"]  # an older platform.json, written before the field
+    (out_dir / "platform.json").write_text(json.dumps(payload), encoding="utf-8")
+    assert (
+        run_publish_platform(record_path=None, record_dir=record_dir, out_dir=out_dir, check=True)
+        == 1
+    )
+
+
 def test_check_cross_validates_silver_rows_against_an_independent_stats_json(
     tmp_path: Path,
 ) -> None:

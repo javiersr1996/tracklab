@@ -489,6 +489,11 @@ def run_publish_platform(
         problems = _diff_tables(on_disk.get("tables", []), payload["tables"]) + _diff_matches(
             on_disk.get("matches", []), payload["matches"], stats_rows
         )
+        if on_disk.get("raw_sources") != payload["raw_sources"]:
+            problems.append(
+                f"raw_sources: on disk {on_disk.get('raw_sources')},"
+                f" record {payload['raw_sources']}"
+            )
         if problems:
             detail = "\n  ".join(problems)
             print(

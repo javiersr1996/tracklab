@@ -204,7 +204,8 @@ test("the raw bytes line names the body-pose share, with the figures platform.js
   await page.goto("/platform");
   const line = page.locator("[data-pose-share]");
   await expect(line).toHaveText(
-    `Of those raw bytes, ${n(pose!.bytes)} come from the ${pose!.files} body-pose zips of ` +
+    `Of the ${n(raw!.bytes)} raw bytes, ${n(pose!.bytes)} come from the ${pose!.files} ` +
+      `body-pose zip${pose!.files === 1 ? "" : "s"} of ` +
       `opendata-bodypose that P6 added (see /pose); the other sources account for ${n(others)}.`,
   );
   await expect(line.getByRole("link", { name: "/pose" })).toHaveAttribute("href", "/pose");
