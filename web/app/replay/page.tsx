@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Replay } from "../../components/replay/Replay";
+import { Band, PageHead } from "../../components/site/Band";
 import { POSSESSIONS, SPORTS } from "../../lib/data";
 import type { Possession, Sport } from "../../lib/replay/types";
 
@@ -77,9 +78,14 @@ function Picker() {
 export default function ReplayPage() {
   return (
     <main className="page">
-      <Suspense>
-        <Picker />
-      </Suspense>
+      <PageHead eyebrow="One renderer">
+        <h1>Replay any possession</h1>
+      </PageHead>
+      <Band dark>
+        <Suspense fallback={<div className="replay-placeholder" />}>
+          <Picker />
+        </Suspense>
+      </Band>
     </main>
   );
 }
