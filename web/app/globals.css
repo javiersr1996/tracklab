@@ -599,7 +599,7 @@ a.wordmark:hover {
 }
 
 .card:has(a:focus-visible) {
-  outline: 2px solid var(--focus);
+  outline: 2px solid var(--accent-ink); /* the ring sits on the light band: 5.5:1 */
   outline-offset: 2px;
 }
 
