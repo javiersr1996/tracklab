@@ -144,6 +144,42 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-24",
     quote: "proper (corresponding to pure rotation)",
   },
+  // Lesson 5.
+  "skillcorner-bodypose": {
+    label: "SkillCorner, opendata-bodypose at a62e1ec, README.md, lines 94 and 95",
+    short: "SkillCorner, opendata-bodypose README",
+    url: "https://huggingface.co/datasets/SkillCorner/opendata-bodypose/blob/a62e1ec1e3b82952042a7f7fa9dafd77c0e0822a/README.md",
+    read: "2026-10-24",
+    quote: "Every joint carries its own accuracy estimate: the 90th-percentile mean absolute error in centimetres.",
+  },
+  "nist-autocorrelation": {
+    label: "NIST/SEMATECH e-Handbook of Statistical Methods, 1.3.3.1 Autocorrelation Plot",
+    short: "NIST handbook, 1.3.3.1",
+    url: "https://www.itl.nist.gov/div898/handbook/eda/section3/autocopl.htm",
+    read: "2026-10-24",
+    quote: "If random, such autocorrelations should be near zero for any and all time-lag separations.",
+  },
+  "smith-parabola": {
+    label: "J. O. Smith III, Spectral Audio Signal Processing, Quadratic Interpolation of Spectral Peaks (CCRMA, Stanford)",
+    short: "Smith, Quadratic Interpolation of Spectral Peaks",
+    url: "https://ccrma.stanford.edu/~jos/sasp/Quadratic_Interpolation_Spectral_Peaks.html",
+    read: "2026-10-24",
+    quote: "the higher order terms in a Taylor series expansion about the peak converge to zero as the peak is approached",
+  },
+  "nist-propagation": {
+    label: "NIST/SEMATECH e-Handbook of Statistical Methods, 2.5.5 Propagation of error considerations",
+    short: "NIST handbook, 2.5.5",
+    url: "https://www.itl.nist.gov/div898/handbook/mpc/section5/mpc55.htm",
+    read: "2026-10-24",
+    quote: "Sometimes the measurement of interest cannot be replicated directly and it is necessary to estimate its uncertainty via propagation of error formulas",
+  },
+  "jcgm-101": {
+    label: "JCGM 101:2008, Supplement 1 to the GUM: Propagation of distributions using a Monte Carlo method (BIPM), Introduction",
+    short: "JCGM 101:2008",
+    url: "https://www.bipm.org/documents/20126/2071204/JCGM_101_2008_E.pdf",
+    read: "2026-10-24",
+    quote: "linearization of the model provides an inadequate representation",
+  },
 };
 
 export function sourceProblems(id: string, s: Source): string[] {

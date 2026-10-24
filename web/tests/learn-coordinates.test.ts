@@ -6,7 +6,6 @@ import { describe, expect, it } from "vitest";
 import { ClockFigure, readClock, START_MS } from "../components/learn/coordinates/ClockFigure";
 import { FrameFigure, readAt, stepOf } from "../components/learn/coordinates/FrameFigure";
 import { Lesson } from "../components/learn/coordinates/Lesson";
-import { Lesson as GravityLesson } from "../components/learn/gravity/Lesson";
 import { CANVAS } from "../components/learn/gravity/Plot";
 import {
   affine,
@@ -265,13 +264,11 @@ describe("the text of lesson 3", () => {
     for (const word of ["straight line", "second difference", "pressure", "defensive line", "width of the block"]) expect(outside).not.toContain(word);
   });
 
-  it("cites only sources.ts, and with lesson 1 every source in it", () => {
-    const gravitySql = readFileSync(join(process.cwd(), "..", "pipeline", "src", "tracklab", "learn", "gravity.sql"), "utf-8");
-    const hrefs = (html: string) => [...html.matchAll(/<cite><a href="([^"]+)"/g)].map((m) => entities(m[1]));
+  // That every source is cited by some lesson is checked across the series in learn-lesson.test.ts.
+  it("cites only sources.ts", () => {
     const urls = Object.values(SOURCES).map((s) => s.url);
-    expect(hrefs(HTML).filter((h) => !urls.includes(h))).toEqual([]);
-    const cited = new Set([...hrefs(HTML), ...hrefs(renderToStaticMarkup(createElement(GravityLesson, { sql: gravitySql })))]);
-    expect(urls.filter((u) => !cited.has(u))).toEqual([]);
+    const hrefs = [...HTML.matchAll(/<cite><a href="([^"]+)"/g)].map((m) => entities(m[1]));
+    expect(hrefs.filter((h) => !urls.includes(h))).toEqual([]);
   });
 
   it("draws every stroke and fill on the canvas at 3:1 or more", () => {

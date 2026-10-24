@@ -26,7 +26,7 @@ export const LESSONS: readonly Lesson[] = [
     slug: "speed",
     title: "Where does the provider's speed come from?",
     level: "Foundations",
-    status: "in-preparation",
+    status: "published",
     about: "Finite differences, noise and a moving average, and a speed field derived from its own positions.",
   },
   {
@@ -34,7 +34,7 @@ export const LESSONS: readonly Lesson[] = [
     slug: "coordinates",
     title: "Can a court and a pitch share one table?",
     level: "Foundations",
-    status: "in-preparation",
+    status: "published",
     about: "Coordinates, affine transforms, sampling rate and linear interpolation.",
   },
   {
@@ -50,7 +50,7 @@ export const LESSONS: readonly Lesson[] = [
     slug: "cadence",
     title: "How many steps per second?",
     level: "Advanced",
-    status: "in-preparation",
+    status: "published",
     about: "Periodicity in body pose and how a predicted error propagates into it.",
   },
 ];

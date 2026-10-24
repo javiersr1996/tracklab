@@ -3,7 +3,6 @@ import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { Lesson as GravityLesson } from "../components/learn/gravity/Lesson";
 import { Lesson } from "../components/learn/speed/Lesson";
 import fence from "../lib/learn/fence.json";
 import { qualityFigure } from "../lib/learn/gravity-data";
@@ -159,13 +158,11 @@ describe("the text of lesson 2", () => {
     }
   });
 
-  it("cites only sources.ts, and the two lessons together cite every source in it", () => {
-    const hrefsOf = (html: string) => new Set([...html.matchAll(/<cite><a href="([^"]+)"/g)].map((m) => entities(m[1])));
+  // That every source is cited by some lesson is checked across the series in learn-lesson.test.ts.
+  it("cites only sources.ts", () => {
     const urls = Object.values(SOURCES).map((s) => s.url);
-    const mine = hrefsOf(HTML);
-    expect([...mine].filter((h) => !urls.includes(h))).toEqual([]);
-    const both = new Set([...mine, ...hrefsOf(renderToStaticMarkup(createElement(GravityLesson, { sql: sqlOf("gravity.sql") })))]);
-    expect(urls.filter((u) => !both.has(u))).toEqual([]);
+    const hrefs = [...HTML.matchAll(/<cite><a href="([^"]+)"/g)].map((m) => entities(m[1]));
+    expect(hrefs.filter((h) => !urls.includes(h))).toEqual([]);
   });
 
   // Against the provider's dictionary where the clone is on disk; CI has no clone and skips.

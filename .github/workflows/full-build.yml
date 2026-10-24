@@ -44,6 +44,7 @@ jobs:
       # the flights and the median g equal to web/public/data/quality.json. It reads the raw
       # files only and writes nothing.
       - run: uv run tracklab learn gravity --check
+      - run: uv run tracklab learn speed --check
       # Bronze, orientation and silver as one Dagster run over every asset (task 15),
       # through `tracklab build` (task 32) so the runner leaves a record of its own seconds
       # and disk; raw_* verifies the bytes the two steps above left, it downloads nothing.

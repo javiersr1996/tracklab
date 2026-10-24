@@ -1460,3 +1460,10 @@ a.wordmark:hover {
   font-weight: 600;
   color: var(--fg-strong);
 }
+
+/* Lesson 5 (/learn/cadence): its figures reuse lesson 1's; only the table of the two clips needs
+   its figures right-aligned past the first column. */
+.learn-cadence .learn-cadence-table th:nth-child(2),
+.learn-cadence .learn-cadence-table td:nth-child(2) {
+  text-align: right;
+}

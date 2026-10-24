@@ -31,17 +31,20 @@ async function transferred(page: Page, path: string) {
   return bytes;
 }
 
-test("the index links the published lesson, lists the next ones without a link and none from after", async ({ page }) => {
+test("the index links the published lessons, lists the next one without a link and none from after", async ({ page }) => {
   const bytes = await transferred(page, "/learn");
   console.log(`/learn: ${bytes} bytes transferred`);
   expect(bytes).toBeLessThan(400_000);
 
   const published = page.locator('[data-status="published"]');
-  await expect(published).toHaveCount(1);
+  await expect(published).toHaveCount(4);
   await expect(published.getByRole("link", { name: "Does the ball obey gravity?" })).toHaveAttribute("href", "/learn/gravity");
+  await expect(published.getByRole("link", { name: "Where does the provider's speed come from?" })).toHaveAttribute("href", "/learn/speed");
+  await expect(published.getByRole("link", { name: "Can a court and a pitch share one table?" })).toHaveAttribute("href", "/learn/coordinates");
+  await expect(published.getByRole("link", { name: "How many steps per second?" })).toHaveAttribute("href", "/learn/cadence");
 
   const pending = page.locator('[data-status="in-preparation"]');
-  expect(await pending.count()).toBeGreaterThan(0);
+  await expect(pending).toHaveCount(1);
   await expect(pending.locator("a")).toHaveCount(0);
   await expect(pending.first()).toContainText("In preparation");
 
