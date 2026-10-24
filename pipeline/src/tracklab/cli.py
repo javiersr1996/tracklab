@@ -33,6 +33,7 @@ from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.learn.browser import run_learn_browser
 from tracklab.learn.clock import run_learn_clock
+from tracklab.learn.entry_lesson import run_learn_entry
 from tracklab.learn.gravity import run_learn_gravity
 from tracklab.learn.hypotheses import run_learn_hypotheses
 from tracklab.learn.passes import run_learn_pass
@@ -334,6 +335,10 @@ def _cmd_learn_clock(args: argparse.Namespace) -> int:
 
 def _cmd_learn_pass(args: argparse.Namespace) -> int:
     return run_learn_pass(args.data_dir, args.out, args.possessions, check=args.check)
+
+
+def _cmd_learn_entry(args: argparse.Namespace) -> int:
+    return run_learn_entry(args.data_dir, args.out, args.quality, check=args.check)
 
 
 def _cmd_learn_browser(args: argparse.Namespace) -> int:
@@ -1327,6 +1332,39 @@ def build_parser() -> argparse.ArgumentParser:
         "instead; write nothing.",
     )
     learn_pass.set_defaults(func=_cmd_learn_pass)
+    learn_entry = learn_sub.add_parser(
+        "entry",
+        help="Write the example of lesson 8, the hook's flight to the rim with the entry-angle "
+        "check's figures, to learn/entry.json; the table is quality.json's (lesson 8).",
+    )
+    learn_entry.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root: bronze for the example, the raw bundle (through its ingest receipt) for "
+        "the public script (default: data).",
+    )
+    learn_entry.add_argument(
+        "--out",
+        type=Path,
+        default=Path("../web/public/data/learn/entry.json"),
+        help="The lesson's file (default: ../web/public/data/learn/entry.json).",
+    )
+    learn_entry.add_argument(
+        "--quality",
+        type=Path,
+        default=Path("../web/public/data/quality.json"),
+        help="The published quality file: its hook is the example, its entry_angle rows the "
+        "table (default: ../web/public/data/quality.json).",
+    )
+    learn_entry.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild the file from bronze and compare its bytes, run learn/entry.py on the raw "
+        "files of every match and compare it with quality.json: FULL n/n, or PARTIAL k/n with "
+        "what was checked instead; write nothing.",
+    )
+    learn_entry.set_defaults(func=_cmd_learn_entry)
     learn_browser = learn_sub.add_parser(
         "browser",
         help='Run each lesson\'s learn/<slug>.browser.sql (the query of "Run it here") on the '

@@ -69,6 +69,14 @@ export const LESSONS: readonly Lesson[] = [
     status: "published",
     about: "Chord and path of the ball, and what the provider's distance of a pass measures instead.",
   },
+  {
+    n: 8,
+    slug: "entry",
+    title: "At what angle does the ball reach the rim?",
+    level: "Intermediate",
+    status: "published",
+    about: "Projectile geometry against the file's heights, a method tried on a perfect flight, and what g and a height scale move.",
+  },
 ];
 
 export const lessonHref = (l: Lesson) => `/learn/${l.slug}`;

@@ -67,6 +67,7 @@ jobs:
       - run: uv run tracklab learn rebound --check
       - run: uv run tracklab learn clock --check
       - run: uv run tracklab learn pass --check
+      - run: uv run tracklab learn entry --check
       # Task 54: P5's versioned reports and runs.json against the fixtures. A slice of the
       # warehouse cannot recompute the figures, so each prints PARTIAL and what it verified
       # (the seal, the protocol, the match list, the clips by size and hash); full-build.yml

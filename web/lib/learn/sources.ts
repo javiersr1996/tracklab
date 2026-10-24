@@ -320,6 +320,42 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-24",
     quote: "Arc length is defined as the length along a curve",
   },
+  // Lesson 8.
+  "skillcorner-shot-start": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/shots.md, line 15",
+    short: "SkillCorner, shots.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/shots.md#L15",
+    read: "2026-10-24",
+    quote: "Frame (at 25fps) since the start of video of the release of the shot.",
+  },
+  "skillcorner-shot-outcome": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/shots.md, line 28",
+    short: "SkillCorner, shots.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/shots.md#L28",
+    read: "2026-10-24",
+    quote: "true if the shot is scored, false if it's missed.",
+  },
+  "skillcorner-ball-z": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/tracking_data.md, line 40",
+    short: "SkillCorner, tracking_data.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/tracking_data.md#L40",
+    read: "2026-10-24",
+    quote: "z (height) is a real height and can go slightly negative near the floor (calibration noise), not always positive.",
+  },
+  "fiba-ring": {
+    label: "FIBA, Official Basketball Rules 2026, Basketball Equipment, version 1.0 (July 2026), rule 1.2.4, page 9",
+    short: "FIBA, Basketball Equipment 2026",
+    url: "https://assets.fiba.basketball/image/upload/documents-corporate-fiba-official-rules-2026-equipment-v1-0.pdf#page=9",
+    read: "2026-10-24",
+    quote: "The top edge of each ring shall be positioned horizontally, 3,050 mm (± a maximum of 6 mm) above the floor",
+  },
+  "nasa-ballistic": {
+    label: "NASA Glenn Research Center, Beginner's Guide to Aeronautics, Ballistic Flight Equations",
+    short: "NASA Glenn, Ballistic Flight Equations",
+    url: "https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ballistic-flight-equations/",
+    read: "2026-10-24",
+    quote: "The horizontal motion is uniform because there is no external force in the horizontal direction.",
+  },
 };
 
 export function sourceProblems(id: string, s: Source): string[] {

@@ -29,7 +29,7 @@ from typing import Any
 import duckdb
 import numpy as np
 
-LESSONS = ("gravity", "speed", "coordinates", "rebound", "cadence", "clock", "pass")
+LESSONS = ("gravity", "speed", "coordinates", "rebound", "cadence", "clock", "pass", "entry")
 HERE = Path(__file__).parent
 FILES_LINE = re.compile(r"^-- files: (.+)$", re.MULTILINE)
 VIEW = re.compile(r"^CREATE VIEW (\w+) AS", re.MULTILINE)
@@ -175,6 +175,18 @@ def _pass(public: Path) -> Expected:
     return out
 
 
+def _entry(public: Path) -> Expected:
+    # The SQL's run of the check on the example's samples against the angles the pipeline
+    # computed from the same published samples with `entry.py` (`published` of entry.json).
+    pub = _json(public, "/data/learn/entry.json")["example"]["published"]
+    return {
+        "learn.ex_k": (str(pub["k"]), 0),
+        "learn.ex_reported": (str(pub["reported"]), 0),
+        "learn.ex_required": (str(pub["required"]), 0),
+        "learn.ex_v_h": (pub["v_h"], 0.005 + 1e-9),
+    }
+
+
 EXPECT: dict[str, Callable[[Path], Expected]] = {
     "gravity": _gravity,
     "speed": _speed,
@@ -183,6 +195,7 @@ EXPECT: dict[str, Callable[[Path], Expected]] = {
     "cadence": _cadence,
     "clock": _clock,
     "pass": _pass,
+    "entry": _entry,
 }
 
 

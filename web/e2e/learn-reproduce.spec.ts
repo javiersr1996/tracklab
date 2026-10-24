@@ -6,7 +6,7 @@ import { expect as baseExpect, type Page, test } from "@playwright/test";
 // `window.__learn.reproduce` in a test build), with no error on the console.
 const expect = baseExpect.configure({ timeout: 20_000 });
 const EXPOSED = !process.env.BASE_URL;
-const LESSONS = ["gravity", "speed", "coordinates", "rebound", "cadence", "clock", "pass"];
+const LESSONS = ["gravity", "speed", "coordinates", "rebound", "cadence", "clock", "pass", "entry"];
 const isEngine = (url: string) => !url.startsWith("blob:") && (url.endsWith(".wasm") || new URL(url).pathname.startsWith("/duckdb/"));
 
 async function weigh(page: Page, route: string) {
