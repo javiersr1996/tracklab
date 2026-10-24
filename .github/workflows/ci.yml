@@ -64,6 +64,7 @@ jobs:
       # runs it over the ten real matches (FULL 10/10) against web/public/data/quality.json.
       - run: uv run tracklab learn gravity --check
       - run: uv run tracklab learn speed --check
+      - run: uv run tracklab learn rebound --check
       # Task 54: P5's versioned reports and runs.json against the fixtures. A slice of the
       # warehouse cannot recompute the figures, so each prints PARTIAL and what it verified
       # (the seal, the protocol, the match list, the clips by size and hash); full-build.yml

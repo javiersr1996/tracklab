@@ -32,6 +32,7 @@ from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.learn.gravity import run_learn_gravity
+from tracklab.learn.rebound import run_learn_rebound
 from tracklab.learn.speed import run_learn_speed
 from tracklab.load.postgres import run_load_postgres
 from tracklab.paths import data_root
@@ -313,6 +314,10 @@ def _cmd_learn_gravity(args: argparse.Namespace) -> int:
 
 def _cmd_learn_speed(args: argparse.Namespace) -> int:
     return run_learn_speed(args.data_dir, args.out, args.possessions, check=args.check)
+
+
+def _cmd_learn_rebound(args: argparse.Namespace) -> int:
+    return run_learn_rebound(args.data_dir, args.out, check=args.check)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -1177,6 +1182,33 @@ def build_parser() -> argparse.ArgumentParser:
         "instead; write nothing.",
     )
     learn_speed.set_defaults(func=_cmd_learn_speed)
+    learn_rebound = learn_sub.add_parser(
+        "rebound",
+        help="Freeze the ten players at the end of every rebounded shot and ask who reaches the "
+        "rebound first, the nearest player or a time to arrive model, match by match, from "
+        "bronze, and write learn/rebound.json (lesson 4).",
+    )
+    learn_rebound.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root: bronze for the figures, the raw bundle (through its ingest receipt) for "
+        "the public SQL (default: data).",
+    )
+    learn_rebound.add_argument(
+        "--out",
+        type=Path,
+        default=Path("../web/public/data/learn/rebound.json"),
+        help="The lesson's file (default: ../web/public/data/learn/rebound.json).",
+    )
+    learn_rebound.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild the file from bronze and compare its bytes, run learn/rebound.sql on the "
+        "raw files and compare it with the file: FULL n/n, or PARTIAL k/n with what was checked "
+        "instead; write nothing.",
+    )
+    learn_rebound.set_defaults(func=_cmd_learn_rebound)
 
     build = subparsers.add_parser(
         "build",
