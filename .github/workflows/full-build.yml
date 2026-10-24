@@ -18,6 +18,10 @@ jobs:
       run:
         working-directory: pipeline
     steps:
+      # P8: two runs with the three learn checks lost the runner inside the build, and the last
+      # green run on main started it with 8.8G free (88 %). The runner's preinstalled SDKs go first.
+      - run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL && df -h /
+        working-directory: .
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
         with:
