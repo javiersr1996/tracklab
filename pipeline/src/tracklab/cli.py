@@ -32,6 +32,7 @@ from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.learn.gravity import run_learn_gravity
+from tracklab.learn.speed import run_learn_speed
 from tracklab.load.postgres import run_load_postgres
 from tracklab.paths import data_root
 from tracklab.pose.coverage import run_pose_coverage
@@ -308,6 +309,10 @@ def _cmd_runs_freeze(args: argparse.Namespace) -> int:
 
 def _cmd_learn_gravity(args: argparse.Namespace) -> int:
     return run_learn_gravity(args.data_dir, args.quality, check=args.check)
+
+
+def _cmd_learn_speed(args: argparse.Namespace) -> int:
+    return run_learn_speed(args.data_dir, args.out, args.possessions, check=args.check)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -1139,6 +1144,39 @@ def build_parser() -> argparse.ArgumentParser:
         "PARTIAL k/n with what was checked instead; write nothing.",
     )
     learn_gravity.set_defaults(func=_cmd_learn_gravity)
+    learn_speed = learn_sub.add_parser(
+        "speed",
+        help="Put the players' speed field next to finite differences of their positions, match "
+        "by match, from bronze, and write learn/speed.json (lesson 2).",
+    )
+    learn_speed.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root: bronze for the figures, the raw bundle (through its ingest receipt) for "
+        "the public SQL (default: data).",
+    )
+    learn_speed.add_argument(
+        "--out",
+        type=Path,
+        default=Path("../web/public/data/learn/speed.json"),
+        help="The lesson's file (default: ../web/public/data/learn/speed.json).",
+    )
+    learn_speed.add_argument(
+        "--possessions",
+        type=Path,
+        default=Path("../web/public/data/possessions"),
+        help="The published possessions, which hold the example (default: "
+        "../web/public/data/possessions).",
+    )
+    learn_speed.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild the file from bronze and compare its bytes, run learn/speed.sql on the raw "
+        "files and compare it with the file: FULL n/n, or PARTIAL k/n with what was checked "
+        "instead; write nothing.",
+    )
+    learn_speed.set_defaults(func=_cmd_learn_speed)
 
     build = subparsers.add_parser(
         "build",
