@@ -35,6 +35,7 @@ from tracklab.learn.browser import run_learn_browser
 from tracklab.learn.clock import run_learn_clock
 from tracklab.learn.gravity import run_learn_gravity
 from tracklab.learn.hypotheses import run_learn_hypotheses
+from tracklab.learn.passes import run_learn_pass
 from tracklab.learn.rebound import run_learn_rebound
 from tracklab.learn.speed import run_learn_speed
 from tracklab.load.postgres import run_load_postgres
@@ -329,6 +330,10 @@ def _cmd_learn_hypotheses(args: argparse.Namespace) -> int:
 
 def _cmd_learn_clock(args: argparse.Namespace) -> int:
     return run_learn_clock(args.data_dir, args.out, args.possessions, check=args.check)
+
+
+def _cmd_learn_pass(args: argparse.Namespace) -> int:
+    return run_learn_pass(args.data_dir, args.out, args.possessions, check=args.check)
 
 
 def _cmd_learn_browser(args: argparse.Namespace) -> int:
@@ -1289,6 +1294,39 @@ def build_parser() -> argparse.ArgumentParser:
         "instead; write nothing.",
     )
     learn_clock.set_defaults(func=_cmd_learn_clock)
+    learn_pass = learn_sub.add_parser(
+        "pass",
+        help="Measure every complete pass by the ball's own chord and path, next to the "
+        "provider's distance, match by match, from bronze, and write learn/pass.json (lesson 7).",
+    )
+    learn_pass.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root: bronze for the figures, the raw bundle (through its ingest receipt) for "
+        "the public SQL (default: data).",
+    )
+    learn_pass.add_argument(
+        "--out",
+        type=Path,
+        default=Path("../web/public/data/learn/pass.json"),
+        help="The lesson's file (default: ../web/public/data/learn/pass.json).",
+    )
+    learn_pass.add_argument(
+        "--possessions",
+        type=Path,
+        default=Path("../web/public/data/possessions"),
+        help="The published possessions the example's passes are read from "
+        "(default: ../web/public/data/possessions).",
+    )
+    learn_pass.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild the file from bronze and compare its bytes, run learn/pass.sql on the raw "
+        "files and compare it with the file: FULL n/n, or PARTIAL k/n with what was checked "
+        "instead; write nothing.",
+    )
+    learn_pass.set_defaults(func=_cmd_learn_pass)
     learn_browser = learn_sub.add_parser(
         "browser",
         help='Run each lesson\'s learn/<slug>.browser.sql (the query of "Run it here") on the '

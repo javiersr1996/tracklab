@@ -61,6 +61,14 @@ export const LESSONS: readonly Lesson[] = [
     status: "published",
     about: "A least-squares line through two clocks, its residuals, and what a wrong second would do to a speed and to g.",
   },
+  {
+    n: 7,
+    slug: "pass",
+    title: "How fast does a pass travel?",
+    level: "Intermediate",
+    status: "published",
+    about: "Chord and path of the ball, and what the provider's distance of a pass measures instead.",
+  },
 ];
 
 export const lessonHref = (l: Lesson) => `/learn/${l.slug}`;

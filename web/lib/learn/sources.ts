@@ -270,6 +270,56 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     quote:
       "The residuals from a fitted model are the differences between the responses observed at each combination values of the explanatory variables and the corresponding prediction of the response computed using the regression function.",
   },
+  // Lesson 7.
+  "skillcorner-pass-start": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/passes.md, line 15",
+    short: "SkillCorner, passes.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/passes.md#L15",
+    read: "2026-10-24",
+    quote: "Frame (at 25fps) since the start of the video of the release of the pass.",
+  },
+  "skillcorner-pass-end": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/passes.md, line 16",
+    short: "SkillCorner, passes.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/passes.md#L16",
+    read: "2026-10-24",
+    quote: "Frame (at 25fps) since the start of the video of the reception of the pass.",
+  },
+  "skillcorner-pass-passer-loc": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/passes.md, line 33",
+    short: "SkillCorner, passes.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/passes.md#L33",
+    read: "2026-10-24",
+    quote: "x, y coordinate of the passer at the release of the pass.",
+  },
+  "skillcorner-pass-receiver-loc": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/passes.md, line 34",
+    short: "SkillCorner, passes.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/passes.md#L34",
+    read: "2026-10-24",
+    quote: "x, y coordinate of the receiver at the release of the pass.",
+  },
+  "skillcorner-pass-distance": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/passes.md, line 37",
+    short: "SkillCorner, passes.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/passes.md#L37",
+    read: "2026-10-24",
+    quote: "Distance in feet between passerLoc and receiverLoc",
+  },
+  "mathworld-chord": {
+    label: "Weisstein, Chord, MathWorld",
+    short: "MathWorld, Chord",
+    url: "https://mathworld.wolfram.com/Chord.html",
+    read: "2026-10-24",
+    quote: "In plane geometry, a chord is the line segment joining two points on a curve.",
+  },
+  "mathworld-arc-length": {
+    label: "Weisstein, Arc Length, MathWorld",
+    short: "MathWorld, Arc Length",
+    url: "https://mathworld.wolfram.com/ArcLength.html",
+    read: "2026-10-24",
+    quote: "Arc length is defined as the length along a curve",
+  },
 };
 
 export function sourceProblems(id: string, s: Source): string[] {

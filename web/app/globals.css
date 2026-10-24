@@ -1607,3 +1607,11 @@ a.wordmark:hover {
   vertical-align: bottom;
   min-width: 5rem;
 }
+
+/* Lesson 7: the pass from above keeps the court's proportions. */
+.learn-pass-top svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 24rem;
+}

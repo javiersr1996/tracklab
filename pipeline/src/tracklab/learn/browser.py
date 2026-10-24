@@ -29,7 +29,7 @@ from typing import Any
 import duckdb
 import numpy as np
 
-LESSONS = ("gravity", "speed", "coordinates", "rebound", "cadence", "clock")
+LESSONS = ("gravity", "speed", "coordinates", "rebound", "cadence", "clock", "pass")
 HERE = Path(__file__).parent
 FILES_LINE = re.compile(r"^-- files: (.+)$", re.MULTILINE)
 VIEW = re.compile(r"^CREATE VIEW (\w+) AS", re.MULTILINE)
@@ -164,6 +164,17 @@ def _clock(public: Path) -> Expected:
     }
 
 
+def _pass(public: Path) -> Expected:
+    # The SQL's chords and paths, at two decimals, against pass.json's at four (computed by the
+    # pipeline from the same published positions); its chord speeds against the file's exactly.
+    out: Expected = {}
+    for i, p in enumerate(_json(public, "/data/learn/pass.json")["example"]["passes"]):
+        out[f"learn.passes.{i}.chord_m"] = (p["chord_m"], 0.005 + 1e-9)
+        out[f"learn.passes.{i}.path_m"] = (p["path_m"], 0.005 + 1e-9)
+        out[f"learn.passes.{i}.chord_speed"] = (p["chord_speed"], 0)
+    return out
+
+
 EXPECT: dict[str, Callable[[Path], Expected]] = {
     "gravity": _gravity,
     "speed": _speed,
@@ -171,6 +182,7 @@ EXPECT: dict[str, Callable[[Path], Expected]] = {
     "rebound": _rebound,
     "cadence": _cadence,
     "clock": _clock,
+    "pass": _pass,
 }
 
 

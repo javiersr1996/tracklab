@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "fps": 25,
+  "m_per_ft": 0.3048,
+  "matches": [
+    {
+      "match_id": "bb:114086",
+      "complete": 492,
+      "forward": 491,
+      "n": 490,
+      "chord_speed_median": 7.74,
+      "chord_speed_p90": 11.39,
+      "path_over_chord": 1.009,
+      "distance_speed_median": 15.39,
+      "chord_over_distance": 0.5083,
+      "separation_n": 490,
+      "separation_gap_max": 0.0
+    },
+    {
+      "match_id": "bb:114099",
+      "complete": 439,
+      "forward": 439,
+      "n": 439,
+      "chord_speed_median": 8.33,
+      "chord_speed_p90": 11.66,
+      "path_over_chord": 1.0074,
+      "distance_speed_median": 15.54,
+      "chord_over_distance": 0.57,
+      "separation_n": 439,
+      "separation_gap_max": 0.0
+    },
+    {
+      "match_id": "bb:114169",
+      "complete": 437,
+      "forward": 437,
+      "n": 437,
+      "chord_speed_median": 8.13,
+      "chord_speed_p90": 11.62,
+      "path_over_chord": 1.0064,
+      "distance_speed_median": 15.62,
+      "chord_over_distance": 0.5282,
+      "separation_n": 437,
+      "separation_gap_max": 0.0
+    },
+    {
+      "match_id": "bb:114234",
+      "complete": 427,
+      "forward": 426,
+      "n": 424,
+      "chord_speed_median": 7.66,
+      "chord_speed_p90": 11.43,
+      "path_over_chord": 1.0067,
+      "distance_speed_median": 15.78,
+      "chord_over_distance": 0.5028,
+      "separation_n": 424,
+      "separation_gap_max": 0.0
+    },
+    {
+      "match_id": "bb:114243",
+      "complete": 504,
+      "forward": 503,
+      "n": 502,
+      "chord_speed_median": 8.41,
+      "chord_speed_p90": 11.61,
+      "path_over_chord": 1.0082,
+      "distance_speed_median": 16.42,
+      "chord_over_distance": 0.5271,
+      "separation_n": 502,
+      "separation_gap_max": 0.0
+    },
+    {
+      "match_id": "bb:178442",
+      "complete": 453,
+      "forward": 452,
+      "n": 448,
+      "chord_speed_median": 7.69,
+      "chord_speed_p90": 11.27,
+      "path_over_chord": 1.0079,
+      "distance_speed_median": 14.88,
+      "chord_over_distance": 0.5311,
+      "separation_n": 448,
+      "separation_gap_max": 0.0
+    },
+    {
+      "match_id": "bb:179612",
+      "complete": 507,
+      "forward": 505,
+      "n": 505,
+      "chord_speed_median": 8.24,
+      "chord_speed_p90": 11.7,
+      "path_over_chord": 1.0065,
+      "distance_speed_median": 15.78,
+      "chord_over_distance": 0.5538,
+      "separation_n": 505,
+      "separation_gap_max": 0.0
+    },
+    {
+      "match_id": "bb:184439",
+      "complete": 428,
+      "forward": 427,
+      "n": 427,
+      "chord_speed_median": 7.44,
+      "chord_speed_p90": 11.34,
+      "path_over_chord": 1.0075,
+      "distance_speed_median": 15.49,
+      "chord_over_distance": 0.5072,
+      "separation_n": 427,
+      "separation_gap_max": 0.0
+    },
+    {
+      "match_id": "bb:188630",
+      "complete": 446,
+      "forward": 445,
+      "n": 443,
+      "chord_speed_median": 7.36,
+      "chord_speed_p90": 11.11,
+      "path_over_chord": 1.0075,
+      "distance_speed_median": 14.98,
+      "chord_over_distance": 0.5401,
+      "separation_n": 443,
+      "separation_gap_max": 0.0
+    },
+    {
+      "match_id": "bb:191313",
+      "complete": 408,
+      "forward": 407,
+      "n": 400,
+      "chord_speed_median": 8.14,
+      "chord_speed_p90": 11.76,
+      "path_over_chord": 1.0071,
+      "distance_speed_median": 15.2,
+      "chord_over_distance": 0.547,
+      "separation_n": 400,
+      "separation_gap_max": 0.0
+    }
+  ],
+  "example": {
+    "possession": "bb_possessions_possession-114099-1-41.json",
+    "match_id": "bb:114099",
+    "passes": [
+      {
+        "pass_id": "pass-114099-1-113",
+        "t0": 1226000,
+        "t1": 1226480,
+        "frames": 12,
+        "distance_m": 8.375,
+        "passer": 9,
+        "receiver": 6,
+        "chord_m": 6.2596,
+        "path_m": 6.2926,
+        "chord_speed": 13.04
+      },
+      {
+        "pass_id": "pass-114099-1-114",
+        "t0": 1227000,
+        "t1": 1227480,
+        "frames": 12,
+        "distance_m": 7.6133,
+        "passer": 6,
+        "receiver": 9,
+        "chord_m": 5.2336,
+        "path_m": 5.2865,
+        "chord_speed": 10.9
+      },
+      {
+        "pass_id": "pass-114099-1-115",
+        "t0": 1228680,
+        "t1": 1229280,
+        "frames": 15,
+        "distance_m": 5.794,
+        "passer": 9,
+        "receiver": 5,
+        "chord_m": 4.683,
+        "path_m": 4.8483,
+        "chord_speed": 7.81
+      },
+      {
+        "pass_id": "pass-114099-1-116",
+        "t0": 1235200,
+        "t1": 1235400,
+        "frames": 5,
+        "distance_m": 3.9175,
+        "passer": 5,
+        "receiver": 8,
+        "chord_m": 1.2718,
+        "path_m": 1.2788,
+        "chord_speed": 6.36
+      }
+    ]
+  }
+}

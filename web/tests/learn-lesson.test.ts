@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { Lesson as CadenceLesson } from "../components/learn/cadence/Lesson";
 import { Lesson as ClockLesson } from "../components/learn/clock/Lesson";
+import { Lesson as PassLesson } from "../components/learn/pass/Lesson";
 import { Lesson as CoordinatesLesson } from "../components/learn/coordinates/Lesson";
 import { Lesson } from "../components/learn/gravity/Lesson";
 import { Lesson as ReboundLesson } from "../components/learn/rebound/Lesson";
@@ -80,6 +81,7 @@ describe("the text of lesson 1", () => {
       ...hrefs(renderToStaticMarkup(createElement(ReboundLesson, { sql: learn("rebound.sql") }))),
       ...hrefs(renderToStaticMarkup(createElement(CadenceLesson, { script: learn("cadence.py") }))),
       ...hrefs(renderToStaticMarkup(createElement(ClockLesson, { sql: learn("clock.sql") }))),
+      ...hrefs(renderToStaticMarkup(createElement(PassLesson, { sql: learn("pass.sql") }))),
     ]);
     expect([...cited].filter((h) => !urls.includes(h))).toEqual([]);
     expect(urls.filter((u) => !cited.has(u))).toEqual([]);
