@@ -33,6 +33,7 @@ from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.learn.browser import run_learn_browser
 from tracklab.learn.clock import run_learn_clock
+from tracklab.learn.dribble import run_learn_dribble
 from tracklab.learn.entry_lesson import run_learn_entry
 from tracklab.learn.gravity import run_learn_gravity
 from tracklab.learn.hypotheses import run_learn_hypotheses
@@ -339,6 +340,10 @@ def _cmd_learn_pass(args: argparse.Namespace) -> int:
 
 def _cmd_learn_entry(args: argparse.Namespace) -> int:
     return run_learn_entry(args.data_dir, args.out, args.quality, check=args.check)
+
+
+def _cmd_learn_dribble(args: argparse.Namespace) -> int:
+    return run_learn_dribble(args.data_dir, args.out, args.possessions, check=args.check)
 
 
 def _cmd_learn_browser(args: argparse.Namespace) -> int:
@@ -1365,6 +1370,39 @@ def build_parser() -> argparse.ArgumentParser:
         "what was checked instead; write nothing.",
     )
     learn_entry.set_defaults(func=_cmd_learn_entry)
+    learn_dribble = learn_sub.add_parser(
+        "dribble",
+        help="Measure the intervals between the dribbles of a touch and the ball's lowest height "
+        "near each dribble, match by match, from bronze, and write learn/dribble.json (lesson 9).",
+    )
+    learn_dribble.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root: bronze for the figures, the raw bundle (through its ingest receipt) for "
+        "the public SQL (default: data).",
+    )
+    learn_dribble.add_argument(
+        "--out",
+        type=Path,
+        default=Path("../web/public/data/learn/dribble.json"),
+        help="The lesson's file (default: ../web/public/data/learn/dribble.json).",
+    )
+    learn_dribble.add_argument(
+        "--possessions",
+        type=Path,
+        default=Path("../web/public/data/possessions"),
+        help="The published possessions the example's touch is read from "
+        "(default: ../web/public/data/possessions).",
+    )
+    learn_dribble.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild the file from bronze and compare its bytes, run learn/dribble.sql on the "
+        "raw files and compare it with the file: FULL n/n, or PARTIAL k/n with what was checked "
+        "instead; write nothing.",
+    )
+    learn_dribble.set_defaults(func=_cmd_learn_dribble)
     learn_browser = learn_sub.add_parser(
         "browser",
         help='Run each lesson\'s learn/<slug>.browser.sql (the query of "Run it here") on the '

@@ -67,6 +67,7 @@ jobs:
       - run: uv run tracklab learn clock --check
       - run: uv run tracklab learn pass --check
       - run: uv run tracklab learn entry --check
+      - run: uv run tracklab learn dribble --check
       - id: build_record
         run: echo "path=$(ls -t data/build/*.json | head -n1)" >> "$GITHUB_OUTPUT"
       # Compares the runner's fresh rows against the versioned platform.json and stats.json

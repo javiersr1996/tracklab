@@ -77,6 +77,14 @@ export const LESSONS: readonly Lesson[] = [
     status: "published",
     about: "Projectile geometry against the file's heights, a method tried on a perfect flight, and what g and a height scale move.",
   },
+  {
+    n: 9,
+    slug: "dribble",
+    title: "How many bounces per second?",
+    level: "Intermediate",
+    status: "published",
+    about: "Events as points in time, their intervals, matching them to the ball's height, and the height's own rhythm.",
+  },
 ];
 
 export const lessonHref = (l: Lesson) => `/learn/${l.slug}`;

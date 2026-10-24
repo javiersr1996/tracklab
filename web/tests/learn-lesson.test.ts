@@ -9,6 +9,7 @@ import { Lesson as ClockLesson } from "../components/learn/clock/Lesson";
 import { Lesson as EntryLesson } from "../components/learn/entry/Lesson";
 import { Lesson as PassLesson } from "../components/learn/pass/Lesson";
 import { Lesson as CoordinatesLesson } from "../components/learn/coordinates/Lesson";
+import { Lesson as DribbleLesson } from "../components/learn/dribble/Lesson";
 import { Lesson } from "../components/learn/gravity/Lesson";
 import { Lesson as ReboundLesson } from "../components/learn/rebound/Lesson";
 import { Lesson as SpeedLesson } from "../components/learn/speed/Lesson";
@@ -84,6 +85,7 @@ describe("the text of lesson 1", () => {
       ...hrefs(renderToStaticMarkup(createElement(ClockLesson, { sql: learn("clock.sql") }))),
       ...hrefs(renderToStaticMarkup(createElement(PassLesson, { sql: learn("pass.sql") }))),
       ...hrefs(renderToStaticMarkup(createElement(EntryLesson, { script: learn("entry.py") }))),
+      ...hrefs(renderToStaticMarkup(createElement(DribbleLesson, { sql: learn("dribble.sql") }))),
     ]);
     expect([...cited].filter((h) => !urls.includes(h))).toEqual([]);
     expect(urls.filter((u) => !cited.has(u))).toEqual([]);

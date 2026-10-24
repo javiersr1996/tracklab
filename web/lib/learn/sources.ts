@@ -356,6 +356,28 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-24",
     quote: "The horizontal motion is uniform because there is no external force in the horizontal direction.",
   },
+  // Lesson 9.
+  "skillcorner-dribbles": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/dribbles.md, line 3",
+    short: "SkillCorner, dribbles.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/dribbles.md#L3",
+    read: "2026-10-24",
+    quote: "Individual dribble events, one row per dribble, nested inside a `touches` row.",
+  },
+  "skillcorner-dribble-frame": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/dribbles.md, line 16",
+    short: "SkillCorner, dribbles.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/dribbles.md#L16",
+    read: "2026-10-24",
+    quote: "Frame (at 25fps) of the dribble",
+  },
+  "skillcorner-touch": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/touches.md, line 3",
+    short: "SkillCorner, touches.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/touches.md#L3",
+    read: "2026-10-24",
+    quote: "Every continuous ball possession by a single player (from gaining control to losing it)",
+  },
 };
 
 export function sourceProblems(id: string, s: Source): string[] {

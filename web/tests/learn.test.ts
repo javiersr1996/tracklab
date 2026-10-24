@@ -5,7 +5,7 @@ import { isCurrent, SECTIONS } from "../lib/sections";
 
 describe("the series", () => {
   it("numbers its lessons in order with no gap (P9 renumbers after the lesson Javier dropped)", () => {
-    expect(LESSONS.map((l) => l.n)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(LESSONS.map((l) => l.n)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     expect(new Set(LESSONS.map((l) => l.slug)).size).toBe(LESSONS.length);
   });
 

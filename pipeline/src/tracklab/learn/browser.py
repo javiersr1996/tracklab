@@ -29,7 +29,17 @@ from typing import Any
 import duckdb
 import numpy as np
 
-LESSONS = ("gravity", "speed", "coordinates", "rebound", "cadence", "clock", "pass", "entry")
+LESSONS = (
+    "gravity",
+    "speed",
+    "coordinates",
+    "rebound",
+    "cadence",
+    "clock",
+    "pass",
+    "entry",
+    "dribble",
+)
 HERE = Path(__file__).parent
 FILES_LINE = re.compile(r"^-- files: (.+)$", re.MULTILINE)
 VIEW = re.compile(r"^CREATE VIEW (\w+) AS", re.MULTILINE)
@@ -187,6 +197,19 @@ def _entry(public: Path) -> Expected:
     }
 
 
+def _dribble(public: Path) -> Expected:
+    # The SQL's offsets and lowest heights against the ones the pipeline computed from the same
+    # published heights (dribble.json's example); the median interval against numpy's.
+    ex = _json(public, "/data/learn/dribble.json")["example"]
+    out: Expected = {}
+    for i, d in enumerate(ex["dribbles"]):
+        out[f"learn.dribbles.{i}.offset"] = (str(d["offset"]), 0)
+        out[f"learn.dribbles.{i}.low_z"] = (str(d["low_z"]), 0)
+    gaps = np.diff([d["t"] for d in ex["dribbles"]]) / 1000
+    out["learn.ex_median_s"] = (float(np.median(gaps)), 0.005 + 1e-9)
+    return out
+
+
 EXPECT: dict[str, Callable[[Path], Expected]] = {
     "gravity": _gravity,
     "speed": _speed,
@@ -196,6 +219,7 @@ EXPECT: dict[str, Callable[[Path], Expected]] = {
     "clock": _clock,
     "pass": _pass,
     "entry": _entry,
+    "dribble": _dribble,
 }
 
 
