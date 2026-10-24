@@ -114,7 +114,7 @@ export function FitPlot({ hook }: { hook: GravityHook }) {
         g <Fig name="learn.fit.g">{figures.g}</Fig> m/s², residual RMS <Fig name="learn.fit.rms_mm">{figures.rms_mm}</Fig> mm
       </p>
       <figcaption>
-        Shot <Fig name="hook.shot_id">{hook.shot_id}</Fig> of <Fig name="hook.match_id">{hook.match_id}</Fig>, as
+        Shot {hook.shot_id.replace(/^shot-/, "")} of match <Fig name="hook.match_id">{hook.match_id}</Fig>, as
         /quality replays it. Drag the g, or jump to the least-squares one or to{" "}
         <Fig name="hook.g_real">{G}</Fig>; the white bars are what that parabola leaves unexplained.
       </figcaption>
