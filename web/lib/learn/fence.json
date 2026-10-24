@@ -14,5 +14,20 @@
     "2017461"
   ],
   "allowed_football_examples": ["1874553_1", "1886347_40", "1925299_71"],
-  "forbidden_keys": ["extrapolated", "undetected", "gap_len", "pressure", "line_height", "block_"]
+  "forbidden_keys": [
+    "extrapolated",
+    "undetected",
+    "gap_len",
+    "pressure",
+    "line_height",
+    "block_",
+    "possession_width",
+    "possession_length",
+    "time_to_impact",
+    "space_constraint",
+    "reception_difficulty",
+    "pressing",
+    "defensive_line",
+    "end_type"
+  ]
 }
