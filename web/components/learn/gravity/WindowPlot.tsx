@@ -5,7 +5,7 @@ import { analyticSdG, apparentG, gAtHalfWindow, rmsAt } from "../../../lib/learn
 import type { GravityHook } from "../../../lib/learn/gravity-data";
 import { expose, shown } from "../../../lib/learn/expose";
 import { Fig } from "../Fig";
-import { INK, Legend, Plot, ticks } from "./Plot";
+import { Dot, INK, Legend, Plot, ticks } from "./Plot";
 
 // g of the hook flight over the 2H + 1 samples around its highest one, for H from 2 to the whole
 // window, each with ±2 sd: the sd independent noise as large as the whole fit's residual RMS
@@ -26,7 +26,7 @@ export function WindowPlot({ hook }: { hook: GravityHook }) {
     return { h: hk, g: gAtHalfWindow(t, z, hk), sd: analyticSdG(t.slice(mid - hk, mid + hk + 1), sigma) };
   });
   const pick = rows.find((r) => r.h === h) ?? rows[rows.length - 1];
-  const figures = { h: pick.h, samples: 2 * pick.h + 1, g: shown(pick.g, 4), sd2: shown(2 * pick.sd, 2) };
+  const figures = { h: pick.h, samples: 2 * pick.h + 1, g: shown(pick.g, 5), sd2: shown(2 * pick.sd, 2) };
 
   useEffect(() => {
     expose({ window: figures });
@@ -46,18 +46,18 @@ export function WindowPlot({ hook }: { hook: GravityHook }) {
       <Plot
         x={{ min: H_MIN - 0.5, max: mid + 0.5, ticks: ticks(H_MIN, mid, 2), format: (v) => String(v), label: "H, samples each side of the highest one" }}
         y={{ min: G_LO, max: G_HI, ticks: ticks(G_LO + 1, G_HI, 2), format: (v) => String(v), label: "g (m/s²)" }}
-        height={320}
-        label="g of the hook flight against the half-window H, with plus or minus two standard deviations, and the line of standard gravity"
+        size="tall"
+        label="g of the shot against the half-window H, with plus or minus two standard deviations, and the line of standard gravity"
       >
         {({ x, y }) => (
           <>
-            <line x1={x(H_MIN - 0.5)} x2={x(mid + 0.5)} y1={y(G)} y2={y(G)} stroke={INK.standard} strokeWidth={2} strokeDasharray="8 6" />
+            <line x1={x(H_MIN - 0.5)} x2={x(mid + 0.5)} y1={y(G)} y2={y(G)} stroke={INK.standard} strokeWidth={2} strokeDasharray="8 6" vectorEffect="non-scaling-stroke" />
             {rows.map((r) => {
               const ink = r.h === pick.h ? INK.probe : INK.data;
               return (
                 <g key={r.h} data-h={r.h}>
-                  <line x1={x(r.h)} x2={x(r.h)} y1={y(clamp(r.g - 2 * r.sd))} y2={y(clamp(r.g + 2 * r.sd))} stroke={ink} strokeWidth={3} />
-                  <circle cx={x(r.h)} cy={y(clamp(r.g))} r={r.h === pick.h ? 8 : 6} fill={ink} />
+                  <line x1={x(r.h)} x2={x(r.h)} y1={y(clamp(r.g - 2 * r.sd))} y2={y(clamp(r.g + 2 * r.sd))} stroke={ink} strokeWidth={3} vectorEffect="non-scaling-stroke" />
+                  <Dot x={x(r.h)} y={y(clamp(r.g))} r={r.h === pick.h ? 8 : 6} color={ink} />
                 </g>
               );
             })}

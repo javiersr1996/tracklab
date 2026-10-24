@@ -5,7 +5,7 @@ import { analyticSdG, apparentG, withNoise } from "../../../lib/learn/gravity";
 import type { GravityHook } from "../../../lib/learn/gravity-data";
 import { expose, shown } from "../../../lib/learn/expose";
 import { Fig } from "../Fig";
-import { INK, Legend, Plot, ticks } from "./Plot";
+import { Dot, INK, Legend, Plot, ticks } from "./Plot";
 
 // Noise on the hook flight redrawn at standard gravity (`z_real_m`), refitted: every click adds
 // `PER_CLICK` synthetic flights, seeds 1, 2, 3, ... so the same clicks give the same cloud. A
@@ -56,22 +56,24 @@ export function NoiseStrip({ hook }: { hook: GravityHook }) {
         items={[
           { color: INK.probe, label: "a noisy flight at standard gravity, refitted", dot: true },
           { color: INK.standard, label: "standard gravity", dashed: true },
-          { color: INK.data, label: "the hook flight's g" },
+          { color: INK.data, label: "the shot's g" },
         ]}
       />
       <Plot
         x={{ min: G_LO, max: G_HI, ticks: ticks(G_LO, G_HI, 1), format: (v) => String(v), label: "g of the refitted flight (m/s²)" }}
         y={{ min: 0, max: ROWS + 1, ticks: [], format: String, label: "" }}
-        height={200}
-        label="g of synthetic noisy flights at standard gravity, against standard gravity and the hook flight's g"
+        size="short"
+        label="g of synthetic noisy flights at standard gravity, against standard gravity and the shot's g"
       >
         {({ x, y }) => (
           <>
-            <line x1={x(G)} x2={x(G)} y1={y(0)} y2={y(ROWS + 1)} stroke={INK.standard} strokeWidth={2} strokeDasharray="8 6" />
-            <line x1={x(hookG)} x2={x(hookG)} y1={y(0)} y2={y(ROWS + 1)} stroke={INK.data} strokeWidth={3} />
-            {gs.map((gk, k) => (
-              <circle key={k} cx={x(clamp(gk))} cy={y(1 + (k % ROWS))} r={4} fill={INK.probe} />
-            ))}
+            <line x1={x(G)} x2={x(G)} y1={y(0)} y2={y(ROWS + 1)} stroke={INK.standard} strokeWidth={2} strokeDasharray="8 6" vectorEffect="non-scaling-stroke" />
+            <line x1={x(hookG)} x2={x(hookG)} y1={y(0)} y2={y(ROWS + 1)} stroke={INK.data} strokeWidth={3} vectorEffect="non-scaling-stroke" />
+            <g data-flights={gs.length}>
+              {gs.map((gk, k) => (
+                <Dot key={k} x={x(clamp(gk))} y={y(1 + (k % ROWS))} r={4} color={INK.probe} />
+              ))}
+            </g>
           </>
         )}
       </Plot>

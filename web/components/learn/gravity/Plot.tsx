@@ -38,25 +38,29 @@ export function ticks(min: number, max: number, step: number): number[] {
 export const signed = (v: number, digits: number) => v.toFixed(digits).replace("-", "−");
 
 // A plot on the canvas: the marks in SVG, the ticks and the axis labels in HTML, so they keep the
-// text size at any width. The SVG keeps its aspect ratio, so a tick at p % of the viewBox sits at
-// p % of the box it is drawn in. `height` is in the viewBox's units, `PLOT_W` wide.
+// text size at any width. The SVG fills a box whose height globals.css sets by `size` (taller than
+// the width alone would give on a phone), so the viewBox stretches: a tick at p % of the viewBox
+// sits at p % of the box, strokes keep their width (non-scaling) and dots are `Dot`s, not circles.
+const VIEW_H = 300;
+
 export function Plot({
   x,
   y,
-  height,
+  size,
   label,
   children,
 }: {
   x: Axis;
   y: Axis;
-  height: number;
+  size: "tall" | "short";
   label: string;
   children: (s: Scale) => ReactNode;
 }) {
+  const height = VIEW_H;
   const sx = (v: number) => PAD + ((v - x.min) / (x.max - x.min)) * (PLOT_W - 2 * PAD);
   const sy = (v: number) => height - PAD - ((v - y.min) / (y.max - y.min)) * (height - 2 * PAD);
   return (
-    <div className="learn-plot">
+    <div className={`learn-plot learn-plot-${size}`}>
       {y.label ? <p className="learn-plot-label">{y.label}</p> : null}
       <div className="learn-plot-grid">
         <div className="learn-plot-yticks" aria-hidden="true">
@@ -66,7 +70,7 @@ export function Plot({
             </span>
           ))}
         </div>
-        <svg viewBox={`0 0 ${PLOT_W} ${height}`} role="img" aria-label={label}>
+        <svg viewBox={`0 0 ${PLOT_W} ${height}`} preserveAspectRatio="none" role="img" aria-label={label}>
           {children({ x: sx, y: sy })}
         </svg>
         <div className="learn-plot-xticks" aria-hidden="true">
@@ -80,6 +84,12 @@ export function Plot({
       <p className="learn-plot-label learn-plot-xlabel">{x.label}</p>
     </div>
   );
+}
+
+// A round mark of radius r px that stays round in a stretched viewBox: a stroke of zero length
+// with round caps, its width in screen pixels.
+export function Dot({ x, y, r, color }: { x: number; y: number; r: number; color: string }) {
+  return <path d={`M${x.toFixed(1)} ${y.toFixed(1)}h0`} stroke={color} strokeWidth={2 * r} strokeLinecap="round" vectorEffect="non-scaling-stroke" />;
 }
 
 // A legend on the canvas: a swatch in the mark's colour, then its name.

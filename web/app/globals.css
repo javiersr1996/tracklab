@@ -1219,7 +1219,15 @@ a.wordmark:hover {
   grid-column: 2;
   grid-row: 1;
   width: 100%;
-  height: auto;
+}
+
+/* Heights of their own, not the width's: on a phone the width alone would leave a sliver. */
+.learn-plot-tall svg {
+  height: clamp(15rem, 12rem + 10vw, 21rem);
+}
+
+.learn-plot-short svg {
+  height: clamp(8rem, 7rem + 4vw, 11rem);
 }
 
 .learn-plot-yticks {
@@ -1312,9 +1320,14 @@ a.wordmark:hover {
 }
 
 .per-match .per-match-strip {
-  min-width: 12rem;
+  min-width: 10rem;
   padding: 0 var(--space-4);
   background: var(--canvas);
+}
+
+.per-match th:last-child,
+.per-match td:last-child {
+  text-align: left;
 }
 
 .per-match th.per-match-strip {

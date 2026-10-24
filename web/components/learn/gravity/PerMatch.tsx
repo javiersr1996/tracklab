@@ -24,11 +24,6 @@ export function PerMatch({ matches, g }: { matches: readonly MatchGravity[]; g: 
           <thead>
             <tr>
               <th scope="col">match</th>
-              <th scope="col">set</th>
-              <th scope="col">flights</th>
-              <th scope="col">Q1</th>
-              <th scope="col">median g</th>
-              <th scope="col">Q3</th>
               <th scope="col" className="per-match-strip" aria-label="Q1 to Q3 and median against standard gravity, m/s²">
                 <span className="per-match-axis" aria-hidden="true">
                   {ticks(G_LO, G_HI, 1).map((v) => (
@@ -38,25 +33,17 @@ export function PerMatch({ matches, g }: { matches: readonly MatchGravity[]; g: 
                   ))}
                 </span>
               </th>
+              <th scope="col">median g</th>
+              <th scope="col">Q1</th>
+              <th scope="col">Q3</th>
+              <th scope="col">flights</th>
+              <th scope="col">set</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.match_id} data-match={r.match_id}>
                 <td>{r.match_id}</td>
-                <td>{r.is_calibration ? "calibration" : "control"}</td>
-                <td>
-                  <Fig name={gravityFig(r.match_id, "flights")}>{r.flights}</Fig>
-                </td>
-                <td>
-                  <Fig name={gravityFig(r.match_id, "g_q1")}>{r.g_q1}</Fig>
-                </td>
-                <td>
-                  <Fig name={gravityFig(r.match_id, "g_median")}>{r.g_median}</Fig>
-                </td>
-                <td>
-                  <Fig name={gravityFig(r.match_id, "g_q3")}>{r.g_q3}</Fig>
-                </td>
                 <td className="per-match-strip">
                   <svg viewBox={`0 0 ${STRIP_W} ${STRIP_H}`} preserveAspectRatio="none" aria-hidden="true">
                     <line x1={sx(g)} x2={sx(g)} y1={0} y2={STRIP_H} stroke={INK.standard} strokeWidth={2} vectorEffect="non-scaling-stroke" />
@@ -64,6 +51,19 @@ export function PerMatch({ matches, g }: { matches: readonly MatchGravity[]; g: 
                     <line x1={sx(r.g_median)} x2={sx(r.g_median)} y1={2} y2={STRIP_H - 2} stroke={INK.probe} strokeWidth={3} vectorEffect="non-scaling-stroke" />
                   </svg>
                 </td>
+                <td>
+                  <Fig name={gravityFig(r.match_id, "g_median")}>{r.g_median}</Fig>
+                </td>
+                <td>
+                  <Fig name={gravityFig(r.match_id, "g_q1")}>{r.g_q1}</Fig>
+                </td>
+                <td>
+                  <Fig name={gravityFig(r.match_id, "g_q3")}>{r.g_q3}</Fig>
+                </td>
+                <td>
+                  <Fig name={gravityFig(r.match_id, "flights")}>{r.flights}</Fig>
+                </td>
+                <td>{r.is_calibration ? "calibration" : "control"}</td>
               </tr>
             ))}
           </tbody>
@@ -82,8 +82,8 @@ export function PerMatch({ matches, g }: { matches: readonly MatchGravity[]; g: 
         </li>
       </ul>
       <figcaption>
-        One row per match, as P3 published it. The calibration matches set P3&apos;s thresholds; the control matches were
-        scored with them frozen.
+        One row per match, as the check published it. The calibration matches set the check&apos;s thresholds; the
+        control matches were scored with them frozen.
       </figcaption>
     </figure>
   );

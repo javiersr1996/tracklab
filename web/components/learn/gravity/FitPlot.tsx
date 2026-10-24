@@ -5,7 +5,7 @@ import { apparentG, fitAtG, fitQuadratic, residualsAt, rmsAt, type Quadratic } f
 import type { GravityHook } from "../../../lib/learn/gravity-data";
 import { expose, shown } from "../../../lib/learn/expose";
 import { Fig } from "../Fig";
-import { INK, Legend, Plot, signed, ticks } from "./Plot";
+import { Dot, INK, Legend, Plot, signed, ticks } from "./Plot";
 
 // The hook flight's 21 samples, the least-squares parabola, the same flight redrawn at 9.80665
 // from `z_real_m`, and a parabola at any g the reader tries (c and b fitted to it), with the
@@ -35,7 +35,7 @@ export function FitPlot({ hook }: { hook: GravityHook }) {
 
   const residualsMm = residualsAt(t, z, g).map((r) => r * 1000);
   const rmsMm = rmsAt(t, z, g) * 1000;
-  const figures = { g: shown(g, 4), rms_mm: shown(rmsMm, 1) };
+  const figures = { g: shown(g, 5), rms_mm: shown(rmsMm, 1) };
   const residualsShown = residualsMm.map((r) => shown(r, 1));
 
   useEffect(() => {
@@ -63,16 +63,16 @@ export function FitPlot({ hook }: { hook: GravityHook }) {
       <Plot
         x={tAxis}
         y={{ min: zLo, max: zHi, ticks: ticks(zLo, zHi, 0.2), format: (v) => v.toFixed(1), label: "height z (m)" }}
-        height={300}
+        size="tall"
         label="Height of the ball against time: the samples, the least-squares parabola, the same start at standard gravity and the parabola at the g you try"
       >
         {({ x, y }) => (
           <>
-            <polyline points={curve(fitQuadratic(t, zReal), t0, t1, x, y)} fill="none" stroke={INK.standard} strokeWidth={2} strokeDasharray="8 6" />
-            <polyline points={curve(fitQuadratic(t, z), t0, t1, x, y)} fill="none" stroke={INK.data} strokeWidth={2} />
-            <polyline points={curve(fitAtG(t, z, g), t0, t1, x, y)} fill="none" stroke={INK.probe} strokeWidth={1.5} data-probe />
+            <polyline points={curve(fitQuadratic(t, zReal), t0, t1, x, y)} fill="none" stroke={INK.standard} strokeWidth={2} strokeDasharray="8 6" vectorEffect="non-scaling-stroke" />
+            <polyline points={curve(fitQuadratic(t, z), t0, t1, x, y)} fill="none" stroke={INK.data} strokeWidth={2} vectorEffect="non-scaling-stroke" />
+            <polyline points={curve(fitAtG(t, z, g), t0, t1, x, y)} fill="none" stroke={INK.probe} strokeWidth={1.5} vectorEffect="non-scaling-stroke" data-probe />
             {t.map((ti, i) => (
-              <circle key={ti} cx={x(ti)} cy={y(z[i])} r={5} fill={INK.data} />
+              <Dot key={ti} x={x(ti)} y={y(z[i])} r={5} color={INK.data} />
             ))}
           </>
         )}
@@ -80,14 +80,14 @@ export function FitPlot({ hook }: { hook: GravityHook }) {
       <Plot
         x={tAxis}
         y={{ min: -r, max: r, ticks: [-r, 0, r], format: (v) => signed(v, 0), label: "residual at the g you try (mm)" }}
-        height={180}
+        size="short"
         label="Residuals of the samples against the parabola at the g you try"
       >
         {({ x, y }) => (
           <>
-            <line x1={x(t0)} x2={x(t1)} y1={y(0)} y2={y(0)} stroke={INK.axis} strokeWidth={1} />
+            <line x1={x(t0)} x2={x(t1)} y1={y(0)} y2={y(0)} stroke={INK.axis} strokeWidth={1} vectorEffect="non-scaling-stroke" />
             {t.map((ti, i) => (
-              <line key={ti} x1={x(ti)} x2={x(ti)} y1={y(0)} y2={y(residualsMm[i])} stroke={INK.probe} strokeWidth={3} />
+              <line key={ti} x1={x(ti)} x2={x(ti)} y1={y(0)} y2={y(residualsMm[i])} stroke={INK.probe} strokeWidth={3} vectorEffect="non-scaling-stroke" />
             ))}
           </>
         )}

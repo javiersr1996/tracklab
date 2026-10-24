@@ -82,9 +82,9 @@ describe("the figures' colours", () => {
 
 describe("the interactive figures", () => {
   it("open on the least-squares g and P3's whole window, with no noisy flight yet", () => {
-    const fitted = shown(apparentG(GRAVITY_HOOK.t_s, GRAVITY_HOOK.z_data_m), 4);
+    const fitted = shown(apparentG(GRAVITY_HOOK.t_s, GRAVITY_HOOK.z_data_m), 5);
     expect(cell(html(FitPlot, { hook: GRAVITY_HOOK }), "learn.fit.g")).toBe(String(fitted));
     expect(cell(html(WindowPlot, { hook: GRAVITY_HOOK }), "learn.window.h")).toBe(String((GRAVITY_HOOK.t_s.length - 1) / 2));
-    expect(html(NoiseStrip, { hook: GRAVITY_HOOK })).not.toContain("<circle");
+    expect(html(NoiseStrip, { hook: GRAVITY_HOOK })).toContain('data-flights="0"');
   });
 });
