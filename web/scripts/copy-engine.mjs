@@ -8,17 +8,25 @@
 //   extensions.duckdb.org at query time (task 38). The build downloads it once into
 //   public/duckdb/ext/, the custom extension repository the engine is pointed at, and keeps it
 //   only if its sha256 is the pinned one.
+// - Nor json, which /learn's "Run it here" reads (task 85: in the browser `read_json` asked for it,
+//   though DuckDB 1.4.3 in Node has it inside), pinned and served the same way.
 import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
-// The DuckDB inside duckdb-wasm 1.32.0 (`db.getVersion()`, task 38) and the sha256 of its
-// parquet extension per bundle, as extensions.duckdb.org served them on 2026-10-08. Both belong
-// to one engine version: bumping @duckdb/duckdb-wasm means re-pinning them.
+// The DuckDB inside duckdb-wasm 1.32.0 (`db.getVersion()`, task 38) and the sha256 of each
+// extension per bundle, as extensions.duckdb.org served them (parquet on 2026-10-08, json on
+// 2026-10-24). All belong to one engine version: bumping @duckdb/duckdb-wasm means re-pinning them.
 const PINNED_PACKAGE = "1.32.0";
 const DUCKDB = "v1.4.3";
 const EXTENSIONS = {
-  wasm_eh: "22765c8f7dc741cda2b571a66ac7bb355295d7d69a6c37e5315b265672984f55",
-  wasm_mvp: "0785c6c95d003eff4faa7b3b4b660f02c9c92f6d68d135ddf330d42e3a650600",
+  parquet: {
+    wasm_eh: "22765c8f7dc741cda2b571a66ac7bb355295d7d69a6c37e5315b265672984f55",
+    wasm_mvp: "0785c6c95d003eff4faa7b3b4b660f02c9c92f6d68d135ddf330d42e3a650600",
+  },
+  json: {
+    wasm_eh: "b997276c8e15cc3ebdeda340d73d15dc1c4f4755ad281280451cb0a2f79302e9",
+    wasm_mvp: "5771b6d57335eca8e2ba4fdaacb491a53b49577bd7f1b0c39e2cd7a39b4e9313",
+  },
 };
 const ENGINE_FILES = [
   "duckdb-eh.wasm",
@@ -39,8 +47,12 @@ const engineDir = new URL(`../public/duckdb/${version}/`, import.meta.url);
 mkdirSync(engineDir, { recursive: true });
 for (const file of ENGINE_FILES) copyFileSync(new URL(`dist/${file}`, pkg), new URL(file, engineDir));
 
-for (const [platform, pinned] of Object.entries(EXTENSIONS)) {
-  const path = `${DUCKDB}/${platform}/parquet.duckdb_extension.wasm`;
+// `wasm_eh/parquet`, `wasm_mvp/json`, ... and the sha256 each must have.
+const PINS = Object.entries(EXTENSIONS).flatMap(([name, pins]) =>
+  Object.entries(pins).map(([platform, sha]) => [`${platform}/${name}`, sha]),
+);
+for (const [file, pinned] of PINS) {
+  const path = `${DUCKDB}/${file}.duckdb_extension.wasm`;
   const target = new URL(`../public/duckdb/ext/${path}`, import.meta.url);
   if (existsSync(target) && sha256(readFileSync(target)) === pinned) continue;
   const res = await fetch(`https://extensions.duckdb.org/${path}`);
@@ -50,4 +62,4 @@ for (const [platform, pinned] of Object.entries(EXTENSIONS)) {
   mkdirSync(new URL(".", target), { recursive: true });
   writeFileSync(target, bytes);
 }
-console.log(`duckdb-wasm ${version} and the ${DUCKDB} parquet extension are in public/duckdb/`);
+console.log(`duckdb-wasm ${version} and the ${DUCKDB} ${Object.keys(EXTENSIONS).join(" and ")} extensions are in public/duckdb/`);
