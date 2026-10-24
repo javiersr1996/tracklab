@@ -1157,8 +1157,7 @@ a.wordmark:hover {
   font-size: var(--step-h3);
 }
 
-.lesson-status,
-.lesson-draft {
+.lesson-status {
   font-weight: 600;
   color: var(--fg-muted);
 }
@@ -1173,6 +1172,18 @@ a.wordmark:hover {
 .formula math * {
   font-size: var(--step-2);
   math-depth: 0;
+}
+
+.math-inline,
+.math-inline * {
+  font-size: 1em;
+  math-depth: 0;
+}
+
+/* A sha or a URL in a lesson's text has no break opportunity of its own. */
+.lesson p code,
+.lesson li code {
+  overflow-wrap: anywhere;
 }
 
 /* Lesson 1's figures: a dark card, the marks on the canvas, the ticks and labels in HTML so they

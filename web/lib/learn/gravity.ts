@@ -167,3 +167,37 @@ export function signTest(values: readonly number[], ref: number): { k: number; n
 // squared: the flight's times would have to shrink by 1 − √(g/G), or its heights be divided by g/G.
 export const timeScaleNeeded = (g: number, G: number): number => 1 - Math.sqrt(g / G);
 export const heightScaleNeeded = (g: number, G: number): number => g / G;
+
+// P3's synthetic tracks (`quality/flight.py`, task 26), so the lesson can show what a smoother or
+// a lower measuring rate does to g. Apply a treatment to the whole track and cut the window after,
+// as a tracker would treat the whole flight.
+
+// A free flight sampled at `fps` over ±half samples about its apex: t in seconds, z in metres.
+export function parabolaTrack(fps: number, half: number, apexZ: number, g: number): { t: number[]; z: number[] } {
+  const t = Array.from({ length: 2 * half + 1 }, (_, i) => (i - half) / fps);
+  return { t, z: t.map((ti) => apexZ - 0.5 * g * ti * ti) };
+}
+
+// Centred moving average of k samples, shrinking at the ends so the output keeps the input's length.
+export function movingAverage(z: readonly number[], k: number): number[] {
+  const h = Math.floor(k / 2);
+  return z.map((_, i) => {
+    const lo = Math.max(0, i - h);
+    const hi = Math.min(z.length, i + h + 1);
+    return sum(z.slice(lo, hi)) / (hi - lo);
+  });
+}
+
+// True only at every k-th sample from `phase`, linear in between: a tracker that measures at a
+// lower rate and interpolates up. Samples before the first knot and after the last stay as they are.
+export function knotsEvery(z: readonly number[], k: number, phase: number): number[] {
+  const out = [...z];
+  for (let i0 = phase; i0 + k < z.length; i0 += k) {
+    const i1 = i0 + k;
+    for (let i = i0 + 1; i < i1; i++) {
+      const w = (i - i0) / k;
+      out[i] = z[i0] * (1 - w) + z[i1] * w;
+    }
+  }
+  return out;
+}

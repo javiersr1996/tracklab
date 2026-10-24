@@ -1,27 +1,12 @@
-import { Formula } from "../../../components/learn/Formula";
-import { LessonHead } from "../../../components/learn/LessonHead";
-import { Band } from "../../../components/site/Band";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { Lesson } from "../../../components/learn/gravity/Lesson";
 
-// A placeholder so the index link resolves; the lesson itself replaces it.
+// The query "Reproduce it" shows is the one `tracklab learn gravity --check` runs (task 76), read
+// at build time from the pipeline, one directory up from `web/`, like `docs/bulletin.md` on
+// /bulletin: the page and the check cannot drift apart.
+const SQL_PATH = join(process.cwd(), "..", "pipeline", "src", "tracklab", "learn", "gravity.sql");
+
 export default function GravityLesson() {
-  return (
-    <main className="page">
-      <LessonHead n={1} title="Does the ball obey gravity?" level="Foundations" />
-      <Band>
-        <p className="lesson-draft">Draft: this lesson is being written.</p>
-        <Formula label="The gravity read from the fitted flight">
-          <mrow>
-            <msub>
-              <mi>g</mi>
-              <mtext>data</mtext>
-            </msub>
-            <mo>=</mo>
-            <mo>−</mo>
-            <mn>2</mn>
-            <mi>a</mi>
-          </mrow>
-        </Formula>
-      </Band>
-    </main>
-  );
+  return <Lesson sql={readFileSync(SQL_PATH, "utf-8")} />;
 }

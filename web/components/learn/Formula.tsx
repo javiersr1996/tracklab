@@ -9,3 +9,8 @@ export function Formula({ label, children }: { label: string; children: ReactNod
     </div>
   );
 }
+
+// A formula inside a sentence, at the sentence's size (globals.css pins its scripts to it too).
+export function M({ children }: { children: ReactNode }) {
+  return <math className="math-inline">{children}</math>;
+}

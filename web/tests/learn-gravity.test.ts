@@ -8,6 +8,9 @@ import {
   fitQuadratic,
   gAtHalfWindow,
   heightScaleNeeded,
+  knotsEvery,
+  movingAverage,
+  parabolaTrack,
   residualsAt,
   rmsAt,
   roundingBound,
@@ -38,6 +41,9 @@ import { CHECKS } from "../lib/quality";
 //   j > k (both sign tests), 1 − g/G as the time scale (the scales), the bound without its 2
 //   (worst rounding) and g instead of g/2 in `residualsAt` (rmsAt least).
 // - Task 79: a = +g/2 in `fitAtG` fails "has fitAtG at the fitted g equal to the fit".
+// - Task 80: the moving average divided by one sample too many (gain k/(k + 1)) and the knots'
+//   weight measured from the next knot (w = (i1 − i)/k) each fail their synthetic-track test. A
+//   wider or off-centre average does not: any filter with weights that sum to one keeps a.
 
 const { t_s: t, z_data_m: zData, z_real_m: zReal, g_data: gData, g_real: G } = GRAVITY_HOOK;
 
@@ -149,6 +155,24 @@ describe("noise on z_real_m", () => {
   it("is the same for the same seed and different for another", () => {
     expect(withNoise(zReal, 0.01, 7)).toEqual(withNoise(zReal, 0.01, 7));
     expect(withNoise(zReal, 0.01, 8)).not.toEqual(withNoise(zReal, 0.01, 7));
+  });
+});
+
+describe("P3's synthetic tracks", () => {
+  // `tests/unit/test_quality_flight.py` (task 26) prints, run with `pytest -s` on 2026-10-24:
+  // "moving average of 5: bias +0.00%" and "knots every 5 frames, by phase: ['-1.56%', '-0.07%',
+  // '+0.85%', '+0.85%', '-0.07%']", on a ±20 track at 25 fps with the ±10 window cut after.
+  const track = parabolaTrack(25, 20, 4, G);
+  const cut = (xs: readonly number[]) => xs.slice(10, xs.length - 10);
+  const bias = (z: readonly number[]) => 100 * (apparentG(cut(track.t), cut(z)) / G - 1);
+
+  it("a centred moving average gives the parabola's g back", () => {
+    expect(Math.abs(bias(movingAverage(track.z, 5)))).toBeLessThan(1e-9);
+  });
+
+  it("knots every 5 frames move g by P3's own amounts, phase by phase", () => {
+    const byPhase = [0, 1, 2, 3, 4].map((phase) => Number(bias(knotsEvery(track.z, 5, phase)).toFixed(2)));
+    expect(byPhase).toEqual([-1.56, -0.07, 0.85, 0.85, -0.07]);
   });
 });
 

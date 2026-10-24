@@ -101,9 +101,12 @@ for (const width of WIDTHS) {
       expect(small, "text under 16 px").toEqual([]);
 
       if (path === "/learn/gravity") {
-        // The check has to see a subscript, or it protects nothing.
-        await expect(page.locator("main msub")).toHaveCount(1);
-        expect(await page.locator("main msub mtext").evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
+        // The check has to see the scripts, or it protects nothing: every subscript and superscript.
+        const scripts = await page
+          .locator("main msub > :last-child, main msup > :last-child")
+          .evaluateAll((els) => els.map((e) => parseFloat(getComputedStyle(e).fontSize)));
+        expect(scripts.length).toBeGreaterThan(0);
+        expect(Math.min(...scripts)).toBeGreaterThanOrEqual(16);
       }
     });
   }

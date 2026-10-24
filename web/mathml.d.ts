@@ -16,6 +16,11 @@ declare module "react" {
       msup: MathElement;
       mfrac: MathElement;
       msqrt: MathElement;
+      mtable: MathElement;
+      mtr: MathElement;
+      mtd: MathElement;
+      mover: MathElement;
+      mspace: MathElement & { width?: string };
     }
   }
 }
