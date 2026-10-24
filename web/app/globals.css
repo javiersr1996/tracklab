@@ -1359,3 +1359,25 @@ a.wordmark:hover {
   width: 100%;
   height: 1.5rem;
 }
+
+/* Lesson 2 (/learn/speed): the per-match table's headers wrap, so its eight columns fit the card
+   on a wide screen; on a phone the table scrolls inside its card like lesson 1's. */
+.learn-speed .learn-speed-table th {
+  white-space: normal;
+  vertical-align: bottom;
+  min-width: 5.5rem;
+}
+
+/* A table of rows inside a formula is compact by default, which puts a sum's limits beside it. */
+.learn-speed .formula mtd {
+  math-style: normal;
+}
+
+/* The moving-average identity is the widest formula of the series: on a phone it drops to the
+   16 px floor instead of scrolling. */
+@media (max-width: 30rem) {
+  .learn-speed .learn-speed-long .formula math,
+  .learn-speed .learn-speed-long .formula math * {
+    font-size: 1rem;
+  }
+}

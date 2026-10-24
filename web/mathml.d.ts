@@ -20,6 +20,7 @@ declare module "react" {
       mtr: MathElement;
       mtd: MathElement;
       mover: MathElement;
+      munderover: MathElement;
       mspace: MathElement & { width?: string };
     }
   }

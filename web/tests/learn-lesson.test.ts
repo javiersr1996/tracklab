@@ -57,11 +57,11 @@ describe("the text of lesson 1", () => {
     expect(fence.held_out.filter((id) => HTML.includes(id))).toEqual([]);
   });
 
-  it("cites only sources.ts, and every source in it", () => {
+  // Every source in sources.ts is cited by some lesson: tests/learn-speed.test.ts checks the union.
+  it("cites only sources.ts", () => {
     const hrefs = new Set([...HTML.matchAll(/<cite><a href="([^"]+)"/g)].map((m) => entities(m[1])));
     const urls = Object.values(SOURCES).map((s) => s.url);
     expect([...hrefs].filter((h) => !urls.includes(h))).toEqual([]);
-    expect(urls.filter((u) => !hrefs.has(u))).toEqual([]);
   });
 
   // Against the provider's own file where the clone the pipeline reads is on disk (its receipt

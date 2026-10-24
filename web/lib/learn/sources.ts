@@ -53,6 +53,47 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-24",
     quote: "`1.0` if the ball is on screen and detected by computer vision, `0.0` if the position is extrapolated.",
   },
+  "skillcorner-speed": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/tracking_data.md, line 30",
+    short: "SkillCorner, tracking_data.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/tracking_data.md#L30",
+    read: "2026-10-24",
+    quote: "Player speed in feet per second.",
+  },
+  "dlmf-differentiation": {
+    label: "NIST Digital Library of Mathematical Functions, 3.4(i) Differentiation, Equally-Spaced Nodes",
+    short: "DLMF, 3.4(i)",
+    url: "https://dlmf.nist.gov/3.4.i",
+    read: "2026-10-24",
+  },
+  "scipy-savgol": {
+    label: "SciPy 1.14.1 reference, scipy.signal.savgol_filter",
+    short: "SciPy, savgol_filter",
+    url: "https://docs.scipy.org/doc/scipy-1.14.1/reference/generated/scipy.signal.savgol_filter.html",
+    read: "2026-10-24",
+    quote: "The order of the polynomial used to fit the samples.",
+  },
+  "shaw-velocities": {
+    label: "Shaw, LaurieOnTracking at 7ed3ff8, Metrica_Velocities.py, line 16",
+    short: "Shaw, Metrica_Velocities.py",
+    url: "https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking/blob/7ed3ff857940d3f4611be55f3c08c79525c32171/Metrica_Velocities.py#L16",
+    read: "2026-10-24",
+    quote: "`def calc_player_velocities(team, smoothing=True, filter_='Savitzky-Golay', window=7, polyorder=1, maxspeed = 12):`",
+  },
+  "shaw-difference": {
+    label: "Shaw, LaurieOnTracking at 7ed3ff8, Metrica_Velocities.py, line 50",
+    short: "Shaw, line 50",
+    url: "https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking/blob/7ed3ff857940d3f4611be55f3c08c79525c32171/Metrica_Velocities.py#L50",
+    read: "2026-10-24",
+    quote: '`vx = team[player+"_x"].diff() / dt`',
+  },
+  "shaw-maxspeed": {
+    label: "Shaw, LaurieOnTracking at 7ed3ff8, Metrica_Velocities.py, line 28",
+    short: "Shaw, line 28",
+    url: "https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking/blob/7ed3ff857940d3f4611be55f3c08c79525c32171/Metrica_Velocities.py#L28",
+    read: "2026-10-24",
+    quote: "the maximum speed that a player can realisitically achieve (in meters/second)",
+  },
 };
 
 export function sourceProblems(id: string, s: Source): string[] {
