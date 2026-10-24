@@ -477,7 +477,7 @@ export function Lesson({ sql }: { sql: string }) {
           </ul>
         </section>
 
-        <Reproduce sql={sql}>
+        <Reproduce sql={sql} browser="coordinates">
           <p>
             The query rebuilds the first figure&apos;s numbers from SkillCorner&apos;s public files with DuckDB: the
             attack sign of each team in each period of basketball match {pf(BB, "match.match_id")}, the first frame of

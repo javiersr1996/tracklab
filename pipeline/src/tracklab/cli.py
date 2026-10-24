@@ -31,6 +31,7 @@ from tracklab.formats.football_report import freeze_football
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
+from tracklab.learn.browser import run_learn_browser
 from tracklab.learn.gravity import run_learn_gravity
 from tracklab.learn.rebound import run_learn_rebound
 from tracklab.learn.speed import run_learn_speed
@@ -318,6 +319,10 @@ def _cmd_learn_speed(args: argparse.Namespace) -> int:
 
 def _cmd_learn_rebound(args: argparse.Namespace) -> int:
     return run_learn_rebound(args.data_dir, args.out, check=args.check)
+
+
+def _cmd_learn_browser(args: argparse.Namespace) -> int:
+    return run_learn_browser(args.public, check=args.check)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -1209,6 +1214,23 @@ def build_parser() -> argparse.ArgumentParser:
         "instead; write nothing.",
     )
     learn_rebound.set_defaults(func=_cmd_learn_rebound)
+    learn_browser = learn_sub.add_parser(
+        "browser",
+        help='Run each lesson\'s learn/<slug>.browser.sql (the query of "Run it here") on the '
+        "published files and compare its rows with the figures the files carry (task 86).",
+    )
+    learn_browser.add_argument(
+        "--public",
+        type=Path,
+        default=Path("../web/public"),
+        help="The site's public folder, which holds data/ (default: ../web/public).",
+    )
+    learn_browser.add_argument(
+        "--check",
+        action="store_true",
+        help="Say FULL k/k when every lesson's query agrees with its files; write nothing.",
+    )
+    learn_browser.set_defaults(func=_cmd_learn_browser)
 
     build = subparsers.add_parser(
         "build",

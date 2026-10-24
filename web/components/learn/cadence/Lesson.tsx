@@ -538,7 +538,7 @@ export function Lesson({ script }: { script: string }) {
           </ul>
         </section>
 
-        <Reproduce sql={script}>
+        <Reproduce sql={script} browser="cadence">
           <p>
             The script reads the clip /pose already publishes and needs nothing but Python&apos;s standard library: no Track
             Lab code, no numpy, and the provider&apos;s match files only through the clip.

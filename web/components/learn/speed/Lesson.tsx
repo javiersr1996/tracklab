@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { qualityFigure } from "../../../lib/learn/gravity-data";
 import { SPEED, SPEED_EXAMPLE, speedFig, speedFigure } from "../../../lib/learn/speed-data";
-import { learnFile } from "../../../lib/learn/files";
 import { speedFigures, type SpeedFigures } from "../../../lib/learn/speed-figures";
 import { QUALITY } from "../../../lib/quality";
 import { Band } from "../../site/Band";
@@ -11,7 +10,6 @@ import { Formula, M } from "../Formula";
 import { LessonHead } from "../LessonHead";
 import { Limitations } from "../Limitations";
 import { Reproduce } from "../Reproduce";
-import { RunHere } from "../RunHere";
 import { ExposeFigures } from "./ExposeFigures";
 import { PerMatch } from "./PerMatch";
 import { TracePlot } from "./TracePlot";
@@ -534,15 +532,7 @@ export function Lesson({ sql }: { sql: string }) {
           </ul>
         </section>
 
-        <Reproduce
-          sql={sql}
-          run={
-            <RunHere
-              query={{ slug: "speed", files: [learnFile("/data/learn/speed.json")], views: [] }}
-              sql={"SELECT count(*) AS n FROM read_json('/data/learn/speed.json')"}
-            />
-          }
-        >
+        <Reproduce sql={sql} browser="speed">
           <p>
             The query is the comparison of the table in DuckDB, written for the public tracking file of match{" "}
             {s("example.match_id")}. It needs nothing else: no Track Lab code and no intermediate tables.

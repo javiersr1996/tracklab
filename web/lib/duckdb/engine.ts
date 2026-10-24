@@ -105,6 +105,8 @@ export interface EngineSpec {
 
 export interface Engine {
   useSnapshot: () => EngineSnapshot;
+  // The snapshot now, for an event handler that awaited `run`.
+  snapshot: () => EngineSnapshot;
   run: (sql: string) => Promise<void>;
   explain: () => Promise<void>;
   cancel: () => void;
@@ -461,6 +463,7 @@ export function createEngine(spec: EngineSpec): Engine {
 
   return {
     useSnapshot: () => useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot),
+    snapshot: getSnapshot,
     run,
     explain,
     cancel,
