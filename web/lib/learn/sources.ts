@@ -94,6 +94,56 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-24",
     quote: "the maximum speed that a player can realisitically achieve (in meters/second)",
   },
+  // Lesson 3.
+  "skillcorner-bb-coords": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/tracking_data.md, line 7",
+    short: "SkillCorner, tracking_data.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/tracking_data.md#L7",
+    read: "2026-10-24",
+    quote: "all `xyz` coordinates are in feet, origin `(0, 0)` at the center of the court.",
+  },
+  "skillcorner-bb-lefthoop": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/possessions.md, line 30",
+    short: "SkillCorner, possessions.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/possessions.md#L30",
+    read: "2026-10-24",
+    quote: "True if the offensive team is shooting at the left broadcast hoop",
+  },
+  "skillcorner-fb-coords": {
+    label: "SkillCorner, opendata at 4340d27, README.md, line 61",
+    short: "SkillCorner, opendata README",
+    url: "https://github.com/SkillCorner/opendata/blob/4340d274572876239c154c90bc507a9b3250a656/README.md#L61",
+    read: "2026-10-24",
+    quote: "For the spatial coordinates, the unit of the field modelization is the meter, the center of the coordinates is at the center of the pitch.",
+  },
+  "skillcorner-fb-bodypose": {
+    label: "SkillCorner, opendata at 4340d27, README.md, line 112",
+    short: "SkillCorner, opendata README",
+    url: "https://github.com/SkillCorner/opendata/blob/4340d274572876239c154c90bc507a9b3250a656/README.md#L112",
+    read: "2026-10-24",
+    quote: "The file is at 25 FPS, with the standard 2D XY positions interpolated to fit in the same frame rate.",
+  },
+  "nist-811-b8": {
+    label: "NIST Guide to the SI, Appendix B.8: Factors for Units Listed Alphabetically",
+    short: "NIST Guide to the SI, B.8",
+    url: "https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors/nist-guide-si-appendix-b8",
+    read: "2026-10-24",
+    quote: "Factors in boldface are exact",
+  },
+  "mathworld-affine": {
+    label: "Weisstein, Affine Transformation, MathWorld",
+    short: "MathWorld, Affine Transformation",
+    url: "https://mathworld.wolfram.com/AffineTransformation.html",
+    read: "2026-10-24",
+    quote: "An affine transformation is a transformation that preserves affine combinations of points.",
+  },
+  "mathworld-rotation": {
+    label: "Weisstein, Rotation Matrix, MathWorld",
+    short: "MathWorld, Rotation Matrix",
+    url: "https://mathworld.wolfram.com/RotationMatrix.html",
+    read: "2026-10-24",
+    quote: "proper (corresponding to pure rotation)",
+  },
 };
 
 export function sourceProblems(id: string, s: Source): string[] {

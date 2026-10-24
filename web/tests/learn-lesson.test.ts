@@ -57,32 +57,5 @@ describe("the text of lesson 1", () => {
     expect(fence.held_out.filter((id) => HTML.includes(id))).toEqual([]);
   });
 
-  // Every source in sources.ts is cited by some lesson: tests/learn-speed.test.ts checks the union.
-  it("cites only sources.ts", () => {
-    const hrefs = new Set([...HTML.matchAll(/<cite><a href="([^"]+)"/g)].map((m) => entities(m[1])));
-    const urls = Object.values(SOURCES).map((s) => s.url);
-    expect([...hrefs].filter((h) => !urls.includes(h))).toEqual([]);
-  });
-
-  // Against the provider's own file where the clone the pipeline reads is on disk (its receipt
-  // names it and the commit it was verified at); CI has no clone and skips.
-  const receiptPath = join(process.cwd(), "..", "pipeline", "data", "raw", "opendata-basketball", "_receipt.json");
-  const receipt = existsSync(receiptPath) ? (JSON.parse(readFileSync(receiptPath, "utf-8")) as { commit: string; source_path: string }) : null;
-  const dictionary = receipt ? join(receipt.source_path, "docs", "data_dictionary", "tracking_data.md") : "";
-  it.skipIf(!receipt || !existsSync(dictionary))("quotes the provider's definition of the ball's flag word for word", () => {
-    expect(receipt?.commit.startsWith("4bbed2e")).toBe(true);
-    const line42 = readFileSync(dictionary, "utf-8").split("\n")[41];
-    const q = HTML.match(/<q>(<code>1\.0<\/code>[^]*?)<\/q>/)?.[1] ?? "";
-    const quoted = text(q.replace(/<\/?code>/g, "`"));
-    expect(quoted).toBe(SOURCES["skillcorner-tracking"].quote);
-    expect(line42.startsWith("| `isDetected` |")).toBe(true);
-    expect(line42).toContain(quoted);
-  });
-
-  it("is between 1,800 and 2,300 words: its figures counted, its formulas, query and figure panels not", () => {
-    const words = text(drop(HTML, ["figure", "pre", "math"])).split(" ").filter((w) => /[A-Za-z0-9]/.test(w)).length;
-    console.log(`lesson 1: ${words} words`);
-    expect(words).toBeGreaterThanOrEqual(1800);
-    expect(words).toBeLessThanOrEqual(2300);
-  });
-});
+  // That every source is cited by some lesson is checked across the series, in
+  // tests/learn-coordinates.test.ts, now that sources.ts holds more than this lesson's.
