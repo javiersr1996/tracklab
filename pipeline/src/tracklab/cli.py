@@ -38,6 +38,7 @@ from tracklab.learn.entry_lesson import run_learn_entry
 from tracklab.learn.gravity import run_learn_gravity
 from tracklab.learn.hypotheses import run_learn_hypotheses
 from tracklab.learn.passes import run_learn_pass
+from tracklab.learn.possession import run_learn_possession
 from tracklab.learn.rebound import run_learn_rebound
 from tracklab.learn.speed import run_learn_speed
 from tracklab.load.postgres import run_load_postgres
@@ -344,6 +345,10 @@ def _cmd_learn_entry(args: argparse.Namespace) -> int:
 
 def _cmd_learn_dribble(args: argparse.Namespace) -> int:
     return run_learn_dribble(args.data_dir, args.out, args.possessions, check=args.check)
+
+
+def _cmd_learn_possession(args: argparse.Namespace) -> int:
+    return run_learn_possession(args.data_dir, args.out, check=args.check)
 
 
 def _cmd_learn_browser(args: argparse.Namespace) -> int:
@@ -1403,6 +1408,33 @@ def build_parser() -> argparse.ArgumentParser:
         "instead; write nothing.",
     )
     learn_dribble.set_defaults(func=_cmd_learn_dribble)
+    learn_possession = learn_sub.add_parser(
+        "possession",
+        help="Measure how long a team keeps the ball: runs of same-team phases in the football "
+        "matches outside the fence's held-out list, possessions in basketball, from bronze, and "
+        "write learn/possession.json (lesson 10).",
+    )
+    learn_possession.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root: bronze for the figures, the raw bundles (through their ingest receipts) "
+        "for the public SQL (default: data).",
+    )
+    learn_possession.add_argument(
+        "--out",
+        type=Path,
+        default=Path("../web/public/data/learn/possession.json"),
+        help="The lesson's file (default: ../web/public/data/learn/possession.json).",
+    )
+    learn_possession.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild the file from bronze and compare its bytes, run learn/possession.sql on the "
+        "raw files of both sports and compare it with the file: FULL n/n, or PARTIAL k/n with "
+        "what was checked instead; write nothing.",
+    )
+    learn_possession.set_defaults(func=_cmd_learn_possession)
     learn_browser = learn_sub.add_parser(
         "browser",
         help='Run each lesson\'s learn/<slug>.browser.sql (the query of "Run it here") on the '

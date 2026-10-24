@@ -39,6 +39,7 @@ LESSONS = (
     "pass",
     "entry",
     "dribble",
+    "possession",
 )
 HERE = Path(__file__).parent
 FILES_LINE = re.compile(r"^-- files: (.+)$", re.MULTILINE)
@@ -210,6 +211,25 @@ def _dribble(public: Path) -> Expected:
     return out
 
 
+def _possession(public: Path) -> Expected:
+    # The SQL's rows from the two timelines against the per-match rows the pipeline computed from
+    # bronze, and its shares beyond twice the median against numpy's on the same timelines.
+    doc = _json(public, "/data/learn/possession.json")
+    out: Expected = {}
+    for sport, fields in (
+        ("football", ("runs", "run_median_s", "run_p90_s", "multi_phase_pct")),
+        ("basketball", ("possessions", "median_s", "p90_s")),
+    ):
+        match_id = doc[sport]["timeline"]["match_id"]
+        row = next(m for m in doc[sport]["matches"] if m["match_id"] == match_id)
+        for f in fields:
+            out[f"possession.{sport}.matches.{match_id}.{f}"] = (row[f], 1e-9)
+        s = np.array([r[2] - r[1] for r in doc[sport]["timeline"]["rows"]])
+        share = 100 * float(np.mean(s > 2 * np.quantile(s, 0.5)))
+        out[f"learn.{sport[0]}b.beyond2_pct"] = (share, 0.05 + 1e-9)
+    return out
+
+
 EXPECT: dict[str, Callable[[Path], Expected]] = {
     "gravity": _gravity,
     "speed": _speed,
@@ -220,6 +240,7 @@ EXPECT: dict[str, Callable[[Path], Expected]] = {
     "pass": _pass,
     "entry": _entry,
     "dribble": _dribble,
+    "possession": _possession,
 }
 
 

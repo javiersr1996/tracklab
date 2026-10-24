@@ -378,6 +378,56 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-24",
     quote: "Every continuous ball possession by a single player (from gaining control to losing it)",
   },
+  // Lesson 10.
+  "skillcorner-possessions": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/possessions.md, line 3",
+    short: "SkillCorner, possessions.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/possessions.md#L3",
+    read: "2026-10-24",
+    quote: "A possession is the full continuous span of team control of the ball, from the moment a team gains it to the moment the other team gains it",
+  },
+  "skillcorner-possession-start": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/possessions.md, line 13",
+    short: "SkillCorner, possessions.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/possessions.md#L13",
+    read: "2026-10-24",
+    quote: "Frame (at 25fps) since the start of the video of the start of the possession.",
+  },
+  "skillcorner-fb-phases": {
+    label: "SkillCorner, opendata at 4340d27, README.md, line 128",
+    short: "SkillCorner, opendata README",
+    url: "https://github.com/SkillCorner/opendata/blob/4340d274572876239c154c90bc507a9b3250a656/README.md#L128",
+    read: "2026-10-24",
+    quote: "Each row corresponds to the start and end frames of a given phase",
+  },
+  "skillcorner-fb-phases-in-play": {
+    label: "SkillCorner, opendata at 4340d27, README.md, line 131",
+    short: "SkillCorner, opendata README",
+    url: "https://github.com/SkillCorner/opendata/blob/4340d274572876239c154c90bc507a9b3250a656/README.md#L131",
+    read: "2026-10-24",
+    quote: "Phases of play are only defined when the ball is in play. When the ball is out of play there is no phase of play",
+  },
+  "skillcorner-fb-frame": {
+    label: "SkillCorner, opendata at 4340d27, README.md, line 45",
+    short: "SkillCorner, opendata README",
+    url: "https://github.com/SkillCorner/opendata/blob/4340d274572876239c154c90bc507a9b3250a656/README.md#L45",
+    read: "2026-10-24",
+    quote: "frame: the frame of the video the data comes from at 10 fps.",
+  },
+  "nist-survival": {
+    label: "NIST/SEMATECH e-Handbook of Statistical Methods, 8.1.2.2 Reliability or survival function",
+    short: "NIST handbook, 8.1.2.2",
+    url: "https://www.itl.nist.gov/div898/handbook/apr/section1/apr122.htm",
+    read: "2026-10-25",
+    quote: "the probability a unit survives beyond time",
+  },
+  "nist-exponential": {
+    label: "NIST/SEMATECH e-Handbook of Statistical Methods, 1.3.6.6.7 Exponential Distribution",
+    short: "NIST handbook, 1.3.6.6.7",
+    url: "https://www.itl.nist.gov/div898/handbook/eda/section3/eda3667.htm",
+    read: "2026-10-25",
+    quote: "is used to model data with a constant failure rate (indicated by the hazard plot which is simply equal to a constant)",
+  },
 };
 
 export function sourceProblems(id: string, s: Source): string[] {

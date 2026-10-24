@@ -85,6 +85,14 @@ export const LESSONS: readonly Lesson[] = [
     status: "published",
     about: "Events as points in time, their intervals, matching them to the ball's height, and the height's own rhythm.",
   },
+  {
+    n: 10,
+    slug: "possession",
+    title: "How often does possession change hands?",
+    level: "Intermediate",
+    status: "published",
+    about: "Three units of possession, durations as a distribution, and a survival curve against an exponential with the same median.",
+  },
 ];
 
 export const lessonHref = (l: Lesson) => `/learn/${l.slug}`;
