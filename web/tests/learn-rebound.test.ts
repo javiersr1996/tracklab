@@ -1,3 +1,4 @@
+import { display } from "../lib/learn/display";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement, type FunctionComponent } from "react";
@@ -114,7 +115,7 @@ describe("the text of lesson 4", () => {
       const value = path.startsWith("learn.")
         ? path.slice(6).split(".").reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], F)
         : reboundFigure(REBOUND, path);
-      return value === undefined || shown !== String(value);
+      return value === undefined || shown !== display(String(value), path);
     });
     expect(wrong).toEqual([]);
   });

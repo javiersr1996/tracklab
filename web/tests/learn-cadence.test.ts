@@ -1,3 +1,4 @@
+import { display } from "../lib/learn/display";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement, type FunctionComponent } from "react";
@@ -134,7 +135,7 @@ describe("the text of lesson 5", () => {
       // The figures' own readouts (`learn.lag.k`, ...) live in their state; checked below.
       if (/^learn\.(lag|noise|player)\./.test(name)) return false;
       const value = name.startsWith("learn.") ? at(FIGURES, name.slice(6)) : publishedFigure(name);
-      return value === undefined || shown !== String(value);
+      return value === undefined || shown !== display(String(value), name);
     });
     expect(wrong).toEqual([]);
   });

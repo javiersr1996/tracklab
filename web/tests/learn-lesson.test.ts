@@ -1,3 +1,4 @@
+import { display } from "../lib/learn/display";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
@@ -46,7 +47,7 @@ describe("the text of lesson 1", () => {
       const value = path.startsWith("learn.") ? path.slice(6).split(".").reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], FIGURES) : qualityFigure(QUALITY, path);
       // The figures' own readouts (`learn.fit.g`, ...) live in their state; the vitest of task 79 checks them.
       if (value === undefined && /^learn\.(fit|window|noise)\./.test(path)) return false;
-      return value === undefined || shown !== String(value);
+      return value === undefined || shown !== display(String(value), path);
     });
     expect(wrong).toEqual([]);
   });

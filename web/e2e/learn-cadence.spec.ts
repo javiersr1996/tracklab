@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { expect as baseExpect, type Page, test } from "@playwright/test";
+import { display } from "../lib/learn/display";
 
 // Lesson 5 end to end: every `data-fig` against the published file it names or against
 // `window.__learn`, the prose without digits, and the page at a phone's width and a desktop's.
@@ -41,11 +42,11 @@ async function expectFigures(page: Page) {
       if (!learn) continue;
       fromBrowser++;
       const value = dotted(learn, name.slice(6));
-      if (value === undefined || text !== String(value)) wrong.push(`${name}: page "${text}", browser ${String(value)}`);
+      if (value === undefined || text !== display(String(value), name)) wrong.push(`${name}: page "${text}", browser ${String(value)}`);
     } else {
       fromFile++;
       const value = inFile(name);
-      if (value === undefined || text !== String(value)) wrong.push(`${name}: page "${text}", file ${String(value)}`);
+      if (value === undefined || text !== display(String(value), name)) wrong.push(`${name}: page "${text}", file ${String(value)}`);
     }
   }
   expect(wrong.slice(0, 5)).toEqual([]);

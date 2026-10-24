@@ -1,5 +1,6 @@
 import { reboundFig, type ReboundMatch } from "../../../lib/learn/rebound-data";
 import type { ReboundFigures } from "../../../lib/learn/rebound-figures";
+import { display } from "../../../lib/learn/display";
 import { Fig } from "../Fig";
 
 // One row per basketball match: how many rebounds raced, how often each rule named the player who
@@ -32,7 +33,7 @@ export function PerMatch({ matches, rate }: { matches: readonly ReboundMatch[]; 
           <tbody>
             {matches.map((m) => (
               <tr key={m.match_id} data-match={m.match_id}>
-                <td>{m.match_id}</td>
+                <td>{display(m.match_id, "match_id")}</td>
                 <td>{COUNT(m, "n")}</td>
                 <td>{COUNT(m, "model")}</td>
                 <td>{pct(m, "model")}</td>

@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { expect as baseExpect, type Page, test } from "@playwright/test";
+import { display } from "../lib/learn/display";
 
 // Lesson 4 in the browser. The figures are read back from rebound.json and from
 // `window.__learn`, never typed here.
@@ -51,7 +52,7 @@ async function expectFigures(page: Page) {
     } else value = inFile(name);
     compared++;
     if (value === undefined) wrong.push(`${name}: not in its source`);
-    else if (text !== String(value)) wrong.push(`${name}: page "${text}", source ${String(value)}`);
+    else if (text !== display(String(value), name)) wrong.push(`${name}: page "${text}", source ${String(value)}`);
   }
   expect(wrong.slice(0, 5)).toEqual([]);
   return compared;

@@ -9,7 +9,7 @@ export default function LearnPage() {
         <h1>Learn from the tracking data</h1>
         <p className="lede">
           Short lessons that each start from a question about the data, work the idea with the
-          published frames, and end with a figure per match and the query that reproduces it.
+          published frames, and end with a figure per match and the query or script that reproduces it.
         </p>
       </PageHead>
       <Band>

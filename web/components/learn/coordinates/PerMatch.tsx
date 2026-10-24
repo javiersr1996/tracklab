@@ -1,11 +1,12 @@
 import { clockFig, HOME_STEMS, type MatchCoordinates, possession, possessionFig, statsFig } from "../../../lib/learn/coordinates-data";
 import type { Sport } from "../../../lib/replay/types";
+import { display } from "../../../lib/learn/display";
 import { Fig } from "../Fig";
 
 // One row per match: how its frame clock steps, how many rows it puts in `frames`, and, where a
 // possession of it is published, the surface and the attack sign that possession carries. Every
 // figure is a `data-fig` naming its file and path; `learn.minutes.<match>` is computed from them.
-const fmt = (n: number) => n.toLocaleString("en-US");
+const fmt = (n: number) => String(n);
 const sign = (k: number) => (k > 0 ? "+1" : "−1");
 
 function Rows({ sport, rows }: { sport: Sport; rows: readonly MatchCoordinates[] }) {
@@ -21,7 +22,7 @@ function Rows({ sport, rows }: { sport: Sport; rows: readonly MatchCoordinates[]
         const p = m.stem ? possession(m.stem) : null;
         return (
           <tr key={m.match_id} data-match={m.match_id}>
-            <th scope="row">{m.match_id}</th>
+            <th scope="row">{display(m.match_id, "match_id")}</th>
             <td>
               <Fig name={clockFig(m.match_id, true)}>{fmt(m.steps)}</Fig>
             </td>

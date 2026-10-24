@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { expect as baseExpect, type Page, test } from "@playwright/test";
+import { display } from "../lib/learn/display";
 
 // Eleven workers share one server: the waits are on the page's own state, never on a clock.
 const expect = baseExpect.configure({ timeout: 20_000 });
@@ -173,12 +174,12 @@ async function expectFigures(page: Page) {
       const value = name.slice(6).split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], computed);
       fromBrowser++;
       if (value === undefined) wrong.push(`${name}: not in window.__learn`);
-      else if (text !== String(value)) wrong.push(`${name}: page "${text}", browser ${String(value)}`);
+      else if (text !== display(String(value), name)) wrong.push(`${name}: page "${text}", browser ${String(value)}`);
     } else {
       const value = inFile(name);
       fromFile++;
       if (value === undefined) wrong.push(`${name}: not in quality.json`);
-      else if (text !== String(value)) wrong.push(`${name}: page "${text}", file ${String(value)}`);
+      else if (text !== display(String(value), name)) wrong.push(`${name}: page "${text}", file ${String(value)}`);
     }
   }
   expect(wrong.slice(0, 5)).toEqual([]);

@@ -123,7 +123,7 @@ export function TracePlot({ example, shawWindow }: { example: SpeedExample; shaw
         <Fig name="learn.trace.bound">{figures.bound}</Fig>
       </p>
       <figcaption>
-        Player <Fig name="speed.example.entity_id">{example.entity_id}</Fig> through possession{" "}
+        The player through possession{" "}
         {example.possession_id.replace(/^bb:possessions:possession-/, "")} of match{" "}
         <Fig name="speed.example.match_id">{example.match_id}</Fig>. The orange line is the file&apos;s own speed; the white one is
         what the published positions give with the difference and window you choose.

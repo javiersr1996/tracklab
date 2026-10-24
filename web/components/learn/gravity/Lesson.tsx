@@ -427,7 +427,7 @@ export function Lesson({ sql }: { sql: string }) {
         <section aria-labelledby="matters-h">
           <h2 id="matters-h">Why it matters</h2>
           <p>
-            Anything computed from the ball&apos;s height in flight inherits this. Release speed and angle, hang time,
+            Anything computed from the ball&apos;s height in flight depends on it. Release speed and angle, hang time,
             the height of the arc and the angle at the rim all depend on the same heights. The entry-angle check on
             /quality shows it: the angle the bundle&apos;s own curve gives at the rim sits{" "}
             {q("summary.ranges.entry_angle_gap")}&nbsp;degrees, median per match, from the angle the geometry of the same
@@ -435,7 +435,7 @@ export function Lesson({ sql }: { sql: string }) {
             size, not random error.
           </p>
           <p>
-            The method travels beyond basketball. Wherever physics fixes a parameter, fitting it is a check that needs
+            Beyond basketball, the idea applies wherever physics fixes a parameter: fitting it is a check that needs
             no ground truth, and the residuals say how firmly the data disagree. A per-match g belongs next to anything
             derived from the ball&apos;s height, the way a calibration certificate sits next to an instrument.
           </p>

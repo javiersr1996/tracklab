@@ -1,3 +1,4 @@
+import { display } from "../lib/learn/display";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
@@ -244,7 +245,7 @@ describe("the text of lesson 3", () => {
     expect(figs.length).toBeGreaterThan(90);
     const wrong = figs.filter(([name, shown]) => {
       const value = name.startsWith("learn.") ? dig(initial, name.slice(6)) : publishedFigure(name);
-      return value === undefined || String(value) !== shown;
+      return value === undefined || normalise(display(String(value), name)) !== shown;
     });
     expect(wrong).toEqual([]);
   });

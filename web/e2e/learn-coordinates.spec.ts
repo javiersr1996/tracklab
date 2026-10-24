@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { expect as baseExpect, type Page, test } from "@playwright/test";
+import { display } from "../lib/learn/display";
 
 // Lesson 3 in the browser. The figures are read back from the files on disk and from
 // `window.__learn`, never typed here.
@@ -63,7 +64,7 @@ async function expectFigures(page: Page) {
     const value = learn ? dig(computed, name.slice(6).split(".")) : inFile(name);
     if (learn) fromBrowser++;
     else fromFile++;
-    if (value === undefined || String(value) !== normalise(text)) wrong.push(`${name}: page "${text}", source ${String(value)}`);
+    if (value === undefined || normalise(display(String(value), name)) !== normalise(text)) wrong.push(`${name}: page "${text}", source ${String(value)}`);
   }
   expect(wrong.slice(0, 5)).toEqual([]);
   return { fromFile, fromBrowser };

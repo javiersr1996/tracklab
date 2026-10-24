@@ -1,6 +1,7 @@
 import { speedFig, type SpeedMatch } from "../../../lib/learn/speed-data";
 import { qualityFigure } from "../../../lib/learn/gravity-data";
 import { QUALITY } from "../../../lib/quality";
+import { display } from "../../../lib/learn/display";
 import { Fig } from "../Fig";
 
 // One row per basketball match: the gap between the provider's speed and three differences of
@@ -36,7 +37,7 @@ export function PerMatch({ matches }: { matches: readonly SpeedMatch[] }) {
           <tbody>
             {matches.map((m) => (
               <tr key={m.match_id} data-match={m.match_id}>
-                <td>{m.match_id}</td>
+                <td>{display(m.match_id, "match_id")}</td>
                 {COLUMNS.map((c) => (
                   <td key={c.field}>
                     <Fig name={speedFig(m.match_id, c.field)}>{String(m[c.field])}</Fig>

@@ -1,3 +1,4 @@
+import { display } from "../lib/learn/display";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
@@ -140,7 +141,7 @@ describe("the text of lesson 2", () => {
         : path.startsWith("speed.")
           ? speedFigure(SPEED, path)
           : qualityFigure(QUALITY, path);
-      return value === undefined || shown !== String(value);
+      return value === undefined || shown !== display(String(value), path);
     });
     expect(wrong).toEqual([]);
   });

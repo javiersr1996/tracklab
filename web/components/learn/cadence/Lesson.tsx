@@ -468,8 +468,9 @@ export function Lesson({ script }: { script: string }) {
             <PerMatchText match={String(A.match_id)} /> <PerMatchText match={String(B.match_id)} />
           </p>
           <p>
-            In both matches the spread between players is many times the error any one of them carries, so at this precision
-            the instrument can tell them apart. It does not say why they differ, and this lesson does not ask. /pose shows the
+            In both matches the spread between players is many times the error any one of them carries, so the error
+            the joints carry does not hide the difference between players. That is the sd of the joints&apos; predicted error
+            only, not the variation of one player between windows (see Limitations). It does not say why they differ, and this lesson does not ask. /pose shows the
             rule the protocol froze around this comparison before the second match was read, and how that match met it.
           </p>
         </section>
@@ -484,7 +485,7 @@ export function Lesson({ script }: { script: string }) {
             is.
           </p>
           <p>
-            The method travels. Anything that repeats, a stride, an arm swing, a bounce of the ball, can be read from the
+            The same steps work elsewhere. Anything that repeats, a stride, an arm swing, a bounce of the ball, can be read from the
             first peak of its autocorrelation, checked against the white-noise band and refined with a parabola. Anything
             computed from inputs with a stated error can carry that error forward by Monte Carlo when the formula is not to
             be trusted, and the formula itself says, by how far it falls short, how nonlinear the step was.

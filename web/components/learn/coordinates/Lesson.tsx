@@ -224,13 +224,13 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             The pitch needs no unit step. Neither possession needs a turn either: in both, the team with the ball
             already attacks towards +x, so its sign is {plusOne}. That is a coincidence of these two possessions, not a
-            rule. Turn the frame for the other team and {minusOne}. Then try the mirror and follow player {jersey(BB, 0)} of
+            rule. Turn the frame for the other team and {minusOne}. Then try the mirror and follow number {jersey(BB, 0)} of
             the team with the ball: the turn moves him from the top half of the picture to the bottom and keeps him on
             the same side of his own team&apos;s attack; the mirror leaves him at the top and so on the wrong side of it.
           </p>
           <p>
             The centred origin is what makes the turn a plain multiplication. Measure the pitch from a corner instead
-            and player {jersey(FB, 1)} of the football frame sits at ({l("corner.point.0")}, {l("corner.point.1")}). Multiply
+            and number {jersey(FB, 1)} of the football frame sits at ({l("corner.point.0")}, {l("corner.point.1")}). Multiply
             that by minus one and you get ({l("corner.negated.0")}, {l("corner.negated.1")}), off the pitch altogether.
             Half a turn about the centre is now the pitch&apos;s length and width minus the point:
           </p>
@@ -455,7 +455,7 @@ export function Lesson({ sql }: { sql: string }) {
           <h2 id="try-h">Try it yourself</h2>
           <ul>
             <li>
-              In the first figure, pick the mirror and then the turn for the other team, and follow player {jersey(BB, 0)}.
+              In the first figure, pick the mirror and then the turn for the other team, and follow number {jersey(BB, 0)} of the team with the ball.
               Which one would a coach accept as the same play seen from the other bench?
             </li>
             <li>

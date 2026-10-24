@@ -1,5 +1,6 @@
 import type { MatchGravity } from "../../../lib/learn/gravity-data";
 import { gravityFig } from "../../../lib/learn/gravity-data";
+import { display } from "../../../lib/learn/display";
 import { Fig } from "../Fig";
 import { INK, ticks } from "./Plot";
 
@@ -43,7 +44,7 @@ export function PerMatch({ matches, g }: { matches: readonly MatchGravity[]; g: 
           <tbody>
             {rows.map((r) => (
               <tr key={r.match_id} data-match={r.match_id}>
-                <td>{r.match_id}</td>
+                <td>{display(r.match_id, "match_id")}</td>
                 <td className="per-match-strip">
                   <svg viewBox={`0 0 ${STRIP_W} ${STRIP_H}`} preserveAspectRatio="none" aria-hidden="true">
                     <line x1={sx(g)} x2={sx(g)} y1={0} y2={STRIP_H} stroke={INK.standard} strokeWidth={2} vectorEffect="non-scaling-stroke" />
