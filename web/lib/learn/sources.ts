@@ -92,7 +92,7 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     short: "Shaw, line 28",
     url: "https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking/blob/7ed3ff857940d3f4611be55f3c08c79525c32171/Metrica_Velocities.py#L28",
     read: "2026-10-24",
-    quote: "the maximum speed that a player can realisitically achieve (in meters/second)",
+    quote: "the maximum speed that a player can realisitically [sic] achieve (in meters/second)",
   },
   // Lesson 3.
   "skillcorner-bb-coords": {
@@ -146,21 +146,28 @@ export const SOURCES: Readonly<Record<string, Source>> = {
   },
   // Lesson 4. The conference's own link to Spearman's paper (sloansportsconference.com/wp-content/
   // uploads/2018/02/2002.pdf, the one Shaw's code gives) answered 404 on 2026-10-24; the copy read
-  // is the conference PDF its author uploaded to ResearchGate, kept in a public repository at a
-  // fixed commit.
+  // is the PDF its author uploaded to ResearchGate on 21 Aug 2018, served from a third party's
+  // public repository at a fixed commit.
   "spearman-2018": {
-    label: "Spearman, Beyond Expected Goals, MIT Sloan Sports Analytics Conference 2018, section 3.1.1, page 6 (copy in eddwebster/football_analytics at 3df8b32)",
+    label: "Spearman, Beyond Expected Goals, MIT Sloan Sports Analytics Conference 2018, section 3.1.1, page 6 (the PDF its author uploaded to ResearchGate, 21 Aug 2018, read from a third-party copy in eddwebster/football_analytics at 3df8b32 because the Sloan URL gives 404)",
     short: "Spearman, 2018",
     url: "https://github.com/eddwebster/football_analytics/blob/3df8b32f02f33382004d06bb5c15a2b08d79af0e/research/papers/%5B2018%5D%20Beyond%20Expected%20Goals%20-%20William%20Spearman.pdf#page=7",
     read: "2026-10-24",
     quote: "we choose the logistic over the normal because of its heavier tails",
   },
   "spearman-2018-table": {
-    label: "Spearman, Beyond Expected Goals, MIT Sloan Sports Analytics Conference 2018, Table 1, page 10 (same copy)",
+    label: "Spearman, Beyond Expected Goals, MIT Sloan Sports Analytics Conference 2018, Table 1, page 10 (same ResearchGate PDF, same third-party copy)",
     short: "Spearman, 2018, Table 1",
     url: "https://github.com/eddwebster/football_analytics/blob/3df8b32f02f33382004d06bb5c15a2b08d79af0e/research/papers/%5B2018%5D%20Beyond%20Expected%20Goals%20-%20William%20Spearman.pdf#page=11",
     read: "2026-10-24",
     quote: "Temporal uncertainty on player-ball intercept time.",
+  },
+  "shaw-sigma": {
+    label: "Shaw, LaurieOnTracking at 7ed3ff8, Metrica_PitchControl.py, line 191",
+    short: "Shaw, line 191",
+    url: "https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking/blob/7ed3ff857940d3f4611be55f3c08c79525c32171/Metrica_PitchControl.py#L191",
+    read: "2026-10-24",
+    quote: "params['tti_sigma'] = 0.45",
   },
   "shaw-tti": {
     label: "Shaw, LaurieOnTracking at 7ed3ff8, Metrica_PitchControl.py, lines 155 to 158",

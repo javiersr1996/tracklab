@@ -23,17 +23,17 @@ const REPRO = EX.match_id;
 const m = (field: string) => <Fig name={reboundFig(REPRO, field)}>{String(reboundFigure(REBOUND, reboundFig(REPRO, field)))}</Fig>;
 const NATIVE = REPRO.replace(/^bb:/, "");
 
-// A player of the example as the text names them: their side, then the shirt from the file;
+// A player of the example as the text names them: the shirt from the file, then the side;
 // `Who` opens a sentence.
-const side = (i: number) => (EX.players[i].team === "defending" ? "defender" : "attacker");
+const side = (i: number) => (EX.players[i].team === "defending" ? "defence" : "attack");
 const who = (i: number) => (
   <>
-    {side(i)} {r(`example.players.${i}.jersey`)}
+    number {r(`example.players.${i}.jersey`)} of the {side(i)}
   </>
 );
 const Who = (i: number) => (
   <>
-    {side(i).replace(/^./, (c) => c.toUpperCase())} {r(`example.players.${i}.jersey`)}
+    Number {r(`example.players.${i}.jersey`)} of the {side(i)}
   </>
 );
 const AT = raceAt(REBOUND, REBOUND.reaction_s, REBOUND.top_speed);
@@ -78,9 +78,9 @@ export function Lesson({ sql }: { sql: string }) {
       <LessonHead n={4} title="Who gets to the rebound first?" level="Intermediate">
         <p className="lede">
           When a shot misses, ten players go for the ball. Freeze them at the end of the shot, give each a reaction time and a
-          top speed, and the player who would arrive first is the one who took the rebound in {l("model_lo")} to{" "}
-          {l("model_hi")}&nbsp;% of rebounds, match by match. The player standing nearest, with no model at all, took it in{" "}
-          {l("near_lo")} to {l("near_hi")}&nbsp;%.
+          top speed, and ask who would be first to the place where the rebounder was standing when he took it. That player is
+          the rebounder in {l("model_lo")} to {l("model_hi")}&nbsp;% of rebounds, match by match. The player standing nearest
+          to that place, with no model at all, is the rebounder in {l("near_lo")} to {l("near_hi")}&nbsp;%.
         </p>
       </LessonHead>
       <Band>
@@ -196,7 +196,8 @@ export function Lesson({ sql }: { sql: string }) {
             where <M><mi>s</mi></M> is the standard deviation of the arrival time. Spearman fitted it at {r("spread_s")}
             &nbsp;s, the parameter his first table describes as <Quote id="spearman-2018-table" /> (
             <Cite id="spearman-2018-table" />
-            ). If the arrivals are independent, the chance that <M><mi>i</mi></M> is first is the chance of arriving at some{" "}
+            ). Shaw&apos;s code uses another value, <Quote id="shaw-sigma" /> (<Cite id="shaw-sigma" />); this lesson keeps
+            Spearman&apos;s own. If the arrivals are independent, the chance that <M><mi>i</mi></M> is first is the chance of arriving at some{" "}
             <M><mi>t</mi></M> while nobody else has:
           </p>
           <Formula label="The chance that player i arrives first">
@@ -275,8 +276,8 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             The model&apos;s first took the rebound in {l("model_lo")} to {l("model_hi")}&nbsp;% of them, match by match; the
             nearest player in {l("near_lo")} to {l("near_hi")}&nbsp;%. The model names the player who took it more often in{" "}
-            {l("ahead")} of {l("matches")} matches, as often in {l("level")} and less often in {l("behind")}, by {l("diff_lo")}{" "}
-            to {l("diff_hi")} rebounds per match. For scale, a name drawn at random from the {r("players")} on court would be
+            {l("ahead")} of {l("matches")} matches, as often in {l("level")}, and in {l("behind")} matches less often. Match by match the
+            difference is {l("diff_lo")} to {l("diff_hi")} rebounds. For scale, a name drawn at random from the {r("players")} on court would be
             right one time in {r("players")}.
           </p>
           <p>
@@ -305,13 +306,15 @@ export function Lesson({ sql }: { sql: string }) {
           <h2 id="matters-h">Why it matters</h2>
           <p>
             Times to arrive with a logistic spread are the building block of Spearman&apos;s model of who wins the ball, and of
-            the many models of space and control that followed it. Whatever is built on them inherits how well they put players
+            the many models of space and control that followed it. Whatever is built on them depends on how well they put players
             in order, so it is worth measuring that order directly, on events whose outcome is known.
           </p>
           <p>
-            The nearest player is the baseline to beat. A model that needs velocities, a reaction time and a top speed has to be
-            set beside the rule that needs none, on the same rebounds, match by match, and reported with the size of the
-            difference. Here the one term that separates them moves a handful of rebounds per match.
+            A model that needs velocities, a reaction time and a top speed should be set beside the rule that needs none, on the
+            same rebounds, match by match, and reported with the size of the difference. Here the one term that separates them
+            moves a handful of rebounds per match. The count does not show that the model reads the ball better than the
+            nearest rule does: the place it races to is where the rebounder ended up, so the reaction term favours a player
+            who was already heading for his final spot.
           </p>
           <p>
             A model&apos;s chances are forecasts, and forecasts can be checked the same way: on these files the chance the model
@@ -322,8 +325,12 @@ export function Lesson({ sql }: { sql: string }) {
         <Limitations>
           <ul>
             <li>
-              The target is the provider&apos;s location of the rebound, which is where the player who took it stood. The race is
-              run to a point known only afterwards; where the ball came down, and when, is not modelled.
+              The target is where the player who took the rebound stood when he took it, which is after the shot ended: the
+              provider&apos;s dictionary says <Quote id="skillcorner-rebound-location" /> (
+              <Cite id="skillcorner-rebound-location" />
+              ). The race is run to a point known only afterwards, so the reaction
+              term favours a player already moving towards his final spot, and the count cannot show that the model reads the
+              ball better than the nearest rule. Where the ball came down, and when, is not modelled.
             </li>
             <li>
               One frame decides everything: positions and velocities at the end of the shot. What happens next, contact,
