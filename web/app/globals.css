@@ -1368,6 +1368,12 @@ a.wordmark:hover {
   min-width: 5.5rem;
 }
 
+/* The limits of a sum sit beside it at the 16 px floor, not at the formula's size. */
+.learn-speed .formula .sum-limits > :nth-child(n + 2),
+.learn-speed .formula .sum-limits > :nth-child(n + 2) * {
+  font-size: var(--step-0);
+}
+
 /* A table of rows inside a formula is compact by default, which puts a sum's limits beside it. */
 .learn-speed .formula mtd {
   math-style: normal;

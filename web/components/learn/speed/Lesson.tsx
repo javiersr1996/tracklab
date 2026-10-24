@@ -23,7 +23,6 @@ const l = (key: keyof SpeedFigures) => <Fig name={`learn.${key}`}>{F[key]}</Fig>
 const s = (path: string) => <Fig name={`speed.${path}`}>{String(speedFigure(SPEED, `speed.${path}`))}</Fig>;
 const q = (path: string) => <Fig name={path}>{String(qualityFigure(QUALITY, path))}</Fig>;
 const m = (match_id: string, field: string) => <Fig name={speedFig(match_id, field)}>{String(speedFigure(SPEED, speedFig(match_id, field)))}</Fig>;
-const OVER = SPEED.matches.filter((r) => r.over_max > 0);
 const REPRO = SPEED.example.match_id;
 
 const sub = (x: string, i: ReactNode) => (
@@ -79,7 +78,7 @@ export function Lesson({ sql }: { sql: string }) {
         <p className="lede">
           SkillCorner&apos;s basketball files give every player a speed in every frame, next to the position. Put it beside
           the simplest centred difference of the same positions and the two agree to within {l("gap_lo")} to{" "}
-          {l("gap_hi")}&nbsp;m/s, median per match. The field is the positions again, differentiated.
+          {l("gap_hi")}&nbsp;m/s, median per match. The field behaves like the positions again, differentiated.
         </p>
       </LessonHead>
       <Band>
@@ -92,7 +91,7 @@ export function Lesson({ sql }: { sql: string }) {
             out from them: how far the player moved between two frames, over the time between them.
           </p>
           <p>
-            So is the field a second measurement, taken some other way, or the positions again, differentiated? The answer
+            So is the field a second measurement, taken some other way, or something that behaves like the positions again, differentiated? The answer
             matters to anyone who checks one with the other. A field computed from the positions cannot confirm them. This
             lesson builds the three simplest estimates of speed from positions, sizes their errors, and puts each beside the
             field, match by match.
@@ -314,7 +313,7 @@ export function Lesson({ sql }: { sql: string }) {
                 <mtd>
             <mrow>
               {frac(<mn>1</mn>, <mi>k</mi>)}
-              <munderover>
+              <msubsup className="sum-limits">
                 <mo>∑</mo>
                 <mrow>
                   <mi>j</mi>
@@ -323,7 +322,7 @@ export function Lesson({ sql }: { sql: string }) {
                   <mi>m</mi>
                 </mrow>
                 <mi>m</mi>
-              </munderover>
+              </msubsup>
               {frac(
                 <>
                   {xn(<><mo>+</mo><mi>j</mi><mo>+</mo><mn>1</mn></>)}
@@ -391,10 +390,10 @@ export function Lesson({ sql }: { sql: string }) {
         <section aria-labelledby="example-h">
           <h2 id="example-h">One player, one possession</h2>
           <p>
-            Take player {s("example.entity_id")} through one of the possessions the <a href="/replay">replay</a> shows,
+            Take one player through one of the possessions the <a href="/replay">replay</a> shows,
             in match {s("example.match_id")}: {l("frames")} frames, {l("duration_s")}&nbsp;s, with the player in every one.
             The fastest the file has the player going is {l("peak")}&nbsp;m/s. The positions are the published ones, at
-            the centimetre; the speed is the file&apos;s own field, converted to metres.
+            the centimetre; the speed is the file&apos;s own field, converted to metres per second.
           </p>
           <TracePlot example={SPEED_EXAMPLE} shawWindow={SPEED.shaw_window} />
           <p>
@@ -475,13 +474,13 @@ export function Lesson({ sql }: { sql: string }) {
         <section aria-labelledby="matters-h">
           <h2 id="matters-h">Why it matters</h2>
           <p>
-            The field is not a second witness. Comparing it with the positions tests whether the file agrees with itself,
+            The field behaves like the positions again, not like a second witness. Comparing it with the positions tests whether the file agrees with itself,
             not whether the player was where the file says. A pipeline that validates positions against speed, or the
             other way round, learns about the provider&apos;s arithmetic.
           </p>
           <p>
-            Every count built on speed inherits a recipe: time above a threshold, sprints, top speeds. Counted from the
-            field it inherits the provider&apos;s smoothing; from your own differences, yours. Shaw&apos;s recipe on these
+            Every count built on speed rests on a recipe: time above a threshold, sprints, top speeds. Counted from the
+            field it takes the provider&apos;s smoothing; from your own differences, yours. Shaw&apos;s recipe on these
             files lands {l("shaw_lo")} to {l("shaw_hi")}&nbsp;m/s from the field, median per match. That is small at the
             median; this lesson does not measure how the two part in the tails, where thresholds sit. Pick one recipe and
             keep it through an analysis, and say which.
@@ -493,16 +492,7 @@ export function Lesson({ sql }: { sql: string }) {
             <li>
               The field passes Shaw&apos;s limit of {s("max_speed")}&nbsp;m/s, <Quote id="shaw-maxspeed" /> (
               <Cite id="shaw-maxspeed" />), in {l("over_matches")} of {l("matches")} matches, in {l("over_rows")} of{" "}
-              {l("all_rows")} player rows. The lesson gives these as figures and does not ask what produces them:
-              <ul>
-                {OVER.map((r) => (
-                  <li key={r.match_id}>
-                    {m(r.match_id, "match_id")}: over the limit in {m(r.match_id, "over_max")} of {m(r.match_id, "rows")}{" "}
-                    rows, the largest {m(r.match_id, "max_speed")}&nbsp;m/s; within triples, {m(r.match_id, "over_max_triples")}{" "}
-                    of {m(r.match_id, "triples")}, the largest {m(r.match_id, "max_speed_triples")}&nbsp;m/s.
-                  </li>
-                ))}
-              </ul>
+              {l("all_rows")} player rows. The lesson gives these as counts and does not ask what produces them.
             </li>
             <li>Players only: the ball also has a speed field, and it is not compared here.</li>
             <li>The football files give players a position and no speed, so the comparison is basketball only.</li>

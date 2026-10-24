@@ -12,7 +12,7 @@ filter on any flag), and writes `web/public/data/learn/speed.json`:
   central differences, for each `k` of `WINDOWS`, and of Shaw's recipe (backward difference,
   Savitzky-Golay of window 7 and order 1, which is a moving average of 7, after dropping any
   raw speed over 12 m/s);
-- the largest `speed` and how many rows pass 12 m/s, over all rows and over triples;
+- how many rows have a `speed` over 12 m/s;
 - the example: the provider's speed of `bb:59191` over the 341 frames of the published
   possession 114099-1-41 (whose positions are published at 1 cm), and the gap of the central
   difference at full precision over its inner frames.
@@ -166,10 +166,7 @@ def match_figures(t: Track) -> dict[str, Any]:
         "p99_gap": round(float(np.quantile(gap, 0.99)), 3),
         "median_gap_forward": round(median_gap(s3, estimate(t, triple, FORWARD)), 4),
         "median_gap_backward": round(median_gap(s3, estimate(t, triple, BACKWARD)), 4),
-        "max_speed": round(float(t.speed.max()), 2),
-        "max_speed_triples": round(float(s3.max()), 2),
         "over_max": int((t.speed > MAX_SPEED).sum()),
-        "over_max_triples": int((s3 > MAX_SPEED).sum()),
         "window_rows": len(wide),
         "by_window": {
             str(k): round(median_gap(t.speed[wide], estimate(t, wide, smoothed(CENTRAL, k))), 4)
@@ -394,10 +391,7 @@ FIELDS = {
     "p99_gap",
     "median_gap_forward",
     "median_gap_backward",
-    "max_speed",
-    "max_speed_triples",
     "over_max",
-    "over_max_triples",
     "window_rows",
     "by_window",
     "shaw_rows",

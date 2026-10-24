@@ -245,7 +245,7 @@ def test_shaw_drops_the_window_around_a_jump_and_its_mutation_is_caught(
     # The backward speed is over 12 at frames 150 and 151, so Shaw's window of 7 loses the rows
     # from 147 to 154.
     assert fig["window_rows"] - fig["shaw_rows"] == 8
-    assert fig["over_max"] == 1 and fig["max_speed"] == 13.0
+    assert fig["over_max"] == 1
 
     monkeypatch.setattr(sp, "shaw_rows", lambda t, rows: rows)
     assert sp.match_figures(_track(rows))["shaw_rows"] == fig["window_rows"]

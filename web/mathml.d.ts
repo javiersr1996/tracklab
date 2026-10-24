@@ -14,6 +14,7 @@ declare module "react" {
       mtext: MathElement;
       msub: MathElement;
       msup: MathElement;
+      msubsup: MathElement;
       mfrac: MathElement;
       msqrt: MathElement;
       mtable: MathElement;

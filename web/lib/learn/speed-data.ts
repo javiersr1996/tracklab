@@ -13,10 +13,7 @@ export interface SpeedMatch {
   p99_gap: number;
   median_gap_forward: number;
   median_gap_backward: number;
-  max_speed: number;
-  max_speed_triples: number;
   over_max: number;
-  over_max_triples: number;
   window_rows: number;
   by_window: Record<string, number>;
   shaw_rows: number;

@@ -27,7 +27,7 @@ export const LESSONS: readonly Lesson[] = [
     title: "Where does the provider's speed come from?",
     level: "Foundations",
     status: "published",
-    about: "Finite differences, noise and a moving average, and a speed field derived from its own positions.",
+    about: "Finite differences, noise and a moving average, and a speed field that behaves like its own positions, differentiated.",
   },
   {
     n: 3,
