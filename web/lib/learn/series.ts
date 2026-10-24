@@ -42,7 +42,7 @@ export const LESSONS: readonly Lesson[] = [
     slug: "rebound",
     title: "Who gets to the rebound first?",
     level: "Intermediate",
-    status: "in-preparation",
+    status: "published",
     about: "A kinematic time to arrive and a logistic model of who wins the ball.",
   },
   {

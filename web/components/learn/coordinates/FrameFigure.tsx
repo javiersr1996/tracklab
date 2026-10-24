@@ -68,7 +68,7 @@ function arcPath(p: Extract<Primitive, { kind: "arc" }>): string {
   return `M${at(p.start)}A${p.r} ${p.r} 0 ${large} 0 ${at(p.end)}`;
 }
 
-function Marking({ p }: { p: Primitive }) {
+export function Marking({ p }: { p: Primitive }) {
   const common = { fill: "none", stroke: MARKS.surface, strokeWidth: 1.5, vectorEffect: "non-scaling-stroke" } as const;
   switch (p.kind) {
     case "line":

@@ -144,6 +144,59 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-24",
     quote: "proper (corresponding to pure rotation)",
   },
+  // Lesson 4. The conference's own link to Spearman's paper (sloansportsconference.com/wp-content/
+  // uploads/2018/02/2002.pdf, the one Shaw's code gives) answered 404 on 2026-10-24; the copy read
+  // is the conference PDF its author uploaded to ResearchGate, kept in a public repository at a
+  // fixed commit.
+  "spearman-2018": {
+    label: "Spearman, Beyond Expected Goals, MIT Sloan Sports Analytics Conference 2018, section 3.1.1, page 6 (copy in eddwebster/football_analytics at 3df8b32)",
+    short: "Spearman, 2018",
+    url: "https://github.com/eddwebster/football_analytics/blob/3df8b32f02f33382004d06bb5c15a2b08d79af0e/research/papers/%5B2018%5D%20Beyond%20Expected%20Goals%20-%20William%20Spearman.pdf#page=7",
+    read: "2026-10-24",
+    quote: "we choose the logistic over the normal because of its heavier tails",
+  },
+  "spearman-2018-table": {
+    label: "Spearman, Beyond Expected Goals, MIT Sloan Sports Analytics Conference 2018, Table 1, page 10 (same copy)",
+    short: "Spearman, 2018, Table 1",
+    url: "https://github.com/eddwebster/football_analytics/blob/3df8b32f02f33382004d06bb5c15a2b08d79af0e/research/papers/%5B2018%5D%20Beyond%20Expected%20Goals%20-%20William%20Spearman.pdf#page=11",
+    read: "2026-10-24",
+    quote: "Temporal uncertainty on player-ball intercept time.",
+  },
+  "shaw-tti": {
+    label: "Shaw, LaurieOnTracking at 7ed3ff8, Metrica_PitchControl.py, lines 155 to 158",
+    short: "Shaw, Metrica_PitchControl.py",
+    url: "https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking/blob/7ed3ff857940d3f4611be55f3c08c79525c32171/Metrica_PitchControl.py#L155-L158",
+    read: "2026-10-24",
+    quote: "Time to intercept assumes that the player continues moving at current velocity for 'reaction_time' seconds",
+  },
+  "shaw-reaction": {
+    label: "Shaw, LaurieOnTracking at 7ed3ff8, Metrica_PitchControl.py, line 190",
+    short: "Shaw, line 190",
+    url: "https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking/blob/7ed3ff857940d3f4611be55f3c08c79525c32171/Metrica_PitchControl.py#L190",
+    read: "2026-10-24",
+    quote: "`params['reaction_time'] = 0.7 # seconds, time taken for player to react and change trajectory. Roughly determined as vmax/amax`",
+  },
+  "shaw-top-speed": {
+    label: "Shaw, LaurieOnTracking at 7ed3ff8, Metrica_PitchControl.py, line 189",
+    short: "Shaw, line 189",
+    url: "https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking/blob/7ed3ff857940d3f4611be55f3c08c79525c32171/Metrica_PitchControl.py#L189",
+    read: "2026-10-24",
+    quote: "`params['max_player_speed'] = 5. # maximum player speed m/s`",
+  },
+  "skillcorner-rebound-location": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/rebounds.md, line 24",
+    short: "SkillCorner, rebounds.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/rebounds.md#L24",
+    read: "2026-10-24",
+    quote: "x, y coordinate of the rebounder.",
+  },
+  "skillcorner-shot-end": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/shots.md, line 18",
+    short: "SkillCorner, shots.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/shots.md#L18",
+    read: "2026-10-24",
+    quote: "Frame (at 25fps) since the start of the video of the end of the shot.",
+  },
   // Lesson 5.
   "skillcorner-bodypose": {
     label: "SkillCorner, opendata-bodypose at a62e1ec, README.md, lines 94 and 95",

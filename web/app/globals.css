@@ -1467,3 +1467,105 @@ a.wordmark:hover {
 .learn-cadence .learn-cadence-table td:nth-child(2) {
   text-align: right;
 }
+
+/* Lesson 4 (/learn/rebound). The race figure keeps the half court's own aspect ratio, so the
+   circles stay round; on a wide screen the court and its controls and table sit side by side. */
+.learn-rebound-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+@media (min-width: 64rem) {
+  .learn-rebound-layout {
+    grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.learn-rebound-court {
+  max-width: 30rem;
+  padding: var(--space-3);
+  background: var(--canvas);
+  border-radius: var(--radius);
+}
+
+.learn-rebound-court svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.learn-rebound-side .controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  margin-top: 0;
+}
+
+.learn-rebound-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.learn-rebound .learn-swatch-dot.learn-rebound-ring {
+  background: transparent;
+  border: 2px solid currentColor;
+}
+
+.learn-rebound .learn-swatch-dot.learn-rebound-ring-dashed {
+  border-style: dashed;
+}
+
+.learn-rebound-cross {
+  display: inline-block;
+  width: 1.5rem;
+  margin-right: var(--space-2);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Both tables: figures right-aligned past the first column (the shared rule leaves the second
+   column left-aligned); the race table's headers wrap and its notes sit under the player, so it fits a phone. */
+.table-scroll .learn-rebound-table th,
+.table-scroll .learn-rebound-table td,
+.table-scroll .learn-rebound-matches th,
+.table-scroll .learn-rebound-matches td {
+  text-align: right;
+}
+
+.table-scroll .learn-rebound-table th:first-child,
+.table-scroll .learn-rebound-matches th:first-child,
+.table-scroll .learn-rebound-matches td:first-child {
+  text-align: left;
+}
+
+.learn-rebound .learn-rebound-table thead th {
+  white-space: normal;
+  vertical-align: bottom;
+}
+
+.learn-rebound .learn-rebound-table th,
+.learn-rebound .learn-rebound-table td {
+  padding-right: var(--space-2);
+  padding-left: var(--space-2);
+}
+
+.learn-rebound .learn-rebound-table tbody th {
+  min-width: 6.5rem;
+  white-space: normal;
+}
+
+.learn-rebound-note {
+  display: block;
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+.learn-rebound .learn-rebound-matches th {
+  white-space: normal;
+  vertical-align: bottom;
+  min-width: 5rem;
+}

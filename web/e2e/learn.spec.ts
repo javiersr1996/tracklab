@@ -31,22 +31,21 @@ async function transferred(page: Page, path: string) {
   return bytes;
 }
 
-test("the index links the published lessons, lists the next one without a link and none from after", async ({ page }) => {
+test("the index links the five published lessons, none in preparation and none from after", async ({ page }) => {
   const bytes = await transferred(page, "/learn");
   console.log(`/learn: ${bytes} bytes transferred`);
   expect(bytes).toBeLessThan(400_000);
 
   const published = page.locator('[data-status="published"]');
-  await expect(published).toHaveCount(4);
+  await expect(published).toHaveCount(5);
   await expect(published.getByRole("link", { name: "Does the ball obey gravity?" })).toHaveAttribute("href", "/learn/gravity");
   await expect(published.getByRole("link", { name: "Where does the provider's speed come from?" })).toHaveAttribute("href", "/learn/speed");
   await expect(published.getByRole("link", { name: "Can a court and a pitch share one table?" })).toHaveAttribute("href", "/learn/coordinates");
+  await expect(published.getByRole("link", { name: "Who gets to the rebound first?" })).toHaveAttribute("href", "/learn/rebound");
   await expect(published.getByRole("link", { name: "How many steps per second?" })).toHaveAttribute("href", "/learn/cadence");
 
-  const pending = page.locator('[data-status="in-preparation"]');
-  await expect(pending).toHaveCount(1);
-  await expect(pending.locator("a")).toHaveCount(0);
-  await expect(pending.first()).toContainText("In preparation");
+  await expect(page.locator('[data-status="in-preparation"]')).toHaveCount(0);
+  await expect(page.getByText("In preparation")).toHaveCount(0);
 
   // Lessons 6 and 7 come after the fence: the series stops at 5.
   const numbers = await page.locator("[data-series-n]").evaluateAll((els) => els.map((e) => Number(e.getAttribute("data-series-n"))));
