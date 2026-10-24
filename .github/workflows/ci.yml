@@ -58,6 +58,11 @@ jobs:
       - run: uv run dbt parse --project-dir dbt --profiles-dir dbt
       - run: uv run tracklab build --select "group:silver or group:gold"
       - run: uv run tracklab publish lineage --check
+      # Task 82: lesson 1's public SQL. The fixtures hold no basketball raw, so it prints PARTIAL
+      # 0/10 and what it verified (the SQL names its match id twice, quality.json holds ten
+      # matches); the synthetic match that runs the SQL is in the pytest below, and full-build.yml
+      # runs it over the ten real matches (FULL 10/10) against web/public/data/quality.json.
+      - run: uv run tracklab learn gravity --check
       # Task 54: P5's versioned reports and runs.json against the fixtures. A slice of the
       # warehouse cannot recompute the figures, so each prints PARTIAL and what it verified
       # (the seal, the protocol, the match list, the clips by size and hash); full-build.yml
