@@ -1128,3 +1128,49 @@ a.wordmark:hover {
 .pose .pose-stages code {
   overflow-wrap: anywhere;
 }
+
+/* Learn: the index of the series and the pieces every lesson shares. */
+.lesson-meta {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: var(--tracking-button);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.lessons {
+  display: grid;
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lessons li {
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--rule);
+}
+
+.lessons h2 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step-h3);
+}
+
+.lesson-status,
+.lesson-draft {
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+/* MathML shrinks scripts below the floor; every element in a formula keeps the formula's size. */
+.formula {
+  overflow-x: auto;
+  margin: 0 0 var(--space-4);
+}
+
+.formula math,
+.formula math * {
+  font-size: var(--step-2);
+  math-depth: 0;
+}
