@@ -31,6 +31,9 @@ from tracklab.formats.football_report import freeze_football
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
+from tracklab.learn.gravity import run_learn_gravity
+from tracklab.learn.rebound import run_learn_rebound
+from tracklab.learn.speed import run_learn_speed
 from tracklab.load.postgres import run_load_postgres
 from tracklab.paths import data_root
 from tracklab.pose.coverage import run_pose_coverage
@@ -303,6 +306,18 @@ def _cmd_runs_effect(args: argparse.Namespace) -> int:
 
 def _cmd_runs_freeze(args: argparse.Namespace) -> int:
     return run_runs_freeze(args.reports_dir, date=args.date)
+
+
+def _cmd_learn_gravity(args: argparse.Namespace) -> int:
+    return run_learn_gravity(args.data_dir, args.quality, check=args.check)
+
+
+def _cmd_learn_speed(args: argparse.Namespace) -> int:
+    return run_learn_speed(args.data_dir, args.out, args.possessions, check=args.check)
+
+
+def _cmd_learn_rebound(args: argparse.Namespace) -> int:
+    return run_learn_rebound(args.data_dir, args.out, check=args.check)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -1106,6 +1121,94 @@ def build_parser() -> argparse.ArgumentParser:
         help="The date of the frozen history entry (default: today).",
     )
     runs_freeze.set_defaults(func=_cmd_runs_freeze)
+
+    learn = subparsers.add_parser("learn", help="P8: the checks behind the /learn lessons.")
+    learn_sub = learn.add_subparsers(dest="learn_command", required=True)
+    learn_gravity = learn_sub.add_parser(
+        "gravity",
+        help="Run learn/gravity.sql on the public basketball files of each match of quality.json "
+        "and print its flights and median g next to the published ones.",
+    )
+    learn_gravity.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; the basketball bundle is found through its ingest receipt "
+        "(default: data).",
+    )
+    learn_gravity.add_argument(
+        "--quality",
+        type=Path,
+        default=Path("../web/public/data/quality.json"),
+        help="The published quality file (default: ../web/public/data/quality.json).",
+    )
+    learn_gravity.add_argument(
+        "--check",
+        action="store_true",
+        help="Compare with quality.json and say how many matches were recomputed: FULL n/n, or "
+        "PARTIAL k/n with what was checked instead; write nothing.",
+    )
+    learn_gravity.set_defaults(func=_cmd_learn_gravity)
+    learn_speed = learn_sub.add_parser(
+        "speed",
+        help="Put the players' speed field next to finite differences of their positions, match "
+        "by match, from bronze, and write learn/speed.json (lesson 2).",
+    )
+    learn_speed.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root: bronze for the figures, the raw bundle (through its ingest receipt) for "
+        "the public SQL (default: data).",
+    )
+    learn_speed.add_argument(
+        "--out",
+        type=Path,
+        default=Path("../web/public/data/learn/speed.json"),
+        help="The lesson's file (default: ../web/public/data/learn/speed.json).",
+    )
+    learn_speed.add_argument(
+        "--possessions",
+        type=Path,
+        default=Path("../web/public/data/possessions"),
+        help="The published possessions, which hold the example (default: "
+        "../web/public/data/possessions).",
+    )
+    learn_speed.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild the file from bronze and compare its bytes, run learn/speed.sql on the raw "
+        "files and compare it with the file: FULL n/n, or PARTIAL k/n with what was checked "
+        "instead; write nothing.",
+    )
+    learn_speed.set_defaults(func=_cmd_learn_speed)
+    learn_rebound = learn_sub.add_parser(
+        "rebound",
+        help="Freeze the ten players at the end of every rebounded shot and ask who reaches the "
+        "rebound first, the nearest player or a time to arrive model, match by match, from "
+        "bronze, and write learn/rebound.json (lesson 4).",
+    )
+    learn_rebound.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root: bronze for the figures, the raw bundle (through its ingest receipt) for "
+        "the public SQL (default: data).",
+    )
+    learn_rebound.add_argument(
+        "--out",
+        type=Path,
+        default=Path("../web/public/data/learn/rebound.json"),
+        help="The lesson's file (default: ../web/public/data/learn/rebound.json).",
+    )
+    learn_rebound.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild the file from bronze and compare its bytes, run learn/rebound.sql on the "
+        "raw files and compare it with the file: FULL n/n, or PARTIAL k/n with what was checked "
+        "instead; write nothing.",
+    )
+    learn_rebound.set_defaults(func=_cmd_learn_rebound)
 
     build = subparsers.add_parser(
         "build",

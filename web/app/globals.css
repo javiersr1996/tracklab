@@ -571,15 +571,30 @@ a.wordmark:hover {
   list-style: none;
 }
 
+/* A card left alone on the last row takes the whole row. */
 @media (min-width: 640px) {
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cards > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    max-width: none; /* .band li keeps prose at --measure; a card is not prose */
   }
 }
 
 @media (min-width: 1000px) {
   .cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cards > :last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
+  .cards > :last-child:nth-child(3n + 1) {
+    grid-column: 1 / -1;
+    max-width: none;
   }
 }
 
@@ -1127,4 +1142,451 @@ a.wordmark:hover {
 
 .pose .pose-stages code {
   overflow-wrap: anywhere;
+}
+
+/* Learn: the index of the series and the pieces every lesson shares. */
+.lesson-meta {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: var(--tracking-button);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.lessons {
+  display: grid;
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lessons li {
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--rule);
+}
+
+.lessons h2 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--step-h3);
+}
+
+.lesson-status {
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+/* MathML shrinks scripts below the floor; every element in a formula keeps the formula's size. */
+.formula {
+  overflow-x: auto;
+  margin: 0 0 var(--space-4);
+}
+
+.formula math,
+.formula math * {
+  font-size: var(--step-2);
+  math-depth: 0;
+}
+
+.math-inline,
+.math-inline * {
+  font-size: 1em;
+  math-depth: 0;
+}
+
+/* A sha or a URL in a lesson's text has no break opportunity of its own. */
+.lesson p code,
+.lesson li code {
+  overflow-wrap: anywhere;
+}
+
+/* Lesson 1's figures: a dark card, the marks on the canvas, the ticks and labels in HTML so they
+   keep the text size; the marks' colours are in components/learn/gravity/Plot.tsx. */
+.learn-fig {
+  max-width: 960px;
+  margin: var(--space-6) 0;
+  padding: var(--space-4);
+  border-radius: var(--radius);
+}
+
+.learn-fig figcaption {
+  margin-top: var(--space-3);
+  color: var(--fg-muted);
+}
+
+.learn-plot {
+  padding: var(--space-3) var(--space-5) var(--space-2) var(--space-2);
+  background: var(--canvas);
+  border-radius: var(--radius);
+  color: var(--canvas-muted);
+}
+
+.learn-plot + .learn-plot {
+  margin-top: var(--space-3);
+}
+
+.learn-plot-label {
+  margin: 0 0 var(--space-2);
+}
+
+.learn-plot-xlabel {
+  margin: 0;
+  text-align: right;
+}
+
+.learn-plot-grid {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+}
+
+.learn-plot-grid svg {
+  display: block;
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+}
+
+/* Heights of their own, not the width's: on a phone the width alone would leave a sliver. */
+.learn-plot-tall svg {
+  height: clamp(15rem, 12rem + 10vw, 21rem);
+}
+
+.learn-plot-short svg {
+  height: clamp(8rem, 7rem + 4vw, 11rem);
+}
+
+.learn-plot-yticks {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.learn-plot-yticks span {
+  position: absolute;
+  right: var(--space-2);
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.learn-plot-xticks {
+  position: relative;
+  grid-column: 2;
+  height: 1.75rem;
+}
+
+.learn-plot-xticks span,
+.per-match-axis span {
+  position: absolute;
+  top: var(--space-1);
+  line-height: 1.2;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.learn-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-5);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.learn-swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 0.25rem;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+  background: currentColor;
+}
+
+.learn-swatch-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.learn-swatch-dashed {
+  background: repeating-linear-gradient(90deg, currentColor 0 0.5rem, transparent 0.5rem 0.875rem);
+}
+
+.learn-swatch-tick {
+  width: 0.25rem;
+  height: 1rem;
+}
+
+.learn-fig .controls {
+  margin-top: var(--space-4);
+}
+
+.learn-readout {
+  margin: var(--space-3) 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.learn-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.learn-choice legend {
+  float: left;
+  padding: 0;
+}
+
+.learn-choice input {
+  accent-color: var(--accent);
+}
+
+.per-match .per-match-strip {
+  min-width: 10rem;
+  padding: 0 var(--space-4);
+  background: var(--canvas);
+}
+
+.per-match th:last-child,
+.per-match td:last-child {
+  text-align: left;
+}
+
+.per-match th.per-match-strip {
+  position: relative;
+  vertical-align: bottom;
+}
+
+.per-match-axis {
+  position: relative;
+  display: block;
+  height: 1.75rem;
+  color: var(--canvas-muted);
+  font-weight: 400;
+}
+
+.per-match td.per-match-strip svg {
+  display: block;
+  width: 100%;
+  height: 1.5rem;
+}
+
+/* Lesson 2 (/learn/speed): the per-match table's headers wrap, so its eight columns fit the card
+   on a wide screen; on a phone the table scrolls inside its card like lesson 1's. */
+.learn-speed .learn-speed-table th {
+  white-space: normal;
+  vertical-align: bottom;
+  min-width: 5.5rem;
+}
+
+/* The limits of a sum sit beside it at the 16 px floor, not at the formula's size. */
+.learn-speed .formula .sum-limits > :nth-child(n + 2),
+.learn-speed .formula .sum-limits > :nth-child(n + 2) * {
+  font-size: var(--step-0);
+}
+
+/* A table of rows inside a formula is compact by default, which puts a sum's limits beside it. */
+.learn-speed .formula mtd {
+  math-style: normal;
+}
+
+/* The moving-average identity is the widest formula of the series: on a phone it drops to the
+   16 px floor instead of scrolling. */
+@media (max-width: 30rem) {
+  .learn-speed .learn-speed-long .formula math,
+  .learn-speed .learn-speed-long .formula math * {
+    font-size: 1rem;
+  }
+}
+
+/* Lesson 3 (/learn/coordinates). The frame figure keeps its surface's own aspect ratio, so the
+   circles of the markings stay round; its ticks and labels are HTML, at the text size. */
+.learn-coordinates-plot {
+  max-width: 45rem;
+  padding: var(--space-3) var(--space-5) var(--space-2) var(--space-2);
+  background: var(--canvas);
+  border-radius: var(--radius);
+  color: var(--canvas-muted);
+}
+
+.learn-coordinates-grid {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+}
+
+.learn-coordinates-grid svg {
+  display: block;
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  height: auto;
+}
+
+.learn-coordinates-yticks {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.learn-coordinates-yticks span {
+  position: absolute;
+  right: var(--space-2);
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.learn-coordinates-xticks {
+  position: relative;
+  grid-column: 2;
+  height: 1.75rem;
+}
+
+.learn-coordinates-xticks span {
+  position: absolute;
+  top: var(--space-1);
+  line-height: 1.2;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.learn-coordinates .learn-swatch-dot.learn-coordinates-ring {
+  background: transparent;
+  border: 2px solid currentColor;
+}
+
+.learn-coordinates-controls,
+.learn-coordinates-steps {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.learn-coordinates-readout {
+  margin-top: var(--space-3);
+}
+
+.learn-coordinates-track + .learn-coordinates-track {
+  margin-top: var(--space-5);
+}
+
+.learn-coordinates-track-head {
+  margin: 0 0 var(--space-2);
+}
+
+.learn-coordinates-sport th {
+  padding-top: var(--space-4);
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+
+/* Lesson 5 (/learn/cadence): its figures reuse lesson 1's; only the table of the two clips needs
+   its figures right-aligned past the first column. */
+.learn-cadence .learn-cadence-table th:nth-child(2),
+.learn-cadence .learn-cadence-table td:nth-child(2) {
+  text-align: right;
+}
+
+/* Lesson 4 (/learn/rebound). The race figure keeps the half court's own aspect ratio, so the
+   circles stay round; on a wide screen the court and its controls and table sit side by side. */
+.learn-rebound-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+@media (min-width: 64rem) {
+  .learn-rebound-layout {
+    grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.learn-rebound-court {
+  max-width: 30rem;
+  padding: var(--space-3);
+  background: var(--canvas);
+  border-radius: var(--radius);
+}
+
+.learn-rebound-court svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.learn-rebound-side .controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  margin-top: 0;
+}
+
+.learn-rebound-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.learn-rebound .learn-swatch-dot.learn-rebound-ring {
+  background: transparent;
+  border: 2px solid currentColor;
+}
+
+.learn-rebound .learn-swatch-dot.learn-rebound-ring-dashed {
+  border-style: dashed;
+}
+
+.learn-rebound-cross {
+  display: inline-block;
+  width: 1.5rem;
+  margin-right: var(--space-2);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Both tables: figures right-aligned past the first column (the shared rule leaves the second
+   column left-aligned); the race table's headers wrap and its notes sit under the player, so it fits a phone. */
+.table-scroll .learn-rebound-table th,
+.table-scroll .learn-rebound-table td,
+.table-scroll .learn-rebound-matches th,
+.table-scroll .learn-rebound-matches td {
+  text-align: right;
+}
+
+.table-scroll .learn-rebound-table th:first-child,
+.table-scroll .learn-rebound-matches th:first-child,
+.table-scroll .learn-rebound-matches td:first-child {
+  text-align: left;
+}
+
+.learn-rebound .learn-rebound-table thead th {
+  white-space: normal;
+  vertical-align: bottom;
+}
+
+.learn-rebound .learn-rebound-table th,
+.learn-rebound .learn-rebound-table td {
+  padding-right: var(--space-2);
+  padding-left: var(--space-2);
+}
+
+.learn-rebound .learn-rebound-table tbody th {
+  min-width: 6.5rem;
+  white-space: normal;
+}
+
+.learn-rebound-note {
+  display: block;
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+.learn-rebound .learn-rebound-matches th {
+  white-space: normal;
+  vertical-align: bottom;
+  min-width: 5rem;
 }

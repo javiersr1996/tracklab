@@ -5,6 +5,10 @@ import { defineConfig, devices } from "@playwright/test";
 const BASE_URL = process.env.BASE_URL;
 // Previews sit behind Vercel Authentication; this secret lets the suite through.
 const BYPASS = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+// Locally another server may hold 3000: E2E_PORT moves the one this suite starts (`next start`
+// reads PORT). CI leaves it unset and keeps 3000.
+const PORT = process.env.E2E_PORT ?? "3000";
+const LOCAL_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -13,7 +17,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: "html",
   use: {
-    baseURL: BASE_URL ?? "http://localhost:3000",
+    baseURL: BASE_URL ?? LOCAL_URL,
     trace: "on-first-retry",
     extraHTTPHeaders: BYPASS
       ? { "x-vercel-protection-bypass": BYPASS, "x-vercel-set-bypass-cookie": "true" }
@@ -24,10 +28,10 @@ export default defineConfig({
     ? undefined
     : {
     command: "npm run build && npm run start",
-    url: "http://localhost:3000",
+    url: LOCAL_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
     // Builds with `window.__replay` exposed (task 21); a plain `next build` leaves it out.
-    env: { NEXT_PUBLIC_EXPOSE_REPLAY: "1" },
+    env: { NEXT_PUBLIC_EXPOSE_REPLAY: "1", PORT },
   },
 });

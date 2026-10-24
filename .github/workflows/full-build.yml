@@ -18,6 +18,10 @@ jobs:
       run:
         working-directory: pipeline
     steps:
+      # P8: two runs with the three learn checks lost the runner inside the build, and the last
+      # green run on main started it with 8.8G free (88 %). The runner's preinstalled SDKs go first.
+      - run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL && df -h /
+        working-directory: .
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
         with:
@@ -40,6 +44,10 @@ jobs:
         with:
           path: pipeline/data/raw
           key: raw-${{ hashFiles('pipeline/manifest/sources.json') }}
+      # Task 82: lesson 1's public SQL over the ten basketball matches just ingested: FULL 10/10,
+      # the flights and the median g equal to web/public/data/quality.json. It reads the raw
+      # files only and writes nothing.
+      - run: uv run tracklab learn gravity --check
       # Bronze, orientation and silver as one Dagster run over every asset (task 15),
       # through `tracklab build` (task 32) so the runner leaves a record of its own seconds
       # and disk; raw_* verifies the bytes the two steps above left, it downloads nothing.
@@ -52,6 +60,10 @@ jobs:
       - run: df -h .
       - run: uv run tracklab build --select "not group:runs and not group:pose"
       - run: df -h . && du -sh data/bronze/football/bodypose_frames data/bronze/football/bodypose_players
+      # Lessons 2 and 4 rebuild their files from bronze: before the build they found none and
+      # printed PARTIAL 0/10 (run 40127380319).
+      - run: uv run tracklab learn speed --check
+      - run: uv run tracklab learn rebound --check
       - id: build_record
         run: echo "path=$(ls -t data/build/*.json | head -n1)" >> "$GITHUB_OUTPUT"
       # Compares the runner's fresh rows against the versioned platform.json and stats.json

@@ -1,4 +1,4 @@
-// The six sections, in the order the header and the home page list them. `title` is the link text
+// The seven sections, in the order the header and the home page list them. `title` is the link text
 // the home page has always carried (the e2e find those links by name, so the header uses the short
 // `nav` instead), `about` a line from the section's own page or the README, not new copy.
 export const SECTIONS = [
@@ -40,7 +40,16 @@ export const SECTIONS = [
     title: "Body pose",
     about: "The joints of the players SkillCorner's Body Pose resolves in each frame, each with its predicted error.",
   },
+  {
+    href: "/learn",
+    nav: "Learn",
+    title: "Learn from the data",
+    about: "Short lessons that start from a question about the tracking data and end with a query you can run.",
+  },
 ] as const;
+
+// The header marks a section current on its own page and on every page under it.
+export const isCurrent = (path: string, href: string) => path === href || path.startsWith(`${href}/`);
 
 export const REPO = "https://github.com/javiersr1996/tracklab";
 
