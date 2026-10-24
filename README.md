@@ -181,14 +181,19 @@ the page is read from `quality.json` or computed in the browser from a published
 end-to-end test compares each one with its source. Where a lesson needs the data it says what the
 numbers do not explain and leaves the cause open.
 
-The lesson ends with the query that reproduces its figures on the provider's public files. It is
-`pipeline/src/tracklab/learn/gravity.sql`, the one the page shows, and `learn gravity --check` runs
-it over each basketball match and compares the flights and the median g with `quality.json`. It
-publishes no data of its own. CI runs it on the fixtures (it prints PARTIAL and what it verified)
-and `full-build` on the whole bronze.
+Each lesson ends with the query or script that reproduces its figures on the provider's public
+files. The first is `pipeline/src/tracklab/learn/gravity.sql`, the one the page shows, and
+`learn gravity --check` runs it over each basketball match and compares the flights and the median
+g with `quality.json`; it publishes no data of its own. The second and fourth publish theirs:
+`learn speed` writes `web/public/data/learn/speed.json` and `learn rebound` writes
+`learn/rebound.json`, and each `--check` rebuilds the file from bronze, compares its bytes and runs
+the lesson's SQL on the public files. CI runs the checks on the fixtures (they print PARTIAL and
+what they verified) and `full-build` on the whole bronze.
 
 ```
-uv run tracklab learn gravity --check           # the lesson's SQL against quality.json
+uv run tracklab learn gravity --check           # the first lesson's SQL against quality.json
+uv run tracklab learn speed --check             # speed.json and the second lesson's SQL
+uv run tracklab learn rebound --check           # rebound.json and the fourth lesson's SQL
 ```
 
 ## Warehouse
