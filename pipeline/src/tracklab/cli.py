@@ -31,6 +31,7 @@ from tracklab.formats.football_report import freeze_football
 from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
+from tracklab.learn.gravity import run_learn_gravity
 from tracklab.load.postgres import run_load_postgres
 from tracklab.paths import data_root
 from tracklab.pose.coverage import run_pose_coverage
@@ -303,6 +304,10 @@ def _cmd_runs_effect(args: argparse.Namespace) -> int:
 
 def _cmd_runs_freeze(args: argparse.Namespace) -> int:
     return run_runs_freeze(args.reports_dir, date=args.date)
+
+
+def _cmd_learn_gravity(args: argparse.Namespace) -> int:
+    return run_learn_gravity(args.data_dir, args.quality, check=args.check)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -1106,6 +1111,34 @@ def build_parser() -> argparse.ArgumentParser:
         help="The date of the frozen history entry (default: today).",
     )
     runs_freeze.set_defaults(func=_cmd_runs_freeze)
+
+    learn = subparsers.add_parser("learn", help="P8: the checks behind the /learn lessons.")
+    learn_sub = learn.add_subparsers(dest="learn_command", required=True)
+    learn_gravity = learn_sub.add_parser(
+        "gravity",
+        help="Run learn/gravity.sql on the public basketball files of each match of quality.json "
+        "and print its flights and median g next to the published ones.",
+    )
+    learn_gravity.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; the basketball bundle is found through its ingest receipt "
+        "(default: data).",
+    )
+    learn_gravity.add_argument(
+        "--quality",
+        type=Path,
+        default=Path("../web/public/data/quality.json"),
+        help="The published quality file (default: ../web/public/data/quality.json).",
+    )
+    learn_gravity.add_argument(
+        "--check",
+        action="store_true",
+        help="Compare with quality.json and say how many matches were recomputed: FULL n/n, or "
+        "PARTIAL k/n with what was checked instead; write nothing.",
+    )
+    learn_gravity.set_defaults(func=_cmd_learn_gravity)
 
     build = subparsers.add_parser(
         "build",
