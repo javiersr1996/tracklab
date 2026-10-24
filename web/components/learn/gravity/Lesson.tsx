@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { GRAVITY_HOOK, GRAVITY_MATCHES, qualityFigure } from "../../../lib/learn/gravity-data";
+import { HYPOTHESES, hypothesesFigure } from "../../../lib/learn/hypotheses-data";
+import { hypothesesFigures, type HypothesesFigures } from "../../../lib/learn/hypotheses-figures";
 import { lessonFigures, type LessonFigures } from "../../../lib/learn/lesson-figures";
 import { QUALITY } from "../../../lib/quality";
 import { Band } from "../../site/Band";
@@ -11,16 +13,21 @@ import { Limitations } from "../Limitations";
 import { Reproduce } from "../Reproduce";
 import { ExposeFigures } from "./ExposeFigures";
 import { FitPlot } from "./FitPlot";
+import { HypothesisPlot } from "./HypothesisPlot";
 import { NoiseStrip } from "./NoiseStrip";
 import { PerMatch } from "./PerMatch";
 import { WindowPlot } from "./WindowPlot";
 
-// Lesson 1 (task 80). No figure is typed: `q(path)` prints a value of `quality.json` and `l(key)`
-// one of `lessonFigures`, each as a `data-fig` the e2e compares with its source. The sums in the
-// formulas run over the samples of one window.
+// Lesson 1 (task 80). No figure is typed: `q(path)` prints a value of `quality.json`, `l(key)` one
+// of `lessonFigures`, `y(path)` one of `learn/gravity.json` and `h(key)` one of
+// `hypothesesFigures` (task 87), each as a `data-fig` the e2e compares with its source. The sums
+// in the formulas run over the samples of one window.
 const F = lessonFigures(GRAVITY_HOOK, GRAVITY_MATCHES);
+const HF = hypothesesFigures(HYPOTHESES);
 const l = (key: keyof LessonFigures) => <Fig name={`learn.${key}`}>{F[key]}</Fig>;
 const q = (path: string) => <Fig name={path}>{String(qualityFigure(QUALITY, path))}</Fig>;
+const h = (key: keyof HypothesesFigures) => <Fig name={`learn.hyp.${key}`}>{HF[key]}</Fig>;
+const y = (path: string) => <Fig name={`hypotheses.${path}`}>{String(hypothesesFigure(HYPOTHESES, `hypotheses.${path}`))}</Fig>;
 const G = q("hook.g_real");
 
 const sub = (x: string, i: string) => (
@@ -424,6 +431,42 @@ export function Lesson({ sql }: { sql: string }) {
           </p>
         </section>
 
+        <section aria-labelledby="data-h">
+          <h2 id="data-h">What the data add</h2>
+          <p>
+            Above, the window was tried on one shot, and the argument about smoothers stopped short of the hand. Both
+            can be put to every flight the check keeps, match by match, and what follows are new figures from those
+            same flights. They test the two ideas; they do not name a cause.
+          </p>
+
+          <h3>The window, in every match</h3>
+          <p>
+            Fit each kept flight again with a half-window of {y("half_windows.0")}, {y("half_windows.1")},{" "}
+            {y("half_windows.2")} or {y("half_windows.3")} samples around the same highest one, and take each
+            match&apos;s median. With <var>H</var> = {y("p3_half_window")} that median is the check&apos;s own, the one the
+            table above prints. Of the {h("cells")} medians, {h("below")} sit under {G}; the largest is{" "}
+            {h("highest_g")}&nbsp;m/s², in match {h("highest_match")} at <var>H</var> = {h("highest_h")}, and the smallest{" "}
+            {h("lowest_g")}. No window brings any match back to standard gravity.
+          </p>
+          <HypothesisPlot file={HYPOTHESES} />
+
+          <h3>The hand</h3>
+          <p>
+            A smoother that starts at the release would bend the first frames of a flight and leave the rest of it alone.
+            If that were the cause, the flights whose window starts closest to the shot&apos;s start should come out
+            lowest. In each match the window starts a median of {h("start_lo")} to {h("start_hi")} frames after the
+            shot&apos;s start, and before it in {h("before_matches")} matches, at most {h("before_max")} window each. Split
+            each match&apos;s flights by that distance, as the table does: in {h("near_highest")} of the{" "}
+            {h("near_compared")} matches with flights in the nearest bin and in another, the nearest bin has the highest
+            median g, not the lowest. That bin holds {h("near_n_lo")} to {h("near_n_hi")} flights in those matches, too
+            few to read any one match by.
+          </p>
+          <p>
+            Neither result closes the question. The low g is there at every window and at every distance from the hand,
+            and the lesson leaves its cause open.
+          </p>
+        </section>
+
         <section aria-labelledby="matters-h">
           <h2 id="matters-h">Why it matters</h2>
           <p>
@@ -530,7 +573,7 @@ export function Lesson({ sql }: { sql: string }) {
           </ul>
         </section>
       </Band>
-      <ExposeFigures hook={GRAVITY_HOOK} matches={GRAVITY_MATCHES} />
+      <ExposeFigures hook={GRAVITY_HOOK} matches={GRAVITY_MATCHES} hypotheses={HYPOTHESES} />
     </main>
   );
 }

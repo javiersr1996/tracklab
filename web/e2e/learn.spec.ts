@@ -13,6 +13,7 @@ const GRAVITY = "/learn/gravity";
 
 const read = (...parts: string[]) => readFileSync(path.join(process.cwd(), ...parts), "utf-8");
 const QUALITY = JSON.parse(read("public", "data", "quality.json")) as Record<string, unknown>;
+const HYPOTHESES = JSON.parse(read("public", "data", "learn", "gravity.json")) as Record<string, unknown>;
 const FENCE = JSON.parse(read("lib", "learn", "fence.json")) as { held_out: string[]; forbidden_keys: string[] };
 
 // Bytes transferred by a page load, the way the other specs count them.
@@ -134,8 +135,17 @@ for (const width of WIDTHS) {
 
 // A dotted path in `quality.json`; under `checks.<check>` the next two parts are a match id and a
 // metric, the way the file keys its rows (`checks.gravity.bb:114086.g_median` is that row's value).
+// `hypotheses.<path>` is a path in `learn/gravity.json` (task 87), a match id after `matches`.
 function inFile(dotted: string): unknown {
   const parts = dotted.split(".");
+  if (parts[0] === "hypotheses") {
+    let at: unknown = HYPOTHESES;
+    for (let i = 1; i < parts.length; i++) {
+      if (Array.isArray(at) && parts[i - 1] === "matches") at = at.find((m: { match_id: string }) => m.match_id === parts[i]);
+      else at = at !== null && typeof at === "object" ? (at as Record<string, unknown>)[parts[i]] : undefined;
+    }
+    return at;
+  }
   if (parts[0] === "checks" && parts.length === 4) {
     const rows = (QUALITY.checks as Record<string, { match_id: string; metric: string; value: number }[]>)[parts[1]];
     return rows?.find((r) => r.match_id === parts[2] && r.metric === parts[3])?.value;
@@ -178,7 +188,7 @@ async function expectFigures(page: Page) {
     } else {
       const value = inFile(name);
       fromFile++;
-      if (value === undefined) wrong.push(`${name}: not in quality.json`);
+      if (value === undefined) wrong.push(`${name}: not in its file`);
       else if (text !== display(String(value), name)) wrong.push(`${name}: page "${text}", file ${String(value)}`);
     }
   }
@@ -206,12 +216,16 @@ test.describe("/learn/gravity", () => {
 
   test("the per-match table holds the file's ten rows", async ({ page }) => {
     await openLesson(page);
-    const rows = await page.locator("tr[data-match]").evaluateAll((els) => els.map((e) => e.getAttribute("data-match")));
+    const rows = await page.locator('figure[data-figure="per-match"] tr[data-match]').evaluateAll((els) => els.map((e) => e.getAttribute("data-match")));
     const inQuality = (QUALITY.checks as { gravity: { sport: string; match_id: string }[] }).gravity
       .filter((r) => r.sport === "basketball")
       .map((r) => r.match_id);
     expect(rows.length).toBe(10);
     expect([...rows].sort()).toEqual([...new Set(inQuality)].sort());
+    // Task 87: "What the data add" holds gravity.json's matches, the same ten.
+    const hypotheses = await page.locator('figure[data-figure="hypotheses"] tr[data-match]').evaluateAll((els) => els.map((e) => e.getAttribute("data-match")));
+    expect([...hypotheses].sort()).toEqual((HYPOTHESES.matches as { match_id: string }[]).map((m) => m.match_id).sort());
+    expect([...hypotheses].sort()).toEqual([...rows].sort());
   });
 
   test("the prose has no digit once figures, formulas, citations, quotes, code and tables are out", async ({ page }) => {

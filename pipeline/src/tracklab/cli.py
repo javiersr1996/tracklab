@@ -33,6 +33,7 @@ from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.learn.browser import run_learn_browser
 from tracklab.learn.gravity import run_learn_gravity
+from tracklab.learn.hypotheses import run_learn_hypotheses
 from tracklab.learn.rebound import run_learn_rebound
 from tracklab.learn.speed import run_learn_speed
 from tracklab.load.postgres import run_load_postgres
@@ -319,6 +320,10 @@ def _cmd_learn_speed(args: argparse.Namespace) -> int:
 
 def _cmd_learn_rebound(args: argparse.Namespace) -> int:
     return run_learn_rebound(args.data_dir, args.out, check=args.check)
+
+
+def _cmd_learn_hypotheses(args: argparse.Namespace) -> int:
+    return run_learn_hypotheses(args.data_dir, args.out, args.quality, check=args.check)
 
 
 def _cmd_learn_browser(args: argparse.Namespace) -> int:
@@ -1214,6 +1219,38 @@ def build_parser() -> argparse.ArgumentParser:
         "instead; write nothing.",
     )
     learn_rebound.set_defaults(func=_cmd_learn_rebound)
+    learn_hypotheses = learn_sub.add_parser(
+        "hypotheses",
+        help="Put the flights P3's gravity check keeps next to lesson 1's hypotheses (g by half "
+        "window, g by frames from the shot's start), match by match, from silver and bronze, and "
+        "write learn/gravity.json (task 87).",
+    )
+    learn_hypotheses.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root: silver frames and bronze shots (default: data).",
+    )
+    learn_hypotheses.add_argument(
+        "--out",
+        type=Path,
+        default=Path("../web/public/data/learn/gravity.json"),
+        help="The lesson's file (default: ../web/public/data/learn/gravity.json).",
+    )
+    learn_hypotheses.add_argument(
+        "--quality",
+        type=Path,
+        default=Path("../web/public/data/quality.json"),
+        help="The published quality file whose flights and g_median H 10 must give "
+        "(default: ../web/public/data/quality.json).",
+    )
+    learn_hypotheses.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild the file from silver and bronze and compare its bytes: FULL n/n, or "
+        "PARTIAL k/n with what was checked instead; write nothing.",
+    )
+    learn_hypotheses.set_defaults(func=_cmd_learn_hypotheses)
     learn_browser = learn_sub.add_parser(
         "browser",
         help='Run each lesson\'s learn/<slug>.browser.sql (the query of "Run it here") on the '

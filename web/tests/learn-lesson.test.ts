@@ -11,6 +11,8 @@ import { Lesson as ReboundLesson } from "../components/learn/rebound/Lesson";
 import { Lesson as SpeedLesson } from "../components/learn/speed/Lesson";
 import fence from "../lib/learn/fence.json";
 import { GRAVITY_HOOK, GRAVITY_MATCHES, qualityFigure } from "../lib/learn/gravity-data";
+import { HYPOTHESES, hypothesesFigure } from "../lib/learn/hypotheses-data";
+import { hypothesesFigures } from "../lib/learn/hypotheses-figures";
 import { lessonFigures } from "../lib/learn/lesson-figures";
 import { SOURCES } from "../lib/learn/sources";
 import { QUALITY } from "../lib/quality";
@@ -26,7 +28,7 @@ import { QUALITY } from "../lib/quality";
 
 const SQL = readFileSync(join(process.cwd(), "..", "pipeline", "src", "tracklab", "learn", "gravity.sql"), "utf-8");
 const HTML = renderToStaticMarkup(createElement(Lesson, { sql: SQL }));
-const FIGURES: Record<string, unknown> = lessonFigures(GRAVITY_HOOK, GRAVITY_MATCHES);
+const FIGURES: Record<string, unknown> = { ...lessonFigures(GRAVITY_HOOK, GRAVITY_MATCHES), hyp: hypothesesFigures(HYPOTHESES) };
 
 const entities = (s: string) =>
   s.replace(/&#x27;|&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
@@ -44,7 +46,11 @@ describe("the text of lesson 1", () => {
     const figs = [...HTML.matchAll(/data-fig="([^"]+)">([^<]*)</g)].map((m) => [m[1], entities(m[2])]);
     expect(figs.length).toBeGreaterThan(60);
     const wrong = figs.filter(([path, shown]) => {
-      const value = path.startsWith("learn.") ? path.slice(6).split(".").reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], FIGURES) : qualityFigure(QUALITY, path);
+      const value = path.startsWith("learn.")
+        ? path.slice(6).split(".").reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], FIGURES)
+        : path.startsWith("hypotheses.")
+          ? hypothesesFigure(HYPOTHESES, path)
+          : qualityFigure(QUALITY, path);
       // The figures' own readouts (`learn.fit.g`, ...) live in their state; the vitest of task 79 checks them.
       if (value === undefined && /^learn\.(fit|window|noise)\./.test(path)) return false;
       return value === undefined || shown !== display(String(value), path);
@@ -92,10 +98,12 @@ describe("the text of lesson 1", () => {
     expect(line42).toContain(quoted);
   });
 
-  it("is between 1,800 and 2,300 words: its figures counted, its formulas, query and figure panels not", () => {
+  // P8 set 1,800 to 2,300; P9 adds "What the data add" (task 87) and the line before "Run it here"
+  // (task 86), about three hundred words.
+  it("is between 1,800 and 2,600 words: its figures counted, its formulas, query and figure panels not", () => {
     const words = text(drop(HTML, ["figure", "pre", "math"])).split(" ").filter((w) => /[A-Za-z0-9]/.test(w)).length;
     console.log(`lesson 1: ${words} words`);
     expect(words).toBeGreaterThanOrEqual(1800);
-    expect(words).toBeLessThanOrEqual(2300);
+    expect(words).toBeLessThanOrEqual(2600);
   });
 });
