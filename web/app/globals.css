@@ -1590,3 +1590,20 @@ a.wordmark:hover {
   vertical-align: bottom;
   min-width: 5rem;
 }
+
+/* P9's per-match tables: figures right-aligned past the first column, headers wrapping. */
+.table-scroll .learn-matches th,
+.table-scroll .learn-matches td {
+  text-align: right;
+}
+
+.table-scroll .learn-matches th:first-child,
+.table-scroll .learn-matches td:first-child {
+  text-align: left;
+}
+
+.learn-matches thead th {
+  white-space: normal;
+  vertical-align: bottom;
+  min-width: 5rem;
+}

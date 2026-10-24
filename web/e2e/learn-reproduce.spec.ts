@@ -1,12 +1,12 @@
 import { expect as baseExpect, type Page, test } from "@playwright/test";
 
-// Task 86: "Run it here" on the five lessons of P8. Before Run the page stays under its budget and
+// Task 86: "Run it here" on the lessons of P8, and those of P9 as they come. Before Run the page stays under its budget and
 // has fetched nothing of the engine; after Run the query is done, every row it returns names a
 // figure the lesson prints and gives that figure's text (`data-matched` of `data-figures`, and
 // `window.__learn.reproduce` in a test build), with no error on the console.
 const expect = baseExpect.configure({ timeout: 20_000 });
 const EXPOSED = !process.env.BASE_URL;
-const LESSONS = ["gravity", "speed", "coordinates", "rebound", "cadence"];
+const LESSONS = ["gravity", "speed", "coordinates", "rebound", "cadence", "clock"];
 const isEngine = (url: string) => !url.startsWith("blob:") && (url.endsWith(".wasm") || new URL(url).pathname.startsWith("/duckdb/"));
 
 async function weigh(page: Page, route: string) {

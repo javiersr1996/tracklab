@@ -32,6 +32,7 @@ from tracklab.ingest.fetch import freeze_source, ingest_source, make_client
 from tracklab.ingest.local import freeze_local, ingest_local
 from tracklab.ingest.manifest import Source, load_manifest, save_manifest
 from tracklab.learn.browser import run_learn_browser
+from tracklab.learn.clock import run_learn_clock
 from tracklab.learn.gravity import run_learn_gravity
 from tracklab.learn.hypotheses import run_learn_hypotheses
 from tracklab.learn.rebound import run_learn_rebound
@@ -324,6 +325,10 @@ def _cmd_learn_rebound(args: argparse.Namespace) -> int:
 
 def _cmd_learn_hypotheses(args: argparse.Namespace) -> int:
     return run_learn_hypotheses(args.data_dir, args.out, args.quality, check=args.check)
+
+
+def _cmd_learn_clock(args: argparse.Namespace) -> int:
+    return run_learn_clock(args.data_dir, args.out, args.possessions, check=args.check)
 
 
 def _cmd_learn_browser(args: argparse.Namespace) -> int:
@@ -1251,6 +1256,39 @@ def build_parser() -> argparse.ArgumentParser:
         "PARTIAL k/n with what was checked instead; write nothing.",
     )
     learn_hypotheses.set_defaults(func=_cmd_learn_hypotheses)
+    learn_clock = learn_sub.add_parser(
+        "clock",
+        help="Fit the game clock against the video's clock over every stretch where the provider "
+        "says it runs, match by match, from bronze, and write learn/clock.json (lesson 6).",
+    )
+    learn_clock.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root: bronze for the figures, the raw bundle (through its ingest receipt) for "
+        "the public SQL (default: data).",
+    )
+    learn_clock.add_argument(
+        "--out",
+        type=Path,
+        default=Path("../web/public/data/learn/clock.json"),
+        help="The lesson's file (default: ../web/public/data/learn/clock.json).",
+    )
+    learn_clock.add_argument(
+        "--possessions",
+        type=Path,
+        default=Path("../web/public/data/possessions"),
+        help="The published possessions whose flag the file gives "
+        "(default: ../web/public/data/possessions).",
+    )
+    learn_clock.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild the file from bronze and compare its bytes, run learn/clock.sql on the raw "
+        "files and compare it with the file: FULL n/n, or PARTIAL k/n with what was checked "
+        "instead; write nothing.",
+    )
+    learn_clock.set_defaults(func=_cmd_learn_clock)
     learn_browser = learn_sub.add_parser(
         "browser",
         help='Run each lesson\'s learn/<slug>.browser.sql (the query of "Run it here") on the '

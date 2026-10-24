@@ -5,6 +5,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { Lesson as CadenceLesson } from "../components/learn/cadence/Lesson";
+import { Lesson as ClockLesson } from "../components/learn/clock/Lesson";
 import { Lesson as CoordinatesLesson } from "../components/learn/coordinates/Lesson";
 import { Lesson } from "../components/learn/gravity/Lesson";
 import { Lesson as ReboundLesson } from "../components/learn/rebound/Lesson";
@@ -68,7 +69,7 @@ describe("the text of lesson 1", () => {
     expect(fence.held_out.filter((id) => HTML.includes(id))).toEqual([]);
   });
 
-  it("cites only sources.ts, and lessons 1 to 5 together cite every source in it", () => {
+  it("cites only sources.ts, and the lessons together cite every source in it", () => {
     const learn = (name: string) => readFileSync(join(process.cwd(), "..", "pipeline", "src", "tracklab", "learn", name), "utf-8");
     const hrefs = (html: string) => [...html.matchAll(/<cite><a href="([^"]+)"/g)].map((m) => entities(m[1]));
     const urls = Object.values(SOURCES).map((s) => s.url);
@@ -78,6 +79,7 @@ describe("the text of lesson 1", () => {
       ...hrefs(renderToStaticMarkup(createElement(CoordinatesLesson, { sql: learn("coordinates.sql") }))),
       ...hrefs(renderToStaticMarkup(createElement(ReboundLesson, { sql: learn("rebound.sql") }))),
       ...hrefs(renderToStaticMarkup(createElement(CadenceLesson, { script: learn("cadence.py") }))),
+      ...hrefs(renderToStaticMarkup(createElement(ClockLesson, { sql: learn("clock.sql") }))),
     ]);
     expect([...cited].filter((h) => !urls.includes(h))).toEqual([]);
     expect(urls.filter((u) => !cited.has(u))).toEqual([]);

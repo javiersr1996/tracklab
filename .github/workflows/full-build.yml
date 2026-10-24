@@ -62,6 +62,9 @@ jobs:
       - run: df -h .
       - run: uv run tracklab build --select "not group:runs and not group:pose"
       - run: df -h . && du -sh data/bronze/football/bodypose_frames data/bronze/football/bodypose_players
+      # P9: a lesson whose check rebuilds its file from bronze runs after the build that writes it
+      # (FULL 10/10); before it, as the speed and rebound checks above, it can only say PARTIAL.
+      - run: uv run tracklab learn clock --check
       - id: build_record
         run: echo "path=$(ls -t data/build/*.json | head -n1)" >> "$GITHUB_OUTPUT"
       # Compares the runner's fresh rows against the versioned platform.json and stats.json

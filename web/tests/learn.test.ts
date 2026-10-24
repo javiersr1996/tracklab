@@ -4,8 +4,8 @@ import { SOURCES, sourceProblems } from "../lib/learn/sources";
 import { isCurrent, SECTIONS } from "../lib/sections";
 
 describe("the series", () => {
-  it("lists only the five lessons before the Analytics Cup fence, numbered in order", () => {
-    expect(LESSONS.map((l) => l.n)).toEqual([1, 2, 3, 4, 5]);
+  it("numbers its lessons in order with no gap (P9 renumbers after the lesson Javier dropped)", () => {
+    expect(LESSONS.map((l) => l.n)).toEqual([1, 2, 3, 4, 5, 6]);
     expect(new Set(LESSONS.map((l) => l.slug)).size).toBe(LESSONS.length);
   });
 

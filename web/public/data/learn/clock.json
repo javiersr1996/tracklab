@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "fps": 25,
+  "min_frames": 125,
+  "digits": 5,
+  "matches": [
+    {
+      "match_id": "bb:114086",
+      "calibration": true,
+      "segments": 66,
+      "frames": 59916,
+      "steps": 59850,
+      "held": 0,
+      "slope_median": -1.00008,
+      "slope_q1": -1.00047,
+      "slope_q3": -0.99944
+    },
+    {
+      "match_id": "bb:114099",
+      "calibration": true,
+      "segments": 67,
+      "frames": 59699,
+      "steps": 59632,
+      "held": 0,
+      "slope_median": -1.00005,
+      "slope_q1": -1.00052,
+      "slope_q3": -0.99967
+    },
+    {
+      "match_id": "bb:114169",
+      "calibration": true,
+      "segments": 80,
+      "frames": 59151,
+      "steps": 59071,
+      "held": 0,
+      "slope_median": -1.00005,
+      "slope_q1": -1.00073,
+      "slope_q3": -0.9994
+    },
+    {
+      "match_id": "bb:114234",
+      "calibration": true,
+      "segments": 70,
+      "frames": 59582,
+      "steps": 59512,
+      "held": 0,
+      "slope_median": -0.99997,
+      "slope_q1": -1.00033,
+      "slope_q3": -0.99961
+    },
+    {
+      "match_id": "bb:114243",
+      "calibration": true,
+      "segments": 80,
+      "frames": 59514,
+      "steps": 59434,
+      "held": 0,
+      "slope_median": -1.00008,
+      "slope_q1": -1.00053,
+      "slope_q3": -0.99954
+    },
+    {
+      "match_id": "bb:178442",
+      "calibration": false,
+      "segments": 77,
+      "frames": 67538,
+      "steps": 67461,
+      "held": 2711,
+      "slope_median": -0.99236,
+      "slope_q1": -0.99831,
+      "slope_q3": -0.9835
+    },
+    {
+      "match_id": "bb:179612",
+      "calibration": false,
+      "segments": 70,
+      "frames": 62235,
+      "steps": 62165,
+      "held": 2508,
+      "slope_median": -0.99578,
+      "slope_q1": -0.99865,
+      "slope_q3": -0.98855
+    },
+    {
+      "match_id": "bb:184439",
+      "calibration": false,
+      "segments": 74,
+      "frames": 61630,
+      "steps": 61556,
+      "held": 2563,
+      "slope_median": -0.99566,
+      "slope_q1": -0.99855,
+      "slope_q3": -0.98081
+    },
+    {
+      "match_id": "bb:188630",
+      "calibration": false,
+      "segments": 69,
+      "frames": 61661,
+      "steps": 61592,
+      "held": 2397,
+      "slope_median": -0.99463,
+      "slope_q1": -0.99846,
+      "slope_q3": -0.98799
+    },
+    {
+      "match_id": "bb:191313",
+      "calibration": false,
+      "segments": 69,
+      "frames": 61751,
+      "steps": 61682,
+      "held": 2413,
+      "slope_median": -0.99474,
+      "slope_q1": -0.9985,
+      "slope_q3": -0.98629
+    }
+  ],
+  "examples": [
+    {
+      "possession": "bb_possessions_possession-114086-1-36.json",
+      "match_id": "bb:114086",
+      "calibration": true,
+      "frames": 329,
+      "stopped": []
+    },
+    {
+      "possession": "bb_possessions_possession-184439-2-38.json",
+      "match_id": "bb:184439",
+      "calibration": false,
+      "frames": 322,
+      "stopped": [
+        [
+          1042000,
+          1043280
+        ]
+      ]
+    }
+  ]
+}

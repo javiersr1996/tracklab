@@ -240,6 +240,36 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-24",
     quote: "linearization of the model provides an inadequate representation",
   },
+  // Lesson 6.
+  "skillcorner-wallclock": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/tracking_data.md, line 16",
+    short: "SkillCorner, tracking_data.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/tracking_data.md#L16",
+    read: "2026-10-24",
+    quote: "Time in ms since the start of the video.",
+  },
+  "skillcorner-gameclock": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/tracking_data.md, line 17",
+    short: "SkillCorner, tracking_data.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/tracking_data.md#L17",
+    read: "2026-10-24",
+    quote: "Game clock in seconds. 0 means the period is finished.",
+  },
+  "skillcorner-gameclock-stopped": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/tracking_data.md, line 18",
+    short: "SkillCorner, tracking_data.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/tracking_data.md#L18",
+    read: "2026-10-24",
+    quote: "`true` if the game clock is stopped, `false` if the game clock is running.",
+  },
+  "nist-residuals": {
+    label: "NIST/SEMATECH e-Handbook of Statistical Methods, 4.4.4 How can I tell if a model fits my data?",
+    short: "NIST handbook, 4.4.4",
+    url: "https://www.itl.nist.gov/div898/handbook/pmd/section4/pmd44.htm",
+    read: "2026-10-24",
+    quote:
+      "The residuals from a fitted model are the differences between the responses observed at each combination values of the explanatory variables and the corresponding prediction of the response computed using the regression function.",
+  },
 };
 
 export function sourceProblems(id: string, s: Source): string[] {

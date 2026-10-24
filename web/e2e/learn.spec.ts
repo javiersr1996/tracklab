@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { expect as baseExpect, type Page, test } from "@playwright/test";
 import { display } from "../lib/learn/display";
+import { LESSONS, lessonHref } from "../lib/learn/series";
 
 // Eleven workers share one server: the waits are on the page's own state, never on a clock.
 const expect = baseExpect.configure({ timeout: 20_000 });
@@ -33,26 +34,23 @@ async function transferred(page: Page, path: string) {
   return bytes;
 }
 
-test("the index links the five published lessons, none in preparation and none from after", async ({ page }) => {
+test("the index links every published lesson of series.ts, none in preparation", async ({ page }) => {
   const bytes = await transferred(page, "/learn");
   console.log(`/learn: ${bytes} bytes transferred`);
   expect(bytes).toBeLessThan(400_000);
 
   const published = page.locator('[data-status="published"]');
-  await expect(published).toHaveCount(5);
-  await expect(published.getByRole("link", { name: "Does the ball obey gravity?" })).toHaveAttribute("href", "/learn/gravity");
-  await expect(published.getByRole("link", { name: "Where does the provider's speed come from?" })).toHaveAttribute("href", "/learn/speed");
-  await expect(published.getByRole("link", { name: "Can a court and a pitch share one table?" })).toHaveAttribute("href", "/learn/coordinates");
-  await expect(published.getByRole("link", { name: "Who gets to the rebound first?" })).toHaveAttribute("href", "/learn/rebound");
-  await expect(published.getByRole("link", { name: "How many steps per second?" })).toHaveAttribute("href", "/learn/cadence");
+  const lessons = LESSONS.filter((l) => l.status === "published");
+  expect(lessons.length).toBeGreaterThanOrEqual(5);
+  await expect(published).toHaveCount(lessons.length);
+  for (const l of lessons) await expect(published.getByRole("link", { name: l.title })).toHaveAttribute("href", lessonHref(l));
 
   await expect(page.locator('[data-status="in-preparation"]')).toHaveCount(0);
   await expect(page.getByText("In preparation")).toHaveCount(0);
 
-  // Lessons 6 and 7 come after the fence: the series stops at 5.
+  // The series is numbered in order, with no gap and nothing past its last lesson.
   const numbers = await page.locator("[data-series-n]").evaluateAll((els) => els.map((e) => Number(e.getAttribute("data-series-n"))));
-  expect(Math.max(...numbers)).toBeLessThanOrEqual(5);
-  expect(numbers).toEqual([...numbers].sort((a, b) => a - b));
+  expect(numbers).toEqual(LESSONS.map((_, i) => i + 1));
 });
 
 test("the lesson link opens a page, not a 404", async ({ page }) => {

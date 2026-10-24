@@ -53,6 +53,14 @@ export const LESSONS: readonly Lesson[] = [
     status: "published",
     about: "Periodicity in body pose and how a predicted error propagates into it.",
   },
+  {
+    n: 6,
+    slug: "clock",
+    title: "Does the game clock keep the video's time?",
+    level: "Foundations",
+    status: "published",
+    about: "A least-squares line through two clocks, its residuals, and what a wrong second would do to a speed and to g.",
+  },
 ];
 
 export const lessonHref = (l: Lesson) => `/learn/${l.slug}`;

@@ -27,8 +27,9 @@ from pathlib import Path
 from typing import Any
 
 import duckdb
+import numpy as np
 
-LESSONS = ("gravity", "speed", "coordinates", "rebound", "cadence")
+LESSONS = ("gravity", "speed", "coordinates", "rebound", "cadence", "clock")
 HERE = Path(__file__).parent
 FILES_LINE = re.compile(r"^-- files: (.+)$", re.MULTILINE)
 VIEW = re.compile(r"^CREATE VIEW (\w+) AS", re.MULTILINE)
@@ -138,12 +139,38 @@ def _cadence(public: Path) -> Expected:
     return {"learn.hook.1925299.cadence": (clip["windows"][0]["cadence_hz"], CADENCE_TOLERANCE)}
 
 
+def _slope(public: Path, stem: str) -> float:
+    """The least-squares slope of a possession's game clock on its video clock, by numpy."""
+    frames = _json(public, f"/data/possessions/{stem}.json")["frames"]
+    t = np.array([f["t"] for f in frames], np.float64) / 1000
+    clock = np.array([f["clock"] for f in frames], np.float64)
+    return float(np.polyfit(t, clock, 1)[0])
+
+
+def _clock(public: Path) -> Expected:
+    # The SQL's slopes, at five decimals, against numpy's on the same files; the ranges of the
+    # medians against clock.json's own rows.
+    rows = _json(public, "/data/learn/clock.json")["matches"]
+    cal = [m["slope_median"] for m in rows if m["calibration"]]
+    ctl = [m["slope_median"] for m in rows if not m["calibration"]]
+    half = 0.000005 + 1e-12
+    return {
+        "learn.cal_slope": (_slope(public, "bb_possessions_possession-114086-1-36"), half),
+        "learn.ctl_slope_all": (_slope(public, "bb_possessions_possession-184439-2-38"), half),
+        "learn.cal_lo": (min(cal), 0),
+        "learn.cal_hi": (max(cal), 0),
+        "learn.ctl_lo": (min(ctl), 0),
+        "learn.ctl_hi": (max(ctl), 0),
+    }
+
+
 EXPECT: dict[str, Callable[[Path], Expected]] = {
     "gravity": _gravity,
     "speed": _speed,
     "coordinates": _coordinates,
     "rebound": _rebound,
     "cadence": _cadence,
+    "clock": _clock,
 }
 
 
