@@ -77,14 +77,29 @@ export function gAtHalfWindow(t: readonly number[], z: readonly number[], h: num
   return (-2 * sum(w.map((wi, i) => wi * zs[i]))) / ww;
 }
 
-// The residuals of z against a parabola that falls with g held, c and b fitted: in centred time
-// that is a straight line through z + g·u²/2, whose least squares are its mean and its slope.
-export function residualsAt(t: readonly number[], z: readonly number[], g: number): number[] {
+// The parabola that falls with g held, c and b fitted: in centred time that is a straight line
+// through z + g·u²/2, whose least squares are its mean and its slope.
+function heldG(t: readonly number[], z: readonly number[], g: number) {
   const u = centred(t);
   const lifted = z.map((zi, i) => zi + 0.5 * g * u[i] * u[i]);
   const c = sum(lifted) / lifted.length;
   const b = sum(u.map((ui, i) => ui * lifted[i])) / sum(u.map((ui) => ui * ui));
+  return { u, lifted, c, b };
+}
+
+// The residuals of z against that parabola.
+export function residualsAt(t: readonly number[], z: readonly number[], g: number): number[] {
+  const { u, lifted, c, b } = heldG(t, z, g);
   return lifted.map((li, i) => li - c - b * u[i]);
+}
+
+// The same parabola as (c, b, a) in t's own origin, to draw it between the samples.
+export function fitAtG(t: readonly number[], z: readonly number[], g: number): Quadratic {
+  const { c, b } = heldG(t, z, g);
+  const t0 = sum(t) / t.length;
+  const a = -0.5 * g;
+  // Back from centred time: z = c + b(t − t0) + a(t − t0)².
+  return { c: c - b * t0 + a * t0 * t0, b: b - 2 * a * t0, a };
 }
 
 // Root mean square of `residualsAt`, over n like P3's residual cut (`gravity.py:_fit_or_drop`).

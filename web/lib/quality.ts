@@ -23,14 +23,16 @@ export interface Hook {
   z_real_m: number[];
 }
 
-interface QualityData {
+export interface QualityData {
   schema_version: number;
   checks: Record<string, QualityRow[]>;
+  summary: { ranges: Record<string, string> } & Record<string, unknown>;
   hook: Hook;
 }
 
 const DATA = quality as QualityData;
 
+export const QUALITY: QualityData = DATA;
 export const CHECKS = DATA.checks;
 export const HOOK = DATA.hook;
 

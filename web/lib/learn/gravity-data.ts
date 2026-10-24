@@ -49,6 +49,20 @@ export function basketballGravity(rows: readonly QualityRow[]): MatchGravity[] {
 
 export const GRAVITY_MATCHES = basketballGravity(CHECKS.gravity);
 
+// The `data-fig` path of one figure of the file. Paths are dotted keys into `quality.json`,
+// except that under `checks.<check>` the next two parts are a match id and a metric, the way the
+// file keys its rows: `checks.gravity.bb:114086.g_median` is the `value` of that row.
+export const gravityFig = (match_id: string, metric: string): string => `checks.gravity.${match_id}.${metric}`;
+
+export function qualityFigure(data: unknown, path: string): unknown {
+  const parts = path.split(".");
+  if (parts[0] === "checks" && parts.length === 4) {
+    const rows = (data as { checks?: Record<string, QualityRow[]> }).checks?.[parts[1]];
+    return rows?.find((r) => r.match_id === parts[2] && r.metric === parts[3])?.value;
+  }
+  return parts.reduce<unknown>((at, key) => (at !== null && typeof at === "object" ? (at as Record<string, unknown>)[key] : undefined), data);
+}
+
 export const GRAVITY_HOOK: GravityHook = {
   match_id: HOOK.match_id,
   shot_id: HOOK.shot_id,

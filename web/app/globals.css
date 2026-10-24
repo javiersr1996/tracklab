@@ -1174,3 +1174,164 @@ a.wordmark:hover {
   font-size: var(--step-2);
   math-depth: 0;
 }
+
+/* Lesson 1's figures: a dark card, the marks on the canvas, the ticks and labels in HTML so they
+   keep the text size; the marks' colours are in components/learn/gravity/Plot.tsx. */
+.learn-fig {
+  max-width: 960px;
+  margin: var(--space-6) 0;
+  padding: var(--space-4);
+  border-radius: var(--radius);
+}
+
+.learn-fig figcaption {
+  margin-top: var(--space-3);
+  color: var(--fg-muted);
+}
+
+.learn-plot {
+  padding: var(--space-3) var(--space-5) var(--space-2) var(--space-2);
+  background: var(--canvas);
+  border-radius: var(--radius);
+  color: var(--canvas-muted);
+}
+
+.learn-plot + .learn-plot {
+  margin-top: var(--space-3);
+}
+
+.learn-plot-label {
+  margin: 0 0 var(--space-2);
+}
+
+.learn-plot-xlabel {
+  margin: 0;
+  text-align: right;
+}
+
+.learn-plot-grid {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+}
+
+.learn-plot-grid svg {
+  display: block;
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  height: auto;
+}
+
+.learn-plot-yticks {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.learn-plot-yticks span {
+  position: absolute;
+  right: var(--space-2);
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.learn-plot-xticks {
+  position: relative;
+  grid-column: 2;
+  height: 1.75rem;
+}
+
+.learn-plot-xticks span,
+.per-match-axis span {
+  position: absolute;
+  top: var(--space-1);
+  line-height: 1.2;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.learn-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-5);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.learn-swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 0.25rem;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+  background: currentColor;
+}
+
+.learn-swatch-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.learn-swatch-dashed {
+  background: repeating-linear-gradient(90deg, currentColor 0 0.5rem, transparent 0.5rem 0.875rem);
+}
+
+.learn-swatch-tick {
+  width: 0.25rem;
+  height: 1rem;
+}
+
+.learn-fig .controls {
+  margin-top: var(--space-4);
+}
+
+.learn-readout {
+  margin: var(--space-3) 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.learn-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.learn-choice legend {
+  float: left;
+  padding: 0;
+}
+
+.learn-choice input {
+  accent-color: var(--accent);
+}
+
+.per-match .per-match-strip {
+  min-width: 12rem;
+  padding: 0 var(--space-4);
+  background: var(--canvas);
+}
+
+.per-match th.per-match-strip {
+  position: relative;
+  vertical-align: bottom;
+}
+
+.per-match-axis {
+  position: relative;
+  display: block;
+  height: 1.75rem;
+  color: var(--canvas-muted);
+  font-weight: 400;
+}
+
+.per-match td.per-match-strip svg {
+  display: block;
+  width: 100%;
+  height: 1.5rem;
+}

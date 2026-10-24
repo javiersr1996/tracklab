@@ -4,9 +4,11 @@ import {
   analyticSdG,
   apparentG,
   countBelow,
+  fitAtG,
   fitQuadratic,
   gAtHalfWindow,
   heightScaleNeeded,
+  residualsAt,
   rmsAt,
   roundingBound,
   signTest,
@@ -35,6 +37,7 @@ import { CHECKS } from "../lib/quality";
 // - Also: w = u² without − m (four fail, the closed form among them), the sign test's tail from
 //   j > k (both sign tests), 1 − g/G as the time scale (the scales), the bound without its 2
 //   (worst rounding) and g instead of g/2 in `residualsAt` (rmsAt least).
+// - Task 79: a = +g/2 in `fitAtG` fails "has fitAtG at the fitted g equal to the fit".
 
 const { t_s: t, z_data_m: zData, z_real_m: zReal, g_data: gData, g_real: G } = GRAVITY_HOOK;
 
@@ -105,6 +108,15 @@ describe("the hook flight", () => {
     const { c, b, a } = fitQuadratic(t, zData);
     const own = Math.sqrt(mean(zData.map((z, i) => (z - (c + b * t[i] + a * t[i] ** 2)) ** 2)));
     expect(Math.abs(best - own)).toBeLessThan(1e-12);
+  });
+
+  it("has fitAtG at the fitted g equal to the fit, and residualsAt measured against fitAtG", () => {
+    const q = fitQuadratic(t, zData);
+    const held = fitAtG(t, zData, apparentG(t, zData));
+    expect([held.c - q.c, held.b - q.b, held.a - q.a].map((d) => Math.abs(d) < 1e-9)).toEqual([true, true, true]);
+    const p = fitAtG(t, zData, G);
+    const r = residualsAt(t, zData, G);
+    expect(Math.max(...zData.map((z, i) => Math.abs(z - (p.c + p.b * t[i] + p.a * t[i] ** 2) - r[i])))).toBeLessThan(1e-12);
   });
 
   it("goes back to g_real with its times shrunk or its heights divided by the scale needed", () => {
