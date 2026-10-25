@@ -579,3 +579,26 @@ def test_check_is_1_when_a_file_is_published_after_platform_json_was_written(
     assert run_publish_platform(**kwargs, check=True) == 1
     assert run_publish_platform(**kwargs) == 0
     assert run_publish_platform(**kwargs, check=True) == 0
+
+
+def test_check_ignores_the_timing_of_a_fresh_record(tmp_path: Path) -> None:
+    """full-build checks against the record its own run just wrote: same files and bytes, other
+    seconds. Those are the timing of a run, not a measure of the files, and must not fail it."""
+    record_dir = tmp_path / "build"
+    out_dir = tmp_path / "web"
+    out_dir.mkdir(parents=True)
+    _write_record(record_dir, _record())
+    (out_dir / "index.json").write_text(json.dumps(_index()), encoding="utf-8")
+    assert run_publish_platform(record_path=None, record_dir=record_dir, out_dir=out_dir) == 0
+
+    fresh = _record()
+    fresh["steps"] = [
+        _step("publish_stats", "publish", 900.0) if s["step_key"] == "publish_stats" else s
+        for s in fresh["steps"]
+    ]
+    fresh_path = record_dir / "20261025T133907Z_1f9cb8c.json"
+    fresh_path.write_text(json.dumps(fresh), encoding="utf-8")
+    code = run_publish_platform(
+        record_path=fresh_path, record_dir=record_dir, out_dir=out_dir, check=True
+    )
+    assert code == 0

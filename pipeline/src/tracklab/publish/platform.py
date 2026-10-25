@@ -499,9 +499,14 @@ def run_publish_platform(
         for field in ("title", "subtitle"):
             if on_disk.get(field) != payload[field]:
                 problems.append(f"{field}: on disk {on_disk.get(field)!r}, live {payload[field]!r}")
+        # The seconds are the timing of whichever run built the record, not a measure of the
+        # files: a fresh build on the runner never repeats them.
+        timing = ("seconds", "seconds_sum")
         disk_publish = next((x for x in on_disk.get("layers", []) if x["layer"] == "publish"), None)
         live_publish = next(x for x in payload["layers"] if x["layer"] == "publish")
-        if disk_publish != live_publish:
+        if disk_publish is None or {k: v for k, v in disk_publish.items() if k not in timing} != {
+            k: v for k, v in live_publish.items() if k not in timing
+        }:
             problems.append(f"layers[publish]: on disk {disk_publish}, live {live_publish}")
         if on_disk.get("raw_sources") != payload["raw_sources"]:
             problems.append(
