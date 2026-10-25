@@ -74,3 +74,8 @@ test("the hook animation starts on its own and the table matches quality.json", 
 
   expect(errors).toEqual([]);
 });
+
+test("the entry_angle check links to its lesson", async ({ page }) => {
+  await page.goto("/quality");
+  await expect(page.locator('p[data-check="entry_angle"] a[href="/learn/entry"]')).toHaveCount(1);
+});

@@ -49,6 +49,11 @@ export default function QualityPage() {
             </tbody>
           </table>
         </div>
+        <p data-check="entry_angle">
+          Entry angle gap: part of the distance between the reported and the required angle comes
+          from the method itself, and would remain even with a perfect flight. The{" "}
+          <a href="/learn/entry">entry lesson</a> explains where.
+        </p>
       </Band>
     </main>
   );
