@@ -1,24 +1,23 @@
 -- files: /data/pose/hook_1925299.json
--- The clip /pose publishes for 1925299: its frame rate, the player its window names, and where
--- the nose and the two shoulders sit in the list of joints.
-CREATE VIEW clip AS
-SELECT fps, windows[1].player AS hook,
-       list_position(joints, 'nose') - 1 AS nose_i,
-       list_position(joints, 'lShoulder') - 1 AS l_i,
-       list_position(joints, 'rShoulder') - 1 AS r_i,
-       frames
-FROM read_json('/data/pose/hook_1925299.json',
-               columns = {fps: 'INTEGER', joints: 'VARCHAR[]', windows: 'STRUCT(player INTEGER)[]',
-                          frames: 'STRUCT(f INTEGER, p JSON[])[]'});
--- The hook player's row of every frame: x and y (cm) and the three joints as [dx, dy, dz] in cm
--- from the player's own x, y (null where the frame has no skeleton for the player).
+-- The hook player of the clip /pose publishes for 1925299 (the player its window names), one
+-- row per frame: the frame rate, x and y (cm) and the nose and the two shoulders, found by name
+-- in the clip's list of joints, as [dx, dy, dz] in cm from the player's own x, y (null where the
+-- frame has no skeleton for the player). One view, so the query can name it alone.
 CREATE VIEW hook_rows AS
 SELECT fps, f, (p ->> '$[0]')::INTEGER AS i, (p ->> '$[1]')::INTEGER AS x, (p ->> '$[2]')::INTEGER AS y,
        json_extract(p, '$[4][0][' || nose_i || ']')::DOUBLE[] AS nose,
        json_extract(p, '$[4][0][' || l_i || ']')::DOUBLE[] AS l,
        json_extract(p, '$[4][0][' || r_i || ']')::DOUBLE[] AS r
 FROM (SELECT fps, hook, nose_i, l_i, r_i, fr.f AS f, unnest(fr.p) AS p
-      FROM (SELECT fps, hook, nose_i, l_i, r_i, unnest(frames) AS fr FROM clip))
+      FROM (SELECT fps, windows[1].player AS hook,
+                   list_position(joints, 'nose') - 1 AS nose_i,
+                   list_position(joints, 'lShoulder') - 1 AS l_i,
+                   list_position(joints, 'rShoulder') - 1 AS r_i,
+                   unnest(frames) AS fr
+            FROM read_json('/data/pose/hook_1925299.json',
+                           columns = {fps: 'INTEGER', joints: 'VARCHAR[]',
+                                      windows: 'STRUCT(player INTEGER)[]',
+                                      frames: 'STRUCT(f INTEGER, p JSON[])[]'})))
 WHERE i = hook;
 -- Lesson 11 in this browser: for every frame of the hook player with a position in the frame
 -- before and the frame after, both shoulders and the nose off their line, and a speed over
