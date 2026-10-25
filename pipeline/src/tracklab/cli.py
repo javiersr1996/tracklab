@@ -7,12 +7,15 @@ stub for now; its logic lands in the task that owns it (see tasks/todo.md).
 from __future__ import annotations
 
 import argparse
+import contextlib
 import os
+import re
 import sys
 import time
 from collections.abc import Callable, Sequence
 from datetime import date
 from pathlib import Path
+from typing import TextIO
 
 from tracklab.bronze.basketball.aggregates import build_aggregates as build_basketball_aggregates
 from tracklab.bronze.basketball.events import build_events as build_basketball_events
@@ -1475,11 +1478,45 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# full-build sets this: a `--check` that says PARTIAL there found data missing; green hides it.
+REQUIRE_FULL = "TRACKLAB_REQUIRE_FULL"
+_PARTIAL = re.compile(r"\bPARTIAL(?: \d+/\d+|:)")
+
+
+class _Tee:
+    """Write through to a stream and keep what went by."""
+
+    def __init__(self, stream: TextIO, seen: list[str]) -> None:
+        self._stream = stream
+        self._seen = seen
+
+    def write(self, text: str) -> int:
+        self._seen.append(text)
+        return self._stream.write(text)
+
+    def flush(self) -> None:
+        self._stream.flush()
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     func: _Handler = args.func
-    return func(args)
+    if not (os.environ.get(REQUIRE_FULL) and getattr(args, "check", False)):
+        return func(args)
+    seen: list[str] = []
+    with (
+        contextlib.redirect_stdout(_Tee(sys.stdout, seen)),
+        contextlib.redirect_stderr(_Tee(sys.stderr, seen)),
+    ):
+        code = func(args)
+    if code == 0 and _PARTIAL.search("".join(seen)):
+        print(
+            f"{REQUIRE_FULL} is set and this check said PARTIAL: data is missing, so it fails.",
+            file=sys.stderr,
+        )
+        return 1
+    return code
 
 
 if __name__ == "__main__":

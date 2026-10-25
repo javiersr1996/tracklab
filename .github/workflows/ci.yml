@@ -70,6 +70,10 @@ jobs:
       - run: uv run tracklab learn entry --check
       - run: uv run tracklab learn dribble --check
       - run: uv run tracklab learn possession --check
+      # Task 96: the lesson that rebuilds gravity.json (task 87) and the SQL of "Run it here" on the
+      # published files; the second reads web/public/data only, so it is FULL on the fixtures too.
+      - run: uv run tracklab learn hypotheses --check
+      - run: uv run tracklab learn browser --check
       # Task 54: P5's versioned reports and runs.json against the fixtures. A slice of the
       # warehouse cannot recompute the figures, so each prints PARTIAL and what it verified
       # (the seal, the protocol, the match list, the clips by size and hash); full-build.yml

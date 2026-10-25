@@ -174,27 +174,47 @@ uv run tracklab publish pose --check            # pose.json and the clips
 ## Learn
 
 [`/learn`](https://tracklab-sable.vercel.app/learn) is a series of short lessons that start from one
-question the data can answer and build the tool by hand. The first asks whether the ball obeys
-gravity: a least-squares parabola through the ball's heights in a shot, its fit and its noise, and
-the same check across the basketball matches. The text carries no figure of its own: every number on
-the page is read from `quality.json` or computed in the browser from a published flight, and the
-end-to-end test compares each one with its source. Where a lesson needs the data it says what the
+question the data can answer and build the tool by hand, grouped by level. The text carries no figure
+of its own: every number on a page is read from a published file or computed in the browser from one,
+and the end-to-end test compares each with its source. Where a lesson needs the data it says what the
 numbers do not explain and leaves the cause open.
 
-Each lesson ends with the query or script that reproduces its figures on the provider's public
-files. The first is `pipeline/src/tracklab/learn/gravity.sql`, the one the page shows, and
-`learn gravity --check` runs it over each basketball match and compares the flights and the median
-g with `quality.json`; it publishes no data of its own. The second and fourth publish theirs:
-`learn speed` writes `web/public/data/learn/speed.json` and `learn rebound` writes
-`learn/rebound.json`, and each `--check` rebuilds the file from bronze, compares its bytes and runs
-the lesson's SQL on the public files. CI runs the checks on the fixtures (they print PARTIAL and
-what they verified) and `full-build` on the whole bronze.
+Foundations: does the ball obey gravity (a least-squares parabola through a shot), where the
+provider's speed comes from (finite differences and noise), whether a court and a pitch can share one
+table (coordinates and interpolation), and whether the game clock keeps the video's time (a line
+through two clocks). Intermediate: who gets to the rebound first, how fast a pass travels, at what
+angle the ball reaches the rim, how many bounces per second, and how often possession changes hands.
+Advanced: how many steps per second (periodicity in body pose) and which way a player is facing (a
+direction from two shoulders and a nose, and circular statistics).
+
+Each lesson ends with "Reproduce it": the query or script that gives its figures on the provider's
+public files, and, for the SQL ones, "Run it here", the same query in the DuckDB-WASM the warehouse
+uses, over the JSON files the page already reads (it adds no data). Every browser query has a twin in
+`pipeline/src/tracklab/learn/<lesson>.browser.sql` that `learn browser --check` runs against
+`web/public/data`. The lessons that publish a table (`web/public/data/learn/<lesson>.json`) have a
+publisher whose `--check` rebuilds the file from bronze, compares its bytes and runs the lesson's SQL
+on the raw files. Every link to a lesson carries its own social card (the question, the lesson number
+and level, no figure), and `/sitemap.xml` and `/robots.txt` list them.
+
+CI runs the checks on the fixtures (they print PARTIAL and what they verified); `full-build` runs them
+on the whole bronze with `TRACKLAB_REQUIRE_FULL=1`, under which a `--check` that says PARTIAL exits 1.
 
 ```
-uv run tracklab learn gravity --check           # the first lesson's SQL against quality.json
-uv run tracklab learn speed --check             # speed.json and the second lesson's SQL
-uv run tracklab learn rebound --check           # rebound.json and the fourth lesson's SQL
+uv run tracklab learn gravity --check           # lesson 1's SQL against quality.json
+uv run tracklab learn hypotheses --check        # gravity.json, the data against lesson 1's hypotheses
+uv run tracklab learn speed --check             # speed.json and lesson 2's SQL
+uv run tracklab learn clock --check             # clock.json and its SQL
+uv run tracklab learn rebound --check           # rebound.json and its SQL
+uv run tracklab learn pass --check              # pass.json and its SQL
+uv run tracklab learn entry --check             # entry.json and its script
+uv run tracklab learn dribble --check           # dribble.json and its SQL
+uv run tracklab learn possession --check        # possession.json, football and basketball
+uv run tracklab learn browser --check           # every "Run it here" query against web/public/data
+TRACKLAB_REQUIRE_FULL=1 uv run tracklab learn speed --check   # fail on PARTIAL
 ```
+
+The coordinates, cadence and facing lessons publish nothing of their own: the page computes from
+files that already exist, and `learn browser --check` covers their queries.
 
 ## Warehouse
 

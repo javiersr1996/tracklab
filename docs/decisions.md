@@ -322,3 +322,14 @@ Sustained by `pipeline/tests/contracts/test_cross_sport.py::test_no_column_is_fi
 Applied by `pipeline/dbt/models/silver/frames.sql` (`z_m`: `NULL::DOUBLE` for every player row, the provider's converted value for the ball) and `pipeline/dbt/models/silver/dim_match.sql` (`z_ball_status`, `z_player_status`).
 
 Sustained by the standing dbt test `pipeline/dbt/tests/assert_frames_z_only_on_the_ball.sql` and the pytest contract `pipeline/tests/contracts/test_cross_sport.py::test_players_never_carry_a_z_and_the_ball_share_is_printed`, filed in `pipeline/reports/contracts.json` as `player_rows_with_z: {"basketball": 0, "football": 0}` and `ball_z_pct` at 100.0 for every one of the 30 matches. The basketball ball-z bias (median 3.48 to 3.63 ft, 4.5 to 7.7% negative across the 10 matches) is measured in `docs/formats/basketball.md`.
+
+## Decisions of P9, the Learn series grows to eleven lessons
+
+1. **The browser queries the files already published.** "Run it here" registers, per lesson, the JSON the page already reads and defines flat views over `read_json(...)`; no Parquet and no new bytes, so the platform's "to query" does not move.
+2. **One engine, two instances.** `lib/duckdb/engine.ts` builds an instance from a name and its files; the warehouse keeps its own with the same API, and the Learn instance loads nothing until the reader presses Run.
+3. **Every browser SQL has a Python twin.** `learn/<lesson>.browser.sql` is the query the page runs; `tracklab learn browser --check` runs it with DuckDB on `web/public/data` and compares the rows with the lesson's file (FULL k/k).
+4. **Tables, not trajectories**, except one flight and the scalar frames of two lessons; every new JSON passes `test_learn_fence.py` (no held-out match, no forbidden key).
+5. **The social card carries no figure**: the question, "Lesson n · Level" and the mark, so the rule that every number comes from an artifact has nothing to check. Satori (`next/og`) reads TTF, not WOFF2, so `web/app/fonts/SpaceGrotesk-latin-bold.ttf` is the committed variable WOFF2 fixed at weight 700 (OFL 1.1, same licence file, read at build time and never served).
+6. **The index groups the lessons by level**, says in two sentences what the series is, and names each lesson's sport as text; `data-lesson` and `data-status` stay as in P8.
+7. **Lessons are numbered in the order they read, without gaps**: the lesson on distance was dropped before it was built (a risk to the Analytics Cup fence), so the numbers run 1 to 11.
+8. **In `full-build`, PARTIAL fails.** `TRACKLAB_REQUIRE_FULL=1` makes `tracklab ... --check` exit 1 when what it printed says `PARTIAL k/n` or `PARTIAL:`; the verdict is still printed. P8's speed and rebound checks had printed PARTIAL 0/10 and stayed green. CI leaves it unset: the fixtures cannot recompute a whole warehouse, and PARTIAL is their honest answer. The pytest step of `full-build` clears it.
