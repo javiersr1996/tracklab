@@ -110,10 +110,10 @@ def test_a_figure_of_another_field_is_caught() -> None:
         assert prose_problems(text) != []
 
 
-# The only numbers in code that are not measurements: the second load's contract and the exit code
-# of `ingest`. Exact phrases, so a stray `0` or `1` elsewhere in code is a problem (review V of P4,
-# B10).
-NOT_FIGURES = ("`inserted=0 updated=0 deleted=0`", "Exit code `1`")
+# The only numbers in code that are not measurements: the second load's contract, the exit code
+# of `ingest` and the switch that makes a `--check` fail on PARTIAL. Exact phrases, so a stray `0`
+# or `1` elsewhere in code is a problem (review V of P4, B10).
+NOT_FIGURES = ("`inserted=0 updated=0 deleted=0`", "Exit code `1`", "TRACKLAB_REQUIRE_FULL=1")
 
 
 def code_figures(text: str) -> list[str]:

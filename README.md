@@ -197,12 +197,12 @@ on the raw files. Every link to a lesson carries its own social card (the questi
 and level, no figure), and `/sitemap.xml` and `/robots.txt` list them.
 
 CI runs the checks on the fixtures (they print PARTIAL and what they verified); `full-build` runs them
-on the whole bronze with `TRACKLAB_REQUIRE_FULL=1`, under which a `--check` that says PARTIAL exits 1.
+on the whole bronze with `TRACKLAB_REQUIRE_FULL=1`, under which a `--check` that says PARTIAL exits non-zero.
 
 ```
-uv run tracklab learn gravity --check           # lesson 1's SQL against quality.json
-uv run tracklab learn hypotheses --check        # gravity.json, the data against lesson 1's hypotheses
-uv run tracklab learn speed --check             # speed.json and lesson 2's SQL
+uv run tracklab learn gravity --check           # the first lesson's SQL against quality.json
+uv run tracklab learn hypotheses --check        # gravity.json, the data against the first lesson's hypotheses
+uv run tracklab learn speed --check             # speed.json and the second lesson's SQL
 uv run tracklab learn clock --check             # clock.json and its SQL
 uv run tracklab learn rebound --check           # rebound.json and its SQL
 uv run tracklab learn pass --check              # pass.json and its SQL
