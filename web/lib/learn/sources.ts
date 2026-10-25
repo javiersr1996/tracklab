@@ -437,14 +437,14 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     quote: "`nose`, `neck`, `lEye`, `rEye`, `lEar`, `rEar`, `lShoulder`, `rShoulder`,",
   },
   "skillcorner-bodypose-interpolated": {
-    label: "SkillCorner, opendata-bodypose at a62e1ec, README.md, lines 80 and 81",
+    label: "SkillCorner, opendata-bodypose at a62e1ec, README.md, lines 82 and 83",
     short: "SkillCorner, opendata-bodypose README",
     url: "https://huggingface.co/datasets/SkillCorner/opendata-bodypose/blob/a62e1ec1e3b82952042a7f7fa9dafd77c0e0822a/README.md",
     read: "2026-10-25",
     quote: "The 2D `x`/`y` positions in this file are the standard tracking positions interpolated up to 25 fps, not native 25 fps measurements.",
   },
   "skillcorner-bodypose-separate": {
-    label: "SkillCorner, opendata-bodypose at a62e1ec, README.md, lines 144 to 146",
+    label: "SkillCorner, opendata-bodypose at a62e1ec, README.md, lines 143 to 145",
     short: "SkillCorner, opendata-bodypose README",
     url: "https://huggingface.co/datasets/SkillCorner/opendata-bodypose/blob/a62e1ec1e3b82952042a7f7fa9dafd77c0e0822a/README.md",
     read: "2026-10-25",

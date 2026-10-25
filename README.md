@@ -93,7 +93,7 @@ than its data).
 
 ```
 title: 3.6 GB in, 7.5 MB out
-subtitle: 5.4 MB to watch, 2.1 MB to query
+subtitle: 5.5 MB to watch, 2.1 MB to query
 ```
 
 `uv run dagster asset list -m tracklab.dagster_defs` lists `88` assets, the graph

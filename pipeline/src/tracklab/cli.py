@@ -610,8 +610,9 @@ def build_parser() -> argparse.ArgumentParser:
     publish_platform.add_argument(
         "--check",
         action="store_true",
-        help="Write nothing; compare rows per table and per match against the record and "
-        "stats.json, exit 1 if they differ.",
+        help="Write nothing; compare the published bytes (measured live), title and subtitle, "
+        "and rows per table and per match against the record and stats.json, exit 1 if "
+        "they differ.",
     )
     publish_platform.set_defaults(func=_cmd_publish_platform)
 

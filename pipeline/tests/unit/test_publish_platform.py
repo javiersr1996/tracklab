@@ -557,3 +557,25 @@ def test_latest_record_picks_the_newest_by_name(tmp_path: Path) -> None:
 def test_latest_record_raises_without_any_record(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         latest_record(tmp_path / "build")
+
+
+def test_check_is_1_when_a_file_is_published_after_platform_json_was_written(
+    tmp_path: Path,
+) -> None:
+    """The published bytes are measured live, not taken from the record: a JSON added (or
+    grown) under the out dir after `platform.json` was written must fail `--check`, and
+    `platform.json` itself must not count (it would depend on its own title)."""
+    record_dir = tmp_path / "build"
+    out_dir = tmp_path / "web"
+    out_dir.mkdir(parents=True)
+    _write_record(record_dir, _record())
+    (out_dir / "index.json").write_text(json.dumps(_index()), encoding="utf-8")
+    assert run_publish_platform(record_path=None, record_dir=record_dir, out_dir=out_dir) == 0
+    kwargs: dict[str, Any] = {"record_path": None, "record_dir": record_dir, "out_dir": out_dir}
+    assert run_publish_platform(**kwargs, check=True) == 0
+
+    (out_dir / "learn").mkdir()
+    (out_dir / "learn" / "lesson.json").write_text("{}\n", encoding="utf-8")
+    assert run_publish_platform(**kwargs, check=True) == 1
+    assert run_publish_platform(**kwargs) == 0
+    assert run_publish_platform(**kwargs, check=True) == 0

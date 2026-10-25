@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "title": "3.6 GB in, 7.5 MB out",
-  "subtitle": "5.4 MB to watch, 2.1 MB to query",
+  "subtitle": "5.5 MB to watch, 2.1 MB to query",
   "run": {
     "git_sha": "ad5e043e081b02f79361617a4191386380b116df",
     "started_utc": "2026-10-24T16:20:29+00:00",
@@ -67,13 +67,13 @@
     },
     {
       "layer": "publish",
-      "files": 34,
+      "files": 40,
       "rows": null,
-      "bytes": 7475256,
+      "bytes": 7511257,
       "seconds": 8.1,
       "seconds_sum": 15.4,
-      "watch_files": 24,
-      "watch_bytes": 5421155,
+      "watch_files": 30,
+      "watch_bytes": 5457156,
       "query_files": 10,
       "query_bytes": 2054101,
       "note": "split by use: to watch, the possessions and the JSON the other pages are built from; to query, what only /warehouse uses, the Parquet and the warehouse*.json that describe them; as `tracklab build` measured them, without lineage.json and platform.json (counting platform.json would make the title depend on its own previous value, decision 1); the query engine is not data and is not counted"

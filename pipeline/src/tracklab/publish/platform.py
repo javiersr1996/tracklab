@@ -1,9 +1,12 @@
 """`tracklab publish platform`: `web/public/data/platform.json`, the manifest
 `/platform` (task 35) draws its layers, tables and per-match numbers from
-(task 34). Nothing here is measured a second time: every figure comes from
+(task 34). Every figure comes from
 the newest `tracklab build` record under `<data root>/build/` (or `--run PATH`) --
 the same JSON task 32 writes, rows from Parquet footers and bytes from
-`stat` -- plus `web/public/data/index.json`, the six curated possessions'
+`stat` -- except the published bytes (`disk.publish`), which are measured live on
+`web/public/data` by `build.measure_publish` on every run and every `--check`, because a
+record taken before a later commit added JSON there would otherwise go stale unnoticed
+-- plus `web/public/data/index.json`, the six curated possessions'
 own index (task 17), for `matches[].published_*`.
 
 Two decisions, not forced.
@@ -34,7 +37,8 @@ Two decisions, not forced.
    `native_match_id=` partitions, so a season table simply never has a match
    id to be found under.
 
-`--check` writes nothing. It compares row counts -- never bytes, because
+`--check` writes nothing. It compares the published layer, title and subtitle (files,
+bytes to watch and to query, live) and row counts -- never the bytes of the Parquet tables, because
 `publish/stats.py` already documents that DuckDB's parallel writer lays out
 Parquet row groups differently run to run, so byte counts are not
 reproducible even though row counts are -- by table against the given
@@ -472,6 +476,9 @@ def run_publish_platform(
         return 1
     index_path = out_dir / INDEX_JSON
     index_payload = load_json(index_path) if index_path.is_file() else {"possessions": []}
+    from tracklab.build import measure_publish  # build imports PLATFORM_JSON from here
+
+    record["disk"]["publish"] = measure_publish(out_dir)
     payload = platform_from_record(record, index_payload)
 
     print(f"publish platform: record {path.name}")
@@ -489,6 +496,13 @@ def run_publish_platform(
         problems = _diff_tables(on_disk.get("tables", []), payload["tables"]) + _diff_matches(
             on_disk.get("matches", []), payload["matches"], stats_rows
         )
+        for field in ("title", "subtitle"):
+            if on_disk.get(field) != payload[field]:
+                problems.append(f"{field}: on disk {on_disk.get(field)!r}, live {payload[field]!r}")
+        disk_publish = next((x for x in on_disk.get("layers", []) if x["layer"] == "publish"), None)
+        live_publish = next(x for x in payload["layers"] if x["layer"] == "publish")
+        if disk_publish != live_publish:
+            problems.append(f"layers[publish]: on disk {disk_publish}, live {live_publish}")
         if on_disk.get("raw_sources") != payload["raw_sources"]:
             problems.append(
                 f"raw_sources: on disk {on_disk.get('raw_sources')},"
