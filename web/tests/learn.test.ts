@@ -9,6 +9,11 @@ describe("the series", () => {
     expect(new Set(LESSONS.map((l) => l.slug)).size).toBe(LESSONS.length);
   });
 
+  it("gives every lesson a sport, and no digit in a title (the OG card prints the title and the lesson's number only)", () => {
+    expect(LESSONS.filter((l) => !["Basketball", "Football", "Basketball and football"].includes(l.sport))).toEqual([]);
+    expect(LESSONS.filter((l) => /\d/.test(l.title))).toEqual([]);
+  });
+
   it("opens with the gravity lesson, published", () => {
     expect(LESSONS[0]).toMatchObject({ slug: "gravity", status: "published" });
   });

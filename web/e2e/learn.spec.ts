@@ -49,8 +49,60 @@ test("the index links every published lesson of series.ts, none in preparation",
   await expect(page.getByText("In preparation")).toHaveCount(0);
 
   // The series is numbered in order, with no gap and nothing past its last lesson.
+  // The index groups them by level, so the DOM order is by level; sorted, they are 1 to n.
   const numbers = await page.locator("[data-series-n]").evaluateAll((els) => els.map((e) => Number(e.getAttribute("data-series-n"))));
-  expect(numbers).toEqual(LESSONS.map((_, i) => i + 1));
+  expect(numbers.sort((a, b) => a - b)).toEqual(LESSONS.map((_, i) => i + 1));
+});
+
+test("the index groups the lessons by level and names each one's sport as text", async ({ page }) => {
+  await page.goto("/learn");
+  const levels = await page.getByRole("heading", { level: 2 }).allInnerTexts();
+  expect(levels).toEqual([...new Set(LESSONS.map((l) => l.level))].sort((a, b) => ["Foundations", "Intermediate", "Advanced"].indexOf(a) - ["Foundations", "Intermediate", "Advanced"].indexOf(b)));
+  for (const l of LESSONS) {
+    const item = page.locator(`[data-lesson="${l.slug}"]`);
+    await expect(item.locator(".lesson-meta")).toContainText(l.sport);
+    await expect(item.locator("xpath=ancestor::section[1]/h2")).toHaveText(l.level);
+  }
+});
+
+test("the index asks for no OG image, and its own card is 200 image/png", async ({ page }) => {
+  const requested: string[] = [];
+  page.on("request", (r) => requested.push(r.url()));
+  await page.goto("/learn");
+  await page.waitForLoadState("networkidle");
+  expect(requested.filter((u) => u.includes("opengraph-image"))).toEqual([]);
+  await expectCard(page, "/learn");
+});
+
+// The og:image of a page: a 200 `image/png` at the path its meta tag names (the tag is absolute
+// to the production site, so the path is asked of the server under test).
+async function expectCard(page: Page, route: string) {
+  const html = await (await page.request.get(route)).text();
+  const src = html.match(/<meta property="og:image" content="([^"]+)"/)?.[1];
+  expect(src, `${route}: og:image`).toBeTruthy();
+  const res = await page.request.get(new URL(src!).pathname);
+  expect(res.status(), src).toBe(200);
+  expect(res.headers()["content-type"]).toBe("image/png");
+  expect((await res.body()).length).toBeGreaterThan(1_000);
+}
+
+test("every published lesson has a title that is its question, and an og:image that answers", async ({ page }) => {
+  for (const l of LESSONS.filter((x) => x.status === "published")) {
+    await page.goto(lessonHref(l));
+    await expect(page, l.slug).toHaveTitle(l.title);
+    await expectCard(page, lessonHref(l));
+  }
+});
+
+test("/sitemap.xml lists every published lesson and /robots.txt answers", async ({ page }) => {
+  const sitemap = await page.request.get("/sitemap.xml");
+  expect(sitemap.status()).toBe(200);
+  const xml = await sitemap.text();
+  for (const l of LESSONS.filter((x) => x.status === "published")) expect(xml, l.slug).toContain(`<loc>https://tracklab-sable.vercel.app${lessonHref(l)}</loc>`);
+  expect(xml).toContain("<loc>https://tracklab-sable.vercel.app/learn</loc>");
+  const robots = await page.request.get("/robots.txt");
+  expect(robots.status()).toBe(200);
+  expect(await robots.text()).toContain("Sitemap: https://tracklab-sable.vercel.app/sitemap.xml");
 });
 
 test("the lesson link opens a page, not a 404", async ({ page }) => {

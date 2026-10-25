@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Nav } from "../components/site/Nav";
-import { DATA_SOURCES } from "../lib/sections";
+import { DATA_SOURCES, SITE } from "../lib/sections";
 import "./globals.css";
 
 // The one webfont: headings, eyebrows, buttons and the big figures. It is the Latin subset of the
@@ -18,6 +18,7 @@ const display = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
   title: "Track Lab",
 };
 

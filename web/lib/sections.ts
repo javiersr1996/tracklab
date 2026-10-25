@@ -51,6 +51,9 @@ export const SECTIONS = [
 // The header marks a section current on its own page and on every page under it.
 export const isCurrent = (path: string, href: string) => path === href || path.startsWith(`${href}/`);
 
+// Where the site is served, so a relative og:image becomes the absolute URL a link preview needs.
+export const SITE = "https://tracklab-sable.vercel.app";
+
 export const REPO = "https://github.com/javiersr1996/tracklab";
 
 // Where the data comes from, as `pipeline/manifest/sources.json` pins it (all three MIT).

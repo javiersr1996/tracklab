@@ -1154,6 +1154,15 @@ a.wordmark:hover {
   color: var(--fg-muted);
 }
 
+.lesson-group + .lesson-group {
+  margin-top: var(--space-7);
+}
+
+.lesson-level {
+  margin: 0 0 var(--space-5);
+  font-size: var(--step-h2);
+}
+
 .lessons {
   display: grid;
   gap: var(--space-6);
@@ -1167,7 +1176,7 @@ a.wordmark:hover {
   border-top: 1px solid var(--rule);
 }
 
-.lessons h2 {
+.lessons h3 {
   margin: 0 0 var(--space-3);
   font-size: var(--step-h3);
 }

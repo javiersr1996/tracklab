@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Band, PageHead } from "../../components/site/Band";
-import { LESSONS, lessonHref } from "../../lib/learn/series";
+import { learnMetadata } from "../../lib/learn/metadata";
+import { LESSONS, LEVELS, lessonHref } from "../../lib/learn/series";
+
+export const metadata: Metadata = learnMetadata;
 
 export default function LearnPage() {
   return (
@@ -8,23 +12,34 @@ export default function LearnPage() {
       <PageHead eyebrow="Learn">
         <h1>Learn from the tracking data</h1>
         <p className="lede">
-          Short lessons that each start from a question about the data, work the idea with the
-          published frames, and end with a figure per match and the query or script that reproduces it.
+          Each lesson starts from one question about SkillCorner&apos;s open tracking data, works the idea on the
+          published frames, and ends with a figure per match and the query or script that reproduces it. The
+          lessons are grouped by level, and each names the sport whose data it uses.
         </p>
       </PageHead>
       <Band>
-        <ol className="lessons">
-          {LESSONS.map((l) => (
-            <li key={l.slug} data-lesson={l.slug} data-status={l.status}>
-              <p className="lesson-meta">
-                Lesson <span data-series-n={l.n}>{l.n}</span> · {l.level}
-              </p>
-              <h2>{l.status === "published" ? <Link href={lessonHref(l)}>{l.title}</Link> : l.title}</h2>
-              <p>{l.about}</p>
-              {l.status === "published" ? null : <p className="lesson-status">In preparation</p>}
-            </li>
-          ))}
-        </ol>
+        {LEVELS.map((level) => {
+          const lessons = LESSONS.filter((l) => l.level === level);
+          return lessons.length === 0 ? null : (
+            <section key={level} className="lesson-group" aria-labelledby={`level-${level}`}>
+              <h2 id={`level-${level}`} className="lesson-level">
+                {level}
+              </h2>
+              <ol className="lessons">
+                {lessons.map((l) => (
+                  <li key={l.slug} data-lesson={l.slug} data-status={l.status}>
+                    <p className="lesson-meta">
+                      Lesson <span data-series-n={l.n}>{l.n}</span> · {l.sport}
+                    </p>
+                    <h3>{l.status === "published" ? <Link href={lessonHref(l)}>{l.title}</Link> : l.title}</h3>
+                    <p>{l.about}</p>
+                    {l.status === "published" ? null : <p className="lesson-status">In preparation</p>}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          );
+        })}
       </Band>
     </main>
   );
