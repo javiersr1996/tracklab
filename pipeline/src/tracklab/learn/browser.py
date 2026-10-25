@@ -29,6 +29,8 @@ from typing import Any
 import duckdb
 import numpy as np
 
+from tracklab.learn import facing as facing_script
+
 LESSONS = (
     "gravity",
     "speed",
@@ -40,6 +42,7 @@ LESSONS = (
     "entry",
     "dribble",
     "possession",
+    "facing",
 )
 HERE = Path(__file__).parent
 FILES_LINE = re.compile(r"^-- files: (.+)$", re.MULTILINE)
@@ -230,6 +233,29 @@ def _possession(public: Path) -> Expected:
     return out
 
 
+def _facing(public: Path) -> Expected:
+    # The SQL's angles for the hook player of the clip against the public script's on the same
+    # clip (`facing.py`, the lesson's "Reproduce it"), at the three decimals the page prints.
+    clip = _json(public, "/data/pose/hook_1925299.json")
+    frames = facing_script.frames_of(clip, clip["windows"][0]["player"])
+    s = facing_script.summary(frames)
+    first = frames[0]
+    half = 0.0005 + 1e-9
+    return {
+        "learn.hook.1925299.frames": (str(s["frames"]), 0),
+        "learn.hook.1925299.first_frame_id": (str(first["f"]), 0),
+        "learn.hook.1925299.first_facing": (first["facing"], half),
+        "learn.hook.1925299.first_heading": (first["heading"], half),
+        "learn.hook.1925299.first_relative": (first["relative"], half),
+        "learn.hook.1925299.median_abs": (s["median_abs"], half),
+        "learn.hook.1925299.circ_mean": (s["circ_mean"], half),
+        "learn.hook.1925299.resultant": (s["resultant"], half),
+        "learn.hook.1925299.circ_var": (s["circ_var"], half),
+        "learn.hook.1925299.off_pct": (s["off_pct"], 0.05 + 1e-9),
+        "learn.hook.1925299.back_pct": (s["back_pct"], 0.05 + 1e-9),
+    }
+
+
 EXPECT: dict[str, Callable[[Path], Expected]] = {
     "gravity": _gravity,
     "speed": _speed,
@@ -241,6 +267,7 @@ EXPECT: dict[str, Callable[[Path], Expected]] = {
     "entry": _entry,
     "dribble": _dribble,
     "possession": _possession,
+    "facing": _facing,
 }
 
 

@@ -428,6 +428,42 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-25",
     quote: "is used to model data with a constant failure rate (indicated by the hazard plot which is simply equal to a constant)",
   },
+  // Lesson 11.
+  "skillcorner-bodypose-joints": {
+    label: "SkillCorner, opendata-bodypose at a62e1ec, README.md, line 87",
+    short: "SkillCorner, opendata-bodypose README",
+    url: "https://huggingface.co/datasets/SkillCorner/opendata-bodypose/blob/a62e1ec1e3b82952042a7f7fa9dafd77c0e0822a/README.md",
+    read: "2026-10-25",
+    quote: "`nose`, `neck`, `lEye`, `rEye`, `lEar`, `rEar`, `lShoulder`, `rShoulder`,",
+  },
+  "skillcorner-bodypose-interpolated": {
+    label: "SkillCorner, opendata-bodypose at a62e1ec, README.md, lines 80 and 81",
+    short: "SkillCorner, opendata-bodypose README",
+    url: "https://huggingface.co/datasets/SkillCorner/opendata-bodypose/blob/a62e1ec1e3b82952042a7f7fa9dafd77c0e0822a/README.md",
+    read: "2026-10-25",
+    quote: "The 2D `x`/`y` positions in this file are the standard tracking positions interpolated up to 25 fps, not native 25 fps measurements.",
+  },
+  "skillcorner-bodypose-separate": {
+    label: "SkillCorner, opendata-bodypose at a62e1ec, README.md, lines 144 to 146",
+    short: "SkillCorner, opendata-bodypose README",
+    url: "https://huggingface.co/datasets/SkillCorner/opendata-bodypose/blob/a62e1ec1e3b82952042a7f7fa9dafd77c0e0822a/README.md",
+    read: "2026-10-25",
+    quote: "XY Tracking data and Body Pose are generated separately. This can cause minor misalignments between the XY attributes (positions, `is_detected` flag) and the Body Pose joints.",
+  },
+  "scipy-circmean": {
+    label: "SciPy 1.14.1 reference, scipy.stats.circmean",
+    short: "SciPy, circmean",
+    url: "https://docs.scipy.org/doc/scipy-1.14.1/reference/generated/scipy.stats.circmean.html",
+    read: "2026-10-25",
+    quote: "Compute the circular mean of a sample of angle observations.",
+  },
+  "scipy-circvar": {
+    label: "SciPy 1.14.1 reference, scipy.stats.circvar",
+    short: "SciPy, circvar",
+    url: "https://docs.scipy.org/doc/scipy-1.14.1/reference/generated/scipy.stats.circvar.html",
+    read: "2026-10-25",
+    quote: "is known as the mean resultant length",
+  },
 };
 
 export function sourceProblems(id: string, s: Source): string[] {

@@ -1615,3 +1615,29 @@ a.wordmark:hover {
   height: auto;
   max-height: 24rem;
 }
+
+/* Lesson 11: the compass's two round views keep their proportions, side by side when there is room. */
+.learn-facing-views {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-3);
+}
+
+.learn-facing-view {
+  padding: var(--space-3);
+  background: var(--canvas);
+  border-radius: var(--radius);
+  color: var(--canvas-muted);
+}
+
+.learn-facing-view svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 20rem;
+  margin: 0 auto;
+}
+
+.learn-facing .learn-fig .table-scroll {
+  margin-top: var(--space-4);
+}

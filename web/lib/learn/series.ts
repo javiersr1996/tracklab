@@ -93,6 +93,14 @@ export const LESSONS: readonly Lesson[] = [
     status: "published",
     about: "Three units of possession, durations as a distribution, and a survival curve against an exponential with the same median.",
   },
+  {
+    n: 11,
+    slug: "facing",
+    title: "Which way is a player facing?",
+    level: "Advanced",
+    status: "published",
+    about: "A direction from two shoulders and a nose, set against the direction of travel, and a mean and a variance that know the circle closes.",
+  },
 ];
 
 export const lessonHref = (l: Lesson) => `/learn/${l.slug}`;
