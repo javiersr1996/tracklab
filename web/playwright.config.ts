@@ -15,6 +15,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
+  // Locally the default (half the cores) starves the engine pages and fails unrelated tests; 4 passes.
+  workers: process.env.CI ? undefined : 4,
   reporter: "html",
   use: {
     baseURL: BASE_URL ?? LOCAL_URL,
