@@ -76,6 +76,7 @@ jobs:
       - run: uv run tracklab learn possession --check
       - run: uv run tracklab learn hypotheses --check
       - run: uv run tracklab learn browser --check
+      - run: uv run tracklab sql course --check
       - id: build_record
         run: echo "path=$(ls -t data/build/*.json | head -n1)" >> "$GITHUB_OUTPUT"
       # Compares the runner's fresh rows against the versioned platform.json and stats.json
