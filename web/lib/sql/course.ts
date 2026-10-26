@@ -39,7 +39,6 @@ export const SQL_LESSONS = [
     slug: "select",
     title: "Who took the most shots?",
     concept: "SELECT, ORDER BY, LIMIT",
-    table: "bb_shots",
     about: "A query names its columns, its table, the order of the rows and how many to keep.",
   },
   {
@@ -47,7 +46,6 @@ export const SQL_LESSONS = [
     slug: "where",
     title: "Which full backs play the longest?",
     concept: "WHERE, AND, OR, NULL",
-    table: "fb_physical",
     about: "Keeping the rows that pass a test, combining tests, and the value that is not a value.",
   },
   {
@@ -55,7 +53,6 @@ export const SQL_LESSONS = [
     slug: "expressions",
     title: "Percentages without dividing by zero",
     concept: "Computed columns, CASE, NULLIF, integer division",
-    table: "bb_shots",
     about: "Columns made from other columns, the two divisions, and a zero that must become NULL.",
   },
   {
@@ -63,7 +60,6 @@ export const SQL_LESSONS = [
     slug: "group-by",
     title: "Which team scored the most?",
     concept: "GROUP BY, HAVING",
-    table: "bb_shots",
     about: "Folding the rows of a team into one, and which filter runs before and which after.",
   },
   {
@@ -71,7 +67,6 @@ export const SQL_LESSONS = [
     slug: "joins",
     title: "Where does the extra row come from?",
     concept: "JOIN, LEFT JOIN, join keys",
-    table: "fb_physical and fb_passing",
     about: "Two football tables one row apart, the key that pairs them, and the rows with no pair.",
   },
   {
@@ -79,7 +74,6 @@ export const SQL_LESSONS = [
     slug: "long-wide",
     title: "How can one table hold every metric?",
     concept: "Long and wide, PIVOT and CASE",
-    table: "fact",
     about: "A row per metric instead of a column per metric, and how to turn one shape into the other.",
   },
   {
@@ -87,7 +81,6 @@ export const SQL_LESSONS = [
     slug: "windows",
     title: "What percentile is a player in?",
     concept: "RANK, PERCENT_RANK, PARTITION BY",
-    table: "fb_physical",
     about: "A rank inside a position without collapsing the rows, the way /warehouse prints percentiles.",
   },
   {
@@ -95,7 +88,6 @@ export const SQL_LESSONS = [
     slug: "scouting",
     title: "Who makes the shortlist?",
     concept: "CTEs, putting it together",
-    table: "fb_physical, fb_passing, bb_shots and bb_drives",
     about: "Named subqueries, one per pool, joined into a scouting report.",
   },
 ] as const;
