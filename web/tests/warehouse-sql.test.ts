@@ -106,6 +106,13 @@ describe("checkSql rejects", () => {
     expect(reason("SELECT * FROM query_table('fact')")).toMatch(/query_table\(\) is not allowed/);
   });
 
+  it("rejects a statement hidden behind a nested block comment", () => {
+    // DuckDB nests `/* */`: the quote below is inside the comment, so the CREATE is a second statement.
+    const sql = "SELECT 1 AS n /* /* */ ' */ ; CREATE OR REPLACE VIEW bb_shots AS SELECT 42 AS n; --'";
+    expect(reason(sql)).toMatch(/One statement at a time/);
+    expect(ok("SELECT 1 /* a /* b */ c */ AS n")).toBe(true);
+  });
+
   it("rejects nothing to run and unterminated quotes or comments", () => {
     expect(reason("")).toMatch(/Nothing to run/);
     expect(reason("  -- just a comment\n ; ")).toMatch(/Nothing to run/);

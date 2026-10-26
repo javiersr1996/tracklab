@@ -62,6 +62,7 @@ DOLLAR_TAG = re.compile(r"\$([A-Za-z_][A-Za-z0-9_]*)?\$")
 class Token:
     kind: str  # word, identifier, string, number, symbol
     text: str
+    at: int  # where it starts in the SQL
 
 
 @dataclass(frozen=True)
@@ -113,27 +114,39 @@ def tokenize(sql: str) -> list[Token]:
             ends = [k for k in (sql.find("\r", i), sql.find("\n", i)) if k != -1]
             i = min(ends) + 1 if ends else len(sql)
         elif sql.startswith("/*", i):
-            end = sql.find("*/", i + 2)
-            if end == -1:
-                raise SqlSyntaxError("Unterminated comment.")
-            i = end + 2
+            # DuckDB nests block comments: `/* /* */ */` is one comment.
+            depth = 1
+            k = i + 2
+            while depth > 0:
+                opens = sql.find("/*", k)
+                close = sql.find("*/", k)
+                if close == -1:
+                    raise SqlSyntaxError("Unterminated comment.")
+                if opens != -1 and opens < close:
+                    depth += 1
+                    k = opens + 2
+                else:
+                    depth -= 1
+                    k = close + 2
+            i = k
         elif c in "'\"":
-            text, i = _quoted(sql, i, c)
-            tokens.append(Token("string" if c == "'" else "identifier", text))
+            text, end = _quoted(sql, i, c)
+            tokens.append(Token("string" if c == "'" else "identifier", text, i))
+            i = end
         elif (tag := DOLLAR_TAG.match(sql, i)) is not None:
             close = sql.find(tag.group(0), i + len(tag.group(0)))
             if close == -1:
                 raise SqlSyntaxError("Unterminated dollar-quoted string.")
-            tokens.append(Token("string", sql[i + len(tag.group(0)) : close]))
+            tokens.append(Token("string", sql[i + len(tag.group(0)) : close], i))
             i = close + len(tag.group(0))
         elif (word := _word_at(sql, i)) is not None:
-            tokens.append(Token("word", word))
+            tokens.append(Token("word", word, i))
             i += len(word)
         elif (number := NUMBER.match(sql, i)) is not None:
-            tokens.append(Token("number", number.group(0)))
+            tokens.append(Token("number", number.group(0), i))
             i += len(number.group(0))
         else:
-            tokens.append(Token("symbol", c))
+            tokens.append(Token("symbol", c, i))
             i += 1
     return tokens
 
