@@ -9,7 +9,7 @@ each row with the figure of that name (`matched k of n`, e2e/learn-reproduce.spe
 
 This module runs the same statements with DuckDB on `web/public/data`, the `/data/` paths pointed
 at that folder, and compares the rows it can with the files themselves: a figure the files carry
-(a sample rate, a range of medians) is compared exactly, and a figure only the lesson's TypeScript
+(a sample rate, a count of frames) is compared exactly, and a figure only the lesson's TypeScript
 prints is compared, where the files have its counterpart, with that counterpart (the hook's g with
 P3's `g_data` within the rounding of its 21 samples; the arrival times with the published ones).
 The rest is the e2e's. `--check` says `FULL k/k` when every lesson ran, read only its declared
@@ -162,19 +162,13 @@ def _slope(public: Path, stem: str) -> float:
 
 
 def _clock(public: Path) -> Expected:
-    # The SQL's slopes, at five decimals, against numpy's on the same files; the ranges of the
-    # medians against clock.json's own rows.
-    rows = _json(public, "/data/learn/clock.json")["matches"]
-    cal = [m["slope_median"] for m in rows if m["calibration"]]
-    ctl = [m["slope_median"] for m in rows if not m["calibration"]]
+    # The SQL's slopes, at five decimals, against numpy's on the same files. The ranges of the
+    # medians are clock.json's rows read back (the medians run over possessions the site does not
+    # publish), so there is nothing here to compare them with: they are the e2e's.
     half = 0.000005 + 1e-12
     return {
         "learn.cal_slope": (_slope(public, "bb_possessions_possession-114086-1-36"), half),
         "learn.ctl_slope_all": (_slope(public, "bb_possessions_possession-184439-2-38"), half),
-        "learn.cal_lo": (min(cal), 0),
-        "learn.cal_hi": (max(cal), 0),
-        "learn.ctl_lo": (min(ctl), 0),
-        "learn.ctl_hi": (max(ctl), 0),
     }
 
 
