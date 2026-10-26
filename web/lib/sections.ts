@@ -45,6 +45,8 @@ export const SECTIONS = [
     nav: "Learn",
     title: "Learn from the data",
     about: "Short lessons that start from a question about the tracking data and end with a query you can run.",
+    // A second link in the card's text (task 101): the SQL course has no card of its own.
+    more: { href: "/sql", text: "New to SQL? Learn it on the warehouse's tables first." },
   },
 ] as const;
 

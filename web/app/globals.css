@@ -1650,3 +1650,68 @@ a.wordmark:hover {
 .learn-facing .learn-fig .table-scroll {
   margin-top: var(--space-4);
 }
+
+/* /sql (task 101): the exercise boxes and the pager, scoped so no shared rule moves. */
+.sql-exercise {
+  margin: var(--space-6) 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--rule);
+}
+
+.sql-exercise textarea {
+  display: block;
+  width: 100%;
+  margin-bottom: var(--space-3);
+  font-family: var(--font-mono);
+}
+
+.sql-exercise-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.sql-exercise [data-message]:empty {
+  display: none;
+}
+
+.sql-exercise[data-state="correct"] [data-message] {
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+
+.sql-solved {
+  color: var(--fg-muted);
+}
+
+.sql-hints {
+  margin: 0 0 var(--space-4);
+}
+
+.sql-exercise pre {
+  margin: var(--space-2) 0;
+}
+
+/* Column names and identifiers in the prose and the lists have no place to break. */
+.sql-lesson p,
+.sql-lesson li,
+.sql-index li {
+  overflow-wrap: anywhere;
+}
+
+.sql-tables {
+  padding-left: var(--space-5);
+}
+
+.sql-pager {
+  margin-top: var(--space-7);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--rule);
+}
+
+/* The card's whole area is its title's link; a second link in its text sits above that layer. */
+.card-more {
+  position: relative;
+  z-index: 1;
+}

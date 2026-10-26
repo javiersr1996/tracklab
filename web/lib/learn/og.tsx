@@ -12,7 +12,7 @@ export const OG_TYPE = "image/png";
 
 const FONT = join(process.cwd(), "app", "fonts", "SpaceGrotesk-latin-bold.ttf");
 
-async function card(eyebrow: string, title: string) {
+export async function card(eyebrow: string, title: string) {
   const data = await readFile(FONT);
   return new ImageResponse(
     (
