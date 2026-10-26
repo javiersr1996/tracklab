@@ -5,8 +5,9 @@ the values itself: the query runs inside `wrap`, whose one column is each row as
 number becomes the integer `sign(x) * floor(|x| * 10000 + 0.5)`, computed in IEEE doubles as
 JavaScript computes it (`-0` is `0`); strings, null and booleans stay as JSON gives them; a list
 or a struct is normalized inside. Unordered rows are sorted by the UTF-8 bytes of their canonical
-JSON, and the hash is the SHA-256 of the canonical JSON of all rows. `NaN`, `Infinity` and numbers
-with `|x| * 10000` at or above 2^53 cannot be compared: `NotComparable`.
+JSON, whose object keys are themselves sorted by their UTF-8 bytes, and the hash is the SHA-256 of
+the canonical JSON of all rows. `NaN`, `Infinity` and numbers with `|x| * 10000` at or above 2^53
+cannot be compared: `NotComparable`.
 
 `web/tests/fixtures/sql-normalize.json` pins the rule from wrapper text to hash, with expected
 values computed by the same rule written in JavaScript; pytest and vitest both read it.
@@ -19,6 +20,8 @@ import json
 import math
 from typing import Any
 
+from tracklab.sqlcourse.gate import SqlSyntaxError, tokenize
+
 SCALE = 10000
 LIMIT = 2**53
 
@@ -28,10 +31,22 @@ class NotComparable(ValueError):
 
 
 def wrap(query: str) -> str:
-    """The wrapper of the spec around a query, its trailing `;` stripped. The newlines keep a
-    trailing line comment of the query from swallowing the closing parenthesis."""
-    body = query.strip().rstrip(";").rstrip()
-    return f"SELECT json_array(*COLUMNS(*))::VARCHAR FROM (\n{body}\n) q"
+    """The wrapper of the spec around a query, its trailing `;` stripped. A `;` counts as trailing
+    when only whitespace, comments and more `;` follow it; the gate's tokenizer finds it, so a `;`
+    in a string or a comment is left alone. The newlines keep a trailing line comment of the query
+    from swallowing the closing parenthesis."""
+    body = query.strip()
+    try:
+        tokens = tokenize(body)
+    except SqlSyntaxError:
+        body = body.rstrip(";")  # the gate refuses it before any run
+    else:
+        k = len(tokens)
+        while k > 0 and tokens[k - 1].kind == "symbol" and tokens[k - 1].text == ";":
+            k -= 1
+        if k < len(tokens):
+            body = body[: tokens[k].at]
+    return f"SELECT json_array(*COLUMNS(*))::VARCHAR FROM (\n{body.rstrip()}\n) q"
 
 
 def number(value: float | int) -> int:
@@ -58,7 +73,9 @@ def value(v: Any) -> Any:
 
 
 def canonical(rows: Any) -> str:
-    return json.dumps(rows, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
+    return json.dumps(
+        rows, ensure_ascii=False, separators=(",", ":"), allow_nan=False, sort_keys=True
+    )
 
 
 def parse_row(text: str) -> list[Any]:

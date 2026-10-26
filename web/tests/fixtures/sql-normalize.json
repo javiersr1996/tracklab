@@ -260,6 +260,16 @@
         "[-1e15]"
       ],
       "rejected": true
+    },
+    {
+      "name": "object keys sort by their UTF-8 bytes, integer-like ones included",
+      "ordered": true,
+      "rows": [
+        "[{\"b\":1,\"10\":2,\"9\":3}]"
+      ],
+      "rejected": false,
+      "canonical": "[[{\"10\":20000,\"9\":30000,\"b\":10000}]]",
+      "sha256": "67aac3586d9a2f34054a77bf61f3544489421c9759713dda238c548af60908e8"
     }
   ]
 }

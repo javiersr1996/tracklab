@@ -66,6 +66,25 @@ def test_the_wrapper_strips_the_semicolon_and_survives_a_trailing_comment() -> N
     assert [r[0] for r in con.execute(wrap(sql)).fetchall()] == ['[10,"10",null]']
 
 
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "SELECT 1 LIMIT 11; -- done",
+        "SELECT 1 LIMIT 11;\n-- fin",
+        "SELECT 1 LIMIT 11; /* c */",
+        "SELECT 1 LIMIT 11 ; ; /* c */ -- x",
+    ],
+)
+def test_the_wrapper_strips_a_semicolon_followed_only_by_comments(sql: str) -> None:
+    assert wrap(sql) == "SELECT json_array(*COLUMNS(*))::VARCHAR FROM (\nSELECT 1 LIMIT 11\n) q"
+    assert duckdb.connect().execute(wrap(sql)).fetchall() == [("[1]",)]
+
+
+def test_the_wrapper_leaves_a_semicolon_inside_a_string_or_a_comment_alone() -> None:
+    assert wrap("SELECT 'a;' AS x").endswith("'a;' AS x\n) q")
+    assert wrap("SELECT 1 /* a; */").endswith("/* a; */\n) q")
+
+
 # The read-only gate, on the cases of web/tests/warehouse-sql.test.ts.
 
 GATE_TABLES = ["bb_shots", "fb_physical", "fact"]
@@ -131,6 +150,11 @@ def test_the_gate_admits(sql: str) -> None:
         ("SELECT 'open", "Unterminated string"),
         ('SELECT "open', "Unterminated identifier"),
         ("SELECT 1 /* open", "Unterminated comment"),
+        ("SELECT 1 /* /* */ open", "Unterminated comment"),
+        (
+            "SELECT 1 AS n /* /* */ ' */ ; CREATE OR REPLACE VIEW bb_shots AS SELECT 42 AS n; --'",
+            "One statement at a time",
+        ),
         ("SELECT $$open", "Unterminated dollar"),
     ],
 )

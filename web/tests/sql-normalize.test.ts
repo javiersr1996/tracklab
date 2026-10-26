@@ -27,8 +27,8 @@ const FIXTURES: { cases: Fixture[] } = JSON.parse(
 );
 
 describe("the fixtures", () => {
-  it("are the 27 cases pytest reads, 8 of them rejected", () => {
-    expect(FIXTURES.cases).toHaveLength(27);
+  it("are the 28 cases pytest reads, 8 of them rejected", () => {
+    expect(FIXTURES.cases).toHaveLength(28);
     expect(FIXTURES.cases.filter((c) => c.rejected)).toHaveLength(8);
   });
 
@@ -47,6 +47,20 @@ describe("wrap", () => {
   it("puts the query on its own lines inside the wrapper and strips a trailing semicolon", () => {
     expect(wrap("SELECT 1;")).toBe("SELECT json_array(*COLUMNS(*))::VARCHAR FROM (\nSELECT 1\n) q");
     expect(wrap("  SELECT 1 ; \n")).toBe("SELECT json_array(*COLUMNS(*))::VARCHAR FROM (\nSELECT 1\n) q");
+  });
+
+  it.each([
+    ["SELECT 1 LIMIT 11; -- done"],
+    ["SELECT 1 LIMIT 11;\n-- fin"],
+    ["SELECT 1 LIMIT 11; /* c */"],
+    ["SELECT 1 LIMIT 11 ; ; /* c */ -- x"],
+  ])("strips a semicolon followed only by comments: %j", (sql) => {
+    expect(wrap(sql)).toBe("SELECT json_array(*COLUMNS(*))::VARCHAR FROM (\nSELECT 1 LIMIT 11\n) q");
+  });
+
+  it("leaves a semicolon inside a string or a comment alone", () => {
+    expect(wrap("SELECT 'a;' AS x")).toContain("'a;' AS x\n) q");
+    expect(wrap("SELECT 1 /* a; */")).toContain("/* a; */\n) q");
   });
 
   it("keeps a trailing line comment from swallowing the closing parenthesis", () => {

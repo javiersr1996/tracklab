@@ -83,6 +83,15 @@ test("/sql/select: wrong queries give the shape hint, the gate stops a DROP", as
   expect(r.state).toBe("correct");
 });
 
+test("a correct answer followed by ; and a comment is still Correct", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto(`/sql/${FIRST.slug}`);
+  for (const tail of ["; -- done", ";\n-- fin", "; /* c */"]) {
+    const r = await run(page, SELECT1.id, `${SELECT1.solution.trim().replace(/;+$/, "")}${tail}`);
+    expect(r.state, `${tail}: ${r.message}`).toBe("correct");
+  }
+});
+
 test("solving an exercise marks it on the /sql index", async ({ page }) => {
   test.setTimeout(120_000);
   const progress = () => page.locator(`[data-lesson="${FIRST.slug}"] .sql-progress`);

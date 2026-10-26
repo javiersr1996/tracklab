@@ -11,6 +11,8 @@
 // `tests/fixtures/sql-normalize.json` pins the rule from wrapper text to hash; pytest and vitest
 // both read it, so a change here that Python does not make fails a test.
 
+import { tokenize } from "../warehouse/sql";
+
 export const SCALE = 10000;
 export const LIMIT = 2 ** 53;
 
@@ -18,11 +20,23 @@ export class NotComparable extends Error {}
 
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 
-// The wrapper of the spec around a query, its trailing `;` stripped. The newlines keep a trailing
-// line comment of the query from swallowing the closing parenthesis.
+// The wrapper of the spec around a query, its trailing `;` stripped. A `;` counts as trailing when
+// only whitespace, comments and more `;` follow it; the gate's tokenizer finds it, so a `;` in a
+// string or a comment is left alone. The newlines keep a trailing line comment of the query from
+// swallowing the closing parenthesis.
 export function wrap(query: string): string {
-  const body = query.trim().replace(/;+$/, "").trimEnd();
-  return `SELECT json_array(*COLUMNS(*))::VARCHAR FROM (\n${body}\n) q`;
+  let body = query.trim();
+  try {
+    const tokens = tokenize(body);
+    let k = tokens.length;
+    while (k > 0 && tokens[k - 1].kind === "symbol" && tokens[k - 1].text === ";") k -= 1;
+    if (k < tokens.length) body = body.slice(0, tokens[k].at);
+  } catch {
+    body = body.replace(/;+$/, ""); // the gate refuses it before any run
+  }
+  return `SELECT json_array(*COLUMNS(*))::VARCHAR FROM (
+${body.trimEnd()}
+) q`;
 }
 
 export function number(x: number): number {
@@ -38,9 +52,27 @@ export function value(v: Json): Json {
   return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, value(x)]));
 }
 
-// `json.dumps(rows, ensure_ascii=False, separators=(",", ":"))`: both escape the quote, the
-// backslash and the control characters the same way, and nothing else.
-export const canonical = (rows: Json): string => JSON.stringify(rows);
+// `json.dumps(rows, ensure_ascii=False, separators=(",", ":"), sort_keys=True)`: both escape the
+// quote, the backslash and the control characters the same way, and nothing else.
+const encoder = new TextEncoder();
+
+function compareBytes(a: Uint8Array, b: Uint8Array): number {
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i += 1) if (a[i] !== b[i]) return a[i] - b[i];
+  return a.length - b.length;
+}
+
+// Object keys go sorted by their UTF-8 bytes (a JS object would put integer-like keys first).
+export function canonical(rows: Json): string {
+  if (Array.isArray(rows)) return `[${rows.map(canonical).join(",")}]`;
+  if (rows !== null && typeof rows === "object") {
+    const keys = Object.keys(rows)
+      .map((k) => ({ k, bytes: encoder.encode(k) }))
+      .sort((a, b) => compareBytes(a.bytes, b.bytes));
+    return `{${keys.map(({ k }) => `${JSON.stringify(k)}:${canonical(rows[k])}`).join(",")}}`;
+  }
+  return JSON.stringify(rows);
+}
 
 // One row of the wrapper. JSON.parse refuses `NaN` and `Infinity` (Python's json reads them and
 // `number` refuses them): either way the row cannot be compared.
@@ -53,14 +85,6 @@ export function parseRow(text: string): Json[] {
   }
   if (!Array.isArray(row)) throw new TypeError(`a wrapper row is a JSON array, not ${JSON.stringify(text)}`);
   return row;
-}
-
-const encoder = new TextEncoder();
-
-function compareBytes(a: Uint8Array, b: Uint8Array): number {
-  const n = Math.min(a.length, b.length);
-  for (let i = 0; i < n; i += 1) if (a[i] !== b[i]) return a[i] - b[i];
-  return a.length - b.length;
 }
 
 export function normalize(texts: string[], ordered: boolean): Json[][] {
