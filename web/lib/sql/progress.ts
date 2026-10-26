@@ -3,7 +3,7 @@ import { useSyncExternalStore } from "react";
 // The reader's progress in /sql: the ids of the exercises solved, under one `localStorage` key.
 // Every access to storage is in a try/catch, and the course works with storage throwing (a
 // private window, a blocked origin): the verdict is still shown, and what was solved in this
-// visit is kept in memory. Read through `useSyncExternalStore`, never `useEffect` + `setState`:
+// visit is kept in memory and joined to whatever storage returns. Read through `useSyncExternalStore`, never `useEffect` + `setState`:
 // the server renders nothing solved, and the client's real list replaces it before paint.
 // The snapshot is the same array while storage holds the same text, as the hook requires.
 
@@ -12,6 +12,9 @@ export const STORAGE_KEY = "tracklab-sql-solved";
 const EMPTY: readonly string[] = [];
 let cachedText: string | null = null;
 let cached: readonly string[] = EMPTY;
+// Every id solved in this visit: storage can take reads and refuse writes (quota), and then the
+// next read must not drop what only memory holds.
+const inMemory = new Set<string>();
 const listeners = new Set<() => void>();
 
 function parse(text: string | null): readonly string[] {
@@ -33,7 +36,9 @@ export function solved(): readonly string[] {
   }
   if (text !== cachedText) {
     cachedText = text;
-    cached = parse(text);
+    const read = parse(text);
+    const missing = [...inMemory].filter((id) => !read.includes(id));
+    cached = missing.length === 0 ? read : [...read, ...missing];
   }
   return cached;
 }
@@ -41,6 +46,7 @@ export function solved(): readonly string[] {
 export function markSolved(id: string): void {
   const current = solved();
   if (current.includes(id)) return;
+  inMemory.add(id);
   cached = [...current, id];
   cachedText = JSON.stringify(cached);
   try {

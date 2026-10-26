@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { markSolved, solved, STORAGE_KEY } from "../lib/sql/progress";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { STORAGE_KEY } from "../lib/sql/progress";
 
 // The progress of /sql (task 101, `lib/sql/progress.ts`): solved ids under one key, and a course
 // that works when storage throws (a private window, a blocked origin) or holds something else.
@@ -22,6 +22,15 @@ const throwing = {
   },
 };
 
+// The module keeps the ids marked in this visit in memory: a fresh module for every test.
+let markSolved: typeof import("../lib/sql/progress").markSolved;
+let solved: typeof import("../lib/sql/progress").solved;
+
+beforeEach(async () => {
+  vi.resetModules();
+  ({ markSolved, solved } = await import("../lib/sql/progress"));
+});
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
@@ -37,6 +46,14 @@ describe("progress", () => {
     expect(solved()).toEqual([]);
     expect(() => markSolved("select-1")).not.toThrow();
     expect(solved()).toContain("select-1");
+  });
+
+  it("keeps what was solved when only the write fails (storage full)", () => {
+    const storage = { ...fakeStorage(), setItem: () => { throw new Error("QuotaExceededError"); } };
+    vi.stubGlobal("localStorage", storage);
+    markSolved("select-1");
+    markSolved("select-2");
+    expect(solved()).toEqual(["select-1", "select-2"]);
   });
 
   it("writes the ids under one key and reads them back, the same array while nothing changed", () => {
