@@ -20,12 +20,6 @@ SELECT 'timetohsr_not_null', count(*)::VARCHAR FROM fb_physical WHERE timetohsr_
 UNION ALL
 SELECT 'timetohsr_equals_null', count(*)::VARCHAR FROM fb_physical WHERE timetohsr_top3 = NULL
 UNION ALL
-SELECT 'hsr_null_midfield', count(*)::VARCHAR FROM fb_physical
-WHERE timetohsr_top3 IS NULL AND position_group = 'Midfield'
-UNION ALL
-SELECT 'defenders_10_matches', count(*)::VARCHAR FROM fb_physical
-WHERE position_group IN ('Central Defender', 'Full Back') AND count_match >= 10
-UNION ALL
 SELECT 'max_matches_with_null_hsr', max(count_match)::VARCHAR FROM fb_physical
 WHERE timetohsr_top3 IS NULL
 UNION ALL

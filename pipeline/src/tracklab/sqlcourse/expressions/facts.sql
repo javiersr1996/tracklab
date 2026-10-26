@@ -26,9 +26,6 @@ UNION ALL
 SELECT 'whole_division_one', count(*)::VARCHAR FROM bb_shots
 WHERE NOT is_season_total AND attempts > 0 AND mades // attempts = 1
 UNION ALL
-SELECT 'rows_attempts_under_4', count(*)::VARCHAR FROM bb_shots
-WHERE NOT is_season_total AND attempts < 4
-UNION ALL
 SELECT 'total_rows_excluded', count(*)::VARCHAR FROM bb_shots WHERE is_season_total
 UNION ALL
 SELECT 'midfield_20_matches', count(*)::VARCHAR FROM fb_physical

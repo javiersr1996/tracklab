@@ -1,5 +1,6 @@
 -- prompt: Who stands out against their own team? From fb_physical, compute each team's average
---   psv99 (over all its rows), then list the players whose psv99 is at least 3 above their
+--   psv99 (over all its rows), then list the rows (one per player and position group, so a
+--   player who played two positions can appear twice) whose psv99 is at least 3 above their
 --   team's average. Return player_name, team_name, psv99 and gap, in that order, where gap is
 --   psv99 minus the team average rounded to 2 decimals. Order by gap from largest to smallest
 --   and break ties by player_name, from A to Z.

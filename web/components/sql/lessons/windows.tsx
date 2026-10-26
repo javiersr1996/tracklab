@@ -29,7 +29,7 @@ export function WindowsProse() {
           differ on {f("rank_differs_from_row_number")} rows. <code>percent_rank()</code> is the rank rescaled from
           zero for the lowest value to one for the highest, so <code>100 * percent_rank()</code> rounded to one
           decimal is the percentile the warehouse prints: a midfielder ranked {f("jay_barnett_rank")} with a{" "}
-          <code>psv99</code> of {f("jay_barnett_psv99")} is at the {f("jay_barnett_percentile")}th percentile.
+          <code>psv99</code> of {f("jay_barnett_psv99")} is at percentile {f("jay_barnett_percentile")}.
           Note the direction: the rank sorts down (<code>DESC</code>, fastest first) and the percentile sorts up,
           so that a high percentile means fast.
         </p>

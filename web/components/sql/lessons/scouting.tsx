@@ -29,7 +29,9 @@ export function ScoutingProse() {
         </p>
         <p>
           Two habits that keep a report honest. Round only in the <code>SELECT</code>, never in the{" "}
-          <code>WHERE</code>: a rate rounded before the filter lets a value just below the threshold through.
+          <code>WHERE</code>: filter on the unrounded percentile, because a value rounded before the filter lets
+          one just below the threshold through. The worked example and the first exercise keep the unrounded
+          percentile for the filter and round the one they show.
           And divide with a decimal, <code>total_points * 1.0 / games_played</code>, so that a rate of points per
           game is not cut to a whole number before it is compared.
         </p>

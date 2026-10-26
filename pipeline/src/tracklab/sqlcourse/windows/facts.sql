@@ -40,6 +40,3 @@ UNION ALL
 SELECT 'rank_differs_from_row_number', count(*)::VARCHAR FROM pool WHERE speed_rank <> rn
 UNION ALL
 SELECT 'basketball_pool_rows', count(*)::VARCHAR FROM bb
-UNION ALL
-SELECT 'guillem_vives_percentile', round(100 * pct, 1)::VARCHAR FROM bb
-WHERE player_name = 'Guillem Vives'

@@ -15,8 +15,6 @@ SELECT 'passing_rows', (SELECT count(*) FROM fb_passing)::VARCHAR
 UNION ALL
 SELECT 'physical_players', (SELECT count(DISTINCT player_id) FROM fb_physical)::VARCHAR
 UNION ALL
-SELECT 'passing_players', (SELECT count(DISTINCT player_id) FROM fb_passing)::VARCHAR
-UNION ALL
 SELECT 'players_with_two_or_more_rows', count(*)::VARCHAR FROM (
   SELECT player_id FROM fb_physical GROUP BY player_id HAVING count(*) > 1
 )

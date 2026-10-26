@@ -155,10 +155,8 @@
         ]
       },
       "facts": {
-        "defenders_10_matches": "58",
         "forwards_and_wide_over_100": "4",
         "full_backs_over_98": "13",
-        "hsr_null_midfield": "35",
         "max_matches_with_null_hsr": "4",
         "min_matches_with_hsr": "3",
         "or_without_parentheses": "76",
@@ -277,7 +275,6 @@
         "midfield_20_matches": "16",
         "one_over_nullif_zero_is_null": "true",
         "one_over_zero_is_inf": "true",
-        "rows_attempts_under_4": "25",
         "seven_over_two": "3.5",
         "seven_whole_over_two": "3",
         "team_rows": "321",
@@ -483,7 +480,6 @@
         "football_teams": "13",
         "football_teams_250_matches": "6",
         "teams": "18",
-        "teams_with_20_or_more_players": "5",
         "top_team": "Real Madrid",
         "top_team_points": "3154"
       },
@@ -572,7 +568,6 @@
         "name_with_two_ids_team": "Adelaide United Football Club",
         "passing_only_goalkeepers": "22",
         "passing_only_rows": "22",
-        "passing_players": "284",
         "passing_rows": "407",
         "physical_goalkeepers": "0",
         "physical_only_not_in_passing_at_all": "9",
@@ -795,7 +790,6 @@
         "fastest_midfielder": "Adrian Segecic",
         "fastest_midfielder_psv99": "29.02",
         "football_pool_rows": "210",
-        "guillem_vives_percentile": "50.6",
         "jay_barnett_percentile": "52.2",
         "jay_barnett_psv99": "27.03",
         "jay_barnett_rank": "23",
@@ -821,13 +815,13 @@
         },
         {
           "id": "windows-2",
-          "prompt": "Percentile of speed inside a position, the way /warehouse prints it. Take the football rows with a psv99 and at least 5 matches (count_match); for each, the percentile is 100 * percent_rank() over the rows of its position_group ordered by psv99 from low to high, rounded to 1 decimal. Return player_name, position_group, psv99 and percentile, in that order, for the Full Backs at the 90th percentile or above, highest percentile first. Break ties by player_name, from A to Z.",
+          "prompt": "Percentile of speed inside a position, the way /warehouse prints it. Take the football rows with a psv99 and at least 5 matches (count_match); for each, the percentile is 100 * percent_rank() over the rows of its position_group ordered by psv99 from low to high, rounded to 1 decimal. Return player_name, position_group, psv99 and percentile (the rounded value), in that order, for the Full Backs whose percentile is 90 or above, compared before rounding, highest percentile first. Break ties by player_name, from A to Z.",
           "hints": [
             "percent_rank() OVER (PARTITION BY position_group ORDER BY psv99) is 0 for the lowest value of a group and 1 for the highest.",
             "The window only sees rows that passed the WHERE inside its own query: put the pool conditions (psv99 and count_match) in the inner query, and the position and the 90 in the outer one.",
-            "Inner: round(100 * percent_rank() OVER (...), 1) AS percentile. Outer: WHERE position_group = 'Full Back' AND percentile >= 90 ORDER BY percentile DESC, player_name."
+            "Inner: 100 * percent_rank() OVER (...) AS raw. Outer: WHERE position_group = 'Full Back' AND raw >= 90, SELECT round(raw, 1) AS percentile, ORDER BY percentile DESC, player_name."
           ],
-          "solution": "SELECT player_name, position_group, psv99, percentile\nFROM (\n  SELECT player_name, position_group, psv99,\n         round(100 * percent_rank() OVER (PARTITION BY position_group ORDER BY psv99), 1)\n           AS percentile\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n) AS pool\nWHERE position_group = 'Full Back' AND percentile >= 90\nORDER BY percentile DESC, player_name",
+          "solution": "SELECT player_name, position_group, psv99, round(raw, 1) AS percentile\nFROM (\n  SELECT player_name, position_group, psv99,\n         100 * percent_rank() OVER (PARTITION BY position_group ORDER BY psv99) AS raw\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n) AS pool\nWHERE position_group = 'Full Back' AND raw >= 90\nORDER BY percentile DESC, player_name",
           "ordered": true,
           "columns": 4,
           "rows": 5,
@@ -835,7 +829,7 @@
         },
         {
           "id": "windows-3",
-          "prompt": "Basketball version, as /warehouse does it. Take the team rows (is_season_total is false) with at least 10 games_played. threes_per_game is three_attempts / games_played, and the percentile is 100 * percent_rank() over all those rows ordered by threes_per_game from low to high, rounded to 1 decimal. Return player_name, team_name, threes_per_game (rounded to 2 decimals) and percentile, in that order, for the 5 highest percentiles. Break ties by player_name, from A to Z.",
+          "prompt": "Basketball version, as /warehouse does it. Take the team rows (is_season_total is false) with at least 10 games_played. threes_per_game is three_attempts / games_played, and the percentile is 100 * percent_rank() over all those rows ordered by threes_per_game from low to high, rounded to 1 decimal. Return player_name, team_name, threes_per_game (rounded to 2 decimals) and percentile, in that order, for the 5 highest percentiles, highest percentile first. Break ties by player_name, from A to Z.",
           "hints": [
             "Divide with a decimal number, three_attempts * 1.0 / games_played, and use the same expression in the percent_rank() ORDER BY.",
             "There is no PARTITION BY: the window is the whole pool, which is the rows left by the WHERE of the same query.",
@@ -852,7 +846,7 @@
     {
       "slug": "scouting",
       "example": {
-        "sql": "-- Full backs in the top 30% for speed and for pass completion within their position.\nWITH speed AS (\n  SELECT player_id, team_id, position_group, player_name, team_name, psv99,\n         round(100 * percent_rank() OVER (PARTITION BY position_group ORDER BY psv99), 1)\n           AS speed_pct\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n),\npassing AS (\n  SELECT player_id, team_id, position_group, pass_pct_completed,\n         round(100 * percent_rank() OVER (\n           PARTITION BY position_group ORDER BY pass_pct_completed), 1) AS passing_pct\n  FROM fb_passing\n  WHERE pass_pct_completed IS NOT NULL AND performance_count >= 5\n)\nSELECT s.player_name, s.team_name, s.psv99, s.speed_pct, p.pass_pct_completed, p.passing_pct\nFROM speed AS s\nJOIN passing AS p\n  ON s.player_id = p.player_id AND s.team_id = p.team_id AND s.position_group = p.position_group\nWHERE s.position_group = 'Full Back' AND s.speed_pct >= 70 AND p.passing_pct >= 70\nORDER BY s.speed_pct DESC, s.player_name",
+        "sql": "-- Full backs in the top 30% for speed and for pass completion within their position.\nWITH speed AS (\n  SELECT player_id, team_id, position_group, player_name, team_name, psv99,\n         100 * percent_rank() OVER (PARTITION BY position_group ORDER BY psv99) AS speed_raw\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n),\npassing AS (\n  SELECT player_id, team_id, position_group, pass_pct_completed,\n         100 * percent_rank() OVER (\n           PARTITION BY position_group ORDER BY pass_pct_completed) AS passing_raw\n  FROM fb_passing\n  WHERE pass_pct_completed IS NOT NULL AND performance_count >= 5\n)\nSELECT s.player_name, s.team_name, s.psv99, round(s.speed_raw, 1) AS speed_pct,\n       p.pass_pct_completed, round(p.passing_raw, 1) AS passing_pct\nFROM speed AS s\nJOIN passing AS p\n  ON s.player_id = p.player_id AND s.team_id = p.team_id AND s.position_group = p.position_group\nWHERE s.position_group = 'Full Back' AND s.speed_raw >= 70 AND p.passing_raw >= 70\nORDER BY s.speed_raw DESC, s.player_name",
         "columns": [
           "player_name",
           "team_name",
@@ -916,13 +910,13 @@
       "exercises": [
         {
           "id": "scouting-1",
-          "prompt": "Build the shortlist of players who are fast and accurate within their position. Speed pool: fb_physical rows with a psv99 and at least 5 matches (count_match); speed_pct is 100 * percent_rank() over the rows of the same position_group ordered by psv99, rounded to 1 decimal. Passing pool: fb_passing rows with a pass_pct_completed and at least 5 performance_count; passing_pct is the same over pass_pct_completed. Join the two pools on player_id, team_id and position_group and keep the rows with speed_pct and passing_pct both at least 70. Return player_name, team_name, position_group, speed_pct and passing_pct, in that order. Row order does not matter.",
+          "prompt": "Build the shortlist of players who are fast and accurate within their position. Speed pool: fb_physical rows with a psv99 and at least 5 matches (count_match); speed_pct is 100 * percent_rank() over the rows of the same position_group ordered by psv99, rounded to 1 decimal. Passing pool: fb_passing rows with a pass_pct_completed and at least 5 performance_count; passing_pct is the same over pass_pct_completed. Join the two pools on player_id, team_id and position_group and keep the rows whose speed and passing percentiles are both at least 70, compared before rounding. Return player_name, team_name, position_group, speed_pct and passing_pct (the rounded values), in that order. Row order does not matter.",
           "hints": [
             "Write each pool as its own CTE (WITH speed AS (...), passing AS (...)): each has its own WHERE and its own percent_rank, so the percentiles are not mixed up.",
             "Filter the pools inside the CTEs, before the percentile is computed; filter on the percentiles after the join.",
-            "SELECT ... FROM speed AS s JOIN passing AS p ON (the three equalities) WHERE s.speed_pct >= 70 AND p.passing_pct >= 70."
+            "Keep the unrounded percentile in each CTE (100 * percent_rank() OVER (...) AS speed_raw), filter on it after the join (WHERE s.speed_raw >= 70 AND p.passing_raw >= 70) and round only in the SELECT: round(s.speed_raw, 1) AS speed_pct."
           ],
-          "solution": "WITH speed AS (\n  SELECT player_id, team_id, position_group, player_name, team_name,\n         round(100 * percent_rank() OVER (PARTITION BY position_group ORDER BY psv99), 1)\n           AS speed_pct\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n),\npassing AS (\n  SELECT player_id, team_id, position_group,\n         round(100 * percent_rank() OVER (\n           PARTITION BY position_group ORDER BY pass_pct_completed), 1) AS passing_pct\n  FROM fb_passing\n  WHERE pass_pct_completed IS NOT NULL AND performance_count >= 5\n)\nSELECT s.player_name, s.team_name, s.position_group, s.speed_pct, p.passing_pct\nFROM speed AS s\nJOIN passing AS p\n  ON s.player_id = p.player_id AND s.team_id = p.team_id AND s.position_group = p.position_group\nWHERE s.speed_pct >= 70 AND p.passing_pct >= 70",
+          "solution": "WITH speed AS (\n  SELECT player_id, team_id, position_group, player_name, team_name,\n         100 * percent_rank() OVER (PARTITION BY position_group ORDER BY psv99) AS speed_raw\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n),\npassing AS (\n  SELECT player_id, team_id, position_group,\n         100 * percent_rank() OVER (\n           PARTITION BY position_group ORDER BY pass_pct_completed) AS passing_raw\n  FROM fb_passing\n  WHERE pass_pct_completed IS NOT NULL AND performance_count >= 5\n)\nSELECT s.player_name, s.team_name, s.position_group,\n       round(s.speed_raw, 1) AS speed_pct, round(p.passing_raw, 1) AS passing_pct\nFROM speed AS s\nJOIN passing AS p\n  ON s.player_id = p.player_id AND s.team_id = p.team_id AND s.position_group = p.position_group\nWHERE s.speed_raw >= 70 AND p.passing_raw >= 70",
           "ordered": false,
           "columns": 5,
           "rows": 15,
@@ -930,7 +924,7 @@
         },
         {
           "id": "scouting-2",
-          "prompt": "Who stands out against their own team? From fb_physical, compute each team's average psv99 (over all its rows), then list the players whose psv99 is at least 3 above their team's average. Return player_name, team_name, psv99 and gap, in that order, where gap is psv99 minus the team average rounded to 2 decimals. Order by gap from largest to smallest and break ties by player_name, from A to Z.",
+          "prompt": "Who stands out against their own team? From fb_physical, compute each team's average psv99 (over all its rows), then list the rows (one per player and position group, so a player who played two positions can appear twice) whose psv99 is at least 3 above their team's average. Return player_name, team_name, psv99 and gap, in that order, where gap is psv99 minus the team average rounded to 2 decimals. Order by gap from largest to smallest and break ties by player_name, from A to Z.",
           "hints": [
             "A CTE can hold a GROUP BY result (team_name and its average) that the main query joins back to the player rows.",
             "Join on team_name, then compare in WHERE: p.psv99 - t.avg_psv99 >= 3.",

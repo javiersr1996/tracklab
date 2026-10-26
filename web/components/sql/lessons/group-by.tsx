@@ -37,8 +37,8 @@ export function GroupByProse() {
           <code>count(*)</code> counts rows; <code>count(column)</code> counts the rows where that column is not{" "}
           <code>NULL</code>. On <code>fb_physical</code> they give {f("count_star_hsr")} and{" "}
           {f("count_column_hsr")} for <code>timetohsr_top3</code>. The other aggregates skip <code>NULL</code> too,
-          and the average of a group with nothing but <code>NULL</code> is <code>NULL</code>:{" "}
-          {f("avg_of_empty_group_is_null")}.
+          and the average of no rows at all is <code>NULL</code>, not zero: <code>fb_physical</code> has no
+          goalkeepers, so the average of their minutes is <code>NULL</code>: {f("avg_of_empty_group_is_null")}.
         </p>
       </section>
     </>

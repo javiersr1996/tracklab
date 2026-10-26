@@ -11,8 +11,6 @@ SELECT 'top_team', arg_max(team_name, points) FROM teams
 UNION ALL
 SELECT 'top_team_points', max(points)::VARCHAR FROM teams
 UNION ALL
-SELECT 'teams_with_20_or_more_players', count(*)::VARCHAR FROM teams WHERE players >= 20
-UNION ALL
 SELECT 'attempts_team_rows', sum(attempts)::VARCHAR FROM bb_shots WHERE NOT is_season_total
 UNION ALL
 SELECT 'attempts_all_rows', sum(attempts)::VARCHAR FROM bb_shots
