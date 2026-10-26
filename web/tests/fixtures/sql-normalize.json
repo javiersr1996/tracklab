@@ -1,0 +1,265 @@
+{
+  "note": "Wrapper text rows (SELECT json_array(*COLUMNS(*))::VARCHAR FROM (<query>) q, one string per row) to the canonical JSON and SHA-256 of the normalization in docs/superpowers/specs/2026-10-26-sql-course-design.md. Expected values computed on 2026-10-26 by the rule written in JavaScript (Node 24.13.1: JSON.parse, Math.sign, Math.floor, JSON.stringify, Buffer.compare, sha256), apart from the Python code pytest checks against them. A case is rejected when JSON.parse refuses a row (NaN, Infinity) or a number has |x| * 10000 at or above 2^53.",
+  "cases": [
+    {
+      "name": "a tie at the fourth decimal rounds half up (1/32, which round() takes to even)",
+      "ordered": true,
+      "rows": [
+        "[0.03125]"
+      ],
+      "rejected": false,
+      "canonical": "[[313]]",
+      "sha256": "6c969323fea4c4bdf2a15d1858bd463420cb79bc98f94867bb25acfddbceec55"
+    },
+    {
+      "name": "halves away from the fourth decimal, both signs",
+      "ordered": true,
+      "rows": [
+        "[2.5,-2.5]"
+      ],
+      "rejected": false,
+      "canonical": "[[25000,-25000]]",
+      "sha256": "d94fd8192b2c4f1e721963afb2bd93a3c06e49ebd894c4babdba04ee55b67548"
+    },
+    {
+      "name": "a negative tie rounds away from zero",
+      "ordered": true,
+      "rows": [
+        "[-0.00005]"
+      ],
+      "rejected": false,
+      "canonical": "[[-1]]",
+      "sha256": "3aa68b41fe21beb89166e0e32d3467a7e1dfa6923a33e9779ef226e3233da949"
+    },
+    {
+      "name": "-0 and a negative that rounds to 0 are both 0",
+      "ordered": true,
+      "rows": [
+        "[-0.0,-0.00001]"
+      ],
+      "rejected": false,
+      "canonical": "[[0,0]]",
+      "sha256": "b0d317a3ada5818326ed8cf9a2c369a0833045f2d94f5144cd19ddd7bf978738"
+    },
+    {
+      "name": "thirds",
+      "ordered": true,
+      "rows": [
+        "[0.6666666666666666,0.3333333333333333]"
+      ],
+      "rejected": false,
+      "canonical": "[[6667,3333]]",
+      "sha256": "3610d805a1cf0f85abe572709c4ff0acf833a0a26384a3429627f3177836d839"
+    },
+    {
+      "name": "NULL is not the text 'NULL'",
+      "ordered": true,
+      "rows": [
+        "[null,\"NULL\"]"
+      ],
+      "rejected": false,
+      "canonical": "[[null,\"NULL\"]]",
+      "sha256": "de83730ab14472e7afac9a68429593d9647e65a2ebed2f6dcbe462cf9a8503ac"
+    },
+    {
+      "name": "unordered, null and 'NULL' sort by their bytes",
+      "ordered": false,
+      "rows": [
+        "[null]",
+        "[\"NULL\"]"
+      ],
+      "rejected": false,
+      "canonical": "[[\"NULL\"],[null]]",
+      "sha256": "2bc4519fc44cdfe379226205f261bcd087e032ff4627a4008859803603633b97"
+    },
+    {
+      "name": "10 is not the text '10'",
+      "ordered": true,
+      "rows": [
+        "[10,\"10\"]"
+      ],
+      "rejected": false,
+      "canonical": "[[100000,\"10\"]]",
+      "sha256": "1e603c5df7ef2c1221236f180b4e69d91e1dd9d1798671f3a92f435c2720503d"
+    },
+    {
+      "name": "a date and a timestamp stay text",
+      "ordered": true,
+      "rows": [
+        "[\"2020-01-01\",\"2020-01-01 10:00:00\"]"
+      ],
+      "rejected": false,
+      "canonical": "[[\"2020-01-01\",\"2020-01-01 10:00:00\"]]",
+      "sha256": "4220c8b6fe507eb801022dfc11f64b69f9ddf2cf80c27e258932483c5e448843"
+    },
+    {
+      "name": "a non-ASCII name",
+      "ordered": true,
+      "rows": [
+        "[\"Đorđević\",1.5]"
+      ],
+      "rejected": false,
+      "canonical": "[[\"Đorđević\",15000]]",
+      "sha256": "674608898f88fcd3398f781d9d03d0e79420c1346caf3d9b45c8442ce3edf7cf"
+    },
+    {
+      "name": "an astral character",
+      "ordered": true,
+      "rows": [
+        "[\"𝔸\"]"
+      ],
+      "rejected": false,
+      "canonical": "[[\"𝔸\"]]",
+      "sha256": "6acee6cb9cba14b19ef1666f31a6e45ad385def6539f8c51d96aee942faac157"
+    },
+    {
+      "name": "unordered rows sort by UTF-8 bytes, not UTF-16 units",
+      "ordered": false,
+      "rows": [
+        "[\"𝔸\"]",
+        "[\"Ａ\"]",
+        "[\"z\"]"
+      ],
+      "rejected": false,
+      "canonical": "[[\"z\"],[\"Ａ\"],[\"𝔸\"]]",
+      "sha256": "0acf781354a3de2b9d2e17620723856eae7611e44fe4943e257ffbfdc667651e"
+    },
+    {
+      "name": "ordered rows keep their order",
+      "ordered": true,
+      "rows": [
+        "[\"𝔸\"]",
+        "[\"Ａ\"]",
+        "[\"z\"]"
+      ],
+      "rejected": false,
+      "canonical": "[[\"𝔸\"],[\"Ａ\"],[\"z\"]]",
+      "sha256": "1f2d42974a4932538265328921b6065891613619733a3502b68ad0a83716669c"
+    },
+    {
+      "name": "unordered numbers sort by their text, not their value",
+      "ordered": false,
+      "rows": [
+        "[10]",
+        "[9]",
+        "[-1]"
+      ],
+      "rejected": false,
+      "canonical": "[[-10000],[100000],[90000]]",
+      "sha256": "73a46c0c8a4b628063dbd18d1b684d8938f2b9ecb3d998cc31856a855dc91580"
+    },
+    {
+      "name": "control characters and quotes are escaped as JSON escapes them",
+      "ordered": true,
+      "rows": [
+        "[\"a\\tb\",\"\\u0001\",\"\\\"q\\\"\",\"\\\\\"]"
+      ],
+      "rejected": false,
+      "canonical": "[[\"a\\tb\",\"\\u0001\",\"\\\"q\\\"\",\"\\\\\"]]",
+      "sha256": "cd51bb53ada50b3a650ef54c5eb06bd482743e64a552c302c76b0d1b0d2b9340"
+    },
+    {
+      "name": "booleans are not numbers",
+      "ordered": true,
+      "rows": [
+        "[true,false]"
+      ],
+      "rejected": false,
+      "canonical": "[[true,false]]",
+      "sha256": "2d0a85e8f4243b3182be50f87d343dfb2f04270add595686acb05a402153003e"
+    },
+    {
+      "name": "numbers inside a list or a struct are normalized too",
+      "ordered": true,
+      "rows": [
+        "[[1.5,2.0],{\"k\":0.25}]"
+      ],
+      "rejected": false,
+      "canonical": "[[[15000,20000],{\"k\":2500}]]",
+      "sha256": "3871c5c3b52f45af0341e211585b2df4143ee2d342c3ed615e42a7325a7d6068"
+    },
+    {
+      "name": "large numbers below the limit",
+      "ordered": true,
+      "rows": [
+        "[123456789012,-123456789012.5]"
+      ],
+      "rejected": false,
+      "canonical": "[[1234567890120000,-1234567890125000]]",
+      "sha256": "8023b336ea303fdfc151cc0d3cc589491b178236b06a9b9372f68c7d12047206"
+    },
+    {
+      "name": "no rows",
+      "ordered": false,
+      "rows": [],
+      "rejected": false,
+      "canonical": "[]",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "name": "NaN is rejected",
+      "ordered": true,
+      "rows": [
+        "[NaN]"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "Infinity is rejected",
+      "ordered": true,
+      "rows": [
+        "[1,Infinity]"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "-Infinity is rejected",
+      "ordered": false,
+      "rows": [
+        "[-Infinity]"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "NaN inside a list is rejected",
+      "ordered": true,
+      "rows": [
+        "[[1.5,NaN]]"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "1e12 is too large: 1e12 * 10000 is above 2^53",
+      "ordered": true,
+      "rows": [
+        "[1000000000000.0]"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "1e300 is too large",
+      "ordered": true,
+      "rows": [
+        "[1e300]"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "the limit itself is rejected: |x| * 10000 at or above 2^53",
+      "ordered": true,
+      "rows": [
+        "[900719925474.0992]"
+      ],
+      "rejected": true
+    },
+    {
+      "name": "one row in two too large rejects the whole result",
+      "ordered": false,
+      "rows": [
+        "[1]",
+        "[-1e15]"
+      ],
+      "rejected": true
+    }
+  ]
+}

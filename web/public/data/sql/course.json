@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "duckdb_version": "1.5.5",
+  "lessons": [
+    {
+      "slug": "select",
+      "example": {
+        "sql": "-- The five players with the most shot attempts, most first.\nSELECT player_name, team_name, attempts\nFROM bb_shots\nORDER BY attempts DESC\nLIMIT 5",
+        "columns": [
+          "player_name",
+          "team_name",
+          "attempts"
+        ],
+        "rows": [
+          [
+            "David Dejulius",
+            "CB UCAM Murcia",
+            415
+          ],
+          [
+            "Otis Livingston II",
+            "Basquet Girona",
+            376
+          ],
+          [
+            "Timothe Luwawu-Cabarrot",
+            "Bitci Baskonia",
+            373
+          ],
+          [
+            "Gonzalo Corbalan",
+            "San Pablo Burgos",
+            355
+          ],
+          [
+            "Cameron Hunt",
+            "Club Joventut Badalona",
+            348
+          ]
+        ]
+      },
+      "facts": {
+        "eleventh_attempts": "319",
+        "players": "316",
+        "rows": "326",
+        "tied_with_eleventh": "2",
+        "top_attempts": "415",
+        "top_shooter": "David Dejulius"
+      },
+      "exercises": [
+        {
+          "id": "select-1",
+          "prompt": "List the 11 players with the most shot attempts: player_name, team_name and attempts, in that order, most attempts first. Two players can have the same number of attempts, so break ties by player_name, from A to Z.",
+          "hints": [
+            "ORDER BY takes several columns: the second one only decides between rows that tie on the first.",
+            "DESC sorts from the largest down; a column without it sorts up (A to Z for text).",
+            "LIMIT 11 keeps the first 11 rows of the sorted result."
+          ],
+          "solution": "SELECT player_name, team_name, attempts\nFROM bb_shots\nORDER BY attempts DESC, player_name\nLIMIT 11",
+          "ordered": true,
+          "columns": 3,
+          "rows": 11,
+          "sha256": "4c2f5a901cf0f40eacd617dd0f4861f60d53fb651a137bb354d495883ef91f9f"
+        },
+        {
+          "id": "select-2",
+          "prompt": "Which five players scored the most points? Return player_name and total_points, in that order. The order of the rows does not matter here: the checker compares them as a set.",
+          "hints": [
+            "The rows can come in any order, but picking the top five still needs ORDER BY.",
+            "Sort by total_points from the largest down, then keep five rows with LIMIT."
+          ],
+          "solution": "SELECT player_name, total_points\nFROM bb_shots\nORDER BY total_points DESC\nLIMIT 5",
+          "ordered": false,
+          "columns": 2,
+          "rows": 5,
+          "sha256": "bafc5c76775b7b1b48e1112cf0add3cabc3736d9518439fc7abcd2081b000def"
+        }
+      ]
+    }
+  ]
+}
