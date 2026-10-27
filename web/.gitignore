@@ -1,1 +1,4 @@
 .vercel
+
+# Written by `next dev` (node_modules/next/dist/server/lib/generate-agent-files.js); not ours to version.
+/AGENTS.md
