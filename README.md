@@ -92,7 +92,7 @@ describe them (`lineage.json` and `platform.json` excluded, as they describe the
 than its data).
 
 ```
-title: 3.6 GB in, 7.5 MB out
+title: 3.6 GB in, 7.6 MB out
 subtitle: 5.5 MB to watch, 2.1 MB to query
 ```
 
