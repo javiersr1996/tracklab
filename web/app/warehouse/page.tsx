@@ -33,6 +33,10 @@ export default function WarehousePage() {
           through this site&apos;s own route, which runs only those {exampleIds().length} queries: if that Postgres
           answers in time its rows are shown live, and if not, the snapshot taken when it was loaded.
         </p>
+        <p>
+          <Link href="/sql">Learn SQL on these tables</Link>: eight lessons with exercises checked in this
+          browser.
+        </p>
       </PageHead>
 
       <Band dark>

@@ -11,6 +11,11 @@ P9 (task 84) adds the probes of `pipeline/scripts/probe_learn_*.py` to the text 
 second test: no code of /learn names a team-shape column of `phases_of_play` (V5:
 `team_in_possession_width_start` and its seven siblings). The pitch's own dimensions
 (`pitch_length`, `pitch_width`, lesson 3) are not team shape and do not match.
+
+P11 (task 99) adds /sql: the files of `pipeline/src/tracklab/sqlcourse/` and the
+`web/public/data/sql/course.json` they build. A held-out id fails anywhere in them, a forbidden key
+anywhere in a `.sql` file (header, query, comment) and in the keys and values of course.json, and
+the course's code is read by the team-shape test like the code of /learn.
 """
 
 from __future__ import annotations
@@ -26,11 +31,14 @@ FENCE = json.loads((REPO / "web" / "lib" / "learn" / "fence.json").read_text("ut
 JSON_DIR = REPO / "web" / "public" / "data" / "learn"
 SRC_DIR = REPO / "pipeline" / "src" / "tracklab" / "learn"
 PROBES = sorted((REPO / "pipeline" / "scripts").glob("probe_learn_*.py"))
+SQL_DIR = REPO / "pipeline" / "src" / "tracklab" / "sqlcourse"
+SQL_JSON = REPO / "web" / "public" / "data" / "sql" / "course.json"
 CODE_DIRS = [
     SRC_DIR,
     REPO / "web" / "lib" / "learn",
     REPO / "web" / "components" / "learn",
     REPO / "web" / "app" / "learn",
+    SQL_DIR,
 ]
 TEAM_SHAPE = re.compile(r"possession_(?:width|length)|_(?:width|length)_")
 
@@ -71,6 +79,27 @@ def learn_problems() -> tuple[int, list[str]]:
     return len(jsons) + len(sources), problems
 
 
+def sql_course_problems() -> tuple[int, list[str]]:
+    """How many files /sql is built from or publishes, and what each breaks."""
+    problems: list[str] = []
+    sources = _files([SQL_DIR])
+    for path in sources:
+        text = path.read_text("utf-8")
+        problems += [f"{path.name}: id {h}" for h in FENCE["held_out"] if h in text]
+        if path.suffix == ".sql":
+            problems += [f"{path.name}: key {k!r}" for k in FENCE["forbidden_keys"] if k in text]
+    jsons = [SQL_JSON] if SQL_JSON.exists() else []
+    for path in jsons:
+        keys, scalars = _walk(json.loads(path.read_text("utf-8")))
+        problems += [
+            f"{path.name}: {t!r} names {f!r}"
+            for t in keys + scalars
+            for f in FENCE["forbidden_keys"] + FENCE["held_out"]
+            if f in t
+        ]
+    return len(sources) + len(jsons), problems
+
+
 def _files(dirs: list[Path]) -> list[Path]:
     return sorted(
         p for d in dirs for p in d.rglob("*") if p.is_file() and "__pycache__" not in p.parts
@@ -96,6 +125,13 @@ def test_the_fence_is_not_lifted_before_its_date() -> None:
 def test_no_learn_file_crosses_the_fence() -> None:
     seen, problems = learn_problems()
     print(f"learn fence: {seen} files seen")
+    assert seen > 0, "the fence looked at no file, so it protects nothing"
+    assert problems == []
+
+
+def test_no_sql_course_file_crosses_the_fence() -> None:
+    seen, problems = sql_course_problems()
+    print(f"sql course fence: {seen} files seen")
     assert seen > 0, "the fence looked at no file, so it protects nothing"
     assert problems == []
 

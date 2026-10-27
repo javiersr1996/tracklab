@@ -12,9 +12,10 @@
 export type SqlCheck = { ok: true; tables: string[] } | { ok: false; reason: string };
 
 type TokenKind = "word" | "identifier" | "string" | "number" | "symbol";
-interface Token {
+export interface Token {
   kind: TokenKind;
   text: string;
+  at: number; // where it starts in the SQL
 }
 
 const READ_STATEMENTS = ["select", "with", "explain"];
@@ -89,29 +90,42 @@ export function tokenize(sql: string): Token[] {
       const end = sql.slice(i).search(/[\r\n]/);
       i = end === -1 ? sql.length : i + end + 1;
     } else if (sql.startsWith("/*", i)) {
-      const end = sql.indexOf("*/", i + 2);
-      if (end === -1) throw new SqlSyntaxError("Unterminated comment.");
-      i = end + 2;
+      // DuckDB nests block comments: `/* /* */ */` is one comment.
+      let depth = 1;
+      let k = i + 2;
+      while (depth > 0) {
+        const open = sql.indexOf("/*", k);
+        const close = sql.indexOf("*/", k);
+        if (close === -1) throw new SqlSyntaxError("Unterminated comment.");
+        if (open !== -1 && open < close) {
+          depth += 1;
+          k = open + 2;
+        } else {
+          depth -= 1;
+          k = close + 2;
+        }
+      }
+      i = k;
     } else if (c === "'" || c === '"') {
       const [text, next] = quoted(sql, i, c);
-      tokens.push({ kind: c === "'" ? "string" : "identifier", text });
+      tokens.push({ kind: c === "'" ? "string" : "identifier", text, at: i });
       i = next;
     } else if (match(DOLLAR_TAG, sql, i) !== null) {
       const tag = match(DOLLAR_TAG, sql, i)!;
       const close = sql.indexOf(tag, i + tag.length);
       if (close === -1) throw new SqlSyntaxError("Unterminated dollar-quoted string.");
-      tokens.push({ kind: "string", text: sql.slice(i + tag.length, close) });
+      tokens.push({ kind: "string", text: sql.slice(i + tag.length, close), at: i });
       i = close + tag.length;
     } else if (match(WORD, sql, i) !== null) {
       const word = match(WORD, sql, i)!;
-      tokens.push({ kind: "word", text: word });
+      tokens.push({ kind: "word", text: word, at: i });
       i += word.length;
     } else if (match(NUMBER, sql, i) !== null) {
       const number = match(NUMBER, sql, i)!;
-      tokens.push({ kind: "number", text: number });
+      tokens.push({ kind: "number", text: number, at: i });
       i += number.length;
     } else {
-      tokens.push({ kind: "symbol", text: c });
+      tokens.push({ kind: "symbol", text: c, at: i });
       i += 1;
     }
   }

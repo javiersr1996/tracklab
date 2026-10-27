@@ -1,0 +1,956 @@
+{
+  "schema_version": 1,
+  "duckdb_version": "1.5.5",
+  "lessons": [
+    {
+      "slug": "select",
+      "example": {
+        "sql": "-- The five players with the most shot attempts, most first.\nSELECT player_name, team_name, attempts\nFROM bb_shots\nORDER BY attempts DESC\nLIMIT 5",
+        "columns": [
+          "player_name",
+          "team_name",
+          "attempts"
+        ],
+        "rows": [
+          [
+            "David Dejulius",
+            "CB UCAM Murcia",
+            415
+          ],
+          [
+            "Otis Livingston II",
+            "Basquet Girona",
+            376
+          ],
+          [
+            "Timothe Luwawu-Cabarrot",
+            "Bitci Baskonia",
+            373
+          ],
+          [
+            "Gonzalo Corbalan",
+            "San Pablo Burgos",
+            355
+          ],
+          [
+            "Cameron Hunt",
+            "Club Joventut Badalona",
+            348
+          ]
+        ]
+      },
+      "facts": {
+        "eleventh_attempts": "319",
+        "players": "316",
+        "rows": "326",
+        "tied_with_eleventh": "2",
+        "top_attempts": "415",
+        "top_shooter": "David Dejulius"
+      },
+      "exercises": [
+        {
+          "id": "select-1",
+          "prompt": "List the 11 players with the most shot attempts: player_name, team_name and attempts, in that order, most attempts first. Two players can have the same number of attempts, so break ties by player_name, from A to Z.",
+          "hints": [
+            "ORDER BY takes several columns: the second one only decides between rows that tie on the first.",
+            "DESC sorts from the largest down; a column without it sorts up (A to Z for text).",
+            "LIMIT 11 keeps the first 11 rows of the sorted result."
+          ],
+          "solution": "SELECT player_name, team_name, attempts\nFROM bb_shots\nORDER BY attempts DESC, player_name\nLIMIT 11",
+          "ordered": true,
+          "columns": 3,
+          "rows": 11,
+          "sha256": "4c2f5a901cf0f40eacd617dd0f4861f60d53fb651a137bb354d495883ef91f9f"
+        },
+        {
+          "id": "select-2",
+          "prompt": "Which five players scored the most points? Return player_name and total_points, in that order. The order of the rows does not matter here: the checker compares them as a set.",
+          "hints": [
+            "The rows can come in any order, but picking the top five still needs ORDER BY.",
+            "Sort by total_points from the largest down, then keep five rows with LIMIT."
+          ],
+          "solution": "SELECT player_name, total_points\nFROM bb_shots\nORDER BY total_points DESC\nLIMIT 5",
+          "ordered": false,
+          "columns": 2,
+          "rows": 5,
+          "sha256": "bafc5c76775b7b1b48e1112cf0add3cabc3736d9518439fc7abcd2081b000def"
+        }
+      ]
+    },
+    {
+      "slug": "where",
+      "example": {
+        "sql": "-- Full backs with more than 98 minutes_full_all, the most minutes first.\nSELECT player_name, team_name, minutes_full_all\nFROM fb_physical\nWHERE position_group = 'Full Back' AND minutes_full_all > 98\nORDER BY minutes_full_all DESC, player_name",
+        "columns": [
+          "player_name",
+          "team_name",
+          "minutes_full_all"
+        ],
+        "rows": [
+          [
+            "Harry Crawford",
+            "Adelaide United Football Club",
+            101.42
+          ],
+          [
+            "Rhyan Grant",
+            "Sydney Football Club",
+            100.73
+          ],
+          [
+            "Joshua Rawlins",
+            "Melbourne Victory Football Club",
+            99.73
+          ],
+          [
+            "Lukas Kelly-Heald",
+            "Wellington Phoenix FC",
+            99.53
+          ],
+          [
+            "Mark Natta",
+            "Newcastle United Jets FC",
+            99.48
+          ],
+          [
+            "Daniel Wilmering",
+            "Newcastle United Jets FC",
+            99.23
+          ],
+          [
+            "Aziz Eraltay Behich",
+            "Melbourne City FC",
+            98.83
+          ],
+          [
+            "Matthew Sheridan",
+            "Wellington Phoenix FC",
+            98.83
+          ],
+          [
+            "Thomas Aquilina",
+            "Newcastle United Jets FC",
+            98.59
+          ],
+          [
+            "Dylan Pierias",
+            "Adelaide United Football Club",
+            98.43
+          ],
+          [
+            "Ryan Kitto",
+            "Adelaide United Football Club",
+            98.29
+          ],
+          [
+            "Nathan Paull",
+            "Central Coast Mariners Football Club",
+            98.24
+          ],
+          [
+            "Marin Jakoliš",
+            "Macarthur FC",
+            98.12
+          ]
+        ]
+      },
+      "facts": {
+        "forwards_and_wide_over_100": "4",
+        "full_backs_over_98": "13",
+        "max_matches_with_null_hsr": "4",
+        "min_matches_with_hsr": "3",
+        "or_without_parentheses": "76",
+        "over_98": "62",
+        "position_groups": "5",
+        "rows": "406",
+        "timetohsr_equals_null": "0",
+        "timetohsr_not_null": "259",
+        "timetohsr_null": "147"
+      },
+      "exercises": [
+        {
+          "id": "where-1",
+          "prompt": "Which wide attackers and center forwards have a minutes_full_all above 100? Return player_name, position_group and minutes_full_all, in that order. Row order does not matter.",
+          "hints": [
+            "position_group holds the position as text, so each position is a comparison with quotes: position_group = 'Center Forward'.",
+            "OR joins the two positions and AND adds the minutes; AND is applied before OR, so put the two positions in parentheses.",
+            "WHERE (position_group = 'Center Forward' OR position_group = 'Wide Attacker') AND minutes_full_all > 100. IN ('Center Forward', 'Wide Attacker') says the same, shorter."
+          ],
+          "solution": "SELECT player_name, position_group, minutes_full_all\nFROM fb_physical\nWHERE position_group IN ('Center Forward', 'Wide Attacker') AND minutes_full_all > 100",
+          "ordered": false,
+          "columns": 3,
+          "rows": 4,
+          "sha256": "c975877f40d22b3c35dfbd34c21d63a4a7704c2677057e7bb068bdd10466e0b3"
+        },
+        {
+          "id": "where-2",
+          "prompt": "List the central defenders and full backs who played in at least 20 matches (count_match). Return player_name, team_name, position_group and count_match, in that order. Row order does not matter.",
+          "hints": [
+            "At least 20 means 20 or more: count_match >= 20, not count_match > 20.",
+            "Two positions and one condition on matches: AND binds tighter than OR, so parentheses around the two positions keep the matches condition on both."
+          ],
+          "solution": "SELECT player_name, team_name, position_group, count_match\nFROM fb_physical\nWHERE (position_group = 'Central Defender' OR position_group = 'Full Back')\n  AND count_match >= 20",
+          "ordered": false,
+          "columns": 4,
+          "rows": 23,
+          "sha256": "4ca2f7f2f0b95e843cab9db28a93b4486099341f473945a409a2cc2f418c591f"
+        },
+        {
+          "id": "where-3",
+          "prompt": "Which center forwards have no value in timetohsr_top3 but played in at least 2 matches (count_match)? Return player_name, team_name and count_match, in that order. Row order does not matter.",
+          "hints": [
+            "A missing value is NULL, and nothing is equal to NULL, not even NULL: timetohsr_top3 = NULL never matches a row.",
+            "Test for it with IS NULL, and combine it with the other two conditions using AND."
+          ],
+          "solution": "SELECT player_name, team_name, count_match\nFROM fb_physical\nWHERE position_group = 'Center Forward' AND timetohsr_top3 IS NULL AND count_match >= 2",
+          "ordered": false,
+          "columns": 3,
+          "rows": 10,
+          "sha256": "7ad90ee9bf054cbd4bca0971d9f890655178a12ee8e437961ae23c4edebd64f8"
+        }
+      ]
+    },
+    {
+      "slug": "expressions",
+      "example": {
+        "sql": "-- Field-goal percentage of the players with at least 300 attempts, in three ways.\nSELECT player_name,\n       mades / attempts AS ratio,\n       mades // attempts AS whole_division,\n       round(100.0 * mades / attempts, 1) AS fg_pct\nFROM bb_shots\nWHERE NOT is_season_total AND attempts >= 300\nORDER BY attempts DESC, player_name\nLIMIT 8",
+        "columns": [
+          "player_name",
+          "ratio",
+          "whole_division",
+          "fg_pct"
+        ],
+        "rows": [
+          [
+            "David Dejulius",
+            0.4650602409638554,
+            0,
+            46.5
+          ],
+          [
+            "Otis Livingston II",
+            0.3962765957446808,
+            0,
+            39.6
+          ],
+          [
+            "Timothe Luwawu-Cabarrot",
+            0.46112600536193027,
+            0,
+            46.1
+          ],
+          [
+            "Gonzalo Corbalan",
+            0.4732394366197183,
+            0,
+            47.3
+          ],
+          [
+            "Cameron Hunt",
+            0.4827586206896552,
+            0,
+            48.3
+          ],
+          [
+            "Justin Jaworski",
+            0.3884057971014493,
+            0,
+            38.8
+          ],
+          [
+            "Mario Hezonja",
+            0.46355685131195334,
+            0,
+            46.4
+          ],
+          [
+            "James Batemon",
+            0.40797546012269936,
+            0,
+            40.8
+          ]
+        ]
+      },
+      "facts": {
+        "midfield_20_matches": "16",
+        "one_over_nullif_zero_is_null": "true",
+        "one_over_zero_is_inf": "true",
+        "seven_over_two": "3.5",
+        "seven_whole_over_two": "3",
+        "team_rows": "321",
+        "total_rows_excluded": "5",
+        "whole_division_one": "3",
+        "whole_division_zero": "314",
+        "zero_attempts": "4",
+        "zero_games": "1",
+        "zero_over_zero_is_nan": "true",
+        "zero_three_attempts": "50"
+      },
+      "exercises": [
+        {
+          "id": "expressions-1",
+          "prompt": "Among the team rows (is_season_total is false) of players with fewer than 4 attempts, return player_name, attempts, mades and fg_pct, in that order. fg_pct is 100 * mades / attempts rounded to 1 decimal, and it must be NULL (not an error or an infinity) when the player has 0 attempts. Row order does not matter.",
+          "hints": [
+            "In DuckDB, mades / attempts is a division with decimals, and a division by 0 does not fail: it gives infinity or NaN, which is not a percentage.",
+            "NULLIF(attempts, 0) turns a 0 into NULL, and anything divided by NULL is NULL.",
+            "round(100.0 * mades / NULLIF(attempts, 0), 1), with WHERE NOT is_season_total AND attempts < 4."
+          ],
+          "solution": "SELECT player_name, attempts, mades,\n       round(100.0 * mades / NULLIF(attempts, 0), 1) AS fg_pct\nFROM bb_shots\nWHERE NOT is_season_total AND attempts < 4",
+          "ordered": false,
+          "columns": 4,
+          "rows": 25,
+          "sha256": "78b2e3151f35ef3d7d18111cbe85d7a0a962baf4c0e87e16da9964ceeae8da9e"
+        },
+        {
+          "id": "expressions-2",
+          "prompt": "For midfielders with at least 20 matches (count_match) return player_name, sprints_per_90 and speed_band, in that order. sprints_per_90 is 90 * sprint_count_full_all / minutes_full_all rounded to 2 decimals. speed_band is 'fast' when psv99 is 28 or more, 'medium' when it is 27 or more (and under 28), and 'slow' otherwise. Row order does not matter.",
+          "hints": [
+            "A computed column is an expression plus an alias: round(90 * ... / ..., 2) AS sprints_per_90.",
+            "CASE tries its WHEN branches from the top and stops at the first true one, so the 28 test goes before the 27 test; ELSE catches the rest.",
+            "CASE WHEN psv99 >= 28 THEN 'fast' WHEN psv99 >= 27 THEN 'medium' ELSE 'slow' END AS speed_band."
+          ],
+          "solution": "SELECT player_name,\n       round(90 * sprint_count_full_all / minutes_full_all, 2) AS sprints_per_90,\n       CASE WHEN psv99 >= 28 THEN 'fast' WHEN psv99 >= 27 THEN 'medium' ELSE 'slow' END\n         AS speed_band\nFROM fb_physical\nWHERE position_group = 'Midfield' AND count_match >= 20",
+          "ordered": false,
+          "columns": 3,
+          "rows": 16,
+          "sha256": "42c3690cdc0984df622a6acb9d6f19287683289d42aea18b478cdaef6f5bd38f"
+        },
+        {
+          "id": "expressions-3",
+          "prompt": "For team rows (is_season_total is false) with at least 400 total_points, return player_name, total_points, games_played and whole_ppg, in that order. whole_ppg is the points per game with the decimals cut off (12.9 becomes 12): use integer division. Row order does not matter.",
+          "hints": [
+            "/ divides with decimals, so 12.9 stays 12.9 and ROUND would turn it into 13.",
+            "// is the integer division of DuckDB: 7 // 2 is 3.",
+            "total_points // games_played, with WHERE NOT is_season_total AND total_points >= 400."
+          ],
+          "solution": "SELECT player_name, total_points, games_played, total_points // games_played AS whole_ppg\nFROM bb_shots\nWHERE NOT is_season_total AND total_points >= 400",
+          "ordered": false,
+          "columns": 4,
+          "rows": 15,
+          "sha256": "180439081c8bd1e84334c469e3a81db4047c22442c771d80046d4c7749ad96d1"
+        }
+      ]
+    },
+    {
+      "slug": "group-by",
+      "example": {
+        "sql": "-- One row per basketball team: players, attempts, mades and field-goal percentage.\nSELECT team_name,\n       count(*) AS players,\n       sum(attempts) AS attempts,\n       sum(mades) AS mades,\n       round(100.0 * sum(mades) / sum(attempts), 1) AS fg_pct\nFROM bb_shots\nWHERE NOT is_season_total\nGROUP BY team_name\nORDER BY team_name",
+        "columns": [
+          "team_name",
+          "players",
+          "attempts",
+          "mades",
+          "fg_pct"
+        ],
+        "rows": [
+          [
+            "BAXI Manresa",
+            22,
+            2159,
+            939,
+            43.5
+          ],
+          [
+            "BC Barcelona",
+            17,
+            2086,
+            1083,
+            51.9
+          ],
+          [
+            "BC MoraBanc Andorra",
+            16,
+            1969,
+            880,
+            44.7
+          ],
+          [
+            "Basquet Girona",
+            18,
+            2286,
+            1008,
+            44.1
+          ],
+          [
+            "Bilbao Basket",
+            12,
+            2044,
+            917,
+            44.9
+          ],
+          [
+            "Bitci Baskonia",
+            20,
+            2063,
+            1002,
+            48.6
+          ],
+          [
+            "CB UCAM Murcia",
+            16,
+            2085,
+            983,
+            47.1
+          ],
+          [
+            "Casademont Zaragoza",
+            21,
+            2001,
+            941,
+            47.0
+          ],
+          [
+            "Club Joventut Badalona",
+            18,
+            2084,
+            975,
+            46.8
+          ],
+          [
+            "Coviran Granada",
+            22,
+            2061,
+            931,
+            45.2
+          ],
+          [
+            "Dreamland Gran Canaria",
+            17,
+            2010,
+            897,
+            44.6
+          ],
+          [
+            "ICG Forca Lleida",
+            16,
+            2094,
+            955,
+            45.6
+          ],
+          [
+            "Leche Rio Breogan",
+            15,
+            2272,
+            1085,
+            47.8
+          ],
+          [
+            "Lenovo Tenerife",
+            20,
+            1947,
+            966,
+            49.6
+          ],
+          [
+            "Malaga",
+            17,
+            2182,
+            1005,
+            46.1
+          ],
+          [
+            "Real Madrid",
+            18,
+            2197,
+            1072,
+            48.8
+          ],
+          [
+            "San Pablo Burgos",
+            19,
+            2305,
+            1062,
+            46.1
+          ],
+          [
+            "Valencia BC",
+            17,
+            2184,
+            1033,
+            47.3
+          ]
+        ]
+      },
+      "facts": {
+        "attempts_all_rows": "38735",
+        "attempts_team_rows": "38029",
+        "avg_of_empty_group_is_null": "true",
+        "count_column_hsr": "259",
+        "count_star_hsr": "406",
+        "football_teams": "13",
+        "football_teams_250_matches": "6",
+        "teams": "18",
+        "top_team": "Real Madrid",
+        "top_team_points": "3154"
+      },
+      "exercises": [
+        {
+          "id": "group-by-1",
+          "prompt": "Rank the basketball teams by points. Using the team rows only (is_season_total is false), return team_name, players and total_points, in that order, where players is the number of rows of the team and total_points the sum of total_points. Most points first; break ties by team_name, from A to Z.",
+          "hints": [
+            "GROUP BY team_name gives one output row per team; the aggregates (count, sum) are computed inside each group.",
+            "count(*) counts the rows of the group, sum(total_points) adds the column up.",
+            "Filter with WHERE NOT is_season_total before grouping, then ORDER BY total_points DESC, team_name."
+          ],
+          "solution": "SELECT team_name, count(*) AS players, sum(total_points) AS total_points\nFROM bb_shots\nWHERE NOT is_season_total\nGROUP BY team_name\nORDER BY total_points DESC, team_name",
+          "ordered": true,
+          "columns": 3,
+          "rows": 18,
+          "sha256": "fa32c7483240bad0f219c83e17e6fef7777cf4138c3f5a96e5dba3a2406d6fd2"
+        },
+        {
+          "id": "group-by-2",
+          "prompt": "Which football teams have at least 250 matches added up over their players? In fb_physical, return team_name, players (the number of rows) and matches (the sum of count_match), in that order. Row order does not matter.",
+          "hints": [
+            "A condition on a sum cannot go in WHERE: WHERE runs before the groups exist.",
+            "HAVING filters the groups after GROUP BY, and it can use aggregates: HAVING sum(...) >= ...",
+            "GROUP BY team_name HAVING sum(count_match) >= 250."
+          ],
+          "solution": "SELECT team_name, count(*) AS players, sum(count_match) AS matches\nFROM fb_physical\nGROUP BY team_name\nHAVING sum(count_match) >= 250",
+          "ordered": false,
+          "columns": 3,
+          "rows": 6,
+          "sha256": "4efc5446194e30cd13955ab0aafe59c9cc49fc3112d21fc78efcdcba19012aad"
+        },
+        {
+          "id": "group-by-3",
+          "prompt": "For each position_group of fb_physical return position_group, rows (how many rows), with_hsr (how many rows have a value in timetohsr_top3) and avg_minutes (the average of minutes_full_all rounded to 1 decimal), in that order. Row order does not matter.",
+          "hints": [
+            "count(*) counts rows; count(column) counts only the rows where that column is not NULL.",
+            "avg(minutes_full_all) averages the group, and round(..., 1) goes around the whole avg."
+          ],
+          "solution": "SELECT position_group,\n       count(*) AS rows,\n       count(timetohsr_top3) AS with_hsr,\n       round(avg(minutes_full_all), 1) AS avg_minutes\nFROM fb_physical\nGROUP BY position_group",
+          "ordered": false,
+          "columns": 4,
+          "rows": 5,
+          "sha256": "f6ae9fc99f394cc4da1a1682176b33229b21cc9dd5b49b3c56a90668680b17e4"
+        }
+      ]
+    },
+    {
+      "slug": "joins",
+      "example": {
+        "sql": "-- Auckland FC full backs with their speed (fb_physical) and pass completion (fb_passing).\nSELECT p.player_name, p.position_group, p.psv99, q.pass_pct_completed\nFROM fb_physical AS p\nJOIN fb_passing AS q\n  ON p.player_id = q.player_id\n AND p.team_id = q.team_id\n AND p.position_group = q.position_group\nWHERE p.team_name = 'Auckland FC' AND p.position_group = 'Full Back'\nORDER BY p.player_name",
+        "columns": [
+          "player_name",
+          "position_group",
+          "psv99",
+          "pass_pct_completed"
+        ],
+        "rows": [
+          [
+            "Callan Elliot",
+            "Full Back",
+            28.83,
+            73.44
+          ],
+          [
+            "Francis De Vries",
+            "Full Back",
+            29.16,
+            72.29
+          ],
+          [
+            "Hiroki Sakai",
+            "Full Back",
+            28.88,
+            81.9
+          ]
+        ]
+      },
+      "facts": {
+        "join_on_name_team_position": "387",
+        "join_on_player_and_team": "718",
+        "join_on_player_id": "723",
+        "left_join_rows": "406",
+        "matched_rows": "385",
+        "name_with_two_ids": "Harry Crawford",
+        "name_with_two_ids_team": "Adelaide United Football Club",
+        "passing_only_goalkeepers": "22",
+        "passing_only_rows": "22",
+        "passing_rows": "407",
+        "physical_goalkeepers": "0",
+        "physical_only_not_in_passing_at_all": "9",
+        "physical_only_other_position_in_passing": "12",
+        "physical_only_rows": "21",
+        "physical_players": "268",
+        "physical_rows": "406",
+        "players_with_two_or_more_rows": "104"
+      },
+      "exercises": [
+        {
+          "id": "joins-1",
+          "prompt": "For the Auckland FC rows of fb_physical that have a matching row in fb_passing, return player_name, position_group, sprint_count_full_all (from fb_physical) and pass_pct_completed (from fb_passing), in that order. A row matches when player_id, team_id and position_group are all equal. Row order does not matter.",
+          "hints": [
+            "Give each table an alias (fb_physical AS p, fb_passing AS q) and write p.column or q.column so it is clear where each value comes from.",
+            "One key is not enough: a player can have one row per position_group, so the ON clause needs the three equalities joined by AND.",
+            "FROM fb_physical AS p JOIN fb_passing AS q ON p.player_id = q.player_id AND p.team_id = q.team_id AND p.position_group = q.position_group WHERE p.team_name = 'Auckland FC'."
+          ],
+          "solution": "SELECT p.player_name, p.position_group, p.sprint_count_full_all, q.pass_pct_completed\nFROM fb_physical AS p\nJOIN fb_passing AS q\n  ON p.player_id = q.player_id\n AND p.team_id = q.team_id\n AND p.position_group = q.position_group\nWHERE p.team_name = 'Auckland FC'",
+          "ordered": false,
+          "columns": 4,
+          "rows": 22,
+          "sha256": "0579c0fddc450ff5b2716f09028a3003fdb4f39a2551040b129a82a498712325"
+        },
+        {
+          "id": "joins-2",
+          "prompt": "Which rows of fb_physical have no matching row in fb_passing? Match on player_id, team_id and position_group. Return player_name, team_name and position_group, in that order. Row order does not matter.",
+          "hints": [
+            "A LEFT JOIN keeps every row of the left table; where the right table has no match, its columns are NULL.",
+            "Filter the joined rows on a right-table key IS NULL to keep only the rows with no match.",
+            "FROM fb_physical AS p LEFT JOIN fb_passing AS q ON (the three equalities) WHERE q.player_id IS NULL."
+          ],
+          "solution": "SELECT p.player_name, p.team_name, p.position_group\nFROM fb_physical AS p\nLEFT JOIN fb_passing AS q\n  ON p.player_id = q.player_id\n AND p.team_id = q.team_id\n AND p.position_group = q.position_group\nWHERE q.player_id IS NULL",
+          "ordered": false,
+          "columns": 3,
+          "rows": 21,
+          "sha256": "61c64cdb5fe8bded9d29fd0c7543826aa0a862bae3c90d85edbda02b09bfce92"
+        },
+        {
+          "id": "joins-3",
+          "prompt": "Which rows of fb_passing have no matching row in fb_physical? Match on player_id, team_id and position_group. Return player_name, team_name and position_group, in that order, ordered by team_name and then player_name, both from A to Z.",
+          "hints": [
+            "It is the same shape as the previous exercise with the tables swapped: start from fb_passing and LEFT JOIN fb_physical.",
+            "The ORDER BY goes last, after WHERE: ORDER BY team_name, player_name.",
+            "FROM fb_passing AS q LEFT JOIN fb_physical AS p ON (the three equalities) WHERE p.player_id IS NULL ORDER BY q.team_name, q.player_name."
+          ],
+          "solution": "SELECT q.player_name, q.team_name, q.position_group\nFROM fb_passing AS q\nLEFT JOIN fb_physical AS p\n  ON p.player_id = q.player_id\n AND p.team_id = q.team_id\n AND p.position_group = q.position_group\nWHERE p.player_id IS NULL\nORDER BY q.team_name, q.player_name",
+          "ordered": true,
+          "columns": 3,
+          "rows": 22,
+          "sha256": "5558c08d69e2cc9754abcc084494286636331183e3ba6ae0075fd680a1d2f834"
+        }
+      ]
+    },
+    {
+      "slug": "long-wide",
+      "example": {
+        "sql": "-- Two metrics of Perth Glory's center forwards (team_id 871), turned from long to wide.\nSELECT *\nFROM (\n  PIVOT (\n    SELECT player_id, metric, value\n    FROM fact\n    WHERE sport = 'football' AND family = 'physical'\n      AND team_id = 871 AND position_group = 'Center Forward'\n      AND metric IN ('count_match', 'psv99')\n  )\n  ON metric IN ('count_match', 'psv99')\n  USING max(value)\n)\nORDER BY player_id",
+        "columns": [
+          "player_id",
+          "count_match",
+          "psv99"
+        ],
+        "rows": [
+          [
+            211,
+            24.0,
+            28.83
+          ],
+          [
+            23926,
+            1.0,
+            29.5
+          ],
+          [
+            51053,
+            5.0,
+            28.64
+          ],
+          [
+            51694,
+            1.0,
+            26.2
+          ],
+          [
+            560984,
+            1.0,
+            25.7
+          ],
+          [
+            795530,
+            1.0,
+            26.3
+          ],
+          [
+            966110,
+            1.0,
+            28.4
+          ],
+          [
+            966111,
+            8.0,
+            26.7
+          ],
+          [
+            966112,
+            4.0,
+            24.88
+          ]
+        ]
+      },
+      "facts": {
+        "basketball_shots_metrics": "300",
+        "example_players": "9",
+        "fact_rows": "366962",
+        "fb_physical_rows": "406",
+        "football_obr_metrics": "118",
+        "football_passing_metrics": "36",
+        "football_physical_metrics": "54",
+        "long_rows_of_example": "18",
+        "null_values_in_fact": "0",
+        "physical_rows_per_metric_max": "406",
+        "psv99_rows": "406",
+        "timetohsr_top3_rows": "259"
+      },
+      "exercises": [
+        {
+          "id": "long-wide-1",
+          "prompt": "In the long table fact, for sport 'football', return family, metrics (how many different metric names the family has) and rows (how many rows it has), in that order. One row per family. Row order does not matter.",
+          "hints": [
+            "Each row of fact is one value of one metric for one player: the metric name is data, not a column.",
+            "GROUP BY family; count(DISTINCT metric) counts the names without repeating them."
+          ],
+          "solution": "SELECT family, count(DISTINCT metric) AS metrics, count(*) AS rows\nFROM fact\nWHERE sport = 'football'\nGROUP BY family",
+          "ordered": false,
+          "columns": 3,
+          "rows": 3,
+          "sha256": "a94be9cf2c0755b1dfba6a39ed7418dbddd9deb2c6f90a7bd2ea8d75c813a307"
+        },
+        {
+          "id": "long-wide-2",
+          "prompt": "From fact (sport 'football', family 'physical') take the Wide Attackers of the team with team_id 868, one row per player, and return player_id, sprint_count_full_all and psv99, in that order: the two metrics as columns. You can pivot or use conditional aggregation: both give the same result. Row order does not matter.",
+          "hints": [
+            "One row per player_id means the metric names have to become columns: that is pivoting.",
+            "Pivot: SELECT * FROM (PIVOT (SELECT player_id, metric, value FROM fact WHERE ...) ON metric IN ('sprint_count_full_all', 'psv99') USING max(value)). Without PIVOT: GROUP BY player_id and max(CASE WHEN metric = '...' THEN value END) for each column.",
+            "With CASE: SELECT player_id, max(CASE WHEN metric = 'sprint_count_full_all' THEN value END) AS sprint_count_full_all, max(CASE WHEN metric = 'psv99' THEN value END) AS psv99 FROM fact WHERE (filters) GROUP BY player_id."
+          ],
+          "solution": "SELECT player_id,\n       max(CASE WHEN metric = 'sprint_count_full_all' THEN value END) AS sprint_count_full_all,\n       max(CASE WHEN metric = 'psv99' THEN value END) AS psv99\nFROM fact\nWHERE sport = 'football' AND family = 'physical'\n  AND team_id = 868 AND position_group = 'Wide Attacker'\n  AND metric IN ('sprint_count_full_all', 'psv99')\nGROUP BY player_id",
+          "ordered": false,
+          "columns": 3,
+          "rows": 6,
+          "sha256": "8161ed1b9b2a9fb0500dfb9a92aa960d4384a2484638e65d5171f66835a79f0a"
+        },
+        {
+          "id": "long-wide-3",
+          "prompt": "From fact, for the metric 'psv99' of sport 'football' and family 'physical', return position_group and avg_psv99 (the average of value rounded to 2 decimals), in that order. One row per position_group. Row order does not matter.",
+          "hints": [
+            "Keep one metric with WHERE metric = 'psv99' (plus sport and family) before grouping.",
+            "GROUP BY position_group, then round(avg(value), 2)."
+          ],
+          "solution": "SELECT position_group, round(avg(value), 2) AS avg_psv99\nFROM fact\nWHERE sport = 'football' AND family = 'physical' AND metric = 'psv99'\nGROUP BY position_group",
+          "ordered": false,
+          "columns": 2,
+          "rows": 5,
+          "sha256": "fbf7153898031d89c6bbe259bb5b8cb7f07c7048248ded02dd2cbbaa04ba10c5"
+        }
+      ]
+    },
+    {
+      "slug": "windows",
+      "example": {
+        "sql": "-- The five fastest midfielders (psv99) among those with at least 5 matches, with their rank and\n-- their percentile among the midfielders.\nSELECT player_name, team_name, psv99, speed_rank, percentile\nFROM (\n  SELECT player_name, team_name, position_group, psv99,\n         rank() OVER (PARTITION BY position_group ORDER BY psv99 DESC) AS speed_rank,\n         round(100 * percent_rank() OVER (PARTITION BY position_group ORDER BY psv99), 1)\n           AS percentile\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n) AS pool\nWHERE position_group = 'Midfield' AND speed_rank <= 5\nORDER BY speed_rank, player_name",
+        "columns": [
+          "player_name",
+          "team_name",
+          "psv99",
+          "speed_rank",
+          "percentile"
+        ],
+        "rows": [
+          [
+            "Adrian Segecic",
+            "Sydney Football Club",
+            29.02,
+            1,
+            100.0
+          ],
+          [
+            "Mathew Leckie",
+            "Melbourne City FC",
+            28.83,
+            2,
+            97.8
+          ],
+          [
+            "Zinédine Machach",
+            "Melbourne Victory Football Club",
+            28.37,
+            3,
+            95.7
+          ],
+          [
+            "Kosta Grozos",
+            "Newcastle United Jets FC",
+            28.32,
+            4,
+            93.5
+          ],
+          [
+            "Rhys Bozinovski",
+            "Western United",
+            28.18,
+            5,
+            91.3
+          ]
+        ]
+      },
+      "facts": {
+        "basketball_pool_rows": "248",
+        "fastest_midfielder": "Adrian Segecic",
+        "fastest_midfielder_psv99": "29.02",
+        "football_pool_rows": "210",
+        "jay_barnett_percentile": "52.2",
+        "jay_barnett_psv99": "27.03",
+        "jay_barnett_rank": "23",
+        "midfield_matches": "722",
+        "midfield_players": "47",
+        "midfield_pool_rows": "47",
+        "rank_differs_from_row_number": "15"
+      },
+      "exercises": [
+        {
+          "id": "windows-1",
+          "prompt": "Among the football rows with a psv99 and at least 5 matches (count_match), find the two fastest players of each position_group. Return position_group, player_name, psv99 and rn, in that order, where rn is 1 for the highest psv99 of the group and 2 for the next one. Break ties in psv99 by player_name, from A to Z. Order the rows by position_group (A to Z) and then rn.",
+          "hints": [
+            "row_number() OVER (PARTITION BY position_group ORDER BY psv99 DESC, player_name) numbers the rows 1, 2, 3... inside each position_group.",
+            "A window function cannot be used in WHERE. Compute rn in a subquery in FROM (SELECT ... FROM (SELECT ..., row_number() ... AS rn FROM ...) AS t WHERE rn <= 2), or use the QUALIFY clause, which filters on a window function the way HAVING filters groups.",
+            "The inner query has the WHERE on psv99 and count_match, so the numbering only sees the players of the pool; the outer query keeps rn <= 2 and sorts."
+          ],
+          "solution": "SELECT position_group, player_name, psv99, rn\nFROM (\n  SELECT position_group, player_name, psv99,\n         row_number() OVER (PARTITION BY position_group ORDER BY psv99 DESC, player_name) AS rn\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n) AS t\nWHERE rn <= 2\nORDER BY position_group, rn",
+          "ordered": true,
+          "columns": 4,
+          "rows": 10,
+          "sha256": "ca2334797068855855a1d2eabf82778d65507055e064d8fa12067efac6c81da8"
+        },
+        {
+          "id": "windows-2",
+          "prompt": "Percentile of speed inside a position, the way /warehouse prints it. Take the football rows with a psv99 and at least 5 matches (count_match); for each, the percentile is 100 * percent_rank() over the rows of its position_group ordered by psv99 from low to high, rounded to 1 decimal. Return player_name, position_group, psv99 and percentile (the rounded value), in that order, for the Full Backs whose percentile is 90 or above, compared before rounding, highest percentile first. Break ties by player_name, from A to Z.",
+          "hints": [
+            "percent_rank() OVER (PARTITION BY position_group ORDER BY psv99) is 0 for the lowest value of a group and 1 for the highest.",
+            "The window only sees rows that passed the WHERE inside its own query: put the pool conditions (psv99 and count_match) in the inner query, and the position and the 90 in the outer one.",
+            "Inner: 100 * percent_rank() OVER (...) AS raw. Outer: WHERE position_group = 'Full Back' AND raw >= 90, SELECT round(raw, 1) AS percentile, ORDER BY percentile DESC, player_name."
+          ],
+          "solution": "SELECT player_name, position_group, psv99, round(raw, 1) AS percentile\nFROM (\n  SELECT player_name, position_group, psv99,\n         100 * percent_rank() OVER (PARTITION BY position_group ORDER BY psv99) AS raw\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n) AS pool\nWHERE position_group = 'Full Back' AND raw >= 90\nORDER BY percentile DESC, player_name",
+          "ordered": true,
+          "columns": 4,
+          "rows": 5,
+          "sha256": "ec0f540f1ec1aa713f785bcd2c96273883201ace2cf37b21648a12e1c2616b28"
+        },
+        {
+          "id": "windows-3",
+          "prompt": "Basketball version, as /warehouse does it. Take the team rows (is_season_total is false) with at least 10 games_played. threes_per_game is three_attempts / games_played, and the percentile is 100 * percent_rank() over all those rows ordered by threes_per_game from low to high, rounded to 1 decimal. Return player_name, team_name, threes_per_game (rounded to 2 decimals) and percentile, in that order, for the 5 highest percentiles, highest percentile first. Break ties by player_name, from A to Z.",
+          "hints": [
+            "Divide with a decimal number, three_attempts * 1.0 / games_played, and use the same expression in the percent_rank() ORDER BY.",
+            "There is no PARTITION BY: the window is the whole pool, which is the rows left by the WHERE of the same query.",
+            "Wrap the query in a subquery so the outer one can ORDER BY percentile DESC, player_name LIMIT 5."
+          ],
+          "solution": "SELECT player_name, team_name, threes_per_game, percentile\nFROM (\n  SELECT player_name, team_name,\n         round(three_attempts * 1.0 / games_played, 2) AS threes_per_game,\n         round(100 * percent_rank() OVER (ORDER BY three_attempts * 1.0 / games_played), 1)\n           AS percentile\n  FROM bb_shots\n  WHERE NOT is_season_total AND games_played >= 10\n) AS pool\nORDER BY percentile DESC, player_name\nLIMIT 5",
+          "ordered": true,
+          "columns": 4,
+          "rows": 5,
+          "sha256": "cf02351fa4de084c2faf93ce5343a5b8cf3ba563d7fea884ad93297378605f08"
+        }
+      ]
+    },
+    {
+      "slug": "scouting",
+      "example": {
+        "sql": "-- Full backs in the top 30% for speed and for pass completion within their position.\nWITH speed AS (\n  SELECT player_id, team_id, position_group, player_name, team_name, psv99,\n         100 * percent_rank() OVER (PARTITION BY position_group ORDER BY psv99) AS speed_raw\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n),\npassing AS (\n  SELECT player_id, team_id, position_group, pass_pct_completed,\n         100 * percent_rank() OVER (\n           PARTITION BY position_group ORDER BY pass_pct_completed) AS passing_raw\n  FROM fb_passing\n  WHERE pass_pct_completed IS NOT NULL AND performance_count >= 5\n)\nSELECT s.player_name, s.team_name, s.psv99, round(s.speed_raw, 1) AS speed_pct,\n       p.pass_pct_completed, round(p.passing_raw, 1) AS passing_pct\nFROM speed AS s\nJOIN passing AS p\n  ON s.player_id = p.player_id AND s.team_id = p.team_id AND s.position_group = p.position_group\nWHERE s.position_group = 'Full Back' AND s.speed_raw >= 70 AND p.passing_raw >= 70\nORDER BY s.speed_raw DESC, s.player_name",
+        "columns": [
+          "player_name",
+          "team_name",
+          "psv99",
+          "speed_pct",
+          "pass_pct_completed",
+          "passing_pct"
+        ],
+        "rows": [
+          [
+            "Jason Geria",
+            "Melbourne Victory Football Club",
+            30.5,
+            97.8,
+            89.36,
+            100.0
+          ],
+          [
+            "Antonee Alan Burke-Gilroy",
+            "Brisbane Roar FC",
+            30.16,
+            91.3,
+            86.93,
+            94.4
+          ],
+          [
+            "Dane James Ingham",
+            "Newcastle United Jets FC",
+            29.98,
+            84.8,
+            84.87,
+            80.6
+          ],
+          [
+            "Thomas Aquilina",
+            "Newcastle United Jets FC",
+            29.66,
+            76.1,
+            85.06,
+            86.1
+          ],
+          [
+            "Aziz Eraltay Behich",
+            "Melbourne City FC",
+            29.52,
+            71.7,
+            84.98,
+            83.3
+          ]
+        ]
+      },
+      "facts": {
+        "full_back_shortlist_rows": "5",
+        "passing_only_70": "53",
+        "passing_pool_rows": "194",
+        "rows_in_both_pools": "175",
+        "shortlist_rows": "15",
+        "speed_only_70": "50",
+        "speed_pool_rows": "210"
+      },
+      "exercises": [
+        {
+          "id": "scouting-1",
+          "prompt": "Build the shortlist of players who are fast and accurate within their position. Speed pool: fb_physical rows with a psv99 and at least 5 matches (count_match); speed_pct is 100 * percent_rank() over the rows of the same position_group ordered by psv99, rounded to 1 decimal. Passing pool: fb_passing rows with a pass_pct_completed and at least 5 performance_count; passing_pct is the same over pass_pct_completed. Join the two pools on player_id, team_id and position_group and keep the rows whose speed and passing percentiles are both at least 70, compared before rounding. Return player_name, team_name, position_group, speed_pct and passing_pct (the rounded values), in that order. Row order does not matter.",
+          "hints": [
+            "Write each pool as its own CTE (WITH speed AS (...), passing AS (...)): each has its own WHERE and its own percent_rank, so the percentiles are not mixed up.",
+            "Filter the pools inside the CTEs, before the percentile is computed; filter on the percentiles after the join.",
+            "Keep the unrounded percentile in each CTE (100 * percent_rank() OVER (...) AS speed_raw), filter on it after the join (WHERE s.speed_raw >= 70 AND p.passing_raw >= 70) and round only in the SELECT: round(s.speed_raw, 1) AS speed_pct."
+          ],
+          "solution": "WITH speed AS (\n  SELECT player_id, team_id, position_group, player_name, team_name,\n         100 * percent_rank() OVER (PARTITION BY position_group ORDER BY psv99) AS speed_raw\n  FROM fb_physical\n  WHERE psv99 IS NOT NULL AND count_match >= 5\n),\npassing AS (\n  SELECT player_id, team_id, position_group,\n         100 * percent_rank() OVER (\n           PARTITION BY position_group ORDER BY pass_pct_completed) AS passing_raw\n  FROM fb_passing\n  WHERE pass_pct_completed IS NOT NULL AND performance_count >= 5\n)\nSELECT s.player_name, s.team_name, s.position_group,\n       round(s.speed_raw, 1) AS speed_pct, round(p.passing_raw, 1) AS passing_pct\nFROM speed AS s\nJOIN passing AS p\n  ON s.player_id = p.player_id AND s.team_id = p.team_id AND s.position_group = p.position_group\nWHERE s.speed_raw >= 70 AND p.passing_raw >= 70",
+          "ordered": false,
+          "columns": 5,
+          "rows": 15,
+          "sha256": "ad9ca16d94a14759431a8ede9085ec07c3f8eeb35fdb07bc4d48b18a32fe6559"
+        },
+        {
+          "id": "scouting-2",
+          "prompt": "Who stands out against their own team? From fb_physical, compute each team's average psv99 (over all its rows), then list the rows (one per player and position group, so a player who played two positions can appear twice) whose psv99 is at least 3 above their team's average. Return player_name, team_name, psv99 and gap, in that order, where gap is psv99 minus the team average rounded to 2 decimals. Order by gap from largest to smallest and break ties by player_name, from A to Z.",
+          "hints": [
+            "A CTE can hold a GROUP BY result (team_name and its average) that the main query joins back to the player rows.",
+            "Join on team_name, then compare in WHERE: p.psv99 - t.avg_psv99 >= 3.",
+            "WITH team AS (SELECT team_name, avg(psv99) AS avg_psv99 FROM fb_physical GROUP BY team_name) SELECT ... FROM fb_physical AS p JOIN team AS t USING (team_name) WHERE ..."
+          ],
+          "solution": "WITH team AS (\n  SELECT team_name, avg(psv99) AS avg_psv99\n  FROM fb_physical\n  GROUP BY team_name\n)\nSELECT p.player_name, p.team_name, p.psv99, round(p.psv99 - t.avg_psv99, 2) AS gap\nFROM fb_physical AS p\nJOIN team AS t ON p.team_name = t.team_name\nWHERE p.psv99 - t.avg_psv99 >= 3\nORDER BY gap DESC, p.player_name",
+          "ordered": true,
+          "columns": 4,
+          "rows": 9,
+          "sha256": "a0de9a14c3fb3c62591cc9d720e7b640251a295277e5bf04fa0e324920b1063a"
+        },
+        {
+          "id": "scouting-3",
+          "prompt": "Basketball scouting from two tables. Using team rows only (is_season_total is false) with at least 10 games_played, find the players with at least 12 points per game (bb_shots: total_points / games_played) and at least 6 drives per game (bb_drives: total_drives / games_played). Match the tables on player_id and team_id. Return player_name, team_name, points_per_game and drives_per_game (both rounded to 1 decimal), in that order. Row order does not matter.",
+          "hints": [
+            "One CTE per table, each computing its per-game rate; divide with a decimal, as in total_points * 1.0 / games_played.",
+            "Put the rates unrounded in the WHERE and round only in the SELECT, so a value like 11.96 does not pass as 12.",
+            "WITH scoring AS (SELECT player_id, team_id, player_name, team_name, total_points * 1.0 / games_played AS ppg FROM bb_shots WHERE ...), driving AS (...) SELECT ... FROM scoring JOIN driving USING (player_id, team_id) WHERE ppg >= 12 AND dpg >= 6."
+          ],
+          "solution": "WITH scoring AS (\n  SELECT player_id, team_id, player_name, team_name,\n         total_points * 1.0 / games_played AS ppg\n  FROM bb_shots\n  WHERE NOT is_season_total AND games_played >= 10\n),\ndriving AS (\n  SELECT player_id, team_id, total_drives * 1.0 / games_played AS dpg\n  FROM bb_drives\n  WHERE NOT is_season_total AND games_played >= 10\n)\nSELECT s.player_name, s.team_name, round(s.ppg, 1) AS points_per_game,\n       round(d.dpg, 1) AS drives_per_game\nFROM scoring AS s\nJOIN driving AS d ON s.player_id = d.player_id AND s.team_id = d.team_id\nWHERE s.ppg >= 12 AND d.dpg >= 6",
+          "ordered": false,
+          "columns": 4,
+          "rows": 16,
+          "sha256": "71634dbd2256d673e6b004d4d00f317c6ae1ff778d2fb7efe478643802cb3ae8"
+        }
+      ]
+    }
+  ]
+}

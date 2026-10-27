@@ -72,6 +72,7 @@ from tracklab.runs.protocol import run_runs_protocol
 from tracklab.silver.orientation import SPORTS, run_orientation
 from tracklab.silver.possessions import run_possessions
 from tracklab.silver.stats import run_stats
+from tracklab.sqlcourse.course import run_sql_course
 
 _Handler = Callable[[argparse.Namespace], int]
 _DEFAULT_SCHEMAS_DIR = Path(__file__).resolve().parent / "bronze" / "schemas"
@@ -356,6 +357,10 @@ def _cmd_learn_possession(args: argparse.Namespace) -> int:
 
 def _cmd_learn_browser(args: argparse.Namespace) -> int:
     return run_learn_browser(args.public, check=args.check)
+
+
+def _cmd_sql_course(args: argparse.Namespace) -> int:
+    return run_sql_course(args.public, check=args.check)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -1456,6 +1461,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Say FULL k/k when every lesson's query agrees with its files; write nothing.",
     )
     learn_browser.set_defaults(func=_cmd_learn_browser)
+
+    sql = subparsers.add_parser("sql", help="P11: the /sql course and its checked exercises.")
+    sql_sub = sql.add_subparsers(dest="sql_command", required=True)
+    sql_course = sql_sub.add_parser(
+        "course",
+        help="Run every reference query of sqlcourse/<slug>/ on the seven Parquet files of "
+        "/warehouse, guard it and write web/public/data/sql/course.json (task 99).",
+    )
+    sql_course.add_argument(
+        "--public",
+        type=Path,
+        default=Path("../web/public"),
+        help="The site's public folder: data/warehouse.json and data/warehouse/ are read from "
+        "it and data/sql/course.json goes into it (default: ../web/public).",
+    )
+    sql_course.add_argument(
+        "--check",
+        action="store_true",
+        help="Rebuild course.json and compare its bytes; write nothing. FULL k/k when every "
+        "lesson is written, PARTIAL k/n while some lesson has no folder yet.",
+    )
+    sql_course.set_defaults(func=_cmd_sql_course)
 
     build = subparsers.add_parser(
         "build",

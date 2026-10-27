@@ -16,6 +16,11 @@ export default function LearnPage() {
           published frames, and ends with a figure per match and the query or script that reproduces it. The
           lessons are grouped by level, and each names the sport whose data it uses.
         </p>
+        <p>
+          The lessons end in SQL. If you have not written any, <Link href="/sql">Learn SQL on the warehouse</Link>{" "}
+          starts from <code>SELECT</code> and ends with window functions and CTEs, with exercises checked in the
+          browser.
+        </p>
       </PageHead>
       <Band>
         {LEVELS.map((level) => {

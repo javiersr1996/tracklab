@@ -74,6 +74,7 @@ jobs:
       # published files; the second reads web/public/data only, so it is FULL on the fixtures too.
       - run: uv run tracklab learn hypotheses --check
       - run: uv run tracklab learn browser --check
+      - run: uv run tracklab sql course --check
       # Task 54: P5's versioned reports and runs.json against the fixtures. A slice of the
       # warehouse cannot recompute the figures, so each prints PARTIAL and what it verified
       # (the seal, the protocol, the match list, the clips by size and hash); full-build.yml
