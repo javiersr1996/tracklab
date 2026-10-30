@@ -724,9 +724,13 @@ body:has(.home) .site-header::after {
   background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(0, 0, 0, 0.22) 2px 4px);
 }
 
+/* A band at the top keeps the header's links off the moving marks (the court's top edge runs
+   under the nav); on a phone the copy stands about 550 px tall, so the solid part of the scrim
+   reaches half way up. */
 .hero-stage::after {
   background:
-    linear-gradient(to top, var(--neon-bg) 0%, rgba(3, 7, 18, 0.92) 34%, rgba(3, 7, 18, 0) 72%),
+    linear-gradient(to bottom, var(--neon-bg) 0%, rgba(3, 7, 18, 0.85) 9%, rgba(3, 7, 18, 0) 20%),
+    linear-gradient(to top, var(--neon-bg) 0%, rgba(3, 7, 18, 0.95) 48%, rgba(3, 7, 18, 0) 82%),
     radial-gradient(ellipse 70% 60% at 50% 45%, rgba(3, 7, 18, 0) 55%, rgba(3, 7, 18, 0.55) 100%);
 }
 
@@ -735,6 +739,7 @@ body:has(.home) .site-header::after {
 @media (min-width: 72rem) {
   .hero-stage::after {
     background:
+      linear-gradient(to bottom, var(--neon-bg) 0%, rgba(3, 7, 18, 0.85) 9%, rgba(3, 7, 18, 0) 18%),
       radial-gradient(
         ellipse 62% 78% at 0% 100%,
         rgba(3, 7, 18, 0.97) 0%,
