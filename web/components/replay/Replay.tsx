@@ -1,7 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { formatClock, type Rate, ReplayEngine, type Snapshot } from "../../lib/replay/engine";
+import { useRouter } from "next/navigation";
+import { type PointerEvent, useEffect, useRef, useState } from "react";
+import {
+  formatClock,
+  type Rate,
+  ReplayEngine,
+  type Snapshot,
+  speedOf,
+} from "../../lib/replay/engine";
 import { drawFrame, NEON_COLORS, type View, viewed, viewOf } from "../../lib/replay/render";
 import type { Possession } from "../../lib/replay/types";
 
@@ -16,7 +23,8 @@ interface ReplayState {
   sport: string;
   rate: number;
   normalized: boolean;
-  entities: { i: number; x: number; y: number }[];
+  // Venue metres; in the hero, also where the mark sits on the canvas, in CSS px.
+  entities: { i: number; x: number; y: number; px?: number; py?: number }[];
   overlay: number;
   // Trail samples drawn behind an entity this frame: 0 on every page but the home.
   trail: number;
@@ -39,6 +47,8 @@ const RATES: Rate[] = [0.5, 1, 2];
 const TRAIL_STEPS = Array.from({ length: 12 }, (_, k) => 1 - k / 12);
 // A hero canvas is drawn at the device's pixel ratio up to this, so a phone stays fluid.
 const HERO_MAX_DPR = 1.5;
+// How close to a player's mark, in CSS px, the pointer has to be to pick him.
+const HIT_PX = 28;
 
 interface Props {
   possession: Possession;
@@ -52,6 +62,9 @@ interface Props {
   hero?: boolean;
   // Milliseconds of each entity's path drawn fading behind it; 0 (reduced motion) draws none.
   trailMs?: number;
+  // Where a click on a player goes (task 108): hovering or tapping one shows his number and
+  // speed, a second tap or a click opens this. Pointer only; the page's link is the keyboard path.
+  href?: string;
 }
 
 export function Replay({
@@ -62,7 +75,9 @@ export function Replay({
   name,
   hero = false,
   trailMs = 0,
+  href,
 }: Props) {
+  const router = useRouter();
   const canvas = useRef<HTMLCanvasElement>(null);
   const [engine] = useState(() => {
     const e = new ReplayEngine(possession);
@@ -72,6 +87,10 @@ export function Replay({
   const [normalized, setNormalized] = useState(false);
   const [, setVersion] = useState(0);
   const rerender = () => setVersion((v) => v + 1);
+  // The player under the pointer (hero), by entity index; his readout follows him from the loop.
+  const [picked, setPicked] = useState<number | null>(null);
+  const readout = useRef<HTMLAnchorElement>(null);
+  const speedOut = useRef<HTMLOutputElement>(null);
 
   useEffect(() => {
     let raf = 0;
@@ -97,6 +116,8 @@ export function Replay({
       const ctx = canvas.current?.getContext("2d");
       let trailed = 0;
       let rotate = false;
+      // Canvas px to CSS px, and the view, for the readout and the exposed positions (hero).
+      let toCss: ((x: number, y: number) => [number, number]) | undefined;
       if (ctx) {
         const trail =
           trailMs > 0
@@ -110,6 +131,23 @@ export function Replay({
           snapshot,
           hero ? { colors: NEON_COLORS, trail, glow: true, rotate, markScale } : { trail },
         );
+        if (hero) {
+          const view = viewOf(ctx.canvas, possession, normalized, rotate);
+          const sx = ctx.canvas.clientWidth / ctx.canvas.width;
+          const sy = ctx.canvas.clientHeight / ctx.canvas.height;
+          toCss = (x, y) => {
+            const [px, py] = view.project(x, y);
+            return [px * sx, py * sy];
+          };
+          const e = picked === null ? undefined : snapshot.entities.find((s) => s.i === picked);
+          if (e && readout.current) {
+            const [px, py] = toCss(e.x, e.y);
+            readout.current.style.left = `${px}px`;
+            readout.current.style.top = `${py}px`;
+            const v = speedOf(engine, e.i, engine.t);
+            if (speedOut.current) speedOut.current.textContent = v === null ? "– m/s" : `${v.toFixed(1)} m/s`;
+          }
+        }
       }
       const marks =
         ctx && overlay ? overlay(ctx, viewOf(ctx.canvas, possession, normalized, rotate), snapshot) : 0;
@@ -121,7 +159,11 @@ export function Replay({
           sport: possession.sport,
           rate: engine.rate,
           normalized,
-          entities: snapshot.entities.map(({ i, x, y }) => ({ i, x, y })),
+          entities: snapshot.entities.map(({ i, x, y }) => {
+            if (!toCss) return { i, x, y };
+            const [px, py] = toCss(x, y);
+            return { i, x, y, px, py };
+          }),
           overlay: marks,
           trail: trailed,
         };
@@ -139,7 +181,31 @@ export function Replay({
       cancelAnimationFrame(raf);
       observer?.disconnect();
     };
-  }, [engine, possession, normalized, onEnded, overlay, name, hero, trailMs]);
+  }, [engine, possession, normalized, onEnded, overlay, name, hero, trailMs, picked]);
+
+  // The player whose mark is nearest the pointer, within HIT_PX, at this instant.
+  const nearestPlayer = (e: PointerEvent<HTMLCanvasElement>): number | null => {
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const view = viewOf(el, possession, normalized, el.height > el.width);
+    const sx = rect.width / el.width;
+    const sy = rect.height / el.height;
+    const players = new Set(possession.entities.filter((p) => p.kind === "player").map((p) => p.i));
+    let best: number | null = null;
+    let bestD = HIT_PX;
+    for (const s of viewed(engine.frameAt(engine.t), possession, normalized).entities) {
+      if (!players.has(s.i)) continue;
+      const [px, py] = view.project(s.x, s.y);
+      const d = Math.hypot(px * sx - x, py * sy - y);
+      if (d < bestD) {
+        bestD = d;
+        best = s.i;
+      }
+    }
+    return best;
+  };
 
   const playing = engine.state === "playing";
   const playPause = (
@@ -159,9 +225,31 @@ export function Replay({
     <output aria-label="Clock">{formatClock(engine.frameAt(engine.t).clock, possession.clock_kind)}</output>
   );
   if (hero) {
+    const pickedEntity = picked === null ? undefined : possession.entities.find((p) => p.i === picked);
     return (
-      <figure className="replay replay-hero" data-state={engine.state}>
-        <canvas ref={canvas} aria-label="Replay of the possession" />
+      <figure className="replay replay-hero" data-state={engine.state} data-picked={pickedEntity ? "" : undefined}>
+        <canvas
+          ref={canvas}
+          aria-label="Replay of the possession"
+          onPointerMove={(e) => {
+            if (e.pointerType !== "mouse") return;
+            const i = nearestPlayer(e);
+            if (i !== picked) setPicked(i);
+          }}
+          onPointerLeave={(e) => {
+            if (e.pointerType === "mouse") setPicked(null);
+          }}
+          onPointerDown={(e) => {
+            const i = nearestPlayer(e);
+            if (i !== null && i === picked && href) router.push(href);
+            else setPicked(i);
+          }}
+        />
+        {pickedEntity ? (
+          <a ref={readout} href={href} className="replay-hero-player">
+            #{pickedEntity.jersey ?? "?"} <output ref={speedOut} aria-label="Speed" />
+          </a>
+        ) : null}
         <div className="controls">
           {playPause}
           <p className="replay-hero-readout">

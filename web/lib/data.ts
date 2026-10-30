@@ -26,3 +26,7 @@ export function rowsOf(table: string, sport: Sport): number {
     .filter((row) => row.table === table && row.sport === sport)
     .reduce((sum, row) => sum + row.rows, 0);
 }
+
+// `/replay?p=<file>`, the possession a link opens there (app/replay/page.tsx reads `p` as the
+// file name without its folder).
+export const replayHref = (entry: IndexEntry) => `/replay?p=${entry.file.replace(/^possessions\//, "")}`;

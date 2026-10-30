@@ -97,6 +97,105 @@ test("the selector switches sport and restarts the renderer", async ({ page }) =
   }
 });
 
+test("the hero's actions: Open replay follows the possession playing, Run SQL opens the course", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Pause" })).toBeVisible({ timeout: 2_000 });
+  const open = page.getByRole("link", { name: "Open replay" });
+  const sql = page.getByRole("link", { name: "Run SQL" });
+  // Both inside the first screen, 44 px tall, real links.
+  for (const link of [open, sql]) {
+    const box = (await link.boundingBox())!;
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(box.y + box.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+  }
+  await expect(sql).toHaveAttribute("href", "/sql");
+  const href = (await open.getAttribute("href"))!;
+  expect(href).toMatch(/^\/replay\?p=(bb|fb)_/);
+  if (EXPOSED) {
+    const sport = await page.evaluate(() => window.__replay!.sport);
+    expect(href).toContain(sport === "basketball" ? "p=bb_" : "p=fb_");
+  }
+  // Keyboard: focus and Enter open that very possession on /replay, idle and without trails.
+  await open.focus();
+  await expect(open).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL((url) => url.pathname + url.search === href);
+  await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
+  if (EXPOSED) {
+    await expect.poll(() => page.evaluate(() => window.__replay?.state)).toBe("idle");
+    expect(await page.evaluate(() => window.__replay!.trail)).toBe(0);
+  }
+});
+
+interface PossessionFile {
+  entities: { i: number; kind: string; jersey: string | null }[];
+  frames: { t: number; o: [number, number, number, number | null, 0 | 1][] }[];
+}
+
+// Where entity `i` is at `t`: linear between the two samples around it, as the engine does.
+function positionAt(frames: PossessionFile["frames"], i: number, t: number): [number, number] | null {
+  let k = 0;
+  while (k + 1 < frames.length && frames[k + 1].t <= t) k++;
+  const a = frames[k];
+  const b = frames[Math.min(k + 1, frames.length - 1)];
+  const oa = a.o.find((o) => o[0] === i);
+  const ob = b.o.find((o) => o[0] === i);
+  if (!oa || !ob) return null;
+  const alpha = b.t === a.t ? 0 : (t - a.t) / (b.t - a.t);
+  return [oa[1] + (ob[1] - oa[1]) * alpha, oa[2] + (ob[2] - oa[2]) * alpha];
+}
+
+test("hovering a player in the hero shows his number and his speed from the frames; a click opens the possession", async ({
+  page,
+}) => {
+  test.skip(!EXPOSED, "needs window.__replay for the marks' positions");
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Pause" })).toBeVisible({ timeout: 2_000 });
+  // Past the 400 ms speed window, then frozen, so the readout and this test see the same t.
+  await page.waitForTimeout(1_200);
+  await page.getByRole("button", { name: "Pause" }).click();
+  await expect.poll(() => page.evaluate(() => window.__replay?.state)).toBe("paused");
+  const state = await page.evaluate(() => window.__replay!);
+  const href = (await page.getByRole("link", { name: "Open replay" }).getAttribute("href"))!;
+  const file = href.split("p=")[1];
+  const possession = (await (await page.request.get(`/data/possessions/${file}`)).json()) as PossessionFile;
+  const players = new Map(possession.entities.filter((e) => e.kind === "player").map((e) => [e.i, e]));
+  const canvas = (await page.locator(".hero canvas").boundingBox())!;
+  // A player present at both ends of the speed window whose mark the pointer can reach: not
+  // under the header, the controls or the copy (the canvas is what sits at that point).
+  const candidates = state.entities.filter(
+    (e) => players.has(e.i) && e.px !== undefined && positionAt(possession.frames, e.i, state.t - 400) !== null,
+  );
+  const reachable = await page.evaluate(
+    ({ list, box }) =>
+      list.map((e) => {
+        const hit = document.elementFromPoint(box.x + e.px!, box.y + e.py!);
+        return hit?.tagName === "CANVAS";
+      }),
+    { list: candidates, box: canvas },
+  );
+  const target = candidates.find((_, k) => reachable[k]);
+  expect(target, "a player whose mark the pointer can reach").toBeTruthy();
+  await page.mouse.move(canvas.x + target!.px!, canvas.y + target!.py!);
+  const readout = page.locator(".replay-hero-player");
+  await expect(readout).toBeVisible();
+  await expect(readout).toContainText(`#${players.get(target!.i)!.jersey}`);
+  const [x0, y0] = positionAt(possession.frames, target!.i, state.t - 400)!;
+  const [x1, y1] = positionAt(possession.frames, target!.i, state.t)!;
+  const expected = Math.hypot(x1 - x0, y1 - y0) / 0.4;
+  // The loop writes the speed on the next animation frame after the readout appears.
+  const speed = readout.locator("output");
+  await expect(speed).toHaveText(/^\d+\.\d m\/s$/);
+  const shown = await speed.textContent();
+  console.log(`speed of #${players.get(target!.i)!.jersey}: readout ${shown}, frames ${expected.toFixed(3)} m/s`);
+  // One decimal shown: within half a unit of the last place, plus a hair.
+  expect(Math.abs(Number(shown!.replace(" m/s", "")) - expected)).toBeLessThanOrEqual(0.06);
+  await readout.click();
+  await expect(page).toHaveURL((url) => url.pathname + url.search === href);
+});
+
 test("under prefers-reduced-motion the hero is a still frame, no trails, and offers Play", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");

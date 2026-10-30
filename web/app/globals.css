@@ -147,9 +147,26 @@
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23e2e8f0' stroke-width='1.5'/%3E%3C/svg%3E");
   --font-display: var(--font-neon);
   --radius: 2px;
-  font-family: var(--font-neon);
+  font-family: var(--font-body);
   background: var(--bg);
   color: var(--fg);
+}
+
+/* Mono where the terminal shows: labels, headings, nav, buttons, figures and code (they read
+   --font-display or this). Paragraphs stay in the sans body stack (task 108). */
+.surface-neon code,
+.surface-neon pre,
+.surface-neon output,
+.surface-neon .site-nav a,
+.surface-neon .site-footer-label,
+.surface-neon .card-tag,
+.surface-neon .figure-value,
+.surface-neon .figures-layer-name,
+.surface-neon .figures-layer-bytes,
+.surface-neon .replay-hero-readout,
+.surface-neon .replay-hero-player,
+.surface-neon .hero-action {
+  font-family: var(--font-neon);
 }
 
 /* Base */
@@ -709,8 +726,55 @@ body:has(.home) .site-header::after {
 
 .hero-stage::after {
   background:
-    linear-gradient(to top, var(--neon-bg) 0%, rgba(3, 7, 18, 0.85) 30%, rgba(3, 7, 18, 0) 70%),
+    linear-gradient(to top, var(--neon-bg) 0%, rgba(3, 7, 18, 0.92) 34%, rgba(3, 7, 18, 0) 72%),
     radial-gradient(ellipse 70% 60% at 50% 45%, rgba(3, 7, 18, 0) 55%, rgba(3, 7, 18, 0.55) 100%);
+}
+
+/* On a wide screen the copy sits bottom left: a scrim there dims the players and the trails
+   behind the headline (task 108) and leaves the rest of the pitch bright. */
+@media (min-width: 72rem) {
+  .hero-stage::after {
+    background:
+      radial-gradient(
+        ellipse 62% 78% at 0% 100%,
+        rgba(3, 7, 18, 0.97) 0%,
+        rgba(3, 7, 18, 0.86) 48%,
+        rgba(3, 7, 18, 0) 100%
+      ),
+      linear-gradient(to top, var(--neon-bg) 0%, rgba(3, 7, 18, 0.7) 16%, rgba(3, 7, 18, 0) 44%),
+      radial-gradient(ellipse 70% 60% at 50% 45%, rgba(3, 7, 18, 0) 55%, rgba(3, 7, 18, 0.55) 100%);
+  }
+}
+
+/* The readout over a picked player (task 108): his number and speed, a link to the possession. */
+.replay-hero canvas {
+  cursor: crosshair;
+}
+
+.replay-hero[data-picked] canvas {
+  cursor: pointer;
+}
+
+.replay-hero-player {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, calc(-100% - 1.25rem));
+  padding: var(--space-1) var(--space-3);
+  background: rgba(3, 7, 18, 0.88);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 16px -4px var(--neon-glow);
+  color: var(--fg-strong);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.replay-hero-player output {
+  margin-left: var(--space-2);
+  color: var(--neon);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 /* The player's controls: a strip under the headline on a phone, a scoreboard top right on a
@@ -762,11 +826,77 @@ body:has(.home) .site-header::after {
   padding-top: var(--space-8);
   /* room for the controls' strip under the copy */
   padding-bottom: calc(var(--gutter) + var(--control-height) + var(--space-5));
+  pointer-events: none; /* the pointer reaches the players between the lines of copy */
+}
+
+.hero-copy > * {
+  pointer-events: auto;
 }
 
 /* Three lines: "One schema," / "two sports," / "one renderer". */
 .hero-copy h1 {
   max-width: 14ch;
+}
+
+.hero-detail {
+  max-width: 44rem;
+  margin: var(--space-3) 0 0;
+  color: var(--fg-muted);
+}
+
+/* The two actions (task 108): bracketed like the nav, 44 px tall, the first one filled. */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  max-width: none;
+  margin: var(--space-5) 0 0;
+}
+
+.hero-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--neon);
+  border-radius: var(--radius);
+  background: rgba(3, 7, 18, 0.7);
+  color: var(--neon);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.hero-action::before {
+  content: "[";
+  margin-right: 0.25em;
+}
+
+.hero-action::after {
+  content: "]";
+  margin-left: 0.25em;
+}
+
+.hero-action:hover {
+  color: var(--neon-2);
+  border-color: var(--neon-2);
+  box-shadow: 0 0 20px -4px var(--neon-glow);
+}
+
+.hero-action-primary {
+  background: var(--neon);
+  color: var(--neon-bg);
+}
+
+.hero-action-primary:hover {
+  background: var(--neon-2);
+  color: var(--neon-bg);
+}
+
+.hero-action:focus-visible {
+  outline: 2px solid var(--fg-strong);
+  outline-offset: 3px;
 }
 
 /* From 72rem the header is one row (67.6 px measured), so 6rem clears it. */
@@ -1004,6 +1134,7 @@ body:has(.home) .site-header::after {
 .card-arrow {
   grid-area: arrow;
   align-self: end;
+  font-family: var(--font-display);
   font-size: var(--step-3);
   line-height: 1;
   color: var(--accent);

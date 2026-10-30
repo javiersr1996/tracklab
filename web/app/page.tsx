@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Count } from "../components/home/Count";
+import { Hero } from "../components/home/Hero";
 import { Preview } from "../components/home/Preview";
-import { Alternating } from "../components/replay/Alternating";
 import { Band } from "../components/site/Band";
 import { POSSESSIONS, rowsOf, SPORTS } from "../lib/data";
 import { PLATFORM } from "../lib/platform";
@@ -14,22 +14,20 @@ export default function HomePage() {
   return (
     <main className="home surface-neon">
       {/* The replay fills the first screen, the header over its top and the headline over its
-          foot; the pause button is the player's own, bottom right. */}
-      <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-stage">
-          <Alternating entries={SHOWCASE} hero />
-        </div>
-        <div className="wrap hero-copy">
-          <p className="eyebrow">Open tracking data</p>
-          <h1 id="hero-title">
-            One schema, two sports, <span className="accent">one renderer</span>
-          </h1>
-          <p className="lede">
-            Track Lab takes SkillCorner&apos;s open tracking and event data for basketball and
-            football and conforms both sports into one silver schema with DuckDB and dbt.
-          </p>
-        </div>
-      </section>
+          foot, with the two actions (task 108); the pause button is the player's own. */}
+      <Hero entries={SHOWCASE}>
+        <p className="eyebrow">Open tracking data</p>
+        <h1 id="hero-title">
+          One schema, two sports, <span className="accent">one renderer</span>
+        </h1>
+        <p className="lede">
+          Replays, SQL and data quality for football and basketball tracking, in your browser.
+        </p>
+        <p className="hero-detail">
+          Track Lab takes SkillCorner&apos;s open tracking and event data for basketball and
+          football and conforms both sports into one silver schema with DuckDB and dbt.
+        </p>
+      </Hero>
 
       {/* The figures (task 106) count up as they scroll into view; every one is a number from
           stats.json or platform.json, never typed here. */}

@@ -136,8 +136,10 @@ test("/warehouse, /learn and / link to /sql", async ({ page }) => {
   await page.goto("/learn");
   await expect(page.getByRole("link", { name: "Learn SQL on the warehouse" })).toHaveAttribute("href", "/sql");
   await page.goto("/");
-  // Its own card since P12, and its own link in the header: two links to /sql, no more.
-  await expect(page.locator('main a[href="/sql"]')).toHaveCount(1);
+  // Since P12 the page links /sql three times and no more: the hero's [RUN SQL] (task 108) and
+  // the section's card in main, and its link in the header.
+  await expect(page.locator('main a[href="/sql"]')).toHaveCount(2);
+  await expect(page.getByRole("link", { name: "Run SQL" })).toHaveAttribute("href", "/sql");
   await expect(page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name: "SQL" })).toHaveAttribute("href", "/sql");
   await page.locator("main").getByRole("link", { name: "Learn SQL on the warehouse" }).click();
   await expect(page).toHaveURL(/\/sql$/);

@@ -126,3 +126,25 @@ export function formatClock(seconds: number, kind: ClockKind): string {
   const ss = String(whole % 60).padStart(2, "0");
   return `${mm}:${ss}`;
 }
+
+// How fast entity `i` moves at `t`, in m/s: the distance between its positions `windowMs`
+// apart (`frameAt` at both ends) over that time. The raw frame-to-frame delta jitters with the
+// provider's position noise (a few centimetres a frame is a metre a second at 25 fps), so the
+// default window is 400 ms, which smooths that and still follows a sprint. `null` when the
+// window has no length yet or the entity is absent at either end.
+export const SPEED_WINDOW_MS = 400;
+
+export function speedOf(
+  engine: ReplayEngine,
+  i: number,
+  t: number,
+  windowMs = SPEED_WINDOW_MS,
+): number | null {
+  const t1 = Math.min(Math.max(t, engine.t0), engine.tEnd);
+  const t0 = Math.max(t1 - windowMs, engine.t0);
+  if (t1 <= t0) return null;
+  const a = engine.frameAt(t0).entities.find((e) => e.i === i);
+  const b = engine.frameAt(t1).entities.find((e) => e.i === i);
+  if (!a || !b) return null;
+  return Math.hypot(b.x - a.x, b.y - a.y) / ((t1 - t0) / 1000);
+}
