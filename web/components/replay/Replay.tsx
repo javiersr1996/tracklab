@@ -186,7 +186,8 @@ export function Replay({
           trail: trailed,
         };
         drawnT = engine.t;
-        drawnPick = pickedNow;
+        // A pick counts as drawn once its readout exists: React mounts it after the pick's frame.
+        drawnPick = pickedNow !== null && !readout.current ? drawnPick : pickedNow;
         resized = false;
       }
       // The state and the rate change without a redraw (pause, speed): exposed every frame.
