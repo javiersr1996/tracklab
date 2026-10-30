@@ -192,7 +192,11 @@ test("hovering a player in the hero shows his number and his speed from the fram
   console.log(`speed of #${players.get(target!.i)!.jersey}: readout ${shown}, frames ${expected.toFixed(3)} m/s`);
   // One decimal shown: within half a unit of the last place, plus a hair.
   expect(Math.abs(Number(shown!.replace(" m/s", "")) - expected)).toBeLessThanOrEqual(0.06);
-  await readout.click();
+  // A right click on the picked player opens nothing; a click does.
+  await page.mouse.click(canvas.x + target!.px!, canvas.y + target!.py!, { button: "right" });
+  await page.waitForTimeout(300);
+  await expect(page).toHaveURL(/\/$/);
+  await page.mouse.click(canvas.x + target!.px!, canvas.y + target!.py!);
   await expect(page).toHaveURL((url) => url.pathname + url.search === href);
 });
 

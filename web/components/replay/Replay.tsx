@@ -95,6 +95,8 @@ export function Replay({
     pickedRef.current = i;
     setPicked(i);
   };
+  // Whether the pointer went down on the player already picked, so the click that follows opens.
+  const armed = useRef(false);
   const readout = useRef<HTMLAnchorElement>(null);
   const speedOut = useRef<HTMLOutputElement>(null);
   // The hero's figure, watched so the loop sleeps while it is scrolled out of view.
@@ -287,9 +289,15 @@ export function Replay({
             if (e.pointerType === "mouse") pick(null);
           }}
           onPointerDown={(e) => {
+            // Armed when the player under the pointer was already picked (hovered, or tapped
+            // once): the click that follows opens him. A right or middle button, or a scroll
+            // that starts here, sends no click.
             const i = nearestPlayer(e);
-            if (i !== null && i === pickedRef.current && href) router.push(href);
-            else pick(i);
+            armed.current = i !== null && i === pickedRef.current;
+            pick(i);
+          }}
+          onClick={() => {
+            if (armed.current && href) router.push(href);
           }}
         />
         {pickedEntity ? (
