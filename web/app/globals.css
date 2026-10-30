@@ -909,7 +909,7 @@ a.wordmark:hover {
 }
 
 .lineage-test-badge {
-  font-size: 6px;
+  font-size: 8px;
   fill: var(--canvas-muted);
 }
 

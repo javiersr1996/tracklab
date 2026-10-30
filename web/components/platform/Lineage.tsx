@@ -20,6 +20,9 @@ const CHAR_WIDTH = 6.2;
 const MIN_COL_WIDTH = 120;
 const PAD_X = 16;
 const PAD_TOP = 28;
+// The SVG is drawn in the units above and shown 1.5 times larger, so the 8-unit node
+// labels and badges render at 12 px.
+const SCALE = 1.5;
 
 const SCHEMA_COLOR: Record<LineageNode["schema"], string> = {
   frozen: "#4ea1f2",
@@ -113,8 +116,8 @@ export function Lineage({ lineage }: { lineage: LineageData }) {
     <figure className="lineage">
       <div className="lineage-scroll">
         <svg
-          width={width}
-          height={height}
+          width={width * SCALE}
+          height={height * SCALE}
           viewBox={`0 0 ${width} ${height}`}
           role="img"
           aria-label={`Dagster asset graph, ${lineage.nodes.length} nodes, ${lineage.edges.length} edges`}
@@ -190,7 +193,7 @@ export function Lineage({ lineage }: { lineage: LineageData }) {
                     <text
                       className="lineage-test-badge"
                       x={p.halfWidth - 2}
-                      y={-NODE_HEIGHT / 2 - 3}
+                      y={-NODE_HEIGHT / 2 - 1.5}
                       textAnchor="end"
                     >
                       {node.dbt_tests}
