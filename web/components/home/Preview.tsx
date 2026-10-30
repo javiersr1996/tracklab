@@ -71,7 +71,7 @@ function WarehousePreview() {
 function RunsPreview() {
   return (
     <svg viewBox={VIEW} className="pv pv-runs">
-      <line x1="14" y1="36" x2="14" y2="36" className="pv-run" />
+      <line x1="14" y1="36" x2="108" y2="36" className="pv-run" />
       <circle cx="60" cy="20" r="3.5" className="pv-alt" />
       <circle cx="78" cy="48" r="3.5" className="pv-alt" />
       <circle cx="96" cy="30" r="3.5" className="pv-alt" />

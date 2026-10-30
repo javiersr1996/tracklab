@@ -1247,10 +1247,18 @@ body:has(.home) .site-header::after {
   opacity: 0.25;
 }
 
+/* The run, drawn whole (its resting frame is the run made); the animation grows it from the
+   left with a scale, since a line's x2 is an attribute CSS cannot animate. */
 .pv-run {
   stroke: var(--neon);
   stroke-width: 1.5;
   stroke-dasharray: 3 3;
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+.pv-runner {
+  transform: translateX(94px);
 }
 
 .pv-bone {
@@ -1486,14 +1494,12 @@ body:has(.home) .site-header::after {
 @keyframes pv-run-line {
   0%,
   15% {
-    stroke-dasharray: 3 3;
-    stroke-dashoffset: 0;
-    x2: 14;
+    transform: scaleX(0);
   }
 
   70%,
   100% {
-    x2: 108;
+    transform: scaleX(1);
   }
 }
 
