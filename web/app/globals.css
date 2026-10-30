@@ -789,6 +789,96 @@ body:has(.home) .site-header::after {
   margin-bottom: 0;
 }
 
+/* The figures (task 106): two big counts, the query that reads them, then the six layers of
+   the build as a row that reads raw to publish. */
+.figures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-5) var(--space-7);
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.figure {
+  max-width: none;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+
+.figure-value {
+  margin: 0 0 var(--space-2);
+  font-size: clamp(2.5rem, 1.4rem + 4.2vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.figure-label {
+  margin: 0;
+  color: var(--fg-muted);
+}
+
+.figures-query {
+  max-width: var(--measure);
+  margin-bottom: var(--space-8);
+}
+
+.figures-title {
+  margin: 0 0 var(--space-5);
+  font-size: var(--step-h2);
+  letter-spacing: -0.02em;
+}
+
+.figures-layers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.figures-layer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: none;
+  padding: var(--space-4);
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+/* What goes in and what comes out are the story: lit. */
+.figures-layer:first-child,
+.figures-layer:last-child {
+  border-color: var(--neon-line-strong);
+  box-shadow: 0 0 20px -6px var(--neon-glow);
+}
+
+.figures-layer-name {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tag);
+}
+
+.figures-layer-name::before {
+  content: "// ";
+  color: var(--neon-line-strong);
+}
+
+.figures-layer-bytes {
+  font-size: var(--step-3);
+  font-weight: 700;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+}
+
 .split {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

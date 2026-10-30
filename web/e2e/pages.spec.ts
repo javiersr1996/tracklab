@@ -1,10 +1,16 @@
 import { expect, type Request, test } from "@playwright/test";
+import { formatBytes } from "../lib/format";
 
 // Against a deployment (BASE_URL) there is no window.__replay: the checks read the page.
 const EXPOSED = !process.env.BASE_URL;
 
 interface Stats {
   tables: { table: string; sport: string; rows: number }[];
+}
+
+interface Platform {
+  title: string;
+  layers: { layer: string; bytes: number }[];
 }
 
 test("the home page starts playing on its own, light, with the figures of stats.json", async ({
@@ -31,6 +37,17 @@ test("the home page starts playing on its own, light, with the figures of stats.
   expect(title!.y + title!.height).toBeLessThanOrEqual(viewport.height);
   if (EXPOSED) await expect.poll(() => page.evaluate(() => window.__replay?.trail)).toBeGreaterThan(0);
 
+  // The figures (task 106) count up once they scroll into view, then land on the JSON's numbers:
+  // two sports from stats.json, six layers and the title from platform.json.
+  await page.locator(".figures").scrollIntoViewIfNeeded();
+  const counters = page.locator("[data-count]");
+  await expect(counters).toHaveCount(8);
+  await expect.poll(() => counters.evaluateAll((els) => els.map((e) => e.getAttribute("data-count")))).toContain(
+    "counting",
+  );
+  await expect.poll(() => counters.evaluateAll((els) => els.every((e) => e.getAttribute("data-count") === "done")), {
+    timeout: 10_000,
+  }).toBe(true);
   const stats = (await (await page.request.get("/data/stats.json")).json()) as Stats;
   for (const sport of ["basketball", "football"]) {
     const expected = stats.tables
@@ -39,6 +56,11 @@ test("the home page starts playing on its own, light, with the figures of stats.
     const shown = await page.locator(`[data-rows="${sport}"]`).textContent();
     console.log(`frames rows, ${sport}: page ${shown}, stats.json ${expected}`);
     expect(Number(shown?.replaceAll(",", ""))).toBe(expected);
+  }
+  const platform = (await (await page.request.get("/data/platform.json")).json()) as Platform;
+  await expect(page.locator("[data-platform-title]")).toHaveText(platform.title);
+  for (const layer of platform.layers) {
+    await expect(page.locator(`[data-layer-bytes="${layer.layer}"]`)).toHaveText(formatBytes(layer.bytes));
   }
 
   await page.waitForLoadState("networkidle");
@@ -86,4 +108,16 @@ test("under prefers-reduced-motion the hero is a still frame, no trails, and off
   // The button still works: the replay is a choice, not denied.
   await page.getByRole("button", { name: "Play" }).click();
   await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+  // The figures never count: they are the final numbers from the first paint.
+  await page.locator(".figures").scrollIntoViewIfNeeded();
+  const counters = page.locator("[data-count]");
+  await expect(counters).toHaveCount(8);
+  expect(await counters.evaluateAll((els) => els.map((e) => e.getAttribute("data-count")))).toEqual(
+    Array(8).fill("still"),
+  );
+  const stats = (await (await page.request.get("/data/stats.json")).json()) as Stats;
+  const expected = stats.tables
+    .filter((t) => t.table === "frames" && t.sport === "football")
+    .reduce((sum, t) => sum + t.rows, 0);
+  await expect(page.locator('[data-rows="football"]')).toHaveText(expected.toLocaleString("en-US"));
 });
