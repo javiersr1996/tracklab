@@ -730,8 +730,16 @@ body:has(.home) .site-header::after {
 .hero-stage::after {
   background:
     linear-gradient(to bottom, var(--neon-bg) 0%, rgba(3, 7, 18, 0.85) 9%, rgba(3, 7, 18, 0) 20%),
-    linear-gradient(to top, var(--neon-bg) 0%, rgba(3, 7, 18, 0.95) 48%, rgba(3, 7, 18, 0) 82%),
+    linear-gradient(to top, var(--neon-bg) 0%, rgba(3, 7, 18, 0.95) 40%, rgba(3, 7, 18, 0) 52%),
     radial-gradient(ellipse 70% 60% at 50% 45%, rgba(3, 7, 18, 0) 55%, rgba(3, 7, 18, 0.55) 100%);
+}
+
+/* On a phone the attack plays in the top half (the upright view is normalized), so the scrim
+   stops at the half line and the copy, without its second paragraph, starts under it. */
+@media (max-width: 40rem) {
+  .hero-detail {
+    display: none;
+  }
 }
 
 /* On a wide screen the copy sits bottom left: a scrim there dims the players and the trails

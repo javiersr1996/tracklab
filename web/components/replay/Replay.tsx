@@ -137,12 +137,15 @@ export function Replay({
       const pickedNow = pickedRef.current;
       const ctx = canvas.current?.getContext("2d");
       if (ctx && (resized || !exposed || engine.t !== drawnT || pickedNow !== drawnPick)) {
-        const snapshot = viewed(engine.frameAt(engine.t), possession, normalized);
+        // Upright (a portrait phone) the view is always normalized: the team with the ball attacks
+        // +x, which is up, so the action plays in the top half of the screen, above the copy.
+        const rotate = hero && ctx.canvas.height > ctx.canvas.width;
+        const norm = rotate || normalized;
+        const snapshot = viewed(engine.frameAt(engine.t), possession, norm);
         const trail =
           trailMs > 0
-            ? TRAIL_STEPS.map((f) => viewed(engine.frameAt(engine.t - trailMs * f), possession, normalized))
+            ? TRAIL_STEPS.map((f) => viewed(engine.frameAt(engine.t - trailMs * f), possession, norm))
             : undefined;
-        const rotate = hero && ctx.canvas.height > ctx.canvas.width;
         const markScale = hero ? Math.max(1, Math.max(ctx.canvas.width, ctx.canvas.height) / 960) : 1;
         const trailed = drawFrame(
           ctx,
@@ -150,7 +153,7 @@ export function Replay({
           snapshot,
           hero ? { colors: NEON_COLORS, trail, glow: true, rotate, markScale } : { trail },
         );
-        const view = viewOf(ctx.canvas, possession, normalized, rotate);
+        const view = viewOf(ctx.canvas, possession, norm, rotate);
         // Canvas px to CSS px, for the readout and the exposed positions (hero).
         let toCss: ((x: number, y: number) => [number, number]) | undefined;
         if (hero) {
@@ -176,7 +179,7 @@ export function Replay({
           frameIndex: engine.indexAt(engine.t),
           sport: possession.sport,
           rate: engine.rate,
-          normalized,
+          normalized: norm,
           entities: snapshot.entities.map(({ i, x, y }) => {
             if (!toCss) return { i, x, y };
             const [px, py] = toCss(x, y);
@@ -234,13 +237,15 @@ export function Replay({
     const rect = el.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const view = viewOf(el, possession, normalized, el.height > el.width);
+    const rotate = el.height > el.width;
+    const norm = rotate || normalized; // as the loop draws it
+    const view = viewOf(el, possession, norm, rotate);
     const sx = rect.width / el.width;
     const sy = rect.height / el.height;
     const players = new Set(possession.entities.filter((p) => p.kind === "player").map((p) => p.i));
     let best: number | null = null;
     let bestD = HIT_PX;
-    for (const s of viewed(engine.frameAt(engine.t), possession, normalized).entities) {
+    for (const s of viewed(engine.frameAt(engine.t), possession, norm).entities) {
       if (!players.has(s.i)) continue;
       const [px, py] = view.project(s.x, s.y);
       const d = Math.hypot(px * sx - x, py * sy - y);
