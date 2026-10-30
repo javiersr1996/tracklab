@@ -97,11 +97,20 @@ export function Replay({
   };
   const readout = useRef<HTMLAnchorElement>(null);
   const speedOut = useRef<HTMLOutputElement>(null);
+  // The hero's figure, watched so the loop sleeps while it is scrolled out of view.
+  const figure = useRef<HTMLElement>(null);
 
   useEffect(() => {
     let raf = 0;
+    let running = false;
     let last: number | undefined;
     let shown = engine.state;
+    // What the last drawn frame showed: a frame that shows the same (paused, idle, ended) is not
+    // drawn again, which is what a phone's battery notices.
+    let drawnT: number | undefined;
+    let drawnPick: number | null = null;
+    let resized = true;
+    let exposed: ReplayState | undefined;
     // A hero canvas takes its box's size (the box is sized by CSS); the loop redraws it anyway.
     let observer: ResizeObserver | undefined;
     if (hero && canvas.current) {
@@ -111,8 +120,10 @@ export function Replay({
         const w = Math.max(1, Math.round(el.clientWidth * dpr));
         const h = Math.max(1, Math.round(el.clientHeight * dpr));
         // Setting a size clears the bitmap: only when it changed.
-        if (w !== el.width) el.width = w;
-        if (h !== el.height) el.height = h;
+        if (w === el.width && h === el.height) return;
+        el.width = w;
+        el.height = h;
+        resized = true;
       };
       fit();
       observer = new ResizeObserver(fit);
@@ -121,34 +132,32 @@ export function Replay({
     const loop = (now: number) => {
       if (last !== undefined) engine.tick(now - last);
       last = now;
-      const snapshot = viewed(engine.frameAt(engine.t), possession, normalized);
+      const pickedNow = pickedRef.current;
       const ctx = canvas.current?.getContext("2d");
-      let trailed = 0;
-      let rotate = false;
-      // Canvas px to CSS px, and the view, for the readout and the exposed positions (hero).
-      let toCss: ((x: number, y: number) => [number, number]) | undefined;
-      if (ctx) {
+      if (ctx && (resized || !exposed || engine.t !== drawnT || pickedNow !== drawnPick)) {
+        const snapshot = viewed(engine.frameAt(engine.t), possession, normalized);
         const trail =
           trailMs > 0
             ? TRAIL_STEPS.map((f) => viewed(engine.frameAt(engine.t - trailMs * f), possession, normalized))
             : undefined;
-        rotate = hero && ctx.canvas.height > ctx.canvas.width;
+        const rotate = hero && ctx.canvas.height > ctx.canvas.width;
         const markScale = hero ? Math.max(1, Math.max(ctx.canvas.width, ctx.canvas.height) / 960) : 1;
-        trailed = drawFrame(
+        const trailed = drawFrame(
           ctx,
           possession,
           snapshot,
           hero ? { colors: NEON_COLORS, trail, glow: true, rotate, markScale } : { trail },
         );
+        const view = viewOf(ctx.canvas, possession, normalized, rotate);
+        // Canvas px to CSS px, for the readout and the exposed positions (hero).
+        let toCss: ((x: number, y: number) => [number, number]) | undefined;
         if (hero) {
-          const view = viewOf(ctx.canvas, possession, normalized, rotate);
           const sx = ctx.canvas.clientWidth / ctx.canvas.width;
           const sy = ctx.canvas.clientHeight / ctx.canvas.height;
           toCss = (x, y) => {
             const [px, py] = view.project(x, y);
             return [px * sx, py * sy];
           };
-          const pickedNow = pickedRef.current;
           const e = pickedNow === null ? undefined : snapshot.entities.find((s) => s.i === pickedNow);
           if (e && readout.current) {
             const [px, py] = toCss(e.x, e.y);
@@ -158,11 +167,8 @@ export function Replay({
             if (speedOut.current) speedOut.current.textContent = v === null ? "– m/s" : `${v.toFixed(1)} m/s`;
           }
         }
-      }
-      const marks =
-        ctx && overlay ? overlay(ctx, viewOf(ctx.canvas, possession, normalized, rotate), snapshot) : 0;
-      if (EXPOSE) {
-        const exposed: ReplayState = {
+        const marks = overlay ? overlay(ctx, view, snapshot) : 0;
+        exposed = {
           state: engine.state,
           t: engine.t,
           frameIndex: engine.indexAt(engine.t),
@@ -177,6 +183,13 @@ export function Replay({
           overlay: marks,
           trail: trailed,
         };
+        drawnT = engine.t;
+        drawnPick = pickedNow;
+        resized = false;
+      }
+      // The state and the rate change without a redraw (pause, speed): exposed every frame.
+      if (EXPOSE && exposed) {
+        exposed = { ...exposed, state: engine.state, rate: engine.rate };
         window.__replay = exposed;
         if (name) window.__replays = { ...window.__replays, [name]: exposed };
       }
@@ -184,12 +197,31 @@ export function Replay({
       if (engine.state === "playing" || engine.state !== shown) setVersion((v) => v + 1);
       if (engine.state === "ended" && shown !== "ended") onEnded?.();
       shown = engine.state;
+      if (running) raf = requestAnimationFrame(loop);
+    };
+    const start = () => {
+      if (running) return;
+      running = true;
+      last = undefined; // no jump for the time the loop slept
       raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
-    return () => {
+    const stop = () => {
+      running = false;
       cancelAnimationFrame(raf);
+    };
+    // The hero's loop sleeps while its figure is scrolled out of view (the possession waits with
+    // it, so the alternation does not run unseen); every other player runs as before.
+    let seen: IntersectionObserver | undefined;
+    if (hero && figure.current) {
+      seen = new IntersectionObserver(([entry]) => (entry.isIntersecting ? start() : stop()));
+      seen.observe(figure.current);
+    } else {
+      start();
+    }
+    return () => {
+      stop();
       observer?.disconnect();
+      seen?.disconnect();
     };
   }, [engine, possession, normalized, onEnded, overlay, name, hero, trailMs]);
 
@@ -237,7 +269,12 @@ export function Replay({
   if (hero) {
     const pickedEntity = picked === null ? undefined : possession.entities.find((p) => p.i === picked);
     return (
-      <figure className="replay replay-hero" data-state={engine.state} data-picked={pickedEntity ? "" : undefined}>
+      <figure
+        ref={figure}
+        className="replay replay-hero"
+        data-state={engine.state}
+        data-picked={pickedEntity ? "" : undefined}
+      >
         <canvas
           ref={canvas}
           aria-label="Replay of the possession"
