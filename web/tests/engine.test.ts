@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { formatClock, ReplayEngine } from "../lib/replay/engine";
+import { formatClock, ReplayEngine, speedOf } from "../lib/replay/engine";
 import type { Frame, Possession } from "../lib/replay/types";
 
 const frames: Frame[] = [
@@ -101,5 +101,18 @@ describe("formatClock", () => {
   it("reads an elapsed clock as minutes past the start", () => {
     expect(formatClock(1026.2, "elapsed")).toBe("17:06");
     expect(formatClock(1.9, "elapsed")).toBe("0:01");
+  });
+});
+
+describe("speedOf", () => {
+  it("is the distance between the ends of the window over its length", () => {
+    // Entity 1 moves (2, 2) m every 100 ms: from (10, 2) at 1000 to (14, 6) at 1200.
+    expect(speedOf(engine(), 1, 1200, 200)).toBeCloseTo(Math.hypot(4, 4) / 0.2, 6);
+  });
+
+  it("is null before the window has a start, and for an entity absent at an end", () => {
+    expect(speedOf(engine(), 1, 1000, 200)).toBeNull();
+    // Entity 2 is missing from the 1100 sample, so it is absent at 1050 and at 1150.
+    expect(speedOf(engine(), 2, 1150, 100)).toBeNull();
   });
 });

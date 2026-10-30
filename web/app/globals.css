@@ -29,10 +29,27 @@
   --canvas-hi: #ffffff;
   --canvas-edge: #7b858d;
 
+  /* Neon (P12): the header, the footer and the home. Cyan on near-black is the one accent there;
+     it is never a large fill, only text, a hairline, an underline or a glow. */
+  --neon-bg: #030712;
+  --neon-raised: #0d1117;
+  --neon-sunken: #01050c;
+  --neon-ink: #e2e8f0; /* 16.3:1 on the neon bg, 15.4:1 on a neon card */
+  --neon-muted: #94a3b8; /* 7.9:1 on the neon bg, 7.4:1 on a neon card */
+  --neon: #00e5ff; /* 13.1:1 on the neon bg; as a fill, 13.1:1 under neon-bg text */
+  --neon-2: #67e8f9; /* 13.9:1 on the neon bg: the hover of a neon control */
+  --neon-alt: #ff3ea5; /* the second team, in the hero's canvas and the cards' sketches: a mark, never text */
+  --neon-line: rgba(0, 229, 255, 0.18); /* a hairline, not text */
+  --neon-line-strong: rgba(0, 229, 255, 0.5);
+  --neon-glow: rgba(0, 229, 255, 0.25);
+
   /* Type */
   --font-display: var(--font-display-face, system-ui), system-ui, sans-serif;
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo, Consolas, monospace;
+  /* The neon surfaces' one face, text and headings alike; the inner pages' code keeps --font-mono. */
+  --font-neon: var(--font-mono-face, ui-monospace), ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo,
+    Consolas, monospace;
   --step-0: 1rem; /* the floor: no visible text is smaller */
   --step-1: 1.125rem;
   --step-2: 1.25rem;
@@ -104,6 +121,52 @@
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23f2f2f2' stroke-width='1.5'/%3E%3C/svg%3E");
   background: var(--bg);
   color: var(--fg);
+}
+
+/* The neon surface (P12): the same slots, cyan standing in for the accent, the mono face for
+   every element (the display face too, so headings and buttons follow), near-square corners. */
+.surface-neon {
+  color-scheme: dark;
+  --bg: var(--neon-bg);
+  --fg: var(--neon-ink);
+  --fg-strong: #ffffff;
+  --fg-muted: var(--neon-muted);
+  --rule: var(--neon-line);
+  --rule-strong: var(--neon-line-strong);
+  --link: var(--neon);
+  --link-hover: #ffffff;
+  --tag: var(--neon);
+  --focus: var(--neon);
+  --accent: var(--neon);
+  --accent-2: var(--neon-2);
+  --on-accent: var(--neon-bg);
+  --raised: var(--neon-raised);
+  --control-bg: var(--neon-sunken);
+  --control-line: var(--neon-line-strong);
+  --code-bg: var(--neon-raised);
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23e2e8f0' stroke-width='1.5'/%3E%3C/svg%3E");
+  --font-display: var(--font-neon);
+  --radius: 2px;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* Mono where the terminal shows: labels, headings, nav, buttons, figures and code (they read
+   --font-display or this). Paragraphs stay in the sans body stack (task 108). */
+.surface-neon code,
+.surface-neon pre,
+.surface-neon output,
+.surface-neon .site-nav a,
+.surface-neon .site-footer-label,
+.surface-neon .card-tag,
+.surface-neon .figure-value,
+.surface-neon .figures-layer-name,
+.surface-neon .figures-layer-bytes,
+.surface-neon .replay-hero-readout,
+.surface-neon .replay-hero-player,
+.surface-neon .hero-action {
+  font-family: var(--font-neon);
 }
 
 /* Base */
@@ -366,8 +429,47 @@ a.wordmark:hover {
   color: var(--fg-strong);
 }
 
-.site-header {
-  border-bottom: 1px solid var(--rule);
+/* The prompt's caret after the wordmark, blinking where motion is welcome. */
+.wordmark-caret {
+  font-weight: 400;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wordmark-caret {
+    animation: caret-blink 1.1s steps(1) infinite;
+  }
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Header and footer are the neon surface on every page; each meets the page at a hairline that
+   is lit in the middle and fades to the edges. */
+.site-header,
+.site-footer {
+  position: relative;
+}
+
+.site-header::after,
+.site-footer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon) 50%, transparent);
+  pointer-events: none;
+}
+
+.site-header::after {
+  bottom: 0;
+}
+
+.site-footer::before {
+  top: 0;
 }
 
 .site-header-row {
@@ -382,7 +484,7 @@ a.wordmark:hover {
 .site-nav ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 var(--space-5);
+  gap: 0 var(--space-4);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -392,12 +494,32 @@ a.wordmark:hover {
   display: block;
   padding: var(--space-2) 0;
   border-bottom: 2px solid transparent;
-  font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: var(--tracking-button);
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none;
   color: var(--fg-muted);
+}
+
+/* Bracketed, terminal style, where eight links fit in two rows or fewer; a phone drops the
+   brackets and keeps the two rows. */
+@media (min-width: 40rem) {
+  .site-nav ul {
+    gap: 0 var(--space-5);
+  }
+
+  .site-nav a::before {
+    content: "[";
+  }
+
+  .site-nav a::after {
+    content: "]";
+  }
+
+  .site-nav a::before,
+  .site-nav a::after {
+    color: var(--neon-line-strong); /* punctuation, not text */
+  }
 }
 
 .site-nav a:hover {
@@ -405,13 +527,13 @@ a.wordmark:hover {
 }
 
 .site-nav a[aria-current="page"] {
-  color: var(--fg-strong);
+  color: var(--accent);
   border-bottom-color: var(--accent);
+  box-shadow: 0 8px 14px -10px var(--accent); /* the underline's glow */
 }
 
 .site-footer {
   padding-block: var(--band-pad);
-  border-top: 1px solid var(--rule);
 }
 
 .site-footer-grid {
@@ -430,6 +552,20 @@ a.wordmark:hover {
 .site-footer p {
   max-width: var(--measure);
   overflow-wrap: anywhere;
+}
+
+/* A column's label, written like a code comment. */
+.site-footer-label {
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tag);
+}
+
+.site-footer-label::before {
+  content: "// ";
+  color: var(--neon-line-strong);
 }
 
 .site-footer-note {
@@ -514,6 +650,15 @@ a.wordmark:hover {
   background: var(--accent);
 }
 
+/* On the neon surface the rule is a code comment's slashes, like the footer's labels. */
+.surface-neon .eyebrow::before {
+  content: "//";
+  width: auto;
+  height: auto;
+  background: none;
+  color: var(--neon-line-strong);
+}
+
 .accent {
   color: var(--tag);
 }
@@ -524,25 +669,358 @@ a.wordmark:hover {
   line-height: var(--leading-snug);
 }
 
-.hero-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6) var(--space-7);
-  align-items: center;
+/* The home's hero (P12): the whole first screen, the replay behind everything, the headline at
+   its foot. On the home the header sits over the hero's top, transparent, so 100svh is the hero's. */
+body:has(.home) .site-header {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 2;
+  background: transparent;
 }
 
-@media (min-width: 1100px) {
-  .hero-grid {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+body:has(.home) .site-header::after {
+  display: none;
+}
+
+.hero {
+  position: relative;
+  display: grid;
+  align-content: end;
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+.hero-stage,
+.hero-stage .replay,
+.hero-stage .replay-placeholder {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  max-width: none;
+  aspect-ratio: auto;
+  background: none;
+  border-radius: 0;
+}
+
+.hero-stage .replay canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: none;
+  border-radius: 0;
+}
+
+/* CRT scanlines over the canvas, then a fade to the surface where the headline sits. */
+.hero-stage::before,
+.hero-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-stage::before {
+  background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(0, 0, 0, 0.22) 2px 4px);
+}
+
+/* A band at the top keeps the header's links off the moving marks (the court's top edge runs
+   under the nav); on a phone the copy stands about 550 px tall, so the solid part of the scrim
+   reaches half way up. */
+.hero-stage::after {
+  background:
+    linear-gradient(to bottom, var(--neon-bg) 0%, rgba(3, 7, 18, 0.85) 9%, rgba(3, 7, 18, 0) 20%),
+    linear-gradient(to top, var(--neon-bg) 0%, rgba(3, 7, 18, 0.95) 40%, rgba(3, 7, 18, 0) 52%),
+    radial-gradient(ellipse 70% 60% at 50% 45%, rgba(3, 7, 18, 0) 55%, rgba(3, 7, 18, 0.55) 100%);
+}
+
+/* On a phone the attack plays in the top half (the upright view is normalized), so the scrim
+   stops at the half line and the copy, without its second paragraph, starts under it. */
+@media (max-width: 40rem) {
+  .hero-detail {
+    display: none;
   }
 }
 
-.hero-grid > * {
-  min-width: 0;
+/* On a wide screen the copy sits bottom left: a scrim there dims the players and the trails
+   behind the headline (task 108) and leaves the rest of the pitch bright. */
+@media (min-width: 72rem) {
+  .hero-stage::after {
+    background:
+      linear-gradient(to bottom, var(--neon-bg) 0%, rgba(3, 7, 18, 0.85) 9%, rgba(3, 7, 18, 0) 18%),
+      radial-gradient(
+        ellipse 62% 78% at 0% 100%,
+        rgba(3, 7, 18, 0.97) 0%,
+        rgba(3, 7, 18, 0.86) 48%,
+        rgba(3, 7, 18, 0) 100%
+      ),
+      linear-gradient(to top, var(--neon-bg) 0%, rgba(3, 7, 18, 0.7) 16%, rgba(3, 7, 18, 0) 44%),
+      radial-gradient(ellipse 70% 60% at 50% 45%, rgba(3, 7, 18, 0) 55%, rgba(3, 7, 18, 0.55) 100%);
+  }
+}
+
+/* The readout over a picked player (task 108): his number and speed, a link to the possession. */
+.replay-hero canvas {
+  cursor: crosshair;
+}
+
+.replay-hero[data-picked] canvas {
+  cursor: pointer;
+}
+
+.replay-hero-player {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, calc(-100% - 1.25rem));
+  padding: var(--space-1) var(--space-3);
+  background: rgba(3, 7, 18, 0.88);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 16px -4px var(--neon-glow);
+  color: var(--fg-strong);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.replay-hero-player output {
+  margin-left: var(--space-2);
+  color: var(--neon);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The player's controls: a strip under the headline on a phone, a scoreboard top right on a
+   wide screen, clear of the header (one row there) and of the copy at the foot. */
+.hero-stage .controls {
+  position: absolute;
+  z-index: 1;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: var(--gutter);
+  margin: 0;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-2);
+  background: rgba(3, 7, 18, 0.72); /* legible over the markings */
+  border: 1px solid var(--neon-line);
+}
+
+.replay-hero-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.replay-hero-teams {
+  display: none;
+}
+
+.replay-hero-sport {
+  color: var(--tag);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.replay-hero-sport::before {
+  content: "[";
+}
+
+.replay-hero-sport::after {
+  content: "]";
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding-top: var(--space-8);
+  /* room for the controls' strip under the copy */
+  padding-bottom: calc(var(--gutter) + var(--control-height) + var(--space-5));
+  pointer-events: none; /* the pointer reaches the players between the lines of copy */
+}
+
+.hero-copy > * {
+  pointer-events: auto;
+}
+
+/* Three lines: "One schema," / "two sports," / "one renderer". */
+.hero-copy h1 {
+  max-width: 14ch;
+}
+
+.hero-detail {
+  max-width: 44rem;
+  margin: var(--space-3) 0 0;
+  color: var(--fg-muted);
+}
+
+/* The two actions (task 108): bracketed like the nav, 44 px tall, the first one filled. */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  max-width: none;
+  margin: var(--space-5) 0 0;
+}
+
+.hero-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--neon);
+  border-radius: var(--radius);
+  background: rgba(3, 7, 18, 0.7);
+  color: var(--neon);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.hero-action::before {
+  content: "[";
+  margin-right: 0.25em;
+}
+
+.hero-action::after {
+  content: "]";
+  margin-left: 0.25em;
+}
+
+.hero-action:hover {
+  color: var(--neon-2);
+  border-color: var(--neon-2);
+  box-shadow: 0 0 20px -4px var(--neon-glow);
+}
+
+.hero-action-primary {
+  background: var(--neon);
+  color: var(--neon-bg);
+}
+
+.hero-action-primary:hover {
+  background: var(--neon-2);
+  color: var(--neon-bg);
+}
+
+.hero-action:focus-visible {
+  outline: 2px solid var(--fg-strong);
+  outline-offset: 3px;
+}
+
+/* From 72rem the header is one row (67.6 px measured), so 6rem clears it. */
+@media (min-width: 72rem) {
+  .hero-stage .controls {
+    left: auto;
+    top: 6rem;
+    bottom: auto;
+  }
+
+  .replay-hero-teams {
+    display: inline;
+  }
+
+  .hero-copy {
+    padding-bottom: var(--gutter);
+  }
 }
 
 .hero .lede {
   margin-bottom: 0;
+}
+
+/* The figures (task 106): two big counts, the query that reads them, then the six layers of
+   the build as a row that reads raw to publish. */
+.figures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-5) var(--space-7);
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.figure {
+  max-width: none;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+
+.figure-value {
+  margin: 0 0 var(--space-2);
+  font-size: clamp(2.5rem, 1.4rem + 4.2vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.figure-label {
+  margin: 0;
+  color: var(--fg-muted);
+}
+
+.figures-query {
+  max-width: var(--measure);
+  margin-bottom: var(--space-8);
+}
+
+.figures-title {
+  margin: 0 0 var(--space-5);
+  font-size: var(--step-h2);
+  letter-spacing: -0.02em;
+}
+
+.figures-layers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.figures-layer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: none;
+  padding: var(--space-4);
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+/* What goes in and what comes out are the story: lit. */
+.figures-layer:first-child,
+.figures-layer:last-child {
+  border-color: var(--neon-line-strong);
+  box-shadow: 0 0 20px -6px var(--neon-glow);
+}
+
+.figures-layer-name {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tag);
+}
+
+.figures-layer-name::before {
+  content: "// ";
+  color: var(--neon-line-strong);
+}
+
+.figures-layer-bytes {
+  font-size: var(--step-3);
+  font-weight: 700;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
 }
 
 .split {
@@ -562,6 +1040,8 @@ a.wordmark:hover {
   width: 100%;
 }
 
+/* The sections as a bento (task 107): one column, two from 640 px, four from 1000 px where the
+   first, second and last two cards take two columns each and lay their sketch beside the text. */
 .cards {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -571,55 +1051,64 @@ a.wordmark:hover {
   list-style: none;
 }
 
-/* A card left alone on the last row takes the whole row. */
 @media (min-width: 640px) {
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .cards > :last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-    max-width: none; /* .band li keeps prose at --measure; a card is not prose */
   }
 }
 
 @media (min-width: 1000px) {
   .cards {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .cards > :last-child:nth-child(odd) {
-    grid-column: auto;
-  }
-
-  .cards > :last-child:nth-child(3n + 1) {
-    grid-column: 1 / -1;
-    max-width: none;
+  .card[data-section="/replay"],
+  .card[data-section="/platform"],
+  .card[data-section="/learn"],
+  .card[data-section="/sql"] {
+    grid-column: span 2;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "tag preview"
+      "title preview"
+      "about preview"
+      "arrow preview";
   }
 }
 
 /* The whole card is the link's target; the link's own text stays its name. */
 .card {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+  grid-template-areas:
+    "preview"
+    "tag"
+    "title"
+    "about"
+    "arrow";
+  gap: var(--space-3) var(--space-5);
+  max-width: none; /* .band li keeps prose at --measure; a card is not prose */
   min-height: 15rem;
   padding: var(--space-5);
+  background: var(--raised);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
 }
 
 .card:hover {
-  border-color: var(--accent);
+  border-color: var(--neon-line-strong);
+  box-shadow: 0 0 24px -8px var(--neon-glow);
 }
 
 .card:has(a:focus-visible) {
-  outline: 2px solid var(--accent-ink); /* the ring sits on the light band: 5.5:1 */
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
 .card h3 {
+  grid-area: title;
   margin: 0;
   font-size: var(--step-3);
 }
@@ -645,14 +1134,19 @@ a.wordmark:hover {
   color: var(--fg-muted);
 }
 
+.card-about {
+  grid-area: about;
+}
+
 .card .card-tag {
-  font-family: var(--font-display);
+  grid-area: tag;
   font-weight: 500;
   color: var(--tag);
 }
 
 .card-arrow {
-  margin-top: auto;
+  grid-area: arrow;
+  align-self: end;
   font-family: var(--font-display);
   font-size: var(--step-3);
   line-height: 1;
@@ -661,7 +1155,9 @@ a.wordmark:hover {
 
 @media (prefers-reduced-motion: no-preference) {
   .card {
-    transition: border-color 0.15s;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
   }
 
   .card-arrow {
@@ -670,6 +1166,391 @@ a.wordmark:hover {
 
   .card:hover .card-arrow {
     transform: translateX(0.25rem);
+  }
+}
+
+/* The sketch: a sunken panel, the marks in the hero's palette. */
+.card-preview {
+  grid-area: preview;
+  align-self: stretch;
+  min-height: 7rem;
+  background: var(--neon-sunken);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  pointer-events: none;
+}
+
+.pv {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 7rem;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pv-line {
+  stroke: var(--neon-line-strong);
+  stroke-width: 1;
+}
+
+.pv-ink {
+  fill: var(--neon);
+}
+
+.pv-alt {
+  fill: var(--neon-alt);
+}
+
+.pv-ball {
+  fill: #ffffff;
+}
+
+/* Where the replay sketch's marks rest (the first keyframe), so with reduced motion they sit on
+   the court and not at the origin. */
+.pv-mark-a {
+  transform: translate(22px, 20px);
+}
+
+.pv-mark-b {
+  transform: translate(40px, 50px);
+}
+
+.pv-mark-c {
+  transform: translate(76px, 16px);
+}
+
+.pv-mark-ball {
+  transform: translate(26px, 24px);
+}
+
+.pv-signal {
+  fill: none;
+  stroke: var(--neon);
+  stroke-width: 1.5;
+}
+
+.pv-band {
+  fill: var(--neon-line);
+}
+
+.pv-sweep {
+  stroke: #ffffff;
+  stroke-width: 1;
+}
+
+.pv-node {
+  fill: var(--neon-raised);
+  stroke: var(--neon);
+  stroke-width: 1.5;
+}
+
+.pv-pulse {
+  transform: translateX(110px);
+}
+
+.pv-cell {
+  fill: var(--neon);
+  opacity: 0.25;
+}
+
+/* The run, drawn whole (its resting frame is the run made); the animation grows it from the
+   left with a scale, since a line's x2 is an attribute CSS cannot animate. */
+.pv-run {
+  stroke: var(--neon);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+.pv-runner {
+  transform: translateX(94px);
+}
+
+.pv-bone {
+  stroke: var(--neon);
+  stroke-width: 2.5;
+  transform-box: fill-box;
+}
+
+.pv-arm,
+.pv-leg {
+  transform-origin: top center;
+}
+
+/* A stride, still: the opposite limbs swung each way (the swing's first keyframes). */
+.pv-arm-l,
+.pv-leg-r {
+  transform: rotate(-28deg);
+}
+
+.pv-arm-r,
+.pv-leg-l {
+  transform: rotate(28deg);
+}
+
+.pv-arc {
+  fill: none;
+  stroke: var(--neon);
+  stroke-width: 1.5;
+}
+
+.pv-fall {
+  offset-path: path("M 12 60 Q 60 -20 108 60");
+  offset-distance: 100%;
+}
+
+.pv-code {
+  fill: var(--neon-muted);
+  opacity: 0.7;
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+.pv-code-key {
+  fill: var(--neon);
+  opacity: 1;
+}
+
+.pv-cursor {
+  fill: var(--neon);
+}
+
+/* Every sketch moves only where motion is welcome; still, each shows its last frame above. */
+@media (prefers-reduced-motion: no-preference) {
+  .pv-mark-a {
+    animation: pv-run-a 6s ease-in-out infinite;
+  }
+
+  .pv-mark-b {
+    animation: pv-run-b 6s ease-in-out infinite;
+  }
+
+  .pv-mark-c {
+    animation: pv-run-c 6s ease-in-out infinite;
+  }
+
+  .pv-mark-ball {
+    animation: pv-run-ball 6s ease-in-out infinite;
+  }
+
+  .pv-node {
+    animation: pv-light 4s linear infinite;
+    animation-delay: calc(var(--i) * 0.6s);
+  }
+
+  .pv-pulse {
+    animation: pv-travel 4s linear infinite;
+  }
+
+  .pv-sweep {
+    animation: pv-sweep 3s linear infinite;
+  }
+
+  .pv-cell {
+    animation: pv-fill 3.6s ease-out infinite;
+    animation-delay: calc(var(--i) * 0.2s);
+  }
+
+  .pv-runner {
+    animation: pv-runner 3.5s ease-in-out infinite;
+  }
+
+  .pv-run {
+    animation: pv-run-line 3.5s ease-in-out infinite;
+  }
+
+  .pv-arm-l,
+  .pv-leg-r {
+    animation: pv-swing 0.9s ease-in-out infinite alternate;
+  }
+
+  .pv-arm-r,
+  .pv-leg-l {
+    animation: pv-swing 0.9s ease-in-out infinite alternate-reverse;
+  }
+
+  .pv-arc {
+    stroke-dasharray: 160;
+    animation: pv-trace 3s ease-out infinite;
+  }
+
+  .pv-fall {
+    animation: pv-fall 3s ease-out infinite;
+  }
+
+  .pv-code {
+    animation: pv-type 5s steps(12) infinite;
+    animation-delay: calc(var(--i) * 0.5s);
+  }
+
+  .pv-cursor {
+    animation: caret-blink 1s steps(1) infinite;
+  }
+}
+
+@keyframes pv-run-a {
+  0%,
+  100% {
+    transform: translate(22px, 20px);
+  }
+
+  50% {
+    transform: translate(84px, 48px);
+  }
+}
+
+@keyframes pv-run-b {
+  0%,
+  100% {
+    transform: translate(40px, 50px);
+  }
+
+  50% {
+    transform: translate(92px, 24px);
+  }
+}
+
+@keyframes pv-run-c {
+  0%,
+  100% {
+    transform: translate(76px, 16px);
+  }
+
+  50% {
+    transform: translate(32px, 40px);
+  }
+}
+
+@keyframes pv-run-ball {
+  0%,
+  100% {
+    transform: translate(26px, 24px);
+  }
+
+  40% {
+    transform: translate(70px, 30px);
+  }
+
+  60% {
+    transform: translate(88px, 44px);
+  }
+}
+
+@keyframes pv-light {
+  0%,
+  20%,
+  100% {
+    fill: var(--neon-raised);
+  }
+
+  8% {
+    fill: var(--neon);
+  }
+}
+
+@keyframes pv-travel {
+  from {
+    transform: translateX(10px);
+  }
+
+  to {
+    transform: translateX(110px);
+  }
+}
+
+@keyframes pv-sweep {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(112px);
+  }
+}
+
+@keyframes pv-fill {
+  0%,
+  15% {
+    opacity: 0.25;
+  }
+
+  25%,
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes pv-runner {
+  0%,
+  15% {
+    transform: translateX(0);
+  }
+
+  70%,
+  100% {
+    transform: translateX(94px);
+  }
+}
+
+@keyframes pv-run-line {
+  0%,
+  15% {
+    transform: scaleX(0);
+  }
+
+  70%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes pv-swing {
+  from {
+    transform: rotate(-28deg);
+  }
+
+  to {
+    transform: rotate(28deg);
+  }
+}
+
+@keyframes pv-trace {
+  0% {
+    stroke-dashoffset: 160;
+  }
+
+  70%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pv-fall {
+  0% {
+    offset-distance: 0%;
+  }
+
+  70%,
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+@keyframes pv-type {
+  0% {
+    transform: scaleX(0);
+  }
+
+  40%,
+  100% {
+    transform: scaleX(1);
   }
 }
 
@@ -1708,10 +2589,4 @@ a.wordmark:hover {
   margin-top: var(--space-7);
   padding-top: var(--space-5);
   border-top: 1px solid var(--rule);
-}
-
-/* The card's whole area is its title's link; a second link in its text sits above that layer. */
-.card-more {
-  position: relative;
-  z-index: 1;
 }

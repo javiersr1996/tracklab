@@ -1,4 +1,4 @@
-// The seven sections, in the order the header and the home page list them. `title` is the link text
+// The eight sections, in the order the header and the home page list them. `title` is the link text
 // the home page has always carried (the e2e find those links by name, so the header uses the short
 // `nav` instead), `about` a line from the section's own page or the README, not new copy.
 export const SECTIONS = [
@@ -45,8 +45,13 @@ export const SECTIONS = [
     nav: "Learn",
     title: "Learn from the data",
     about: "Short lessons that start from a question about the tracking data and end with a query you can run.",
-    // A second link in the card's text (task 101): the SQL course has no card of its own.
-    more: { href: "/sql", text: "New to SQL? Learn it on the warehouse's tables first." },
+  },
+  {
+    // Its own section since P12 (until then a second link in the Learn card, task 101).
+    href: "/sql",
+    nav: "SQL",
+    title: "Learn SQL on the warehouse",
+    about: "Eight lessons that take you from your first SELECT to window functions and CTEs.",
   },
 ] as const;
 
