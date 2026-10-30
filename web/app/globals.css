@@ -1199,6 +1199,24 @@ body:has(.home) .site-header::after {
   fill: #ffffff;
 }
 
+/* Where the replay sketch's marks rest (the first keyframe), so with reduced motion they sit on
+   the court and not at the origin. */
+.pv-mark-a {
+  transform: translate(22px, 20px);
+}
+
+.pv-mark-b {
+  transform: translate(40px, 50px);
+}
+
+.pv-mark-c {
+  transform: translate(76px, 16px);
+}
+
+.pv-mark-ball {
+  transform: translate(26px, 24px);
+}
+
 .pv-signal {
   fill: none;
   stroke: var(--neon);
@@ -1244,6 +1262,17 @@ body:has(.home) .site-header::after {
 .pv-arm,
 .pv-leg {
   transform-origin: top center;
+}
+
+/* A stride, still: the opposite limbs swung each way (the swing's first keyframes). */
+.pv-arm-l,
+.pv-leg-r {
+  transform: rotate(-28deg);
+}
+
+.pv-arm-r,
+.pv-leg-l {
+  transform: rotate(28deg);
 }
 
 .pv-arc {

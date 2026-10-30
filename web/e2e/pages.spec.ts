@@ -219,4 +219,17 @@ test("under prefers-reduced-motion the hero is a still frame, no trails, and off
     .filter((t) => t.table === "frames" && t.sport === "football")
     .reduce((sum, t) => sum + t.rows, 0);
   await expect(page.locator('[data-rows="football"]')).toHaveText(expected.toLocaleString("en-US"));
+  // The cards' sketches stand still at a resting frame: the replay's marks sit on its court, not
+  // at the origin, and the pose's limbs are swung, not folded onto the torso.
+  const court = (await page.locator(".pv-replay").boundingBox())!;
+  for (const mark of await page.locator(".pv-replay .pv-mark").all()) {
+    const box = (await mark.boundingBox())!;
+    expect(box.x, "mark inside the court, not at the origin").toBeGreaterThan(court.x + court.width * 0.1);
+    expect(box.y).toBeGreaterThan(court.y + court.height * 0.1);
+  }
+  const limbs = await page.locator(".pv-pose .pv-arm, .pv-pose .pv-leg").evaluateAll((els) =>
+    els.map((e) => e.getBoundingClientRect().width),
+  );
+  expect(limbs.length).toBe(4);
+  for (const width of limbs) expect(width, "a swung limb is wider than a line").toBeGreaterThan(2);
 });
