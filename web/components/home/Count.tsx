@@ -45,9 +45,11 @@ export function Count({ value, kind }: { value: number; kind: "int" | "bytes" })
     };
   }, [reduceMotion, value]);
 
+  // The exact number except while counting; a reduced-motion switch mid-count lands it at once.
+  const n = reduceMotion || phase !== "counting" ? value : shown;
   return (
     <span ref={el} data-count={reduceMotion ? "still" : phase}>
-      {kind === "bytes" ? formatBytes(shown) : shown.toLocaleString("en-US")}
+      {kind === "bytes" ? formatBytes(n) : n.toLocaleString("en-US")}
     </span>
   );
 }
