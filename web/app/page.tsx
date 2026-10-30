@@ -68,13 +68,6 @@ export default function HomePage() {
                 <Link href={s.href}>{s.title}</Link>
               </h3>
               <p>{s.about}</p>
-              {"more" in s ? (
-                <p>
-                  <Link href={s.more.href} className="card-more">
-                    {s.more.text}
-                  </Link>
-                </p>
-              ) : null}
               <span className="card-arrow" aria-hidden="true">
                 →
               </span>

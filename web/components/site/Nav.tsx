@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isCurrent, SECTIONS } from "../../lib/sections";
 
-// The header's links, a row that wraps on a phone (no menu to open). Client-side only for
-// `aria-current`; no prefetch, so a page's byte budget does not pay for the seven others.
+// The header's links, a row that wraps on a phone (no menu to open; the brackets around each
+// link are CSS, from 640 px up). Client-side only for `aria-current`; no prefetch, so a page's
+// byte budget does not pay for the seven others.
 export function Nav() {
   const path = usePathname();
   return (

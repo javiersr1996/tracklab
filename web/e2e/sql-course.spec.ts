@@ -136,7 +136,9 @@ test("/warehouse, /learn and / link to /sql", async ({ page }) => {
   await page.goto("/learn");
   await expect(page.getByRole("link", { name: "Learn SQL on the warehouse" })).toHaveAttribute("href", "/sql");
   await page.goto("/");
-  await expect(page.locator('a.card-more[href="/sql"]')).toHaveCount(1);
-  await page.locator("a.card-more").click();
+  // Its own card since P12, and its own link in the header: two links to /sql, no more.
+  await expect(page.locator('main a[href="/sql"]')).toHaveCount(1);
+  await expect(page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name: "SQL" })).toHaveAttribute("href", "/sql");
+  await page.locator("main").getByRole("link", { name: "Learn SQL on the warehouse" }).click();
   await expect(page).toHaveURL(/\/sql$/);
 });
