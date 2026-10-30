@@ -87,8 +87,14 @@ export function Replay({
   const [normalized, setNormalized] = useState(false);
   const [, setVersion] = useState(0);
   const rerender = () => setVersion((v) => v + 1);
-  // The player under the pointer (hero), by entity index; his readout follows him from the loop.
+  // The player under the pointer (hero), by entity index: state for the readout's markup, and a
+  // ref the loop reads, so a pick never restarts the loop (which would clear the canvas).
   const [picked, setPicked] = useState<number | null>(null);
+  const pickedRef = useRef<number | null>(null);
+  const pick = (i: number | null) => {
+    pickedRef.current = i;
+    setPicked(i);
+  };
   const readout = useRef<HTMLAnchorElement>(null);
   const speedOut = useRef<HTMLOutputElement>(null);
 
@@ -102,8 +108,11 @@ export function Replay({
       const el = canvas.current;
       const fit = () => {
         const dpr = Math.min(window.devicePixelRatio || 1, HERO_MAX_DPR);
-        el.width = Math.max(1, Math.round(el.clientWidth * dpr));
-        el.height = Math.max(1, Math.round(el.clientHeight * dpr));
+        const w = Math.max(1, Math.round(el.clientWidth * dpr));
+        const h = Math.max(1, Math.round(el.clientHeight * dpr));
+        // Setting a size clears the bitmap: only when it changed.
+        if (w !== el.width) el.width = w;
+        if (h !== el.height) el.height = h;
       };
       fit();
       observer = new ResizeObserver(fit);
@@ -139,7 +148,8 @@ export function Replay({
             const [px, py] = view.project(x, y);
             return [px * sx, py * sy];
           };
-          const e = picked === null ? undefined : snapshot.entities.find((s) => s.i === picked);
+          const pickedNow = pickedRef.current;
+          const e = pickedNow === null ? undefined : snapshot.entities.find((s) => s.i === pickedNow);
           if (e && readout.current) {
             const [px, py] = toCss(e.x, e.y);
             readout.current.style.left = `${px}px`;
@@ -181,7 +191,7 @@ export function Replay({
       cancelAnimationFrame(raf);
       observer?.disconnect();
     };
-  }, [engine, possession, normalized, onEnded, overlay, name, hero, trailMs, picked]);
+  }, [engine, possession, normalized, onEnded, overlay, name, hero, trailMs]);
 
   // The player whose mark is nearest the pointer, within HIT_PX, at this instant.
   const nearestPlayer = (e: PointerEvent<HTMLCanvasElement>): number | null => {
@@ -234,15 +244,15 @@ export function Replay({
           onPointerMove={(e) => {
             if (e.pointerType !== "mouse") return;
             const i = nearestPlayer(e);
-            if (i !== picked) setPicked(i);
+            if (i !== pickedRef.current) pick(i);
           }}
           onPointerLeave={(e) => {
-            if (e.pointerType === "mouse") setPicked(null);
+            if (e.pointerType === "mouse") pick(null);
           }}
           onPointerDown={(e) => {
             const i = nearestPlayer(e);
-            if (i !== null && i === picked && href) router.push(href);
-            else setPicked(i);
+            if (i !== null && i === pickedRef.current && href) router.push(href);
+            else pick(i);
           }}
         />
         {pickedEntity ? (
