@@ -18,7 +18,9 @@ test("the home page starts playing on its own, light, with the figures of stats.
   await page.goto("/");
   // Playing on its own: the button offers to pause.
   await expect(page.getByRole("button", { name: "Pause" })).toBeVisible({ timeout: 2_000 });
-  if (EXPOSED) expect(await page.evaluate(() => window.__replay?.state)).toBe("playing");
+  // Replay.tsx sets window.__replay on its first animation frame, after the render that paints
+  // the button: poll rather than read once.
+  if (EXPOSED) await expect.poll(() => page.evaluate(() => window.__replay?.state)).toBe("playing");
 
   const stats = (await (await page.request.get("/data/stats.json")).json()) as Stats;
   for (const sport of ["basketball", "football"]) {
