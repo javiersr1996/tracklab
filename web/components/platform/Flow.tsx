@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { formatBytes } from "../../lib/format";
+import { usePrefersReducedMotion } from "../../lib/motion";
 import { counterKey, layerDurations, type PlatformLayer } from "../../lib/platform";
 
 // The layers, one packet moving through them: each layer's counters climb
@@ -23,33 +24,6 @@ function formatCount(n: number): string {
 
 function valueAt(final: number, t: number): number {
   return Math.round(final * t);
-}
-
-// `prefers-reduced-motion` read through `useSyncExternalStore` instead of a
-// `useEffect` + `setState`: the value is available during render itself (SSR
-// gets `false` from `getServerSnapshot`, the client's real value replaces it
-// before paint), so the reduced-motion display below is derived, never set,
-// and the animation effect only has to decide whether to start.
-function subscribeReducedMotion(onChange: () => void): () => void {
-  const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
-function getReducedMotionSnapshot(): boolean {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function getReducedMotionServerSnapshot(): boolean {
-  return false;
-}
-
-function usePrefersReducedMotion(): boolean {
-  return useSyncExternalStore(
-    subscribeReducedMotion,
-    getReducedMotionSnapshot,
-    getReducedMotionServerSnapshot,
-  );
 }
 
 export function Flow({ layers }: { layers: PlatformLayer[] }) {

@@ -9,24 +9,24 @@ const SHOWCASE = SPORTS.map((sport) => POSSESSIONS.find((p) => p.sport === sport
 
 export default function HomePage() {
   return (
-    <main className="home">
-      <Band dark className="hero">
-        <div className="hero-grid">
-          <div>
-            <p className="eyebrow">Open tracking data</p>
-            <h1>
-              One schema, two sports, <span className="accent">one renderer</span>
-            </h1>
-            <p className="lede">
-              Track Lab takes SkillCorner&apos;s open tracking and event data for basketball and
-              football and conforms both sports into one silver schema with DuckDB and dbt.
-            </p>
-          </div>
-          <div className="hero-media">
-            <Alternating entries={SHOWCASE} />
-          </div>
+    <main className="home surface-neon">
+      {/* The replay fills the first screen, the header over its top and the headline over its
+          foot; the pause button is the player's own, bottom right. */}
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero-stage">
+          <Alternating entries={SHOWCASE} hero />
         </div>
-      </Band>
+        <div className="wrap hero-copy">
+          <p className="eyebrow">Open tracking data</p>
+          <h1 id="hero-title">
+            One schema, two sports, <span className="accent">one renderer</span>
+          </h1>
+          <p className="lede">
+            Track Lab takes SkillCorner&apos;s open tracking and event data for basketball and
+            football and conforms both sports into one silver schema with DuckDB and dbt.
+          </p>
+        </div>
+      </section>
 
       <Band>
         <div className="split">

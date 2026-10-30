@@ -632,6 +632,15 @@ a.wordmark:hover {
   background: var(--accent);
 }
 
+/* On the neon surface the rule is a code comment's slashes, like the footer's labels. */
+.surface-neon .eyebrow::before {
+  content: "//";
+  width: auto;
+  height: auto;
+  background: none;
+  color: var(--neon-line-strong);
+}
+
 .accent {
   color: var(--tag);
 }
@@ -642,21 +651,138 @@ a.wordmark:hover {
   line-height: var(--leading-snug);
 }
 
-.hero-grid {
+/* The home's hero (P12): the whole first screen, the replay behind everything, the headline at
+   its foot. On the home the header sits over the hero's top, transparent, so 100svh is the hero's. */
+body:has(.home) .site-header {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 2;
+  background: transparent;
+}
+
+body:has(.home) .site-header::after {
+  display: none;
+}
+
+.hero {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6) var(--space-7);
-  align-items: center;
+  align-content: end;
+  min-height: 100svh;
+  overflow: hidden;
 }
 
-@media (min-width: 1100px) {
-  .hero-grid {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+.hero-stage,
+.hero-stage .replay,
+.hero-stage .replay-placeholder {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  max-width: none;
+  aspect-ratio: auto;
+  background: none;
+  border-radius: 0;
+}
+
+.hero-stage .replay canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: none;
+  border-radius: 0;
+}
+
+/* CRT scanlines over the canvas, then a fade to the surface where the headline sits. */
+.hero-stage::before,
+.hero-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-stage::before {
+  background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(0, 0, 0, 0.22) 2px 4px);
+}
+
+.hero-stage::after {
+  background:
+    linear-gradient(to top, var(--neon-bg) 0%, rgba(3, 7, 18, 0.85) 30%, rgba(3, 7, 18, 0) 70%),
+    radial-gradient(ellipse 70% 60% at 50% 45%, rgba(3, 7, 18, 0) 55%, rgba(3, 7, 18, 0.55) 100%);
+}
+
+/* The player's controls: a strip under the headline on a phone, a scoreboard top right on a
+   wide screen, clear of the header (one row there) and of the copy at the foot. */
+.hero-stage .controls {
+  position: absolute;
+  z-index: 1;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: var(--gutter);
+  margin: 0;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-2);
+  background: rgba(3, 7, 18, 0.72); /* legible over the markings */
+  border: 1px solid var(--neon-line);
+}
+
+.replay-hero-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.replay-hero-teams {
+  display: none;
+}
+
+.replay-hero-sport {
+  color: var(--tag);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.replay-hero-sport::before {
+  content: "[";
+}
+
+.replay-hero-sport::after {
+  content: "]";
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding-top: var(--space-8);
+  /* room for the controls' strip under the copy */
+  padding-bottom: calc(var(--gutter) + var(--control-height) + var(--space-5));
+}
+
+/* Three lines: "One schema," / "two sports," / "one renderer". */
+.hero-copy h1 {
+  max-width: 14ch;
+}
+
+/* From 72rem the header is one row (67.6 px measured), so 6rem clears it. */
+@media (min-width: 72rem) {
+  .hero-stage .controls {
+    left: auto;
+    top: 6rem;
+    bottom: auto;
   }
-}
 
-.hero-grid > * {
-  min-width: 0;
+  .replay-hero-teams {
+    display: inline;
+  }
+
+  .hero-copy {
+    padding-bottom: var(--gutter);
+  }
 }
 
 .hero .lede {

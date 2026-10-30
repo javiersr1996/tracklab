@@ -21,6 +21,15 @@ test("the home page starts playing on its own, light, with the figures of stats.
   // Replay.tsx sets window.__replay on its first animation frame, after the render that paints
   // the button: poll rather than read once.
   if (EXPOSED) await expect.poll(() => page.evaluate(() => window.__replay?.state)).toBe("playing");
+  // The hero (P12): the replay's canvas is the first screen's background, with trails behind
+  // the players; the headline sits over it, inside that first screen.
+  const viewport = page.viewportSize()!;
+  const canvas = await page.locator(".hero canvas").boundingBox();
+  expect(canvas!.width).toBeGreaterThanOrEqual(viewport.width * 0.98);
+  expect(canvas!.height).toBeGreaterThanOrEqual(viewport.height * 0.98);
+  const title = await page.getByRole("heading", { level: 1 }).boundingBox();
+  expect(title!.y + title!.height).toBeLessThanOrEqual(viewport.height);
+  if (EXPOSED) await expect.poll(() => page.evaluate(() => window.__replay?.trail)).toBeGreaterThan(0);
 
   const stats = (await (await page.request.get("/data/stats.json")).json()) as Stats;
   for (const sport of ["basketball", "football"]) {
@@ -61,5 +70,20 @@ test("the selector switches sport and restarts the renderer", async ({ page }) =
   if (EXPOSED) {
     const after = await page.evaluate(() => window.__replay!);
     expect([after.sport, after.state, after.frameIndex]).toEqual(["football", "idle", 0]);
+    // The trails are the home's: /replay draws none.
+    expect(after.trail).toBe(0);
   }
+});
+
+test("under prefers-reduced-motion the hero is a still frame, no trails, and offers Play", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Play" })).toBeVisible({ timeout: 2_000 });
+  if (EXPOSED) {
+    await expect.poll(() => page.evaluate(() => window.__replay?.state)).toBe("idle");
+    expect(await page.evaluate(() => window.__replay!.trail)).toBe(0);
+  }
+  // The button still works: the replay is a choice, not denied.
+  await page.getByRole("button", { name: "Play" }).click();
+  await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
 });
