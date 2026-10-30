@@ -38,6 +38,7 @@
   --neon-muted: #94a3b8; /* 7.9:1 on the neon bg, 7.4:1 on a neon card */
   --neon: #00e5ff; /* 13.1:1 on the neon bg; as a fill, 13.1:1 under neon-bg text */
   --neon-2: #67e8f9; /* 13.9:1 on the neon bg: the hover of a neon control */
+  --neon-alt: #ff3ea5; /* the second team, in the hero's canvas and the cards' sketches: a mark, never text */
   --neon-line: rgba(0, 229, 255, 0.18); /* a hairline, not text */
   --neon-line-strong: rgba(0, 229, 255, 0.5);
   --neon-glow: rgba(0, 229, 255, 0.25);
@@ -896,6 +897,8 @@ body:has(.home) .site-header::after {
   width: 100%;
 }
 
+/* The sections as a bento (task 107): one column, two from 640 px, four from 1000 px where the
+   first, second and last two cards take two columns each and lay their sketch beside the text. */
 .cards {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -905,55 +908,64 @@ body:has(.home) .site-header::after {
   list-style: none;
 }
 
-/* A card left alone on the last row takes the whole row. */
 @media (min-width: 640px) {
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .cards > :last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-    max-width: none; /* .band li keeps prose at --measure; a card is not prose */
   }
 }
 
 @media (min-width: 1000px) {
   .cards {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .cards > :last-child:nth-child(odd) {
-    grid-column: auto;
-  }
-
-  .cards > :last-child:nth-child(3n + 1) {
-    grid-column: 1 / -1;
-    max-width: none;
+  .card[data-section="/replay"],
+  .card[data-section="/platform"],
+  .card[data-section="/learn"],
+  .card[data-section="/sql"] {
+    grid-column: span 2;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "tag preview"
+      "title preview"
+      "about preview"
+      "arrow preview";
   }
 }
 
 /* The whole card is the link's target; the link's own text stays its name. */
 .card {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+  grid-template-areas:
+    "preview"
+    "tag"
+    "title"
+    "about"
+    "arrow";
+  gap: var(--space-3) var(--space-5);
+  max-width: none; /* .band li keeps prose at --measure; a card is not prose */
   min-height: 15rem;
   padding: var(--space-5);
+  background: var(--raised);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
 }
 
 .card:hover {
-  border-color: var(--accent);
+  border-color: var(--neon-line-strong);
+  box-shadow: 0 0 24px -8px var(--neon-glow);
 }
 
 .card:has(a:focus-visible) {
-  outline: 2px solid var(--accent-ink); /* the ring sits on the light band: 5.5:1 */
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
 .card h3 {
+  grid-area: title;
   margin: 0;
   font-size: var(--step-3);
 }
@@ -979,15 +991,19 @@ body:has(.home) .site-header::after {
   color: var(--fg-muted);
 }
 
+.card-about {
+  grid-area: about;
+}
+
 .card .card-tag {
-  font-family: var(--font-display);
+  grid-area: tag;
   font-weight: 500;
   color: var(--tag);
 }
 
 .card-arrow {
-  margin-top: auto;
-  font-family: var(--font-display);
+  grid-area: arrow;
+  align-self: end;
   font-size: var(--step-3);
   line-height: 1;
   color: var(--accent);
@@ -995,7 +1011,9 @@ body:has(.home) .site-header::after {
 
 @media (prefers-reduced-motion: no-preference) {
   .card {
-    transition: border-color 0.15s;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
   }
 
   .card-arrow {
@@ -1004,6 +1022,356 @@ body:has(.home) .site-header::after {
 
   .card:hover .card-arrow {
     transform: translateX(0.25rem);
+  }
+}
+
+/* The sketch: a sunken panel, the marks in the hero's palette. */
+.card-preview {
+  grid-area: preview;
+  align-self: stretch;
+  min-height: 7rem;
+  background: var(--neon-sunken);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  pointer-events: none;
+}
+
+.pv {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 7rem;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pv-line {
+  stroke: var(--neon-line-strong);
+  stroke-width: 1;
+}
+
+.pv-ink {
+  fill: var(--neon);
+}
+
+.pv-alt {
+  fill: var(--neon-alt);
+}
+
+.pv-ball {
+  fill: #ffffff;
+}
+
+.pv-signal {
+  fill: none;
+  stroke: var(--neon);
+  stroke-width: 1.5;
+}
+
+.pv-band {
+  fill: var(--neon-line);
+}
+
+.pv-sweep {
+  stroke: #ffffff;
+  stroke-width: 1;
+}
+
+.pv-node {
+  fill: var(--neon-raised);
+  stroke: var(--neon);
+  stroke-width: 1.5;
+}
+
+.pv-pulse {
+  transform: translateX(110px);
+}
+
+.pv-cell {
+  fill: var(--neon);
+  opacity: 0.25;
+}
+
+.pv-run {
+  stroke: var(--neon);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+
+.pv-bone {
+  stroke: var(--neon);
+  stroke-width: 2.5;
+  transform-box: fill-box;
+}
+
+.pv-arm,
+.pv-leg {
+  transform-origin: top center;
+}
+
+.pv-arc {
+  fill: none;
+  stroke: var(--neon);
+  stroke-width: 1.5;
+}
+
+.pv-fall {
+  offset-path: path("M 12 60 Q 60 -20 108 60");
+  offset-distance: 100%;
+}
+
+.pv-code {
+  fill: var(--neon-muted);
+  opacity: 0.7;
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+.pv-code-key {
+  fill: var(--neon);
+  opacity: 1;
+}
+
+.pv-cursor {
+  fill: var(--neon);
+}
+
+/* Every sketch moves only where motion is welcome; still, each shows its last frame above. */
+@media (prefers-reduced-motion: no-preference) {
+  .pv-mark-a {
+    animation: pv-run-a 6s ease-in-out infinite;
+  }
+
+  .pv-mark-b {
+    animation: pv-run-b 6s ease-in-out infinite;
+  }
+
+  .pv-mark-c {
+    animation: pv-run-c 6s ease-in-out infinite;
+  }
+
+  .pv-mark-ball {
+    animation: pv-run-ball 6s ease-in-out infinite;
+  }
+
+  .pv-node {
+    animation: pv-light 4s linear infinite;
+    animation-delay: calc(var(--i) * 0.6s);
+  }
+
+  .pv-pulse {
+    animation: pv-travel 4s linear infinite;
+  }
+
+  .pv-sweep {
+    animation: pv-sweep 3s linear infinite;
+  }
+
+  .pv-cell {
+    animation: pv-fill 3.6s ease-out infinite;
+    animation-delay: calc(var(--i) * 0.2s);
+  }
+
+  .pv-runner {
+    animation: pv-runner 3.5s ease-in-out infinite;
+  }
+
+  .pv-run {
+    animation: pv-run-line 3.5s ease-in-out infinite;
+  }
+
+  .pv-arm-l,
+  .pv-leg-r {
+    animation: pv-swing 0.9s ease-in-out infinite alternate;
+  }
+
+  .pv-arm-r,
+  .pv-leg-l {
+    animation: pv-swing 0.9s ease-in-out infinite alternate-reverse;
+  }
+
+  .pv-arc {
+    stroke-dasharray: 160;
+    animation: pv-trace 3s ease-out infinite;
+  }
+
+  .pv-fall {
+    animation: pv-fall 3s ease-out infinite;
+  }
+
+  .pv-code {
+    animation: pv-type 5s steps(12) infinite;
+    animation-delay: calc(var(--i) * 0.5s);
+  }
+
+  .pv-cursor {
+    animation: caret-blink 1s steps(1) infinite;
+  }
+}
+
+@keyframes pv-run-a {
+  0%,
+  100% {
+    transform: translate(22px, 20px);
+  }
+
+  50% {
+    transform: translate(84px, 48px);
+  }
+}
+
+@keyframes pv-run-b {
+  0%,
+  100% {
+    transform: translate(40px, 50px);
+  }
+
+  50% {
+    transform: translate(92px, 24px);
+  }
+}
+
+@keyframes pv-run-c {
+  0%,
+  100% {
+    transform: translate(76px, 16px);
+  }
+
+  50% {
+    transform: translate(32px, 40px);
+  }
+}
+
+@keyframes pv-run-ball {
+  0%,
+  100% {
+    transform: translate(26px, 24px);
+  }
+
+  40% {
+    transform: translate(70px, 30px);
+  }
+
+  60% {
+    transform: translate(88px, 44px);
+  }
+}
+
+@keyframes pv-light {
+  0%,
+  20%,
+  100% {
+    fill: var(--neon-raised);
+  }
+
+  8% {
+    fill: var(--neon);
+  }
+}
+
+@keyframes pv-travel {
+  from {
+    transform: translateX(10px);
+  }
+
+  to {
+    transform: translateX(110px);
+  }
+}
+
+@keyframes pv-sweep {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(112px);
+  }
+}
+
+@keyframes pv-fill {
+  0%,
+  15% {
+    opacity: 0.25;
+  }
+
+  25%,
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes pv-runner {
+  0%,
+  15% {
+    transform: translateX(0);
+  }
+
+  70%,
+  100% {
+    transform: translateX(94px);
+  }
+}
+
+@keyframes pv-run-line {
+  0%,
+  15% {
+    stroke-dasharray: 3 3;
+    stroke-dashoffset: 0;
+    x2: 14;
+  }
+
+  70%,
+  100% {
+    x2: 108;
+  }
+}
+
+@keyframes pv-swing {
+  from {
+    transform: rotate(-28deg);
+  }
+
+  to {
+    transform: rotate(28deg);
+  }
+}
+
+@keyframes pv-trace {
+  0% {
+    stroke-dashoffset: 160;
+  }
+
+  70%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pv-fall {
+  0% {
+    offset-distance: 0%;
+  }
+
+  70%,
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+@keyframes pv-type {
+  0% {
+    transform: scaleX(0);
+  }
+
+  40%,
+  100% {
+    transform: scaleX(1);
   }
 }
 

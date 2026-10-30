@@ -37,8 +37,8 @@ describe("isCurrent", () => {
     expect(isCurrent("/", "/learn")).toBe(false);
   });
 
-  it("makes Learn the seventh section", () => {
-    expect(SECTIONS).toHaveLength(7);
-    expect(SECTIONS.at(-1)?.href).toBe("/learn");
+  it("makes Learn the seventh section, SQL the eighth (P12)", () => {
+    expect(SECTIONS).toHaveLength(8);
+    expect(SECTIONS.map((s) => s.href).slice(-2)).toEqual(["/learn", "/sql"]);
   });
 });

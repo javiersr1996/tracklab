@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Count } from "../components/home/Count";
+import { Preview } from "../components/home/Preview";
 import { Alternating } from "../components/replay/Alternating";
 import { Band } from "../components/site/Band";
 import { POSSESSIONS, rowsOf, SPORTS } from "../lib/data";
@@ -72,12 +73,13 @@ export default function HomePage() {
         <h2 className="eyebrow">Sections</h2>
         <ul className="cards">
           {SECTIONS.map((s) => (
-            <li key={s.href} className="card surface-dark">
+            <li key={s.href} className="card" data-section={s.href}>
+              <Preview href={s.href} />
               <p className="card-tag">{s.href}</p>
               <h3>
                 <Link href={s.href}>{s.title}</Link>
               </h3>
-              <p>{s.about}</p>
+              <p className="card-about">{s.about}</p>
               <span className="card-arrow" aria-hidden="true">
                 →
               </span>
