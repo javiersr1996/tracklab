@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 // The colours lesson 1 draws with on `--canvas`; each is 3:1 or more against it, and
 // tests/learn-figures.test.ts checks every stroke and fill the figures render. The orange is the
 // data's and only ever sits on the canvas.
-export const CANVAS = "#1d2327";
+export const CANVAS = "#030712";
 export const INK = {
   data: "#e0883a", // the samples and what is fitted to them
   standard: "#4ea1f2", // 9.80665 m/s², the blue of /quality
