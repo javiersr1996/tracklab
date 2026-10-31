@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-// A full-width band with its content in the centred wrap: light for prose and tables, dark for
-// the canvases and viewers.
+// A full-width band with its content in the centred wrap: the page's near-black for prose and
+// tables, the alternate band (a step lighter) for the canvases and viewers.
 export function Band({ dark = false, className, children }: { dark?: boolean; className?: string; children: ReactNode }) {
   return (
     <div className={["band", dark && "surface-dark", className].filter(Boolean).join(" ")}>

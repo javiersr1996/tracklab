@@ -1,32 +1,33 @@
 /* Design tokens (P13): the neon identity of the home (P12) on every page. Near-black surfaces,
    and cyan the one accent: text, a hairline, an underline, a glow or a button's fill, never a
-   large fill. Magenta is a figure's second series, a mark and never text. */
+   large fill. Magenta is a figure's second series, a mark and never text. The ratios are WCAG's,
+   printed and held to their floors by tests/tokens-contrast.test.ts. */
 :root {
   color-scheme: dark;
 
   /* Colour */
   --neon-bg: #030712; /* the page */
-  --neon-band: #0b1220; /* the alternate band, a step lighter, so the inner pages keep their rhythm */
-  --neon-raised: #0d1117; /* a card on the page */
-  --neon-band-raised: #141c2e; /* a card on the band */
+  --neon-band: #0b1220; /* the alternate band, a step lighter (1.08:1), so the pages keep their rhythm */
+  --neon-raised: #0d1117; /* a card on the page (1.06:1) */
+  --neon-band-raised: #141c2e; /* a card on the band (1.10:1) */
   --neon-sunken: #01050c;
-  --neon-ink: #e2e8f0;
-  --neon-muted: #94a3b8;
-  --neon: #00e5ff;
-  --neon-2: #67e8f9; /* the hover of a neon control */
-  --neon-alt: #ff3ea5; /* the second team or series: a mark, never text */
+  --neon-ink: #e2e8f0; /* 16.3:1 on the page, 15.2:1 on the band, 13.8:1 on a card on the band */
+  --neon-muted: #94a3b8; /* 7.9:1 on the page, 7.3:1 on the band, 6.6:1 on a card on the band */
+  --neon: #00e5ff; /* 13.1:1 on the page, 11.1:1 on a card on the band; as a fill, 13.1:1 under neon-bg */
+  --neon-2: #67e8f9; /* the hover of a neon control: 13.9:1 under neon-bg */
+  --neon-alt: #ff3ea5; /* the second team or series: a mark, never text (6.2:1 on the canvas) */
   --neon-line: rgba(0, 229, 255, 0.18); /* a hairline, not text */
-  --neon-line-strong: rgba(0, 229, 255, 0.5);
+  --neon-line-strong: rgba(0, 229, 255, 0.5); /* a control's edge: 3.7:1 or more on every surface */
   --neon-glow: rgba(0, 229, 255, 0.25);
   /* Behind the pitch, the court and the plots drawn in TS: the page's own near-black, so a figure
      on a band or a card reads as a window onto the home's hero. */
   --canvas: #030712;
   --canvas-line: #1e293b; /* a grid line, not a mark */
-  --canvas-axis: #52627a;
-  --canvas-muted: #94a3b8;
+  --canvas-axis: #52627a; /* 3.3:1 on the canvas */
+  --canvas-muted: #94a3b8; /* the ticks' text: 7.9:1 on the canvas */
   --canvas-ink: #030712; /* text on a lit node */
-  --canvas-hi: #ffffff;
-  --canvas-edge: #64748b;
+  --canvas-hi: #ffffff; /* 20.1:1 on the canvas */
+  --canvas-edge: #64748b; /* 4.2:1 on the canvas */
 
   /* Type: paragraphs in the system's sans; headings, eyebrows, labels, nav, buttons, figures and
      code in JetBrains Mono, the one webfont. */
