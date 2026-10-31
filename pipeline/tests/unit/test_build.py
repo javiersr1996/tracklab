@@ -226,6 +226,22 @@ def test_publish_leaves_out_the_files_written_from_a_record(tmp_path: Path) -> N
     assert (publish["files"], publish["bytes"]) == (1, 10)
 
 
+def test_publish_leaves_out_the_euroleague_aggregates(tmp_path: Path) -> None:
+    """P14: /platform's "out" is what the SkillCorner pipeline publishes; the EuroLeague folder
+    comes from another source, so none of it counts. Without the folder rule this counts 3 files."""
+    (tmp_path / "stats.json").write_bytes(b"x" * 10)
+    (tmp_path / "euroleague" / "teams").mkdir(parents=True)
+    (tmp_path / "euroleague" / "league.json").write_bytes(b"x" * 400)
+    (tmp_path / "euroleague" / "teams" / "MAD.json").write_bytes(b"x" * 90)
+    (tmp_path / "learn").mkdir()
+    (tmp_path / "learn" / "euroleague.json").write_bytes(b"x" * 5)
+
+    publish = measure_publish(tmp_path)
+
+    assert [f["path"] for f in publish["watch"]] == ["learn/euroleague.json", "stats.json"]
+    assert (publish["files"], publish["bytes"]) == (2, 15)
+
+
 def test_publish_counts_the_parquet_the_browser_queries(tmp_path: Path) -> None:
     """Decision 10, option C: "out" is what the site watches plus what /warehouse queries.
     Without the `*.parquet` pass the 4,000 bytes below are not counted and this fails."""

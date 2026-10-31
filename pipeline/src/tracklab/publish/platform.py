@@ -177,7 +177,8 @@ def layers_from_record(record: dict[str, Any]) -> list[dict[str, Any]]:
                 "that describe them; as `tracklab build` "
                 "measured them, without lineage.json and platform.json (counting platform.json "
                 "would make the title depend on its own previous value, decision 1); the query "
-                "engine is not data and is not counted"
+                "engine is not data and is not counted, nor is euroleague/, whose source is not "
+                "in the pipeline's raw layer"
             )
         layers.append(entry)
     return layers
