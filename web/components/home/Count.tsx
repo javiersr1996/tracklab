@@ -8,12 +8,21 @@ import { usePrefersReducedMotion } from "../../lib/motion";
 // into view, with an ease-out, and lands on the exact number. It is rendered with that number
 // (the server, a page without JS and `prefers-reduced-motion` all show it and nothing moves),
 // so the figure on the page is always the JSON's. `data-count` says where it is: still (reduced
-// motion), idle (not seen yet), counting, done; the e2e read it.
+// motion), idle (not seen yet), counting, done; the e2e read it. A "num" (task 112) is printed
+// as `String(value)`, the way a lesson prints its figures, and counts with that many decimals.
 const DURATION_MS = 1800;
 
 type Phase = "idle" | "counting" | "done";
 
-export function Count({ value, kind }: { value: number; kind: "int" | "bytes" }) {
+const decimals = (value: number) => (String(value).split(".")[1] ?? "").length;
+
+function format(n: number, value: number, kind: "int" | "bytes" | "num", final: boolean): string {
+  if (kind === "num") return final ? String(value) : n.toFixed(decimals(value));
+  const whole = Math.round(n);
+  return kind === "bytes" ? formatBytes(whole) : whole.toLocaleString("en-US");
+}
+
+export function Count({ value, kind }: { value: number; kind: "int" | "bytes" | "num" }) {
   const reduceMotion = usePrefersReducedMotion();
   const el = useRef<HTMLSpanElement>(null);
   const [phase, setPhase] = useState<Phase>("idle");
@@ -30,7 +39,7 @@ export function Count({ value, kind }: { value: number; kind: "int" | "bytes" })
         const start = performance.now();
         const step = (now: number) => {
           const t = Math.min((now - start) / DURATION_MS, 1);
-          setShown(Math.round(value * (1 - (1 - t) ** 3)));
+          setShown(value * (1 - (1 - t) ** 3));
           if (t < 1) raf = requestAnimationFrame(step);
           else setPhase("done");
         };
@@ -46,10 +55,10 @@ export function Count({ value, kind }: { value: number; kind: "int" | "bytes" })
   }, [reduceMotion, value]);
 
   // The exact number except while counting; a reduced-motion switch mid-count lands it at once.
-  const n = reduceMotion || phase !== "counting" ? value : shown;
+  const final = reduceMotion || phase !== "counting";
   return (
     <span ref={el} data-count={reduceMotion ? "still" : phase}>
-      {kind === "bytes" ? formatBytes(n) : n.toLocaleString("en-US")}
+      {format(final ? value : shown, value, kind, final)}
     </span>
   );
 }

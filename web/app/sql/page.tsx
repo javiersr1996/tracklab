@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Band, PageHead } from "../../components/site/Band";
+import { SketchPanel } from "../../components/site/SketchPanel";
 import { SolvedCount } from "../../components/sql/SolvedCount";
 import { courseLesson, SQL_LESSONS, sqlHref } from "../../lib/sql/course";
 import { sqlMetadata } from "../../lib/sql/metadata";
@@ -22,7 +23,7 @@ const TABLES: Record<string, string> = {
 export default function SqlPage() {
   return (
     <main className="page sql-index">
-      <PageHead eyebrow="Learn SQL">
+      <PageHead eyebrow="Learn SQL" aside={<SketchPanel href="/sql" label="A query, typed" />}>
         <h1>Learn SQL on the warehouse</h1>
         <p className="lede">
           Eight lessons that take you from your first <code>SELECT</code> to window functions and CTEs. Each

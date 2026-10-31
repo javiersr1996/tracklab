@@ -567,6 +567,214 @@ a.wordmark:hover {
   padding-block: var(--band-pad) clamp(2rem, 1.5rem + 2vw, 3.5rem);
 }
 
+/* A head with a panel (task 112): the text, then the panel under the lede, compact; from 1000 px
+   the panel stands beside the text. The panel is a terminal like the home's lit cards: a fine
+   cyan edge, a mono label after a comment's slashes and a soft glow. */
+.page-head-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5) var(--space-7);
+}
+
+.page-head-text > :last-child {
+  margin-bottom: 0;
+}
+
+.head-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-4);
+  background: var(--raised);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 24px -8px var(--neon-glow);
+}
+
+@media (min-width: 1000px) {
+  .page-head-grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: center;
+  }
+
+  .head-panel {
+    gap: var(--space-4);
+    padding: var(--space-5);
+  }
+}
+
+.head-panel-label,
+.head-panel-about-label {
+  margin: 0;
+  font-family: var(--font-neon);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tag);
+}
+
+.head-panel-label::before {
+  content: "// " / ""; /* decorative, like the eyebrow's */
+  color: var(--neon-muted);
+}
+
+/* A lesson's result: the first line large and lit, the others as plain figures. */
+.head-readouts {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.head-readout dt {
+  color: var(--fg-muted);
+}
+
+.head-readout dd {
+  margin: 0;
+  font-family: var(--font-neon);
+  font-size: var(--step-3);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.head-readout-main dd {
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 3rem);
+  letter-spacing: -0.02em;
+  color: var(--neon);
+  text-shadow: 0 0 18px var(--neon-glow);
+}
+
+.head-to,
+.head-unit {
+  font-size: max(1rem, 0.5em);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--fg-muted);
+  text-shadow: none;
+}
+
+.head-panel-about {
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+  color: var(--fg-muted);
+}
+
+.head-panel-about-label {
+  display: block;
+  color: var(--fg);
+}
+
+/* A /sql lesson's worked example, typed: a sunken box of three lines on a phone and twelve from
+   1000 px, scrolled when the query is longer; then its answer. */
+.head-sql {
+  position: relative; /* the caret's offsetTop is measured in the box */
+  max-height: calc(3 * 1.35em + 2 * var(--space-3));
+  margin: 0;
+  padding: var(--space-3);
+  overflow: auto;
+  background: var(--neon-sunken);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 1000px) {
+  .head-sql {
+    max-height: calc(12 * 1.35em + 2 * var(--space-3));
+  }
+}
+
+.head-sql-comment {
+  color: var(--fg-muted);
+}
+
+.head-sql-rest,
+.head-answer-waiting {
+  visibility: hidden; /* typed later: the box keeps its final size from the first paint */
+}
+
+.head-caret {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.15em;
+  margin-bottom: -0.2em;
+  background: var(--neon);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .head-caret {
+    animation: caret-blink 1.1s steps(1) infinite;
+  }
+}
+
+.head-answer {
+  margin: 0;
+  font-family: var(--font-neon);
+  font-size: var(--step-2);
+  font-weight: 700;
+  color: var(--neon);
+  text-shadow: 0 0 14px var(--neon-glow);
+  overflow-wrap: anywhere;
+}
+
+.head-answer-arrow {
+  color: var(--fg-muted);
+  text-shadow: none;
+}
+
+.head-answer-note {
+  margin: 0;
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+
+/* An index's sketch, from the home's card, large beside the text. */
+.head-panel-sketch .pv {
+  height: 7rem;
+}
+
+@media (min-width: 1000px) {
+  .head-panel-sketch .pv {
+    height: 16rem;
+  }
+}
+
+/* Under the lede the panel stays compact, so the first section moves down by about 200 px at
+   390 px at most: no "what you learn" (the index prints it) and no row note, and the second
+   figures on one line with their label. */
+@media (max-width: 999.98px) {
+  .page-head-grid {
+    gap: var(--space-4);
+  }
+
+  .head-panel {
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+
+  .head-panel-about,
+  .head-answer-note {
+    display: none;
+  }
+
+  .head-readout:not(.head-readout-main) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-3);
+  }
+
+  .head-readout:not(.head-readout-main) dd {
+    font-size: var(--step-1);
+  }
+}
+
 /* The sections of a long page, split by a hairline. */
 .wrap > section + section {
   margin-top: var(--space-8);
