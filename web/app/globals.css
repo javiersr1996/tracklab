@@ -7,13 +7,13 @@
 
   /* Colour */
   --neon-bg: #030712; /* the page */
-  --neon-band: #0b1220; /* the alternate band, a step lighter (1.08:1), so the pages keep their rhythm */
+  --neon-band: #151f36; /* the alternate band, lighter (1.23:1, task 112: at 1.08:1 it did not read), so the pages keep their rhythm */
   --neon-raised: #0d1117; /* a card on the page (1.06:1) */
-  --neon-band-raised: #141c2e; /* a card on the band (1.10:1) */
+  --neon-band-raised: #1e2a44; /* a card on the band (1.15:1) */
   --neon-sunken: #01050c;
-  --neon-ink: #e2e8f0; /* 16.3:1 on the page, 15.2:1 on the band, 13.8:1 on a card on the band */
-  --neon-muted: #94a3b8; /* 7.9:1 on the page, 7.3:1 on the band, 6.6:1 on a card on the band */
-  --neon: #00e5ff; /* 13.1:1 on the page, 11.1:1 on a card on the band; as a fill, 13.1:1 under neon-bg */
+  --neon-ink: #e2e8f0; /* 16.3:1 on the page, 13.3:1 on the band, 11.6:1 on a card on the band */
+  --neon-muted: #94a3b8; /* 7.9:1 on the page, 6.4:1 on the band, 5.6:1 on a card on the band */
+  --neon: #00e5ff; /* 13.1:1 on the page, 9.3:1 on a card on the band; as a fill, 13.1:1 under neon-bg */
   --neon-2: #67e8f9; /* the hover of a neon control: 13.9:1 under neon-bg */
   --neon-alt: #ff3ea5; /* the second team or series: a mark, never text (6.2:1 on the canvas) */
   --neon-line: rgba(0, 229, 255, 0.18); /* a hairline, not text */

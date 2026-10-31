@@ -18,6 +18,7 @@ import { COLORS, DIM_ALPHA } from "../lib/replay/render";
 // - `--canvas-axis: #334155`: "marks on the canvas" fails (1.94:1).
 // - The lineage nodes' resting opacity back at 0.8: "marks drawn in TS" fails (frozen's label 4.23:1).
 // - `COLORS.ball` back at #f5c518: "the tokens they name" fails on the replay's ball.
+// - `--neon-band` back at #0b1220: "the alternate band reads as a band" fails (1.08:1).
 
 const css = readFileSync(join(process.cwd(), "app", "globals.css"), "utf-8").replace(/\/\*[\s\S]*?\*\//g, "");
 
@@ -183,5 +184,11 @@ describe("the colour tokens", () => {
     ];
     for (const s of steps) expect(s.ratio).toBeGreaterThan(1);
     console.log(rows.map((r) => `${r.ratio.toFixed(2).padStart(6)}:1  (floor ${r.floor})  ${r.what}`).join("\n"));
+  });
+
+  it("the alternate band reads as a band: 1.2:1 to 1.3:1 on the page (task 112)", () => {
+    const step = contrast(resolve(band, "--bg"), resolve(page, "--bg"));
+    expect(step).toBeGreaterThanOrEqual(1.2);
+    expect(step).toBeLessThanOrEqual(1.3);
   });
 });
