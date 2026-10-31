@@ -400,7 +400,8 @@ test.describe("/learn/gravity, driven through window.__learn", () => {
 });
 
 // Nothing starts by itself: after load, no requestAnimationFrame callback is waiting, and none
-// is scheduled while two frames pass. The init script runs before the page's own scripts.
+// is scheduled while two frames pass. The init script runs before the page's own scripts. The one
+// motion on load is the head panel's count (task 112), which lands in under two seconds: wait for it.
 for (const reducedMotion of ["no-preference", "reduce"] as const) {
   test(`no requestAnimationFrame is active after load (motion: ${reducedMotion})`, async ({ page }) => {
     await page.emulateMedia({ reducedMotion });
@@ -421,6 +422,8 @@ for (const reducedMotion of ["no-preference", "reduce"] as const) {
     });
     await openLesson(page);
     await page.waitForLoadState("networkidle");
+    const counts = page.locator(".head-panel [data-count]");
+    await expect.poll(() => counts.evaluateAll((els) => els.length > 0 && els.every((e) => ["done", "still"].includes(e.getAttribute("data-count") ?? "")))).toBe(true);
     const settled = () =>
       page.evaluate(
         () =>
