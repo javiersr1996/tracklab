@@ -175,7 +175,9 @@ test("the attribution: source, no affiliation, aggregates only, and the removal 
   await expect(page.locator('[data-attribution="aggregates"]')).toContainText(
     `aggregates only: a count of shots, makes and points per hexagon, never a shot, and a hexagon with fewer than ${data.hex.k} shots is dropped`,
   );
-  await expect(page.locator('[data-attribution="removal"]')).toHaveText("Removal requests: contact pending.");
+  const removal = page.locator('[data-attribution="removal"]');
+  await expect(removal).toHaveText("Removal requests: javiersr1996+tracklab@gmail.com.");
+  await expect(removal.locator("a")).toHaveAttribute("href", "mailto:javiersr1996+tracklab@gmail.com");
   // The footer gives EuroLeague its own note; the MIT sentence names SkillCorner's sources only.
   const footer = page.locator(".site-footer");
   await expect(footer.locator('[data-footer-source="euroleague"]')).toContainText("no open license");

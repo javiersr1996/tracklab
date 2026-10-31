@@ -98,6 +98,6 @@ export const DATA_SOURCES = [
 // EuroLeague's game feed, the host the aggregates are computed from (league.json's `source`).
 export const EUROLEAGUE = DATA_SOURCES.find((s) => s.name === "EuroLeague")!;
 
-// Where a removal request for the EuroLeague aggregates goes. Javier decides it (spec, "Abierto");
-// while it is empty the page says the contact is pending.
-export const TAKEDOWN_CONTACT: string = "";
+// Where a removal request for the EuroLeague aggregates goes (Javier's choice at CP14a, 2026-11-01);
+// if it is ever emptied the page says the contact is pending.
+export const TAKEDOWN_CONTACT: string = "javiersr1996+tracklab@gmail.com";
