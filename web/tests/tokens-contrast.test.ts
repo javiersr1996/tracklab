@@ -146,7 +146,7 @@ describe("the colour tokens", () => {
     const at = (h: string, alpha: number): Rgba => [...hex(h).slice(0, 3), alpha] as Rgba;
     const pairs = [
       ...Object.entries(COLORS)
-        .filter(([k]) => !["text", "dimText"].includes(k))
+        .filter(([k]) => !["text", "dimText", "ballEdge"].includes(k))
         .map(([k, c]) => measure(`replay ${k}`, hex(c as string), canvas, 3)),
       measure("quality data's path", at(DATA_COLOR, TRACE_ALPHA), canvas, 3),
       measure("quality standard's path", at(REAL_COLOR, TRACE_ALPHA), canvas, 3),
@@ -166,7 +166,10 @@ describe("the colour tokens", () => {
     for (const team of ["attack", "defence"] as const) {
       const disc = over(at(COLORS[team], DIM_ALPHA), canvas);
       pairs.push(measure(`jersey number of a player not detected, ${team} disc`, hex(COLORS.dimText!), disc, 4.5));
+      // The ball's dark edge against a disc it overlaps, and the ball against its edge.
+      pairs.push(measure(`ball edge on the ${team} disc`, hex(COLORS.ballEdge!), hex(COLORS[team]), 3));
     }
+    pairs.push(measure("ball against its edge", hex(COLORS.ball), hex(COLORS.ballEdge!), 3));
     expect(low(pairs)).toEqual([]);
   });
 

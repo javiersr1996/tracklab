@@ -15,8 +15,9 @@ export const DIM_ALPHA = 0.45;
 // dark on the discs (13.1:1 on cyan, 6.2:1 on magenta). tests/tokens-contrast.test.ts holds them.
 // A player not detected is a disc at 45% over the canvas (cyan 3.3:1, magenta 2.0:1 on it): his
 // number is then white, not faded with the disc (6.2:1 on the cyan one, 10.1:1 on the magenta
-// one; dark faded with it was 1.9:1 and 1.5:1).
-// `null` leaves the number faded with the disc, as drawn before P13.
+// one; dark faded with it was 1.9:1 and 1.5:1). The ball has a thin dark edge (`ballEdge`) so it
+// stands out from a disc it overlaps (13.1:1 against cyan, 6.2:1 against magenta; white alone
+// was 1.5:1 on cyan). `null` for either leaves the mark as it was drawn before P13.
 export interface Palette {
   surface: string;
   attack: string;
@@ -24,6 +25,7 @@ export interface Palette {
   ball: string;
   text: string;
   dimText: string | null;
+  ballEdge: string | null;
 }
 
 export const COLORS: Palette = {
@@ -33,6 +35,7 @@ export const COLORS: Palette = {
   ball: "#ffffff",
   text: "#030712",
   dimText: "#ffffff",
+  ballEdge: "#030712",
 };
 
 // The home's hero (P12): cyan for the team with the ball, magenta for the other, the ball white
@@ -44,6 +47,7 @@ export const NEON_COLORS: Palette = {
   ball: "#ffffff",
   text: "#030712",
   dimText: null,
+  ballEdge: null,
 };
 
 // What a frame is drawn with, beyond the frame itself. Every field is optional and `drawFrame`
@@ -153,11 +157,17 @@ export function drawBall(
   z: number | null,
   color = COLORS.ball,
   markScale = 1,
+  edge: string | null = COLORS.ballEdge,
 ): void {
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(px, py, markScale * (BALL_PX + BALL_PX_PER_M * Math.max(z ?? 0, 0)), 0, 2 * Math.PI);
   ctx.fill();
+  if (edge !== null) {
+    ctx.strokeStyle = edge;
+    ctx.lineWidth = 1.25 * markScale;
+    ctx.stroke();
+  }
 }
 
 // A soft halo under a mark: the same disc, wider and faint.
@@ -277,7 +287,7 @@ export function drawFrame(
   // The ball last, on top.
   if (ball) {
     if (glow) drawGlow(ctx, ball.x, ball.y, BALL_PX * markScale * 3, colors.ball);
-    drawBall(ctx, ball.x, ball.y, ball.z, colors.ball, markScale);
+    drawBall(ctx, ball.x, ball.y, ball.z, colors.ball, markScale, colors.ballEdge);
   }
   return trailed;
 }
