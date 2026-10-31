@@ -5,7 +5,7 @@ import { LESSONS } from "./series";
 
 // The card a link to a lesson unfurls into: the question, "Lesson n · Level" and the mark. No
 // figure of any kind, so the rule that every number comes from an artifact has nothing to check.
-// Satori reads TTF, not WOFF2: SpaceGrotesk-latin-bold.ttf is the committed variable file
+// Satori reads TTF, not WOFF2: SpaceGrotesk-latin-bold.ttf is Space Grotesk's variable file
 // instanced at wght 700 (OFL, app/fonts/OFL.txt), read here at build time and never served.
 export const OG_SIZE = { width: 1200, height: 630 };
 export const OG_TYPE = "image/png";

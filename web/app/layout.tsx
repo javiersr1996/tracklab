@@ -6,18 +6,10 @@ import { Nav } from "../components/site/Nav";
 import { DATA_SOURCES, SITE } from "../lib/sections";
 import "./globals.css";
 
-// Two webfonts, both the Latin subset of a variable file (OFL, see fonts/OFL*.txt) committed in
-// this repo, so the build needs no network and no page asks a font CDN; both are preloaded and
-// count against the 400,000 B page budgets. Space Grotesk: the headings, eyebrows, buttons and big
-// figures of the inner pages, whose body text stays on the system stack. JetBrains Mono: every
-// neon surface (the header, the footer and the home, P12), text and headings alike.
-const display = localFont({
-  src: "./fonts/SpaceGrotesk-latin-variable.woff2",
-  weight: "300 700",
-  variable: "--font-display-face",
-  display: "swap",
-});
-
+// One webfont, the Latin subset of JetBrains Mono's variable file (OFL, fonts/OFL-JetBrainsMono.txt)
+// committed in this repo, so the build needs no network and no page asks a font CDN; it is
+// preloaded and counts against the 400,000 B page budgets. It sets the headings, eyebrows, labels,
+// nav, buttons, figures and code of every page (P12, P13); paragraphs stay on the system stack.
 const mono = localFont({
   src: "./fonts/JetBrainsMono-latin-variable.woff2",
   weight: "100 800",
@@ -32,7 +24,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${mono.variable}`}>
+    <html lang="en" className={mono.variable}>
       <body>
         <header className="site-header surface-neon">
           <div className="wrap site-header-row">

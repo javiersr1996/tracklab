@@ -28,11 +28,9 @@
   --canvas-hi: #ffffff;
   --canvas-edge: #64748b;
 
-  /* Type */
-  --font-display: var(--font-display-face, system-ui), system-ui, sans-serif;
+  /* Type: paragraphs in the system's sans; headings, eyebrows, labels, nav, buttons, figures and
+     code in JetBrains Mono, the one webfont. */
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo, Consolas, monospace;
-  /* The neon surfaces' one face, text and headings alike; the inner pages' code keeps --font-mono. */
   --font-neon: var(--font-mono-face, ui-monospace), ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo,
     Consolas, monospace;
   --step-0: 1rem; /* the floor: no visible text is smaller */
@@ -60,8 +58,8 @@
   --band-pad: clamp(2.5rem, 2rem + 3vw, 5rem);
   --gutter: clamp(1rem, 3vw, 2.5rem);
 
-  /* Shape and width */
-  --radius: 4px;
+  /* Shape and width: near-square corners */
+  --radius: 2px;
   --wrap: 1376px;
   --measure: 880px;
   --control-height: 2.75rem;
@@ -101,26 +99,28 @@
   color: var(--fg);
 }
 
-/* The neon surface (P12): the mono face for headings and buttons too, near-square corners. */
-.surface-neon {
-  --font-display: var(--font-neon);
-  --radius: 2px;
-}
-
-/* Mono where the terminal shows: labels, headings, nav, buttons, figures and code (they read
-   --font-display or this). Paragraphs stay in the sans body stack (task 108). */
-.surface-neon code,
-.surface-neon pre,
-.surface-neon output,
-.surface-neon .site-nav a,
-.surface-neon .site-footer-label,
-.surface-neon .card-tag,
-.surface-neon .figure-value,
-.surface-neon .figures-layer-name,
-.surface-neon .figures-layer-bytes,
-.surface-neon .replay-hero-readout,
-.surface-neon .replay-hero-player,
-.surface-neon .hero-action {
+/* Mono where the terminal shows: labels, figures and the axes' ticks here; headings, eyebrows,
+   buttons and code read --font-neon where they are styled. Paragraphs stay in the sans body stack
+   (task 108). */
+output,
+caption,
+thead th,
+dt,
+.site-nav a,
+.site-footer-label,
+.card-tag,
+.figure-value,
+.figures-layer-name,
+.figures-layer-bytes,
+.replay-hero-readout,
+.replay-hero-player,
+.hero-action,
+.lesson-status,
+.learn-plot-yticks span,
+.learn-plot-xticks span,
+.per-match-axis span,
+.learn-coordinates-yticks span,
+.learn-coordinates-xticks span {
   font-family: var(--font-neon);
 }
 
@@ -152,7 +152,7 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-weight: 600;
   line-height: var(--leading-tight);
   letter-spacing: -0.01em;
@@ -207,7 +207,7 @@ code,
 kbd,
 samp,
 pre {
-  font-family: var(--font-mono);
+  font-family: var(--font-neon);
   font-size: 1em;
 }
 
@@ -247,7 +247,7 @@ textarea {
 }
 
 button {
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-weight: 600;
   line-height: 1.2;
   text-transform: uppercase;
@@ -367,7 +367,7 @@ caption {
 }
 
 .wordmark {
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-size: var(--step-3);
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -589,7 +589,7 @@ a.wordmark:hover {
   align-items: center;
   gap: var(--space-3);
   margin: 0 0 var(--space-4);
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-size: var(--step-0);
   font-weight: 600;
   line-height: var(--leading-snug);
@@ -1092,7 +1092,7 @@ body:has(.home) .site-header::after {
 .card-arrow {
   grid-area: arrow;
   align-self: end;
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-size: var(--step-3);
   line-height: 1;
   color: var(--neon);
@@ -1651,7 +1651,7 @@ body:has(.home) .site-header::after {
 
 .platform-counters dd {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-size: var(--step-2);
   font-weight: 600;
   line-height: var(--leading-snug);
@@ -1698,7 +1698,7 @@ body:has(.home) .site-header::after {
 
 .lineage-node text {
   font-size: 8px;
-  font-family: var(--font-mono);
+  font-family: var(--font-neon);
   fill: var(--canvas-ink);
   pointer-events: none;
 }
@@ -1795,7 +1795,7 @@ body:has(.home) .site-header::after {
   display: block;
   width: 100%;
   margin-bottom: var(--space-3);
-  font-family: var(--font-mono);
+  font-family: var(--font-neon);
 }
 
 .warehouse-buttons {
@@ -1808,7 +1808,7 @@ body:has(.home) .site-header::after {
 
 /* Table names are identifiers: shown as written, in the code face. */
 .warehouse button[data-columns-button] {
-  font-family: var(--font-mono);
+  font-family: var(--font-neon);
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -1973,7 +1973,7 @@ body:has(.home) .site-header::after {
 /* Learn: the index of the series and the pieces every lesson shares. */
 .lesson-meta {
   margin: 0 0 var(--space-3);
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-weight: 500;
   letter-spacing: var(--tracking-button);
   text-transform: uppercase;
@@ -2488,7 +2488,7 @@ body:has(.home) .site-header::after {
   display: block;
   width: 100%;
   margin-bottom: var(--space-3);
-  font-family: var(--font-mono);
+  font-family: var(--font-neon);
 }
 
 .sql-exercise-buttons {
