@@ -98,7 +98,7 @@ export function Timeline({ timelines }: { timelines: Record<Sport, TimelineData>
         <Fig name="learn.timeline.exp_beyond2_pct">{readout.exp_beyond2_pct}</Fig>&nbsp;% for the exponential.
       </p>
       <figcaption>
-        Times are the video&apos;s, from a unit&apos;s first frame to its last, so a stoppage inside it counts. The orange curve
+        Times are the video&apos;s, from a unit&apos;s first frame to its last, so a stoppage inside it counts. The cyan curve
         steps down as each unit ends; the dashed one is what a constant chance per second of the ball changing hands would give,
         fitted only by its median.
       </figcaption>

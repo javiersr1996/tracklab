@@ -84,7 +84,7 @@ export function Compass({ clips }: { clips: readonly ClipFacing[] }) {
   const sweep = fr.relative > 0 ? 0 : 1; // anticlockwise on the pitch is anticlockwise on screen
 
   // The rose: bins of BIN_DEG centred on multiples of it, straight ahead at the top, positive
-  // relative angles anticlockwise; the mean resultant vector in white, this frame's angle in blue.
+  // relative angles anticlockwise; the mean resultant vector in white, this frame's angle in magenta.
   const counts = Array.from({ length: BINS }, () => 0);
   for (const x of frames) counts[(((Math.floor((x.relative + BIN_DEG / 2) / BIN_DEG) % BINS) + BINS) % BINS)]++;
   const top = Math.max(...counts);
