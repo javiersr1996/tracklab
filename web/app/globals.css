@@ -31,9 +31,9 @@
   /* The shot atlas of /euroleague (task 116): a hexagon's tone against the league, cyan above,
      magenta below, slate within the cut points. Marks on the canvas, never text. */
   --el-hi: var(--neon); /* 13.1:1 on the canvas */
-  --el-up: #0e8fa3; /* 5.3:1 */
+  --el-up: #0e8fa3; /* 5.3:1; 4.3:1 on the band */
   --el-mid: var(--canvas-edge); /* 4.2:1 */
-  --el-down: #b8357c; /* 3.7:1 */
+  --el-down: #bc3780; /* 3.8:1; 3.1:1 on the band, where the legend's swatch sits */
   --el-lo: var(--neon-alt); /* 6.2:1 */
 
   /* Type: paragraphs in the system's sans; headings, eyebrows, labels, nav, buttons, figures and

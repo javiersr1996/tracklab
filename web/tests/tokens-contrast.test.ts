@@ -178,9 +178,10 @@ describe("the colour tokens", () => {
 
   it("the shot atlas of /euroleague: its tones, its court and its bars (task 116)", () => {
     const canvas = resolve(page, "--canvas");
-    const pairs = ["--el-hi", "--el-up", "--el-mid", "--el-down", "--el-lo"].map((t) =>
-      measure(`hexagon ${t} on --canvas`, resolve(page, t), canvas, 3),
-    );
+    const tones = ["--el-hi", "--el-up", "--el-mid", "--el-down", "--el-lo"];
+    const pairs = tones.map((t) => measure(`hexagon ${t} on --canvas`, resolve(page, t), canvas, 3));
+    // The legend's swatches sit on the dark band, not on the canvas.
+    for (const t of tones) pairs.push(measure(`swatch ${t} on the band`, resolve(band, t), resolve(band, "--bg"), 3));
     pairs.push(measure("the court's lines (--neon-line-strong on --canvas)", resolve(page, "--neon-line-strong"), canvas, 3));
     pairs.push(measure("the active hexagon's edge (--canvas-hi) on --canvas", resolve(page, "--canvas-hi"), canvas, 3));
     // The strip's bars sit in a team card on the page; each share is printed on its own segment.
