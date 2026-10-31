@@ -28,6 +28,8 @@ from tracklab.bronze.football.events import build_events as build_football_event
 from tracklab.bronze.football.meta import build_meta as build_football_meta
 from tracklab.bronze.football.tracking import build_tracking as build_football_tracking
 from tracklab.build import default_record_dir, run_build
+from tracklab.euroleague.aggregates import SEASONS as EUROLEAGUE_SEASONS
+from tracklab.euroleague.aggregates import run_euroleague_publish
 from tracklab.euroleague.fetch import run_euroleague_fetch
 from tracklab.fixtures import run_fixtures
 from tracklab.formats.basketball import freeze_basketball
@@ -366,6 +368,11 @@ def _cmd_sql_course(args: argparse.Namespace) -> int:
 
 def _cmd_euroleague_fetch(args: argparse.Namespace) -> int:
     return run_euroleague_fetch(args.season, args.data_dir)
+
+
+def _cmd_euroleague_publish(args: argparse.Namespace) -> int:
+    seasons = args.season or list(EUROLEAGUE_SEASONS)
+    return run_euroleague_publish(args.data_dir, args.out_dir, seasons, check=args.check)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -1527,6 +1534,35 @@ def build_parser() -> argparse.ArgumentParser:
         "--data-dir", type=Path, default=data_root(), help="Data root (default: data)."
     )
     euroleague_fetch.set_defaults(func=_cmd_euroleague_fetch)
+
+    euroleague_publish = euroleague_sub.add_parser(
+        "publish",
+        help="Write the aggregates of the downloaded games to <out>/euroleague/: league.json "
+        "and teams/<CODE>.json (hexagons of 1.0 m with k = 5, players with 100 shots or more, "
+        "the attempt mix by season); never a shot.",
+    )
+    euroleague_publish.add_argument(
+        "--season",
+        action="append",
+        default=None,
+        help="Season code; repeat for several (default: E2025 and E2026).",
+    )
+    euroleague_publish.add_argument(
+        "--data-dir", type=Path, default=data_root(), help="Data root (default: data)."
+    )
+    euroleague_publish.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where euroleague/ goes (default: ../web/public/data).",
+    )
+    euroleague_publish.add_argument(
+        "--check",
+        action="store_true",
+        help="Recompute in memory and compare with the files on disk; write nothing. PARTIAL "
+        "without downloaded data.",
+    )
+    euroleague_publish.set_defaults(func=_cmd_euroleague_publish)
 
     return parser
 
