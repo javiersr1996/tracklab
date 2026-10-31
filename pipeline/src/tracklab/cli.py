@@ -31,6 +31,7 @@ from tracklab.build import default_record_dir, run_build
 from tracklab.euroleague.aggregates import SEASONS as EUROLEAGUE_SEASONS
 from tracklab.euroleague.aggregates import run_euroleague_publish
 from tracklab.euroleague.fetch import run_euroleague_fetch
+from tracklab.euroleague.sweep import run_euroleague_sweep
 from tracklab.fixtures import run_fixtures
 from tracklab.formats.basketball import freeze_basketball
 from tracklab.formats.football_report import freeze_football
@@ -373,6 +374,12 @@ def _cmd_euroleague_fetch(args: argparse.Namespace) -> int:
 def _cmd_euroleague_publish(args: argparse.Namespace) -> int:
     seasons = args.season or list(EUROLEAGUE_SEASONS)
     return run_euroleague_publish(args.data_dir, args.out_dir, seasons, check=args.check)
+
+
+def _cmd_euroleague_sweep(args: argparse.Namespace) -> int:
+    return run_euroleague_sweep(
+        args.data_dir, args.web_dir, args.season or list(EUROLEAGUE_SEASONS)
+    )
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -1563,6 +1570,27 @@ def build_parser() -> argparse.ArgumentParser:
         "without downloaded data.",
     )
     euroleague_publish.set_defaults(func=_cmd_euroleague_publish)
+
+    euroleague_sweep = euroleague_sub.add_parser(
+        "sweep",
+        help="After `next build`: look for the UTC of 200 real shots (fixed seed) in web/.next, "
+        "web/public and every *.map; one hit fails, and so do browser source maps in "
+        "next.config.ts. PARTIAL without downloaded data or without web/.next.",
+    )
+    euroleague_sweep.add_argument(
+        "--season",
+        action="append",
+        default=None,
+        help="Season code; repeat for several (default: E2025 and E2026).",
+    )
+    euroleague_sweep.add_argument(
+        "--data-dir", type=Path, default=data_root(), help="Data root (default: data)."
+    )
+    euroleague_sweep.add_argument(
+        "--web-dir", type=Path, default=Path("../web"), help="The web app (default: ../web)."
+    )
+    # Always a check: under TRACKLAB_REQUIRE_FULL its PARTIAL fails, like every --check.
+    euroleague_sweep.set_defaults(func=_cmd_euroleague_sweep, check=True)
 
     return parser
 
