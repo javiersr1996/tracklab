@@ -41,7 +41,15 @@ const frac = (num: ReactNode, den: ReactNode) => (
 export function Lesson({ sql }: { sql: string }) {
   return (
     <main className="page lesson learn-dribble">
-      <LessonHead n={9} title="How many bounces per second?" level="Intermediate">
+      <LessonHead
+        n={9}
+        title="How many bounces per second?"
+        level="Intermediate"
+        result={[
+          { label: "Bounces per second, per match", values: [F.rate_lo, F.rate_hi] },
+          { label: "Median time between two dribbles", values: [F.med_lo, F.med_hi], unit: "s" },
+        ]}
+      >
         <p className="lede">
           The provider&apos;s events list every dribble with its frame, and the tracking gives the ball&apos;s height at every
           frame: two witnesses of one rhythm. Match by match, the median time between two dribbles of a touch is {l("med_lo")} to{" "}

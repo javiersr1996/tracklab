@@ -57,7 +57,15 @@ const norm = (inner: ReactNode) => (
 export function Lesson({ sql }: { sql: string }) {
   return (
     <main className="page lesson learn-pass">
-      <LessonHead n={7} title="How fast does a pass travel?" level="Intermediate">
+      <LessonHead
+        n={7}
+        title="How fast does a pass travel?"
+        level="Intermediate"
+        result={[
+          { label: "Median pass by the ball, per match", values: [F.chord_lo, F.chord_hi], unit: "m/s" },
+          { label: "By the provider's distance", values: [F.dist_lo, F.dist_hi], unit: "m/s" },
+        ]}
+      >
         <p className="lede">
           The provider&apos;s passes come with a distance and two frames, so a pass&apos;s speed looks one division away. But that
           distance is the gap between passer and receiver when the pass starts, and the ball covers only {l("share_lo")} to{" "}

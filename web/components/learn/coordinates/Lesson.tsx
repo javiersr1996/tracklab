@@ -84,7 +84,15 @@ export function Lesson({ sql }: { sql: string }) {
   const jersey = (stem: string, k: number) => pf(stem, `entities.${possession(stem).entities.findIndex((e) => e.i === views[k].highlight)}.jersey`);
   return (
     <main className="page lesson learn-coordinates">
-      <LessonHead n={3} title="Can a court and a pitch share one table?" level="Foundations">
+      <LessonHead
+        n={3}
+        title="Can a court and a pitch share one table?"
+        level="Foundations"
+        result={[
+          { label: "One basketball frame", values: [F.step_bb_ms], unit: "ms" },
+          { label: "One football frame", values: [F.step_fb_ms], unit: "ms" },
+        ]}
+      >
         <p className="lede">
           A basketball court arrives in feet and a football pitch in metres; one clock ticks every {l("step_bb_ms")}&nbsp;ms,
           the other every {l("step_fb_ms")}. Track Lab keeps both in one table and reads either with the same query. A

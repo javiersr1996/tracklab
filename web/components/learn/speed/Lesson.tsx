@@ -74,7 +74,12 @@ const xn = (shift: ReactNode) => (
 export function Lesson({ sql }: { sql: string }) {
   return (
     <main className="page lesson learn-speed">
-      <LessonHead n={2} title="Where does the provider's speed come from?" level="Foundations">
+      <LessonHead
+        n={2}
+        title="Where does the provider's speed come from?"
+        level="Foundations"
+        result={[{ label: "Median gap to a centred difference", values: [F.gap_lo, F.gap_hi], unit: "m/s" }]}
+      >
         <p className="lede">
           SkillCorner&apos;s basketball files give every player a speed in every frame, next to the position. Put it beside
           the simplest centred difference of the same positions and the two agree to within {l("gap_lo")} to{" "}

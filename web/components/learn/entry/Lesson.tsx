@@ -51,7 +51,15 @@ const sq = (x: ReactNode) => (
 export function Lesson({ script }: { script: string }) {
   return (
     <main className="page lesson learn-entry">
-      <LessonHead n={8} title="At what angle does the ball reach the rim?" level="Intermediate">
+      <LessonHead
+        n={8}
+        title="At what angle does the ball reach the rim?"
+        level="Intermediate"
+        result={[
+          { label: "Gap, reported to required angle", values: [F.gap_lo, F.gap_hi], unit: "°" },
+          { label: "Gap on a perfect flight", values: [F.method_gap], unit: "°" },
+        ]}
+      >
         <p className="lede">
           A made shot drops into the rim at an angle, and the quality checks work it out twice for every one: from the heights the
           file reports near the rim, and from the flight the geometry requires to get there. Over ten matches the reported angle
