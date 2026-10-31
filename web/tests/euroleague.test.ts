@@ -159,8 +159,8 @@ describe("against the league", () => {
     expect(toneOf(-0.029, "fg")).toBe("mid");
     expect(toneOf(-0.03, "fg")).toBe("down");
     expect(toneOf(-0.1, "fg")).toBe("lo");
-    // 0.03 stored as 0.030000000000000002 after arithmetic still reads as the JSON's 0.03.
-    expect(toneOf(0.1 + 0.2 - 0.27, "fg")).toBe("up");
+    // 0.59 - 0.56 is 0.029999999999999916 in floating point: on the JSON's grid it is 0.03, "up".
+    expect(toneOf(0.59 - 0.56, "fg")).toBe("up");
     expect(toneOf(0.2, "pps")).toBe("hi");
     expect(toneOf(-0.05, "pps")).toBe("down");
   });
