@@ -37,8 +37,8 @@ describe("isCurrent", () => {
     expect(isCurrent("/", "/learn")).toBe(false);
   });
 
-  it("makes Learn the seventh section, SQL the eighth (P12)", () => {
-    expect(SECTIONS).toHaveLength(8);
-    expect(SECTIONS.map((s) => s.href).slice(-2)).toEqual(["/learn", "/sql"]);
+  it("makes Learn the seventh section, SQL the eighth (P12) and EuroLeague the ninth (P14)", () => {
+    expect(SECTIONS).toHaveLength(9);
+    expect(SECTIONS.map((s) => s.href).slice(-3)).toEqual(["/learn", "/sql", "/euroleague"]);
   });
 });

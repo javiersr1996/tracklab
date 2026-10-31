@@ -66,6 +66,9 @@ DBT_DURATION_KEY = "Execution Duration"
 SCHEMA_VERSION = 1
 # Not written by the job: they describe the platform, not its data (module docstring).
 ABOUT_PLATFORM = frozenset({LINEAGE_JSON, PLATFORM_JSON})
+# Not SkillCorner's: `tracklab euroleague publish` writes this folder from another source that the
+# pipeline's "in" never reads, so its aggregates are not part of what the pipeline publishes (P14).
+NOT_THE_PIPELINE = frozenset({"euroleague"})
 
 
 def default_record_dir() -> Path:
@@ -374,12 +377,14 @@ def serves_query(name: str) -> bool:
 def measure_publish(web_data_dir: Path) -> dict[str, Any]:
     """What `web/public/data` publishes, split by use (task 41; decision 10, option C): what the
     site watches and what `/warehouse` queries (`serves_query`). `lineage.json` and
-    `platform.json` are left out by name at any depth, the Parquet are not."""
+    `platform.json` are left out by name at any depth, the Parquet are not, and so is the
+    top-level `euroleague/` folder (`NOT_THE_PIPELINE`), whose source is not in the "in"."""
     paths = sorted(
         path
         for pattern in ("*.json", "*.parquet")
         for path in web_data_dir.rglob(pattern)
         if path.name not in ABOUT_PLATFORM
+        and path.relative_to(web_data_dir).parts[0] not in NOT_THE_PIPELINE
     )
 
     def listing(to_query: bool) -> list[dict[str, Any]]:

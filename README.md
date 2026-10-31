@@ -290,6 +290,23 @@ URL, so neither `git-lfs` nor a clone is needed. `GITHUB_TOKEN`, if set, is used
 Windows checkout turned its line endings into CRLF, the message says so and names
 `core.autocrlf`.
 
+## EuroLeague
+
+The EuroLeague game files have no open license, so the site gets aggregates only: hexagon counts
+with a minimum of shots per cell, never a shot (`docs/superpowers/specs/2026-10-31-euroleague-design.md`,
+`docs/euroleague-probe.md`). The download stays under the data root, out of git. From `pipeline/`:
+
+```
+uv run tracklab euroleague fetch --season E2025 --season E2026   # new games only, to data/euroleague/raw
+uv run tracklab euroleague publish                                # web/public/data/euroleague/
+uv run pytest tests/publish/test_euroleague_guard.py              # the guard of those files
+(cd ../web && npm run build) && uv run tracklab euroleague sweep
+```
+
+`sweep` looks for the UTC of a fixed sample of real shots in `web/.next`, `web/public` and every
+`*.map`; one hit, or browser source maps switched on in `web/next.config.ts`, fails it. Without the
+downloaded data (CI) it says PARTIAL and passes, and with `TRACKLAB_REQUIRE_FULL=1` it fails.
+
 ## Data and license
 
 The code is MIT ([`LICENSE`](LICENSE)). The data is SkillCorner's open data, published under the

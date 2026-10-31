@@ -3,7 +3,7 @@ import { LESSONS, lessonHref } from "../lib/learn/series";
 import { SECTIONS, SITE } from "../lib/sections";
 import { SQL_LESSONS, sqlHref } from "../lib/sql/course";
 
-// The home page, the seven sections, every published lesson (a lesson in preparation has no
+// The home page, the nine sections, every published lesson (a lesson in preparation has no
 // page), and the SQL course with its eight lessons.
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [

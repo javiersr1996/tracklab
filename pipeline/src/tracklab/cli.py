@@ -28,6 +28,10 @@ from tracklab.bronze.football.events import build_events as build_football_event
 from tracklab.bronze.football.meta import build_meta as build_football_meta
 from tracklab.bronze.football.tracking import build_tracking as build_football_tracking
 from tracklab.build import default_record_dir, run_build
+from tracklab.euroleague.aggregates import SEASONS as EUROLEAGUE_SEASONS
+from tracklab.euroleague.aggregates import run_euroleague_publish
+from tracklab.euroleague.fetch import run_euroleague_fetch
+from tracklab.euroleague.sweep import run_euroleague_sweep
 from tracklab.fixtures import run_fixtures
 from tracklab.formats.basketball import freeze_basketball
 from tracklab.formats.football_report import freeze_football
@@ -361,6 +365,21 @@ def _cmd_learn_browser(args: argparse.Namespace) -> int:
 
 def _cmd_sql_course(args: argparse.Namespace) -> int:
     return run_sql_course(args.public, check=args.check)
+
+
+def _cmd_euroleague_fetch(args: argparse.Namespace) -> int:
+    return run_euroleague_fetch(args.season, args.data_dir)
+
+
+def _cmd_euroleague_publish(args: argparse.Namespace) -> int:
+    seasons = args.season or list(EUROLEAGUE_SEASONS)
+    return run_euroleague_publish(args.data_dir, args.out_dir, seasons, check=args.check)
+
+
+def _cmd_euroleague_sweep(args: argparse.Namespace) -> int:
+    return run_euroleague_sweep(
+        args.data_dir, args.web_dir, args.season or list(EUROLEAGUE_SEASONS)
+    )
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -1502,6 +1521,76 @@ def build_parser() -> argparse.ArgumentParser:
         "(default: $TRACKLAB_DATA_ROOT/build, else data/build; ignored by git).",
     )
     build.set_defaults(func=_cmd_build)
+
+    euroleague = subparsers.add_parser(
+        "euroleague", help="P14: EuroLeague game files (kept under the data root, never in git)."
+    )
+    euroleague_sub = euroleague.add_subparsers(dest="euroleague_command", required=True)
+    euroleague_fetch = euroleague_sub.add_parser(
+        "fetch",
+        help="Download Points, PlaybyPlay and Boxscore of every played game, incrementally, "
+        "at one request every 2 s; writes euroleague/raw/<season>/manifest.json.",
+    )
+    euroleague_fetch.add_argument(
+        "--season",
+        action="append",
+        required=True,
+        help="Season code, e.g. E2025; repeat the flag for several.",
+    )
+    euroleague_fetch.add_argument(
+        "--data-dir", type=Path, default=data_root(), help="Data root (default: data)."
+    )
+    euroleague_fetch.set_defaults(func=_cmd_euroleague_fetch)
+
+    euroleague_publish = euroleague_sub.add_parser(
+        "publish",
+        help="Write the aggregates of the downloaded games to <out>/euroleague/: league.json "
+        "and teams/<CODE>.json (hexagons of 1.0 m with k = 5, players with 100 shots or more, "
+        "the attempt mix by season); never a shot.",
+    )
+    euroleague_publish.add_argument(
+        "--season",
+        action="append",
+        default=None,
+        help="Season code; repeat for several (default: E2025 and E2026).",
+    )
+    euroleague_publish.add_argument(
+        "--data-dir", type=Path, default=data_root(), help="Data root (default: data)."
+    )
+    euroleague_publish.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where euroleague/ goes (default: ../web/public/data).",
+    )
+    euroleague_publish.add_argument(
+        "--check",
+        action="store_true",
+        help="Recompute in memory and compare with the files on disk; write nothing. PARTIAL "
+        "without downloaded data.",
+    )
+    euroleague_publish.set_defaults(func=_cmd_euroleague_publish)
+
+    euroleague_sweep = euroleague_sub.add_parser(
+        "sweep",
+        help="After `next build`: look for the UTC of 200 real shots (fixed seed) in web/.next, "
+        "web/public and every *.map; one hit fails, and so do browser source maps in "
+        "next.config.ts. PARTIAL without downloaded data or without web/.next.",
+    )
+    euroleague_sweep.add_argument(
+        "--season",
+        action="append",
+        default=None,
+        help="Season code; repeat for several (default: E2025 and E2026).",
+    )
+    euroleague_sweep.add_argument(
+        "--data-dir", type=Path, default=data_root(), help="Data root (default: data)."
+    )
+    euroleague_sweep.add_argument(
+        "--web-dir", type=Path, default=Path("../web"), help="The web app (default: ../web)."
+    )
+    # Always a check: under TRACKLAB_REQUIRE_FULL its PARTIAL fails, like every --check.
+    euroleague_sweep.set_defaults(func=_cmd_euroleague_sweep, check=True)
 
     return parser
 

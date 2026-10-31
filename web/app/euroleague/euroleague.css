@@ -1,0 +1,373 @@
+/* /euroleague (P14, task 116): loaded by that page only, so no other page pays for it. The tones'
+   tokens (--el-*) stay in globals.css, where the home's sketch and tests/tokens-contrast.test.ts read
+   them. */
+
+/* The head panel: the league in each season, a small table. */
+.el-panel-table {
+  width: 100%;
+  font-family: var(--font-neon);
+}
+
+.el-panel-table th,
+.el-panel-table td {
+  padding: var(--space-1) var(--space-2);
+  text-align: right;
+}
+
+.el-panel-table th[scope="row"] {
+  padding-left: 0;
+  text-align: left;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.el-panel-table td {
+  color: var(--fg-strong);
+  white-space: nowrap;
+}
+
+.el-panel-sofar {
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.el-panel-main td {
+  font-size: var(--step-3);
+  font-weight: 700;
+  color: var(--neon);
+  text-shadow: 0 0 14px var(--neon-glow);
+}
+
+/* The atlas: controls, the court and the readout in one column; from 1000 px the court on the
+   left and the rest beside it. */
+.el-atlas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+@media (min-width: 1000px) {
+  .el-atlas {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:
+      "court controls"
+      "court side";
+    grid-template-rows: auto 1fr;
+    gap: var(--space-5) var(--space-7);
+  }
+
+  .el-controls {
+    grid-area: controls;
+  }
+
+  .el-court-figure {
+    grid-area: court;
+  }
+
+  .el-side {
+    grid-area: side;
+  }
+}
+
+.el-controls,
+.el-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.el-seasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.el-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.el-field select {
+  width: 100%;
+  color: var(--fg);
+}
+
+.el-controls p {
+  margin: 0;
+}
+
+.el-status:empty {
+  display: none;
+}
+
+.el-note {
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--neon);
+  color: var(--fg-muted);
+}
+
+.el-court-figure {
+  margin: 0;
+  min-width: 0;
+}
+
+.el-court {
+  background: var(--canvas);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.el-court:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.el-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* The court's lines: FIBA's, in the control edge's cyan (3.7:1 or more), lit softly. */
+.el-lines {
+  pointer-events: none;
+  filter: drop-shadow(0 0 3px var(--neon-glow));
+}
+
+.el-lines path,
+.el-lines circle {
+  fill: none;
+  stroke: var(--neon-line-strong);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.el-lines .el-lines-dashed {
+  stroke-dasharray: 6 6;
+}
+
+.el-hexes {
+  pointer-events: none;
+}
+
+.el-hex {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.el-tone[data-tone="hi"] {
+  fill: var(--el-hi);
+}
+
+.el-tone[data-tone="up"] {
+  fill: var(--el-up);
+}
+
+.el-tone[data-tone="mid"] {
+  fill: var(--el-mid);
+}
+
+.el-tone[data-tone="down"] {
+  fill: var(--el-down);
+}
+
+.el-tone[data-tone="lo"] {
+  fill: var(--el-lo);
+}
+
+.el-hex-active {
+  fill: none;
+  stroke: var(--canvas-hi);
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+/* Each selection's hexagons come in from the hoop outwards, where motion is welcome. */
+@media (prefers-reduced-motion: no-preference) {
+  .el-hex {
+    animation: el-hex-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--i) * 20ms);
+  }
+}
+
+@keyframes el-hex-in {
+  from {
+    opacity: 0;
+    scale: 0.3;
+  }
+}
+
+.el-caption {
+  margin-top: var(--space-3);
+  color: var(--fg-muted);
+}
+
+/* The readout: a terminal like the head panel, its main line lit. */
+.el-readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: 7.5rem;
+  padding: var(--space-4);
+  background: var(--raised);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 24px -8px var(--neon-glow);
+  color: var(--fg);
+}
+
+.el-readout-where,
+.el-readout-hint {
+  color: var(--fg-muted);
+}
+
+.el-readout-hint {
+  font-family: var(--font-body);
+}
+
+.el-readout-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+  font-size: var(--step-3);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  color: var(--neon);
+  text-shadow: 0 0 14px var(--neon-glow);
+}
+
+.el-legend p {
+  margin: 0 0 var(--space-2);
+}
+
+.el-legend-label {
+  margin-right: var(--space-2);
+  font-family: var(--font-neon);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tag);
+}
+
+.el-legend-tones {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.el-legend-tones li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.el-swatch {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* What has changed: a card per team, one column on a phone, two from 640 px, three from 1000. */
+.el-changes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .el-changes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .el-changes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.el-change {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: none; /* .band li keeps prose at --measure; a card is not prose */
+  padding: var(--space-3) var(--space-4);
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.el-change[data-selected] {
+  border-color: var(--neon);
+  box-shadow: 0 0 24px -6px var(--neon-glow);
+}
+
+.el-change-name {
+  margin: 0;
+  font-size: var(--step-1);
+}
+
+.el-change p {
+  margin: 0;
+  color: var(--fg-muted);
+}
+
+.el-change .el-change-delta {
+  font-family: var(--font-neon);
+  color: var(--tag);
+}
+
+.el-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.el-bar-season {
+  flex: none;
+  width: 5ch;
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.el-bar {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+  height: 1.625rem;
+}
+
+.el-seg {
+  display: flex;
+  flex-basis: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--font-neon);
+  font-weight: 600;
+  color: var(--canvas-ink);
+}
+
+.el-seg[data-zone="rim"] {
+  background: var(--canvas-hi);
+}
+
+.el-seg[data-zone="mid"] {
+  background: var(--canvas-muted);
+}
+
+.el-seg[data-zone="three"] {
+  background: var(--neon);
+}

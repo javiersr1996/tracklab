@@ -28,6 +28,13 @@
   --canvas-ink: #030712; /* text on a lit node */
   --canvas-hi: #ffffff; /* 20.1:1 on the canvas */
   --canvas-edge: #64748b; /* 4.2:1 on the canvas */
+  /* The shot atlas of /euroleague (task 116): a hexagon's tone against the league, cyan above,
+     magenta below, slate within the cut points. Marks on the canvas, never text. */
+  --el-hi: var(--neon); /* 13.1:1 on the canvas */
+  --el-up: #0e8fa3; /* 5.3:1; 4.3:1 on the band */
+  --el-mid: var(--canvas-edge); /* 4.2:1 */
+  --el-down: #bc3780; /* 3.8:1; 3.1:1 on the band, where the legend's swatch sits */
+  --el-lo: var(--neon-alt); /* 6.2:1 */
 
   /* Type: paragraphs in the system's sans; headings, eyebrows, labels, nav, buttons, figures and
      code in JetBrains Mono, the one webfont. */
@@ -457,8 +464,8 @@ a.wordmark:hover {
   color: var(--fg-muted);
 }
 
-/* Bracketed, terminal style, where eight links fit in two rows or fewer; a phone drops the
-   brackets and keeps the two rows. */
+/* Bracketed, terminal style, where nine links fit in two rows or fewer; a phone drops the
+   brackets and wraps them in three rows (P14). */
 @media (min-width: 40rem) {
   .site-nav ul {
     gap: 0 var(--space-5);
@@ -1231,6 +1238,23 @@ body:has(.home) .site-header::after {
   }
 }
 
+/* The ninth card (P14) takes a row of its own from 640 px, where the eight others fill theirs,
+   with its sketch beside the text; wider than --measure, so it lifts `.band li`'s cap, which a
+   bare `.card` does not outrank. */
+@media (min-width: 640px) {
+  .card[data-section="/euroleague"] {
+    grid-column: 1 / -1;
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "tag preview"
+      "title preview"
+      "about preview"
+      "arrow preview";
+  }
+}
+
 /* The whole card is the link's target; the link's own text stays its name. */
 .card {
   position: relative;
@@ -1472,6 +1496,23 @@ body:has(.home) .site-header::after {
   fill: var(--neon);
 }
 
+.pv-hex {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.pv-hex-hi {
+  fill: var(--el-hi);
+}
+
+.pv-hex-mid {
+  fill: var(--el-mid);
+}
+
+.pv-hex-lo {
+  fill: var(--el-lo);
+}
+
 /* Every sketch moves only where motion is welcome; still, each shows its last frame above. */
 @media (prefers-reduced-motion: no-preference) {
   .pv-mark-a {
@@ -1542,6 +1583,24 @@ body:has(.home) .site-header::after {
 
   .pv-cursor {
     animation: caret-blink 1s steps(1) infinite;
+  }
+
+  .pv-hex {
+    animation: pv-hex 3.2s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.3s);
+  }
+}
+
+@keyframes pv-hex {
+  0%,
+  100% {
+    opacity: 0.35;
+    scale: 0.6;
+  }
+
+  40% {
+    opacity: 1;
+    scale: 1;
   }
 }
 
