@@ -10,6 +10,8 @@ import type { Joints, PlayerAt, PoseClip, PoseFrame } from "./types";
 // file's own x and y, never the tracking's.
 
 export const SIDE_COLORS = { home: COLORS.attack, away: COLORS.defence };
+// The followed player's ring: white (--canvas-hi, 20.1:1 on the canvas), not the discs' dark text.
+export const RING_COLOR = "#ffffff";
 
 // A joint's p90_mae in three bands cut at the clip's own median and 90th percentile (cm), read
 // from `coverage.p90_mae_cm`; the further the band, the fainter the joint and its bones.
@@ -150,7 +152,7 @@ export function drawPitch(
   const ring = frame.p.find((e) => e[0] === followed);
   if (ring) {
     const [px, py] = pixel(ring[1] / 100, ring[2] / 100);
-    ctx.strokeStyle = COLORS.text;
+    ctx.strokeStyle = RING_COLOR;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(px, py, RING_PX, 0, 2 * Math.PI);

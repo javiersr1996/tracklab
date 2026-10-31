@@ -7,12 +7,16 @@ const PLAYER_PX = 9;
 const BALL_PX = 4;
 const BALL_PX_PER_M = 1.5;
 
+// P1's palette in the site's neon (P13), each a token of globals.css, with its WCAG ratio on the
+// canvas (#030712): the markings --canvas-muted (7.9:1), the team with the ball --neon (13.1:1),
+// the other --neon-alt (6.2:1), the ball --canvas-hi (20.1:1); the jersey numbers --canvas-ink,
+// dark on the discs (13.1:1 on cyan, 6.2:1 on magenta). tests/tokens-contrast.test.ts holds them.
 export const COLORS = {
-  surface: "#9aa4ad",
-  attack: "#e8702a",
-  defence: "#2a6fe8",
-  ball: "#f5c518",
-  text: "#ffffff",
+  surface: "#94a3b8",
+  attack: "#00e5ff",
+  defence: "#ff3ea5",
+  ball: "#ffffff",
+  text: "#030712",
 };
 
 // The home's hero (P12): cyan for the team with the ball, magenta for the other, the ball white

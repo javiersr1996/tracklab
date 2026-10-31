@@ -1721,7 +1721,7 @@ body:has(.home) .site-header::after {
 }
 
 .lineage-nodes .lineage-node:not([data-selected]):not([data-lit]) rect {
-  opacity: 0.8; /* resting: node text >= 5.0:1, node vs canvas >= 3.8:1 */
+  opacity: 0.85; /* resting: node text and node vs canvas >= 4.7:1 (magenta, the darkest fill) */
 }
 
 .lineage-edges path {

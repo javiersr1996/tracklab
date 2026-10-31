@@ -1,6 +1,12 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { MARKS } from "../components/learn/coordinates/FrameFigure";
+import { EXTERNAL_EDGE, SCHEMA_COLOR } from "../components/platform/Lineage";
+import { BASE_COLOR, DATA_COLOR, REAL_COLOR, TRACE_ALPHA } from "../components/quality/Hook";
+import { MARKER_COLOR, OTHER_COLOR } from "../components/runs/Hook";
+import { RING_COLOR } from "../lib/pose/render";
+import { COLORS } from "../lib/replay/render";
 
 // The colour tokens of globals.css (P13, task 109), read from the file and resolved the way the
 // cascade resolves them: the palette in `:root`, the slots in `:root, .surface-neon`, and what the
@@ -10,6 +16,8 @@ import { describe, expect, it } from "vitest";
 // Mutations checked by hand, each restored byte for byte:
 // - `--neon-muted: #4b5563`: "text" fails (2.66:1 on the page).
 // - `--canvas-axis: #334155`: "marks on the canvas" fails (1.94:1).
+// - The lineage nodes' resting opacity back at 0.8: "marks drawn in TS" fails (frozen's label 4.23:1).
+// - `COLORS.ball` back at #f5c518: "the tokens they name" fails on the replay's ball.
 
 const css = readFileSync(join(process.cwd(), "app", "globals.css"), "utf-8").replace(/\/\*[\s\S]*?\*\//g, "");
 
@@ -105,6 +113,53 @@ describe("the colour tokens", () => {
   it("marks on the canvas: every token a figure draws with is 3:1 or more", () => {
     const marks = ["--neon", "--neon-alt", "--canvas-hi", "--canvas-muted", "--canvas-edge", "--canvas-axis"];
     const pairs = marks.map((m) => measure(`${m} on --canvas`, resolve(page, m), resolve(page, "--canvas"), 3));
+    expect(low(pairs)).toEqual([]);
+  });
+
+  it("the colours the canvases and SVGs draw with in TS are the tokens they name (task 111)", () => {
+    const token = (name: string) => palette[name]?.toLowerCase();
+    const mirrors: [string, string, string][] = [
+      ["replay COLORS.surface", COLORS.surface, "--canvas-muted"],
+      ["replay COLORS.attack", COLORS.attack, "--neon"],
+      ["replay COLORS.defence", COLORS.defence, "--neon-alt"],
+      ["replay COLORS.ball", COLORS.ball, "--canvas-hi"],
+      ["replay COLORS.text", COLORS.text, "--canvas-ink"],
+      ["pose RING_COLOR", RING_COLOR, "--canvas-hi"],
+      ["coordinates MARKS.surface, the replay's markings", MARKS.surface, "--canvas-muted"],
+      ["coordinates MARKS.ball, the replay's ball", MARKS.ball, "--canvas-hi"],
+      ["quality DATA_COLOR", DATA_COLOR, "--neon"],
+      ["quality REAL_COLOR", REAL_COLOR, "--neon-alt"],
+      ["quality BASE_COLOR", BASE_COLOR, "--canvas-axis"],
+      ["runs MARKER_COLOR", MARKER_COLOR, "--canvas-hi"],
+      ["runs OTHER_COLOR", OTHER_COLOR, "--neon-ink"],
+      ["lineage code", SCHEMA_COLOR.code, "--neon"],
+      ["lineage frozen", SCHEMA_COLOR.frozen, "--neon-alt"],
+      ["lineage none", SCHEMA_COLOR.none, "--neon-muted"],
+      ["lineage EXTERNAL_EDGE", EXTERNAL_EDGE, "--neon-ink"],
+    ];
+    expect(mirrors.filter(([, ts, name]) => ts.toLowerCase() !== token(name)).map(([what, ts, name]) => `${what} ${ts} is not ${name}`)).toEqual([]);
+  });
+
+  it("marks drawn in TS: 3:1 or more on the canvas, as drawn (task 111)", () => {
+    const canvas = resolve(page, "--canvas");
+    const hex = (h: string): Rgba => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).concat(1) as Rgba;
+    const at = (h: string, alpha: number): Rgba => [...hex(h).slice(0, 3), alpha] as Rgba;
+    const pairs = [
+      ...Object.entries(COLORS).filter(([k]) => k !== "text").map(([k, c]) => measure(`replay ${k}`, hex(c), canvas, 3)),
+      measure("quality data's path", at(DATA_COLOR, TRACE_ALPHA), canvas, 3),
+      measure("quality standard's path", at(REAL_COLOR, TRACE_ALPHA), canvas, 3),
+      measure("quality baseline", hex(BASE_COLOR), canvas, 3),
+      measure("runs other arrows", hex(OTHER_COLOR), canvas, 3),
+    ];
+    // A lineage node at its resting opacity (globals.css) and its dark label on it.
+    const rest = Number(css.match(/:not\(\[data-lit\]\) rect\s*\{\s*opacity:\s*([\d.]+)/)?.[1]);
+    expect(rest).toBeGreaterThan(0);
+    for (const [kind, c] of Object.entries(SCHEMA_COLOR)) {
+      const node = over(at(c, rest), canvas);
+      pairs.push(measure(`lineage ${kind} node at rest`, node, canvas, 3));
+      pairs.push(measure(`lineage ${kind} label at rest`, resolve(page, "--canvas-ink"), node, 4.5));
+    }
+    pairs.push(measure("jersey number on the other team's disc", hex(COLORS.text), hex(COLORS.defence), 4.5));
     expect(low(pairs)).toEqual([]);
   });
 
