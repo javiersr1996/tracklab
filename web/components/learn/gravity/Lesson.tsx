@@ -64,7 +64,15 @@ const sumU = (k: number) =>
 export function Lesson({ sql }: { sql: string }) {
   return (
     <main className="page lesson">
-      <LessonHead n={1} title="Does the ball obey gravity?" level="Foundations">
+      <LessonHead
+        n={1}
+        title="Does the ball obey gravity?"
+        level="Foundations"
+        result={[
+          { label: "g of the lesson's shot", values: [GRAVITY_HOOK.g_data], unit: "m/s²" },
+          { label: "Standard gravity", values: [GRAVITY_HOOK.g_real], unit: "m/s²" },
+        ]}
+      >
         <p className="lede">
           Fit a parabola to a basketball&apos;s height in flight and it tells you the gravity the ball fell under. In
           SkillCorner&apos;s open basketball tracking that gravity comes out far below {G}&nbsp;m/s². The ball falls as if

@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
 
-// The colours lesson 1 draws with on `--canvas`; each is 3:1 or more against it, and
-// tests/learn-figures.test.ts checks every stroke and fill the figures render. The orange is the
-// data's and only ever sits on the canvas.
-export const CANVAS = "#1d2327";
+// The colours every lesson draws with on `--canvas`, each a token of globals.css; the ratios are
+// WCAG's on #030712, and tests/learn-figures.test.ts checks every stroke and fill the figures
+// render (3:1 or more) and that each colour is still its token.
+export const CANVAS = "#030712";
 export const INK = {
-  data: "#e0883a", // the samples and what is fitted to them
-  standard: "#4ea1f2", // 9.80665 m/s², the blue of /quality
-  probe: "#ffffff", // what the reader moves
-  axis: "#7b858d", // --canvas-edge
+  data: "#00e5ff", // --neon, 13.1:1: the samples and what is fitted to them, the cyan of /quality
+  standard: "#ff3ea5", // --neon-alt, 6.2:1: 9.80665 m/s², the magenta of /quality
+  probe: "#ffffff", // --canvas-hi, 20.1:1: what the reader moves
+  axis: "#64748b", // --canvas-edge, 4.2:1
 } as const;
 
 export interface Axis {

@@ -74,7 +74,12 @@ const xn = (shift: ReactNode) => (
 export function Lesson({ sql }: { sql: string }) {
   return (
     <main className="page lesson learn-speed">
-      <LessonHead n={2} title="Where does the provider's speed come from?" level="Foundations">
+      <LessonHead
+        n={2}
+        title="Where does the provider's speed come from?"
+        level="Foundations"
+        result={[{ label: "Median gap to a centred difference", values: [F.gap_lo, F.gap_hi], unit: "m/s" }]}
+      >
         <p className="lede">
           SkillCorner&apos;s basketball files give every player a speed in every frame, next to the position. Put it beside
           the simplest centred difference of the same positions and the two agree to within {l("gap_lo")} to{" "}
@@ -397,7 +402,7 @@ export function Lesson({ sql }: { sql: string }) {
           </p>
           <TracePlot example={SPEED_EXAMPLE} shawWindow={SPEED.shaw_window} />
           <p>
-            Start with the central difference and no averaging. The white line lies on the orange one: the median gap is{" "}
+            Start with the central difference and no averaging. The white line lies on the cyan one: the median gap is{" "}
             {l("ex_central_median")}&nbsp;m/s over {l("ex_central_frames")} frames, and the largest is{" "}
             {l("ex_central_max")}, inside the {l("bound_central_speed")} the rounding allows. Switch to forward or backward
             and the median gap grows to {l("ex_forward_median")} and {l("ex_backward_median")}: the half frame either way,
@@ -517,7 +522,7 @@ export function Lesson({ sql }: { sql: string }) {
           <ul>
             <li>
               With no averaging, switch between forward and backward and look where the player speeds up or slows down.
-              Which line runs ahead of the orange one, and by how much time?
+              Which line runs ahead of the cyan one, and by how much time?
             </li>
             <li>Find the window with the smallest median gap, then push it to the end. Which part of the trace bends first?</li>
             <li>Press Shaw&apos;s recipe, then Plain central. Where do the two disagree most, and why there?</li>

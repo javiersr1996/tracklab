@@ -11,8 +11,13 @@ import type { Hook } from "../../lib/quality";
 const WIDTH = 640;
 const HEIGHT = 320;
 const PAD = 36;
-const DATA_COLOR = "#e0883a";
-const REAL_COLOR = "#4ea1f2";
+// The data cyan and standard gravity magenta, as in lesson 1 (`INK`): tokens of globals.css, the
+// balls 13.1:1 and 6.2:1 on the canvas, each path at TRACE_ALPHA 5.8:1 and 3.1:1, the baseline
+// --canvas-axis 3.2:1. The caption colours only the dots: magenta is a mark, never text.
+export const DATA_COLOR = "#00e5ff";
+export const REAL_COLOR = "#ff3ea5";
+export const BASE_COLOR = "#52627a";
+export const TRACE_ALPHA = 0.65;
 
 function interpolate(t: number[], series: number[], at: number): number {
   if (at <= t[0]) return series[0];
@@ -46,7 +51,7 @@ export function HookAnimation({ hook }: { hook: Hook }) {
 
     const drawPath = (series: number[], color: string) => {
       ctx.strokeStyle = color;
-      ctx.globalAlpha = 0.4;
+      ctx.globalAlpha = TRACE_ALPHA;
       ctx.lineWidth = 2;
       ctx.beginPath();
       t.forEach((ti, i) => {
@@ -72,7 +77,7 @@ export function HookAnimation({ hook }: { hook: Hook }) {
       const at = t0 + ((now - start) % durationMs) / 1000;
 
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
-      ctx.strokeStyle = "#3a4149";
+      ctx.strokeStyle = BASE_COLOR;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(PAD, py(zMin));
@@ -100,8 +105,12 @@ export function HookAnimation({ hook }: { hook: Hook }) {
         aria-label="One basketball shot falling at the data's gravity next to standard gravity"
       />
       <figcaption>
-        <span style={{ color: DATA_COLOR }}>&#9679; the data ({hook.g_data} m/s&sup2;)</span>{" "}
-        <span style={{ color: REAL_COLOR }}>&#9679; standard gravity ({hook.g_real} m/s&sup2;)</span>
+        <span>
+          <span style={{ color: DATA_COLOR }}>&#9679;</span> the data ({hook.g_data} m/s&sup2;)
+        </span>{" "}
+        <span>
+          <span style={{ color: REAL_COLOR }}>&#9679;</span> standard gravity ({hook.g_real} m/s&sup2;)
+        </span>
       </figcaption>
     </figure>
   );

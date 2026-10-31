@@ -1,53 +1,37 @@
-/* Design tokens. Light surfaces carry prose and tables, dark ones carry the canvases and the
-   viewers. The orange of the pitch is the one accent: a fill, a stroke, a rule or a tag on dark;
-   as text on light it fails AA (2.57:1 on the paper), so text and links there use accent-ink. */
+/* Design tokens (P13): the neon identity of the home (P12) on every page. Near-black surfaces,
+   and cyan the one accent: text, a hairline, an underline, a glow or a button's fill, never a
+   large fill. Magenta is a figure's second series, a mark and never text. The ratios are WCAG's,
+   printed and held to their floors by tests/tokens-contrast.test.ts. */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
   /* Colour */
-  --paper: #f9f9f9;
-  --paper-raised: #ffffff;
-  --ink: #3d3d3d; /* 10.3:1 on the paper */
-  --ink-strong: #1f1f1f;
-  --ink-muted: #5c5c5c; /* 6.3:1 on the paper */
-  --line: #dcdcdc;
-  --dark: #252525;
-  --dark-raised: #2d2d2d;
-  --dark-sunken: #1b1b1b;
-  --dark-ink: #f2f2f2; /* 13.7:1 on the dark band */
-  --dark-muted: #b3b3b3; /* 7.3:1 on the dark band, 6.6:1 on a dark card */
-  --line-dark: #3d3d3d;
-  --accent: #e0883a; /* 5.7:1 on the dark band */
-  --accent-2: #f2c14e;
-  --accent-ink: #a14f0c; /* 5.5:1 on the paper */
-  --on-accent: #1a1a1a; /* 6.4:1 on the accent */
-  --canvas: #1d2327; /* behind the pitch, the court and the plots drawn in TS */
-  --canvas-line: #3a4149;
-  --canvas-axis: #596168;
-  --canvas-muted: #9aa4ad;
-  --canvas-ink: #0e1114;
-  --canvas-hi: #ffffff;
-  --canvas-edge: #7b858d;
-
-  /* Neon (P12): the header, the footer and the home. Cyan on near-black is the one accent there;
-     it is never a large fill, only text, a hairline, an underline or a glow. */
-  --neon-bg: #030712;
-  --neon-raised: #0d1117;
+  --neon-bg: #030712; /* the page */
+  --neon-band: #151f36; /* the alternate band, lighter (1.23:1, task 112: at 1.08:1 it did not read), so the pages keep their rhythm */
+  --neon-raised: #0d1117; /* a card on the page (1.06:1) */
+  --neon-band-raised: #1e2a44; /* a card on the band (1.15:1) */
   --neon-sunken: #01050c;
-  --neon-ink: #e2e8f0; /* 16.3:1 on the neon bg, 15.4:1 on a neon card */
-  --neon-muted: #94a3b8; /* 7.9:1 on the neon bg, 7.4:1 on a neon card */
-  --neon: #00e5ff; /* 13.1:1 on the neon bg; as a fill, 13.1:1 under neon-bg text */
-  --neon-2: #67e8f9; /* 13.9:1 on the neon bg: the hover of a neon control */
-  --neon-alt: #ff3ea5; /* the second team, in the hero's canvas and the cards' sketches: a mark, never text */
+  --neon-ink: #e2e8f0; /* 16.3:1 on the page, 13.3:1 on the band, 11.6:1 on a card on the band */
+  --neon-muted: #94a3b8; /* 7.9:1 on the page, 6.4:1 on the band, 5.6:1 on a card on the band */
+  --neon: #00e5ff; /* 13.1:1 on the page, 9.3:1 on a card on the band; as a fill, 13.1:1 under neon-bg */
+  --neon-2: #67e8f9; /* the hover of a neon control: 13.9:1 under neon-bg */
+  --neon-alt: #ff3ea5; /* the second team or series: a mark, never text (6.2:1 on the canvas) */
   --neon-line: rgba(0, 229, 255, 0.18); /* a hairline, not text */
-  --neon-line-strong: rgba(0, 229, 255, 0.5);
+  --neon-line-strong: rgba(0, 229, 255, 0.5); /* a control's edge: 3.7:1 or more on every surface */
   --neon-glow: rgba(0, 229, 255, 0.25);
+  /* Behind the pitch, the court and the plots drawn in TS: the page's own near-black, so a figure
+     on a band or a card reads as a window onto the home's hero. */
+  --canvas: #030712;
+  --canvas-line: #1e293b; /* a grid line, not a mark */
+  --canvas-axis: #52627a; /* 3.2:1 on the canvas */
+  --canvas-muted: #94a3b8; /* the ticks' text: 7.9:1 on the canvas */
+  --canvas-ink: #030712; /* text on a lit node */
+  --canvas-hi: #ffffff; /* 20.1:1 on the canvas */
+  --canvas-edge: #64748b; /* 4.2:1 on the canvas */
 
-  /* Type */
-  --font-display: var(--font-display-face, system-ui), system-ui, sans-serif;
+  /* Type: paragraphs in the system's sans; headings, eyebrows, labels, nav, buttons, figures and
+     code in JetBrains Mono, the one webfont. */
   --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo, Consolas, monospace;
-  /* The neon surfaces' one face, text and headings alike; the inner pages' code keeps --font-mono. */
   --font-neon: var(--font-mono-face, ui-monospace), ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo,
     Consolas, monospace;
   --step-0: 1rem; /* the floor: no visible text is smaller */
@@ -75,58 +59,18 @@
   --band-pad: clamp(2.5rem, 2rem + 3vw, 5rem);
   --gutter: clamp(1rem, 3vw, 2.5rem);
 
-  /* Shape and width */
-  --radius: 4px;
+  /* Shape and width: near-square corners */
+  --radius: 2px;
   --wrap: 1376px;
   --measure: 880px;
   --control-height: 2.75rem;
 }
 
-/* The surface a piece of content sits on: light by default, dark where a band, the header, the
-   footer or a card says so. Everything below reads these, never the palette directly. */
-:root {
-  --bg: var(--paper);
-  --fg: var(--ink);
-  --fg-strong: var(--ink-strong);
-  --fg-muted: var(--ink-muted);
-  --rule: var(--line);
-  --rule-strong: var(--ink);
-  --link: var(--accent-ink);
-  --link-hover: var(--ink-strong);
-  --tag: var(--accent-ink);
-  --focus: var(--accent-ink);
-  --raised: var(--paper-raised);
-  --control-bg: var(--paper-raised);
-  --control-line: #858585; /* 3.5:1 on the paper */
-  --code-bg: #ececec;
-  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%233d3d3d' stroke-width='1.5'/%3E%3C/svg%3E");
-}
-
-.surface-dark {
-  color-scheme: dark;
-  --bg: var(--dark);
-  --fg: var(--dark-ink);
-  --fg-strong: #ffffff;
-  --fg-muted: var(--dark-muted);
-  --rule: var(--line-dark);
-  --rule-strong: var(--dark-ink);
-  --link: var(--accent);
-  --link-hover: #ffffff;
-  --tag: var(--accent);
-  --focus: var(--accent);
-  --raised: var(--dark-raised);
-  --control-bg: var(--dark-sunken);
-  --control-line: #7a7a7a; /* 3.6:1 on the dark band */
-  --code-bg: var(--dark-sunken);
-  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23f2f2f2' stroke-width='1.5'/%3E%3C/svg%3E");
-  background: var(--bg);
-  color: var(--fg);
-}
-
-/* The neon surface (P12): the same slots, cyan standing in for the accent, the mono face for
-   every element (the display face too, so headings and buttons follow), near-square corners. */
+/* The surface a piece of content sits on: the page, with the header, the footer and the home, or
+   the alternate band (and a lesson's figure card). Everything below reads these slots or the neon
+   palette. */
+:root,
 .surface-neon {
-  color-scheme: dark;
   --bg: var(--neon-bg);
   --fg: var(--neon-ink);
   --fg-strong: #ffffff;
@@ -137,35 +81,47 @@
   --link-hover: #ffffff;
   --tag: var(--neon);
   --focus: var(--neon);
-  --accent: var(--neon);
-  --accent-2: var(--neon-2);
-  --on-accent: var(--neon-bg);
   --raised: var(--neon-raised);
   --control-bg: var(--neon-sunken);
   --control-line: var(--neon-line-strong);
   --code-bg: var(--neon-raised);
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23e2e8f0' stroke-width='1.5'/%3E%3C/svg%3E");
-  --font-display: var(--font-neon);
-  --radius: 2px;
-  font-family: var(--font-body);
+}
+
+.surface-dark {
+  --bg: var(--neon-band);
+  --raised: var(--neon-band-raised);
+  --code-bg: var(--neon-bg);
+}
+
+.surface-neon,
+.surface-dark {
   background: var(--bg);
   color: var(--fg);
 }
 
-/* Mono where the terminal shows: labels, headings, nav, buttons, figures and code (they read
-   --font-display or this). Paragraphs stay in the sans body stack (task 108). */
-.surface-neon code,
-.surface-neon pre,
-.surface-neon output,
-.surface-neon .site-nav a,
-.surface-neon .site-footer-label,
-.surface-neon .card-tag,
-.surface-neon .figure-value,
-.surface-neon .figures-layer-name,
-.surface-neon .figures-layer-bytes,
-.surface-neon .replay-hero-readout,
-.surface-neon .replay-hero-player,
-.surface-neon .hero-action {
+/* Mono where the terminal shows: labels, figures and the axes' ticks here; headings, eyebrows,
+   buttons and code read --font-neon where they are styled. Paragraphs stay in the sans body stack
+   (task 108). */
+output,
+caption,
+thead th,
+dt,
+.site-nav a,
+.site-footer-label,
+.card-tag,
+.figure-value,
+.figures-layer-name,
+.figures-layer-bytes,
+.replay-hero-readout,
+.replay-hero-player,
+.hero-action,
+.lesson-status,
+.learn-plot-yticks span,
+.learn-plot-xticks span,
+.per-match-axis span,
+.learn-coordinates-yticks span,
+.learn-coordinates-xticks span {
   font-family: var(--font-neon);
 }
 
@@ -181,23 +137,23 @@ html {
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-body);
   font-size: var(--step-0);
   line-height: var(--leading);
 }
 
 ::selection {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--neon);
+  color: var(--neon-bg);
 }
 
 h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-weight: 600;
   line-height: var(--leading-tight);
   letter-spacing: -0.01em;
@@ -252,7 +208,7 @@ code,
 kbd,
 samp,
 pre {
-  font-family: var(--font-mono);
+  font-family: var(--font-neon);
   font-size: 1em;
 }
 
@@ -275,7 +231,7 @@ pre {
 blockquote {
   margin: 0 0 var(--space-4);
   padding-left: var(--space-4);
-  border-left: 2px solid var(--accent);
+  border-left: 2px solid var(--neon);
 }
 
 canvas {
@@ -292,7 +248,7 @@ textarea {
 }
 
 button {
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-weight: 600;
   line-height: 1.2;
   text-transform: uppercase;
@@ -308,20 +264,20 @@ button {
 }
 
 button:hover:not(:disabled) {
-  border-color: var(--accent);
+  border-color: var(--neon);
   color: var(--fg-strong);
 }
 
 button.primary {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
+  border-color: var(--neon);
+  background: var(--neon);
+  color: var(--neon-bg);
 }
 
 button.primary:hover:not(:disabled) {
-  border-color: var(--accent-2);
-  background: var(--accent-2);
-  color: var(--on-accent);
+  border-color: var(--neon-2);
+  background: var(--neon-2);
+  color: var(--neon-bg);
 }
 
 button:disabled {
@@ -355,7 +311,7 @@ textarea {
 
 input[type="range"],
 input[type="checkbox"] {
-  accent-color: var(--accent);
+  accent-color: var(--neon);
 }
 
 input[type="range"] {
@@ -412,7 +368,7 @@ caption {
 }
 
 .wordmark {
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-size: var(--step-3);
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -422,7 +378,7 @@ caption {
 }
 
 .wordmark span {
-  color: var(--accent);
+  color: var(--neon);
 }
 
 a.wordmark:hover {
@@ -527,9 +483,9 @@ a.wordmark:hover {
 }
 
 .site-nav a[aria-current="page"] {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-  box-shadow: 0 8px 14px -10px var(--accent); /* the underline's glow */
+  color: var(--neon);
+  border-bottom-color: var(--neon);
+  box-shadow: 0 8px 14px -10px var(--neon); /* the underline's glow */
 }
 
 .site-footer {
@@ -611,6 +567,214 @@ a.wordmark:hover {
   padding-block: var(--band-pad) clamp(2rem, 1.5rem + 2vw, 3.5rem);
 }
 
+/* A head with a panel (task 112): the text, then the panel under the lede, compact; from 1000 px
+   the panel stands beside the text. The panel is a terminal like the home's lit cards: a fine
+   cyan edge, a mono label after a comment's slashes and a soft glow. */
+.page-head-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5) var(--space-7);
+}
+
+.page-head-text > :last-child {
+  margin-bottom: 0;
+}
+
+.head-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-4);
+  background: var(--raised);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 24px -8px var(--neon-glow);
+}
+
+@media (min-width: 1000px) {
+  .page-head-grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: center;
+  }
+
+  .head-panel {
+    gap: var(--space-4);
+    padding: var(--space-5);
+  }
+}
+
+.head-panel-label,
+.head-panel-about-label {
+  margin: 0;
+  font-family: var(--font-neon);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tag);
+}
+
+.head-panel-label::before {
+  content: "// " / ""; /* decorative, like the eyebrow's */
+  color: var(--neon-muted);
+}
+
+/* A lesson's result: the first line large and lit, the others as plain figures. */
+.head-readouts {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.head-readout dt {
+  color: var(--fg-muted);
+}
+
+.head-readout dd {
+  margin: 0;
+  font-family: var(--font-neon);
+  font-size: var(--step-3);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.head-readout-main dd {
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 3rem);
+  letter-spacing: -0.02em;
+  color: var(--neon);
+  text-shadow: 0 0 18px var(--neon-glow);
+}
+
+.head-to,
+.head-unit {
+  font-size: max(1rem, 0.5em);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--fg-muted);
+  text-shadow: none;
+}
+
+.head-panel-about {
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+  color: var(--fg-muted);
+}
+
+.head-panel-about-label {
+  display: block;
+  color: var(--fg);
+}
+
+/* A /sql lesson's worked example, typed: a sunken box of three lines on a phone and twelve from
+   1000 px, scrolled when the query is longer; then its answer. */
+.head-sql {
+  position: relative; /* the caret's offsetTop is measured in the box */
+  max-height: calc(3 * 1.35em + 2 * var(--space-3));
+  margin: 0;
+  padding: var(--space-3);
+  overflow: auto;
+  background: var(--neon-sunken);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 1000px) {
+  .head-sql {
+    max-height: calc(12 * 1.35em + 2 * var(--space-3));
+  }
+}
+
+.head-sql-comment {
+  color: var(--fg-muted);
+}
+
+.head-sql-rest,
+.head-answer-waiting {
+  visibility: hidden; /* typed later: the box keeps its final size from the first paint */
+}
+
+.head-caret {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.15em;
+  margin-bottom: -0.2em;
+  background: var(--neon);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .head-caret {
+    animation: caret-blink 1.1s steps(1) infinite;
+  }
+}
+
+.head-answer {
+  margin: 0;
+  font-family: var(--font-neon);
+  font-size: var(--step-2);
+  font-weight: 700;
+  color: var(--neon);
+  text-shadow: 0 0 14px var(--neon-glow);
+  overflow-wrap: anywhere;
+}
+
+.head-answer-arrow {
+  color: var(--fg-muted);
+  text-shadow: none;
+}
+
+.head-answer-note {
+  margin: 0;
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+
+/* An index's sketch, from the home's card, large beside the text. */
+.head-panel-sketch .pv {
+  height: 7rem;
+}
+
+@media (min-width: 1000px) {
+  .head-panel-sketch .pv {
+    height: 16rem;
+  }
+}
+
+/* Under the lede the panel stays compact, so the first section moves down by about 200 px at
+   390 px at most: no "what you learn" (the index prints it) and no row note, and the second
+   figures on one line with their label. */
+@media (max-width: 999.98px) {
+  .page-head-grid {
+    gap: var(--space-4);
+  }
+
+  .head-panel {
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+
+  .head-panel-about,
+  .head-answer-note {
+    display: none;
+  }
+
+  .head-readout:not(.head-readout-main) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-3);
+  }
+
+  .head-readout:not(.head-readout-main) dd {
+    font-size: var(--step-1);
+  }
+}
+
 /* The sections of a long page, split by a hairline. */
 .wrap > section + section {
   margin-top: var(--space-8);
@@ -627,13 +791,14 @@ a.wordmark:hover {
   margin-top: var(--space-4);
 }
 
-/* The small uppercase label above a headline, after a short rule in the accent. */
+/* The small uppercase label above a headline, after a code comment's slashes, like the footer's
+   labels. */
 .eyebrow {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   margin: 0 0 var(--space-4);
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-size: var(--step-0);
   font-weight: 600;
   line-height: var(--leading-snug);
@@ -643,20 +808,9 @@ a.wordmark:hover {
 }
 
 .eyebrow::before {
-  content: "";
+  content: "//" / ""; /* decorative: empty alternative text, so a screen reader skips it */
   flex: none;
-  width: 1.5rem;
-  height: 2px;
-  background: var(--accent);
-}
-
-/* On the neon surface the rule is a code comment's slashes, like the footer's labels. */
-.surface-neon .eyebrow::before {
-  content: "//";
-  width: auto;
-  height: auto;
-  background: none;
-  color: var(--neon-line-strong);
+  color: var(--neon-muted); /* 7.9:1; --neon-line-strong is 3.7:1 */
 }
 
 .accent {
@@ -1147,10 +1301,10 @@ body:has(.home) .site-header::after {
 .card-arrow {
   grid-area: arrow;
   align-self: end;
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-size: var(--step-3);
   line-height: 1;
-  color: var(--accent);
+  color: var(--neon);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -1668,7 +1822,7 @@ body:has(.home) .site-header::after {
 }
 
 .platform-layer[data-phase="active"] {
-  border-color: var(--accent);
+  border-color: var(--neon);
 }
 
 .platform-layer h3 {
@@ -1689,7 +1843,7 @@ body:has(.home) .site-header::after {
 
 .platform-bar-fill {
   height: 100%;
-  background: var(--accent);
+  background: var(--neon);
 }
 
 .platform-counters {
@@ -1706,7 +1860,7 @@ body:has(.home) .site-header::after {
 
 .platform-counters dd {
   margin: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-size: var(--step-2);
   font-weight: 600;
   line-height: var(--leading-snug);
@@ -1753,7 +1907,7 @@ body:has(.home) .site-header::after {
 
 .lineage-node text {
   font-size: 8px;
-  font-family: var(--font-mono);
+  font-family: var(--font-neon);
   fill: var(--canvas-ink);
   pointer-events: none;
 }
@@ -1775,7 +1929,7 @@ body:has(.home) .site-header::after {
 }
 
 .lineage-nodes .lineage-node:not([data-selected]):not([data-lit]) rect {
-  opacity: 0.8; /* resting: node text >= 5.0:1, node vs canvas >= 3.8:1 */
+  opacity: 0.85; /* resting: node text and node vs canvas >= 4.7:1 (magenta, the darkest fill) */
 }
 
 .lineage-edges path {
@@ -1785,7 +1939,7 @@ body:has(.home) .site-header::after {
 
 .lineage-edges path[data-lit="ancestor"],
 .lineage-edges path[data-lit="descendant"] {
-  stroke: var(--accent);
+  stroke: var(--neon);
   stroke-width: 1.5;
 }
 
@@ -1850,7 +2004,7 @@ body:has(.home) .site-header::after {
   display: block;
   width: 100%;
   margin-bottom: var(--space-3);
-  font-family: var(--font-mono);
+  font-family: var(--font-neon);
 }
 
 .warehouse-buttons {
@@ -1863,7 +2017,7 @@ body:has(.home) .site-header::after {
 
 /* Table names are identifiers: shown as written, in the code face. */
 .warehouse button[data-columns-button] {
-  font-family: var(--font-mono);
+  font-family: var(--font-neon);
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -1998,11 +2152,11 @@ body:has(.home) .site-header::after {
 }
 
 .pose-signal .s-high {
-  stroke: var(--accent-2);
+  stroke: var(--neon);
 }
 
 .pose-signal .s-low {
-  stroke: var(--canvas-muted);
+  stroke: var(--neon-alt);
 }
 
 .pose-signal .playhead {
@@ -2028,7 +2182,7 @@ body:has(.home) .site-header::after {
 /* Learn: the index of the series and the pieces every lesson shares. */
 .lesson-meta {
   margin: 0 0 var(--space-3);
-  font-family: var(--font-display);
+  font-family: var(--font-neon);
   font-weight: 500;
   letter-spacing: var(--tracking-button);
   text-transform: uppercase;
@@ -2232,7 +2386,7 @@ body:has(.home) .site-header::after {
 }
 
 .learn-choice input {
-  accent-color: var(--accent);
+  accent-color: var(--neon);
 }
 
 .per-match .per-match-strip {
@@ -2543,7 +2697,7 @@ body:has(.home) .site-header::after {
   display: block;
   width: 100%;
   margin-bottom: var(--space-3);
-  font-family: var(--font-mono);
+  font-family: var(--font-neon);
 }
 
 .sql-exercise-buttons {

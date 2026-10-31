@@ -24,12 +24,17 @@ const PAD_TOP = 28;
 // labels and badges render at 12 px.
 const SCALE = 1.5;
 
-const SCHEMA_COLOR: Record<LineageNode["schema"], string> = {
-  frozen: "#4ea1f2",
-  code: "#e0883a",
-  dbt: "#7ec699",
-  none: "#98a2ab",
+// The four schema kinds in neon (P13): cyan and magenta as everywhere (code took the orange's
+// place, frozen the blue's), lime a third neon, the neutral --neon-muted. At the resting opacity
+// (0.85, globals.css) a node is 9.5:1, 4.7:1, 9.7:1 and 5.9:1 on the canvas, and so is its dark
+// label on it; an external node's dashed edge is the ink (--neon-ink, 16.3:1).
+export const SCHEMA_COLOR: Record<LineageNode["schema"], string> = {
+  frozen: "#ff3ea5",
+  code: "#00e5ff",
+  dbt: "#a3e635",
+  none: "#94a3b8",
 };
+export const EXTERNAL_EDGE = "#e2e8f0";
 
 interface Positioned {
   key: string;
@@ -183,7 +188,7 @@ export function Lineage({ lineage }: { lineage: LineageData }) {
                     height={NODE_HEIGHT}
                     rx={3}
                     fill={SCHEMA_COLOR[node?.schema ?? "none"]}
-                    stroke={node?.kind === "external" ? "#f2f2f2" : "none"}
+                    stroke={node?.kind === "external" ? EXTERNAL_EDGE : "none"}
                     strokeDasharray={node?.kind === "external" ? "3 2" : undefined}
                   />
                   <text x={0} y={0} textAnchor="middle" dominantBaseline="central">

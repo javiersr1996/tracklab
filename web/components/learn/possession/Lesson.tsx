@@ -44,7 +44,15 @@ const frac = (num: ReactNode, den: ReactNode) => (
 export function Lesson({ sql }: { sql: string }) {
   return (
     <main className="page lesson learn-possession">
-      <LessonHead n={10} title="How often does possession change hands?" level="Intermediate">
+      <LessonHead
+        n={10}
+        title="How often does possession change hands?"
+        level="Intermediate"
+        result={[
+          { label: "Football: median spell, per match", values: [F.fb_med_lo, F.fb_med_hi], unit: "s" },
+          { label: "Basketball", values: [F.bb_med_lo, F.bb_med_hi], unit: "s" },
+        ]}
+      >
         <p className="lede">
           A football team keeps the ball for a median of {l("fb_med_lo")} to {l("fb_med_hi")}&nbsp;s at a time, match by match,
           and a basketball team for {l("bb_med_lo")} to {l("bb_med_hi")}&nbsp;s. The median is half the story. The other half is

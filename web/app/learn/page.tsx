@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Band, PageHead } from "../../components/site/Band";
+import { SketchPanel } from "../../components/site/SketchPanel";
 import { learnMetadata } from "../../lib/learn/metadata";
 import { LESSONS, LEVELS, lessonHref } from "../../lib/learn/series";
 
@@ -9,7 +10,7 @@ export const metadata: Metadata = learnMetadata;
 export default function LearnPage() {
   return (
     <main className="page">
-      <PageHead eyebrow="Learn">
+      <PageHead eyebrow="Learn" aside={<SketchPanel href="/learn" label="A flight of the ball" />}>
         <h1>Learn from the tracking data</h1>
         <p className="lede">
           Each lesson starts from one question about SkillCorner&apos;s open tracking data, works the idea on the

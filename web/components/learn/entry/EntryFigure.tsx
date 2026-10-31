@@ -9,7 +9,7 @@ import { Dot, INK, Legend, Plot, ticks } from "../gravity/Plot";
 
 // The example shot from the side, in the vertical plane through the rim: its heights against
 // the horizontal distance still to go to the rim's centre, the projectile the geometry requires
-// (blue, ending at the rim) and the line the check fits through the last heights (white, at the
+// (magenta, ending at the rim) and the line the check fits through the last heights (white, at the
 // arrival sample). The reader moves g and a scale on the heights; nothing moves until they do.
 const PATH_STEPS = 40;
 

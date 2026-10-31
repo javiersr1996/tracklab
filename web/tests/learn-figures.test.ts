@@ -20,6 +20,7 @@ import { CHECKS, QUALITY } from "../lib/quality";
 //   mutated quality.json" fails on the mutated cell.
 // - `INK.axis` at #596168 (--canvas-axis, 2.5:1): "every stroke and fill is 3:1" fails, and so does
 //   a hex typed straight into one figure's stroke.
+// - `INK.data` back at #e0883a (P13): "each in the token it names" fails on `data`.
 // - A `useEffect` starting a `requestAnimationFrame` loop at mount: no vitest can see it (effects do
 //   not run on the server); the e2e of task 81 counts frames after load.
 
@@ -61,9 +62,11 @@ const contrast = (a: string, b: string) => {
 };
 
 describe("the figures' colours", () => {
-  it("are drawn on the canvas globals.css defines", () => {
+  it("are drawn on the canvas globals.css defines, each in the token it names", () => {
     const css = readFileSync(join(process.cwd(), "app", "globals.css"), "utf-8");
-    expect(css.match(/--canvas:\s*(#[0-9a-f]{6})/i)?.[1].toLowerCase()).toBe(CANVAS);
+    const token = (name: string) => css.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "i"))?.[1].toLowerCase();
+    expect(token("--canvas")).toBe(CANVAS);
+    expect({ data: token("--neon"), standard: token("--neon-alt"), probe: token("--canvas-hi"), axis: token("--canvas-edge") }).toEqual(INK);
   });
 
   it("every stroke and fill the four figures render is 3:1 or more on the canvas", () => {

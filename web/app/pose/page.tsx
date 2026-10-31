@@ -417,7 +417,7 @@ function View({
               <p>
                 Match <C clip={clip} p="match_id" />, period <C clip={clip} p="period" />, frames{" "}
                 <C clip={clip} p="frame_lo" /> to <C clip={clip} p="frame_hi" /> at <C clip={clip} p="fps" /> fps.
-                Orange is the home team, blue the away team. Bodies are drawn to the pitch&apos;s scale; follow a
+                Cyan is the home team, magenta the away team. Bodies are drawn to the pitch&apos;s scale; follow a
                 player to see one enlarged.{" "}
                 {clip.selection ? (
                   <>

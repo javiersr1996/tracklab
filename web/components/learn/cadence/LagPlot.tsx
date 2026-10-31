@@ -104,7 +104,7 @@ export function LagPlot({ hook }: { hook: HookWindow }) {
       </p>
       <figcaption>
         The hook window of match <Fig name={`${hook.file}:match_id`}>{hook.match_id}</Fig>, as /pose publishes it. Where
-        the white copy lies on the orange signal, the products are positive and r is high.
+        the white copy lies on the cyan signal, the products are positive and r is high.
       </figcaption>
     </figure>
   );

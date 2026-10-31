@@ -75,7 +75,15 @@ const norm = (inner: ReactNode) => (
 export function Lesson({ sql }: { sql: string }) {
   return (
     <main className="page lesson learn-rebound">
-      <LessonHead n={4} title="Who gets to the rebound first?" level="Intermediate">
+      <LessonHead
+        n={4}
+        title="Who gets to the rebound first?"
+        level="Intermediate"
+        result={[
+          { label: "First to arrive is the rebounder", values: [F.model_lo, F.model_hi], unit: "%" },
+          { label: "The nearest player, no model", values: [F.near_lo, F.near_hi], unit: "%" },
+        ]}
+      >
         <p className="lede">
           When a shot misses, ten players go for the ball. Freeze them at the end of the shot, give each a reaction time and a
           top speed, and ask who would be first to the place where the rebounder was standing when he took it. That player is

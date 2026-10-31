@@ -57,7 +57,15 @@ const sum = (body: ReactNode) => (
 export function Lesson({ sql }: { sql: string }) {
   return (
     <main className="page lesson learn-clock">
-      <LessonHead n={6} title="Does the game clock keep the video's time?" level="Foundations">
+      <LessonHead
+        n={6}
+        title="Does the game clock keep the video's time?"
+        level="Foundations"
+        result={[
+          { label: "Game clock per video second", values: [F.cal_lo, F.cal_hi] },
+          { label: "Needed for standard gravity", values: [F.slope_for_g] },
+        ]}
+      >
         <p className="lede">
           Every basketball frame carries two clocks: the video&apos;s and the game&apos;s. Wherever the game clock runs for{" "}
           {l("min_seconds")}&nbsp;s or more, fit one against the other. In {l("cal_n")} matches the game clock moves{" "}

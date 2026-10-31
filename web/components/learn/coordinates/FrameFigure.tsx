@@ -15,9 +15,10 @@ import { INK } from "../gravity/Plot";
 export const MARKS = {
   attack: INK.data,
   defence: INK.standard,
-  ball: "#f5c518", // the replay's ball (lib/replay/render.ts)
+  ball: INK.probe, // the replay's ball, white (lib/replay/render.ts): a disc, where the ring is a stroke
+  ballEdge: "#030712", // the replay's ball edge (lib/replay/render.ts), --canvas: it parts the ball from a disc
   ring: INK.probe,
-  surface: "#9aa4ad", // the replay's markings, --canvas-muted
+  surface: "#94a3b8", // the replay's markings, --canvas-muted (7.9:1)
 } as const;
 
 export type Step = "delivered" | "metres" | "turn-own" | "turn-other" | "mirror-other";
@@ -165,7 +166,7 @@ export function FrameFigure({ views, feetBound }: { views: readonly FrameView[];
             {draw
               .filter((e) => e.role === "ball")
               .map((e) => (
-                <circle key={e.i} cx={e.x} cy={-e.y} r={0.8 * r} fill={MARKS.ball} />
+                <circle key={e.i} cx={e.x} cy={-e.y} r={0.8 * r} fill={MARKS.ball} stroke={MARKS.ballEdge} strokeWidth={1.25} vectorEffect="non-scaling-stroke" />
               ))}
           </svg>
           <div className="learn-coordinates-xticks" aria-hidden="true">

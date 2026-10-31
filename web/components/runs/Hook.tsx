@@ -12,8 +12,10 @@ import { at, type Clip, type Runs } from "../../lib/runs/types";
 // ARROW_GAIN; a dashed arrow points against the run. It appears when the clip reaches the
 // instant. Nothing here is measured: every length is a number the publisher wrote.
 const ARROW_GAIN = 4;
-const MARKER_COLOR = "#ffffff";
-const OTHER_COLOR = "#c8d0d8";
+// The marker's arrow white (--canvas-hi, 20.1:1 on the canvas), the others' the ink (--neon-ink,
+// 16.3:1): apart from the marker's by width, head and ring, and from the markings (2.1:1).
+export const MARKER_COLOR = "#ffffff";
+export const OTHER_COLOR = "#e2e8f0";
 
 function arrowOverlay(clip: Clip, possession: Possession, direction: [number, number]): Overlay {
   const index = new Map(possession.entities.map((e) => [e.entity_id, e.i]));

@@ -89,7 +89,15 @@ function ClipText({ c, q }: { c: (path: string) => ReactNode; q: (key: string) =
 export function Lesson({ script }: { script: string }) {
   return (
     <main className="page lesson learn-facing">
-      <LessonHead n={11} title="Which way is a player facing?" level="Advanced">
+      <LessonHead
+        n={11}
+        title="Which way is a player facing?"
+        level="Advanced"
+        result={[
+          { label: "Chest against run, median angle", values: [F.hook[A.match_id].median_abs], unit: "°" },
+          { label: "Frames side on or further", values: [F.hook[A.match_id].off_pct], unit: "%" },
+        ]}
+      >
         <p className="lede">
           Body pose puts a skeleton on a player {ca("fps")} times a second. Two of its joints, the shoulders, draw a line across
           the chest, and a third, the nose, says which side of that line is the front. This lesson turns the three into a

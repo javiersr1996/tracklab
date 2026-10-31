@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Band, PageHead } from "../site/Band";
 import { courseLesson, exampleCell, SQL_LESSONS, type SqlSlug, sqlHref, sqlLessonMeta } from "../../lib/sql/course";
 import { Exercises } from "./Exercises";
+import { QueryPanel } from "./QueryPanel";
 import { PROSE } from "./lessons";
 
 // A lesson of /sql: the head, the prose (its numbers from the lesson's facts), the worked
@@ -12,9 +13,15 @@ export function Lesson({ slug }: { slug: SqlSlug }) {
   const Prose = PROSE[slug];
   const prev = SQL_LESSONS.find((l) => l.n === meta.n - 1);
   const next = SQL_LESSONS.find((l) => l.n === meta.n + 1);
+  // The head panel's answer: the first and the last cell of the example's first row, as the table
+  // below prints them.
+  const { columns, rows } = lesson.example;
+  const first = rows[0];
+  const answer = `${exampleCell(first[0])} · ${exampleCell(first[first.length - 1])}`;
+  const note = `${columns[0]} · ${columns[columns.length - 1]}, row 1 of ${rows.length.toLocaleString("en-US")}`;
   return (
     <main className={`page lesson sql-lesson sql-${slug}`}>
-      <PageHead eyebrow="Learn SQL">
+      <PageHead eyebrow="Learn SQL" aside={<QueryPanel sql={lesson.example.sql} answer={answer} note={note} />}>
         <p className="lesson-meta">
           Lesson <span data-series-n={meta.n}>{meta.n}</span> of {SQL_LESSONS.length} · {meta.concept}
         </p>

@@ -151,6 +151,9 @@ test.describe(ROUTE, () => {
     });
     await open(page);
     await page.waitForLoadState("networkidle");
+    // The head panel's count (task 112) is the one motion on load, and it lands: wait for it.
+    const counts = page.locator(".head-panel [data-count]");
+    await expect.poll(() => counts.evaluateAll((els) => els.length > 0 && els.every((e) => e.getAttribute("data-count") === "done"))).toBe(true);
     // Two frames of the browser's own clock, not the wrapped one.
     const settled = () =>
       page.evaluate(

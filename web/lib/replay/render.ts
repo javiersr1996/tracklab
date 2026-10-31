@@ -6,29 +6,54 @@ const MARGIN_M = 2;
 const PLAYER_PX = 9;
 const BALL_PX = 4;
 const BALL_PX_PER_M = 1.5;
+// The alpha of the disc of a player not detected.
+export const DIM_ALPHA = 0.45;
 
-export const COLORS = {
-  surface: "#9aa4ad",
-  attack: "#e8702a",
-  defence: "#2a6fe8",
-  ball: "#f5c518",
-  text: "#ffffff",
+// P1's palette in the site's neon (P13), each a token of globals.css, with its WCAG ratio on the
+// canvas (#030712): the markings --canvas-muted (7.9:1), the team with the ball --neon (13.1:1),
+// the other --neon-alt (6.2:1), the ball --canvas-hi (20.1:1); the jersey numbers --canvas-ink,
+// dark on the discs (13.1:1 on cyan, 6.2:1 on magenta). tests/tokens-contrast.test.ts holds them.
+// A player not detected is a disc at 45% over the canvas (cyan 3.3:1, magenta 2.0:1 on it): his
+// number is then white, not faded with the disc (6.2:1 on the cyan one, 10.1:1 on the magenta
+// one; dark faded with it was 1.9:1 and 1.5:1). The ball has a thin dark edge (`ballEdge`) so it
+// stands out from a disc it overlaps (13.1:1 against cyan, 6.2:1 against magenta; white alone
+// was 1.5:1 on cyan). `null` for either leaves the mark as it was drawn before P13.
+export interface Palette {
+  surface: string;
+  attack: string;
+  defence: string;
+  ball: string;
+  text: string;
+  dimText: string | null;
+  ballEdge: string | null;
+}
+
+export const COLORS: Palette = {
+  surface: "#94a3b8",
+  attack: "#00e5ff",
+  defence: "#ff3ea5",
+  ball: "#ffffff",
+  text: "#030712",
+  dimText: "#ffffff",
+  ballEdge: "#030712",
 };
 
 // The home's hero (P12): cyan for the team with the ball, magenta for the other, the ball white
 // hot, the markings in a dimmer cyan; jersey numbers dark on the bright discs.
-export const NEON_COLORS: typeof COLORS = {
+export const NEON_COLORS: Palette = {
   surface: "rgba(0, 229, 255, 0.6)",
   attack: "#00e5ff",
   defence: "#ff3ea5",
   ball: "#ffffff",
   text: "#030712",
+  dimText: null,
+  ballEdge: null,
 };
 
 // What a frame is drawn with, beyond the frame itself. Every field is optional and `drawFrame`
 // with none is P1's renderer unchanged: `/replay`, `/runs` and the lessons pass nothing.
 export interface DrawOptions {
-  colors?: typeof COLORS;
+  colors?: Palette;
   // Earlier snapshots of the same possession, oldest first: each entity's path through them
   // is drawn fading behind it (the hero's trails).
   trail?: Snapshot[];
@@ -108,13 +133,17 @@ export function drawDisc(
   detected: boolean,
   text = COLORS.text,
   radius = PLAYER_PX,
+  dimText: string | null = COLORS.dimText,
 ): void {
-  ctx.globalAlpha = detected ? 1 : 0.45;
+  ctx.globalAlpha = detected ? 1 : DIM_ALPHA;
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(px, py, radius, 0, 2 * Math.PI);
   ctx.fill();
-  ctx.fillStyle = text;
+  // Only the disc fades: the number of a player not detected keeps full alpha, in its own colour.
+  const dim = dimText !== null && !detected;
+  if (dim) ctx.globalAlpha = 1;
+  ctx.fillStyle = dim ? dimText : text;
   ctx.fillText(jersey, px, py);
   ctx.globalAlpha = 1;
 }
@@ -128,11 +157,17 @@ export function drawBall(
   z: number | null,
   color = COLORS.ball,
   markScale = 1,
+  edge: string | null = COLORS.ballEdge,
 ): void {
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(px, py, markScale * (BALL_PX + BALL_PX_PER_M * Math.max(z ?? 0, 0)), 0, 2 * Math.PI);
   ctx.fill();
+  if (edge !== null) {
+    ctx.strokeStyle = edge;
+    ctx.lineWidth = 1.25 * markScale;
+    ctx.stroke();
+  }
 }
 
 // A soft halo under a mark: the same disc, wider and faint.
@@ -247,12 +282,12 @@ export function drawFrame(
       continue;
     }
     if (glow && e.detected) drawGlow(ctx, px, py, playerPx * 2, colorOf(e.i));
-    drawDisc(ctx, px, py, colorOf(e.i), entity?.jersey ?? "", e.detected, colors.text, playerPx);
+    drawDisc(ctx, px, py, colorOf(e.i), entity?.jersey ?? "", e.detected, colors.text, playerPx, colors.dimText);
   }
   // The ball last, on top.
   if (ball) {
     if (glow) drawGlow(ctx, ball.x, ball.y, BALL_PX * markScale * 3, colors.ball);
-    drawBall(ctx, ball.x, ball.y, ball.z, colors.ball, markScale);
+    drawBall(ctx, ball.x, ball.y, ball.z, colors.ball, markScale, colors.ballEdge);
   }
   return trailed;
 }

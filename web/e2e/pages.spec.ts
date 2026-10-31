@@ -237,3 +237,16 @@ test("under prefers-reduced-motion the hero is a still frame, no trails, and off
   expect(limbs.length).toBe(4);
   for (const width of limbs) expect(width, "a swung limb is wider than a line").toBeGreaterThan(2);
 });
+
+// P13: a phone must not scroll sideways on the pages the neon theme touched.
+test.describe("no horizontal scroll at 390 px", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+  for (const path of ["/replay", "/quality", "/platform", "/bulletin", "/warehouse", "/sql", "/sql/select"]) {
+    test(path, async ({ page }) => {
+      await page.goto(path);
+      await page.waitForLoadState("load");
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(over).toBeLessThanOrEqual(0);
+    });
+  }
+});

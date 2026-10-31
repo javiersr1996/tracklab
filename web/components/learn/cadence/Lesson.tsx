@@ -85,7 +85,15 @@ function PerMatchText({ match }: { match: string }) {
 export function Lesson({ script }: { script: string }) {
   return (
     <main className="page lesson learn-cadence">
-      <LessonHead n={5} title="How many steps per second?" level="Advanced">
+      <LessonHead
+        n={5}
+        title="How many steps per second?"
+        level="Advanced"
+        result={[
+          { label: "Cadence of the first clip's runner", values: [Number(publishedFigure(`${A.file}:windows.0.cadence_hz`))], unit: "steps/s" },
+          { label: "Its sd from the predicted error", values: [Number(publishedFigure(`${A.file}:windows.0.cadence_sd_hz`))], unit: "steps/s" },
+        ]}
+      >
         <p className="lede">
           SkillCorner&apos;s open body pose places {ca("joints.length")} joints on a player {ca("fps")} times a second, each
           with its own predicted error. Two of them, the ankles, are enough to count a runner&apos;s steps. This lesson reads
