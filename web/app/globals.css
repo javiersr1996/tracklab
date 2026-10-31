@@ -600,9 +600,9 @@ a.wordmark:hover {
 }
 
 .eyebrow::before {
-  content: "//";
+  content: "//" / ""; /* decorative: empty alternative text, so a screen reader skips it */
   flex: none;
-  color: var(--neon-line-strong); /* punctuation, not text */
+  color: var(--neon-muted); /* 7.9:1; --neon-line-strong is 3.7:1 */
 }
 
 .accent {
