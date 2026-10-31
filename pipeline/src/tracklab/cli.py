@@ -28,6 +28,7 @@ from tracklab.bronze.football.events import build_events as build_football_event
 from tracklab.bronze.football.meta import build_meta as build_football_meta
 from tracklab.bronze.football.tracking import build_tracking as build_football_tracking
 from tracklab.build import default_record_dir, run_build
+from tracklab.euroleague.fetch import run_euroleague_fetch
 from tracklab.fixtures import run_fixtures
 from tracklab.formats.basketball import freeze_basketball
 from tracklab.formats.football_report import freeze_football
@@ -361,6 +362,10 @@ def _cmd_learn_browser(args: argparse.Namespace) -> int:
 
 def _cmd_sql_course(args: argparse.Namespace) -> int:
     return run_sql_course(args.public, check=args.check)
+
+
+def _cmd_euroleague_fetch(args: argparse.Namespace) -> int:
+    return run_euroleague_fetch(args.season, args.data_dir)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
@@ -1502,6 +1507,26 @@ def build_parser() -> argparse.ArgumentParser:
         "(default: $TRACKLAB_DATA_ROOT/build, else data/build; ignored by git).",
     )
     build.set_defaults(func=_cmd_build)
+
+    euroleague = subparsers.add_parser(
+        "euroleague", help="P14: EuroLeague game files (kept under the data root, never in git)."
+    )
+    euroleague_sub = euroleague.add_subparsers(dest="euroleague_command", required=True)
+    euroleague_fetch = euroleague_sub.add_parser(
+        "fetch",
+        help="Download Points, PlaybyPlay and Boxscore of every played game, incrementally, "
+        "at one request every 2 s; writes euroleague/raw/<season>/manifest.json.",
+    )
+    euroleague_fetch.add_argument(
+        "--season",
+        action="append",
+        required=True,
+        help="Season code, e.g. E2025; repeat the flag for several.",
+    )
+    euroleague_fetch.add_argument(
+        "--data-dir", type=Path, default=data_root(), help="Data root (default: data)."
+    )
+    euroleague_fetch.set_defaults(func=_cmd_euroleague_fetch)
 
     return parser
 
