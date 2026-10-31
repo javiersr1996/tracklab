@@ -96,16 +96,23 @@ test("the season under way says how far it is, and the strip lights the team cho
   const data = await league(page);
   const now = data.seasons.find((s) => s.season === "E2026")!;
   let players = 0;
+  let withPlayers = 0;
   let min = 0;
   for (const t of now.teams) {
     const file = await team(page, t.code);
-    players += file.seasons.find((s) => s.season === "E2026")!.players.length;
+    const n = file.seasons.find((s) => s.season === "E2026")!.players.length;
+    players += n;
+    if (n > 0) withPlayers += 1;
     min = file.player_min_shots;
   }
   await page.getByRole("button", { name: "2026-27" }).click();
   const note = page.locator('[data-note="in-progress"]');
   await expect(note).toContainText(`${now.games_played} games through ${now.cutoff}`);
   await expect(note).toContainText(`${players} players have reached ${min} shots`);
+  // "so only n of m teams ..." is there exactly while some team has no player hexagons yet.
+  const tail = `so only ${withPlayers} of ${now.teams.length} teams have player hexagons yet`;
+  if (withPlayers < now.teams.length) await expect(note).toContainText(tail);
+  else await expect(note).not.toContainText("so only");
   await expect(page.locator(".el-hex")).toHaveCount(now.cells.length);
 
   await page.locator("#el-team").selectOption("MAD");

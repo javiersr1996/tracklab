@@ -24,6 +24,8 @@ export interface TeamsSummary {
   playerMinShots: number;
   // Players who have reached it in the season still being played, over all teams.
   playersNow: number;
+  // Teams with at least one such player in that season.
+  teamsWithPlayersNow: number;
 }
 
 export function teamsSummary(): TeamsSummary {
@@ -37,6 +39,9 @@ export function teamsSummary(): TeamsSummary {
       (sum, t) => sum + (t.seasons.find((s) => s.season === CURRENT_SEASON)?.players.length ?? 0),
       0,
     ),
+    teamsWithPlayersNow: teams.filter(
+      (t) => (t.seasons.find((s) => s.season === CURRENT_SEASON)?.players.length ?? 0) > 0,
+    ).length,
   };
 }
 

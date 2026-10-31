@@ -69,11 +69,13 @@ export function Atlas({
   changes,
   playerMinShots,
   playersNow,
+  teamsWithPlayersNow,
 }: {
   league: League;
   changes: TeamChanges[];
   playerMinShots: number;
   playersNow: number;
+  teamsWithPlayersNow: number;
 }) {
   const [season, setSeason] = useState(league.seasons[0].season);
   const [team, setTeam] = useState("");
@@ -231,7 +233,11 @@ export function Atlas({
               <p className="el-note" data-note="in-progress">
                 {seasonLabel(season)} is in progress: {pluralize(leagueSeason.games_played, "game")} through{" "}
                 {leagueSeason.cutoff}. {pluralize(playersNow, "player has", "players have")} reached{" "}
-                {playerMinShots} shots for one team so far, so most teams have no player hexagons yet.
+                {playerMinShots} shots for one team so far
+                {teamsWithPlayersNow < leagueSeason.teams.length
+                  ? `, so only ${teamsWithPlayersNow} of ${leagueSeason.teams.length} teams have player hexagons yet`
+                  : ""}
+                .
               </p>
             ) : null}
           </div>
