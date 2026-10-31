@@ -3,8 +3,11 @@ import localFont from "next/font/local";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Nav } from "../components/site/Nav";
-import { DATA_SOURCES, SITE } from "../lib/sections";
+import { DATA_SOURCES, EUROLEAGUE, SITE } from "../lib/sections";
 import "./globals.css";
+
+// The MIT sources share one sentence; EuroLeague, under no open license, has its own (P14).
+const MIT_SOURCES = DATA_SOURCES.filter((s) => s.license === "MIT");
 
 // One webfont, the Latin subset of JetBrains Mono's variable file (OFL, fonts/OFL-JetBrainsMono.txt)
 // committed in this repo, so the build needs no network and no page asks a font CDN; it is
@@ -47,15 +50,23 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <p className="site-footer-label">data</p>
               <p>
                 SkillCorner&apos;s open data, published under the MIT license in{" "}
-                {DATA_SOURCES.map((s, i) => (
+                {MIT_SOURCES.map((s, i) => (
                   <span key={s.href}>
-                    {i === 0 ? "" : i === DATA_SOURCES.length - 1 ? " and " : ", "}
+                    {i === 0 ? "" : i === MIT_SOURCES.length - 1 ? " and " : ", "}
                     <a href={s.href}>{s.name}</a> ({s.what})
                   </span>
                 ))}
                 . Credit for the tracking, event and body pose data goes to SkillCorner.
               </p>
               <p className="site-footer-note">Not affiliated with SkillCorner.</p>
+              <p data-footer-source="euroleague">
+                <a href={EUROLEAGUE.href}>{EUROLEAGUE.name}</a> ({EUROLEAGUE.what}) on{" "}
+                <Link href="/euroleague" prefetch={false}>
+                  /euroleague
+                </Link>
+                : its game data has no open license, so only aggregates are published, never a shot.
+              </p>
+              <p className="site-footer-note">Not affiliated with EuroLeague.</p>
             </div>
             <div>
               <p className="site-footer-label">code</p>

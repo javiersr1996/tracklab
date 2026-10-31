@@ -19,6 +19,7 @@ import { COLORS, DIM_ALPHA } from "../lib/replay/render";
 // - The lineage nodes' resting opacity back at 0.8: "marks drawn in TS" fails (frozen's label 4.23:1).
 // - `COLORS.ball` back at #f5c518: "the tokens they name" fails on the replay's ball.
 // - `--neon-band` back at #0b1220: "the alternate band reads as a band" fails (1.08:1).
+// - `--el-down: #8a2a5c`: "the shot atlas of /euroleague" fails (2.5:1 on the canvas).
 
 const css = readFileSync(join(process.cwd(), "app", "globals.css"), "utf-8").replace(/\/\*[\s\S]*?\*\//g, "");
 
@@ -172,6 +173,21 @@ describe("the colour tokens", () => {
       pairs.push(measure(`ball edge on the ${team} disc`, hex(COLORS.ballEdge!), hex(COLORS[team]), 3));
     }
     pairs.push(measure("ball against its edge", hex(COLORS.ball), hex(COLORS.ballEdge!), 3));
+    expect(low(pairs)).toEqual([]);
+  });
+
+  it("the shot atlas of /euroleague: its tones, its court and its bars (task 116)", () => {
+    const canvas = resolve(page, "--canvas");
+    const pairs = ["--el-hi", "--el-up", "--el-mid", "--el-down", "--el-lo"].map((t) =>
+      measure(`hexagon ${t} on --canvas`, resolve(page, t), canvas, 3),
+    );
+    pairs.push(measure("the court's lines (--neon-line-strong on --canvas)", resolve(page, "--neon-line-strong"), canvas, 3));
+    pairs.push(measure("the active hexagon's edge (--canvas-hi) on --canvas", resolve(page, "--canvas-hi"), canvas, 3));
+    // The strip's bars sit in a team card on the page; each share is printed on its own segment.
+    for (const seg of ["--canvas-hi", "--canvas-muted", "--neon"]) {
+      pairs.push(measure(`bar ${seg} on a page card`, resolve(page, seg), resolve(page, "--raised"), 3));
+      pairs.push(measure(`--canvas-ink on the bar ${seg}`, resolve(page, "--canvas-ink"), resolve(page, seg), 4.5));
+    }
     expect(low(pairs)).toEqual([]);
   });
 
