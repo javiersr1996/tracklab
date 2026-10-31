@@ -5,7 +5,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ClockFigure, readClock, START_MS } from "../components/learn/coordinates/ClockFigure";
-import { FrameFigure, readAt, stepOf } from "../components/learn/coordinates/FrameFigure";
+import { FrameFigure, MARKS, readAt, stepOf } from "../components/learn/coordinates/FrameFigure";
 import { Lesson } from "../components/learn/coordinates/Lesson";
 import { CANVAS } from "../components/learn/gravity/Plot";
 import {
@@ -291,6 +291,8 @@ describe("the text of lesson 3", () => {
     ];
     const colours = new Set(markups.flatMap((m) => [...m.matchAll(/(?:stroke|fill)="([^"]+)"/g)].map((x) => x[1])).filter((c) => c !== "none"));
     expect(colours.size).toBeGreaterThan(3);
-    expect([...colours].filter((c) => !/^#[0-9a-f]{6}$/i.test(c) || contrast(c, CANVAS) < 3)).toEqual([]);
+    // The ball's dark edge is the canvas colour by design: it is measured against the discs it parts.
+    expect([...colours].filter((c) => c !== MARKS.ballEdge && (!/^#[0-9a-f]{6}$/i.test(c) || contrast(c, CANVAS) < 3))).toEqual([]);
+    expect([MARKS.attack, MARKS.defence, MARKS.ball].filter((c) => contrast(MARKS.ballEdge, c) < 3)).toEqual([]);
   });
 });

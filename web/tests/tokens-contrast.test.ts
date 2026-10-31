@@ -127,6 +127,7 @@ describe("the colour tokens", () => {
       ["pose RING_COLOR", RING_COLOR, "--canvas-hi"],
       ["coordinates MARKS.surface, the replay's markings", MARKS.surface, "--canvas-muted"],
       ["coordinates MARKS.ball, the replay's ball", MARKS.ball, "--canvas-hi"],
+      ["coordinates MARKS.ballEdge, the replay's ball edge", MARKS.ballEdge, "--canvas"],
       ["quality DATA_COLOR", DATA_COLOR, "--neon"],
       ["quality REAL_COLOR", REAL_COLOR, "--neon-alt"],
       ["quality BASE_COLOR", BASE_COLOR, "--canvas-axis"],
