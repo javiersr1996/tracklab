@@ -6,7 +6,7 @@ import { EXTERNAL_EDGE, SCHEMA_COLOR } from "../components/platform/Lineage";
 import { BASE_COLOR, DATA_COLOR, REAL_COLOR, TRACE_ALPHA } from "../components/quality/Hook";
 import { MARKER_COLOR, OTHER_COLOR } from "../components/runs/Hook";
 import { RING_COLOR } from "../lib/pose/render";
-import { COLORS } from "../lib/replay/render";
+import { COLORS, DIM_ALPHA } from "../lib/replay/render";
 
 // The colour tokens of globals.css (P13, task 109), read from the file and resolved the way the
 // cascade resolves them: the palette in `:root`, the slots in `:root, .surface-neon`, and what the
@@ -145,7 +145,9 @@ describe("the colour tokens", () => {
     const hex = (h: string): Rgba => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).concat(1) as Rgba;
     const at = (h: string, alpha: number): Rgba => [...hex(h).slice(0, 3), alpha] as Rgba;
     const pairs = [
-      ...Object.entries(COLORS).filter(([k]) => k !== "text").map(([k, c]) => measure(`replay ${k}`, hex(c), canvas, 3)),
+      ...Object.entries(COLORS)
+        .filter(([k]) => !["text", "dimText"].includes(k))
+        .map(([k, c]) => measure(`replay ${k}`, hex(c as string), canvas, 3)),
       measure("quality data's path", at(DATA_COLOR, TRACE_ALPHA), canvas, 3),
       measure("quality standard's path", at(REAL_COLOR, TRACE_ALPHA), canvas, 3),
       measure("quality baseline", hex(BASE_COLOR), canvas, 3),
@@ -160,6 +162,11 @@ describe("the colour tokens", () => {
       pairs.push(measure(`lineage ${kind} label at rest`, resolve(page, "--canvas-ink"), node, 4.5));
     }
     pairs.push(measure("jersey number on the other team's disc", hex(COLORS.text), hex(COLORS.defence), 4.5));
+    // A player not detected: the disc at DIM_ALPHA over the canvas, the number on top at full alpha.
+    for (const team of ["attack", "defence"] as const) {
+      const disc = over(at(COLORS[team], DIM_ALPHA), canvas);
+      pairs.push(measure(`jersey number of a player not detected, ${team} disc`, hex(COLORS.dimText!), disc, 4.5));
+    }
     expect(low(pairs)).toEqual([]);
   });
 
