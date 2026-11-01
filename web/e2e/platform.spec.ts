@@ -274,7 +274,7 @@ test("no route links to the private repository", async ({ page }) => {
 
 test("the page does not claim a CI run", async ({ page }) => {
   await page.goto("/engineering");
-  await expect(page.locator("main")).not.toContainText(/on every CI run|\(private repository\)/);
+  await expect(page.locator("main")).not.toContainText(/on every CI run|\(private repository\)|ci\.yml|CI run|GitHub Actions/i);
 });
 
 test("the guarantees and the Postgres block print what platform.json and warehouse_pg.json hold", async ({

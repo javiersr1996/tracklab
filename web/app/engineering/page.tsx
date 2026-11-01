@@ -260,8 +260,9 @@ export default function PlatformPage() {
         <details data-pg-proof>
           <summary>What proves it</summary>
           <p>
-            pytest <code>test_a_second_load_of_the_same_gold_writes_no_row</code>, and two
-            consecutive loads in the steps of <code>ci.yml</code>. The e2e <code>warehouse-pg</code>{" "}
+            pytest <code>test_a_second_load_of_the_same_gold_writes_no_row</code> in{" "}
+            <code>tests/postgres/test_load_postgres.py</code>, which loads twice and compares the
+            row counts. The e2e <code>warehouse-pg</code>{" "}
             proves /warehouse falls back to the snapshot when the database does not answer; its live
             case needs a database URL{PG.source.where_id === "neon" ? "." : " and has not run against Neon."}
           </p>
