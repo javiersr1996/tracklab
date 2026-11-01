@@ -34,7 +34,8 @@ function deadAtM2(runs: Runs): Runs {
   return copy;
 }
 
-async function open(page: Page, runs: Runs) {
+// `fold: false` leaves the evidence as the page ships it, closed.
+async function open(page: Page, runs: Runs, { fold = true } = {}) {
   await page.route("**/data/runs.json", (route) => route.fulfill({ json: runs }));
   const errors: string[] = [];
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
@@ -42,6 +43,9 @@ async function open(page: Page, runs: Runs) {
   await page.goto("/tracking/runs");
   await expect(page.locator("main.runs")).toHaveAttribute("data-loaded", "true");
   await expect(page.locator("[data-status]")).toBeVisible();
+  if (fold) {
+    for (const d of await page.locator("details[data-fold]").all()) await d.locator("summary").click();
+  }
   return errors;
 }
 
@@ -161,17 +165,17 @@ test("the dead branch: the status line, the stage that died and every figure of 
     expect(ids, table).toEqual(calibrationIds);
   }
 
-  // The order the plan gives the page.
+  // The verdict first (stages, held-out half), then the folded evidence.
   const sections = await page
     .locator("main [data-section]")
     .evaluateAll((els) => els.map((e) => e.getAttribute("data-section")));
   expect(sections).toEqual([
     "hook",
     "stages",
+    "held-out",
     "negative",
     "per-match-effects",
     "calibration",
-    "held-out",
     "reason",
     "protocol",
     "scope",
@@ -366,4 +370,35 @@ test("the home page links to /tracking/runs", async ({ page }) => {
   await link.click();
   await expect(page).toHaveURL(/\/tracking\/runs$/);
   await expect(page.locator("h1")).toHaveText("The run that moves nobody");
+});
+
+// The evidence is folded: closed by default and in the server's HTML, searchable there, and a
+// keyboard opens it.
+test("the evidence is folded by default, is in the server HTML, and opens from the keyboard", async ({
+  page,
+}) => {
+  const html = await (await page.request.get("/tracking/runs")).text();
+  expect(html).toContain("data-fold");
+  expect(html).toContain('data-section="negative"');
+  expect(html).toContain('data-section="protocol"');
+  expect(html).not.toMatch(/<details[^>]*data-fold[^>]*\sopen/);
+
+  const runs = await publishedRuns(page);
+  await open(page, runs, { fold: false });
+  const folds = page.locator("details[data-fold]");
+  expect(await folds.count()).toBe(2);
+  for (const d of await folds.all()) {
+    await expect(d).not.toHaveAttribute("open", "");
+    await expect(d.locator("summary")).toBeVisible();
+  }
+  await expect(page.locator('section[data-section="negative"]')).toBeHidden();
+  await expect(page.locator('section[data-section="held-out"]')).toBeVisible();
+
+  const first = folds.first().locator("summary");
+  await first.focus();
+  await page.keyboard.press("Enter");
+  await expect(folds.first()).toHaveAttribute("open", "");
+  await expect(page.locator('section[data-section="negative"]')).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(folds.first()).not.toHaveAttribute("open", "");
 });

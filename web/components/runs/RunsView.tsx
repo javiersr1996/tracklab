@@ -685,6 +685,17 @@ function Scope({ runs }: { runs: Runs }) {
   );
 }
 
+// The evidence behind the verdict: in the server's HTML, closed until asked for. `<details>` keeps
+// it searchable and keyboard-operable without a line of script.
+function Fold({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <details className="runs-fold" data-fold>
+      <summary>{title}</summary>
+      {children}
+    </details>
+  );
+}
+
 export function RunsView({ runs }: { runs: Runs }) {
   return (
     <>
@@ -697,12 +708,16 @@ export function RunsView({ runs }: { runs: Runs }) {
       </Band>
       <Band>
         <Stages runs={runs} />
-        <Negative runs={runs} />
-        <Effects runs={runs} />
-        <Calibration runs={runs} />
         <Held runs={runs} />
-        <Reason runs={runs} />
-        <Protocol runs={runs} />
+        <Fold title="Evidence: subtype tables, per match, calibration and the post hoc reading">
+          <Negative runs={runs} />
+          <Effects runs={runs} />
+          <Calibration runs={runs} />
+          <Reason runs={runs} />
+        </Fold>
+        <Fold title="The protocol">
+          <Protocol runs={runs} />
+        </Fold>
       </Band>
       {/* A child of main itself: the e2e reads the words of main's other children, and this line
           names what the page does not do. */}
