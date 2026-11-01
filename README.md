@@ -1,7 +1,5 @@
 # Track Lab
 
-[![ci](https://github.com/javiersr1996/tracklab/actions/workflows/ci.yml/badge.svg)](https://github.com/javiersr1996/tracklab/actions/workflows/ci.yml)
-
 **Live: https://tracklab-sable.vercel.app**
 
 One schema, two sports, one renderer. Track Lab takes SkillCorner's open tracking and event data
