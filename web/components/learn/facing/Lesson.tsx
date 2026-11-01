@@ -114,7 +114,7 @@ export function Lesson({ script }: { script: string }) {
             ones this lesson needs: <Quote id="skillcorner-bodypose-joints" /> (<Cite id="skillcorner-bodypose-joints" />).
           </p>
           <p>
-            On the two clips <a href="/pose">/pose</a> publishes, the fifth lesson counted steps from the ankles. Here the question
+            On the two clips <a href="/tracking/pose">/tracking/pose</a> publishes, the fifth lesson counted steps from the ankles. Here the question
             is which way each player faces while running, and how far that is from the way they are going. Two smaller questions
             sit underneath. How is a direction read from three points? And how are angles averaged, when two angles either side of
             straight back have an arithmetic mean that points straight ahead?
@@ -426,7 +426,7 @@ export function Lesson({ script }: { script: string }) {
 
         <Reproduce sql={script} browser="facing">
           <p>
-            The script reads the clip /pose already publishes and needs nothing but Python&apos;s standard library: no Track Lab
+            The script reads the clip /tracking/pose already publishes and needs nothing but Python&apos;s standard library: no Track Lab
             code, no numpy, and the provider&apos;s match files only through the clip.
           </p>
           <ol>
@@ -466,7 +466,7 @@ export function Lesson({ script }: { script: string }) {
               and <a href="/learn/cadence">How many steps per second?</a>, the fifth, for the same two clips read from the ankles.
             </li>
             <li>
-              <a href="/pose">/pose</a>: the viewer and the protocol behind the clips.
+              <a href="/tracking/pose">/tracking/pose</a>: the viewer and the protocol behind the clips.
             </li>
           </ul>
         </section>

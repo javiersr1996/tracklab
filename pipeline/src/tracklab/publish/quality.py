@@ -40,7 +40,7 @@ from tracklab.quality.run import CHECKS
 QUALITY_JSON = "quality.json"
 BULLETIN_MD = "bulletin.md"
 
-# Per check, the metrics `web/app/quality/page.tsx` and the bulletin show. The
+# Per check, the metrics `web/app/engineering/quality/page.tsx` and the bulletin show. The
 # rest of each CSV (candidate counts, exclusion reasons) stays methodology
 # detail in reports/, read by anyone who wants to audit a figure, not echoed here.
 KEEP: dict[str, tuple[str, ...]] = {
@@ -376,8 +376,8 @@ def render_bulletin(summary: dict[str, Any], hook: dict[str, Any]) -> str:
         "A calibration kit for anyone building on the two Track Lab bundles, not a "
         "verdict on SkillCorner: six checks, each one number (or its range) per match, "
         "read straight off `pipeline/reports/quality_*.csv`. `web/public/data/quality.json` "
-        "carries the same figures for the `/quality` page, and every number below is one "
-        "or the other.",
+        "carries the same figures for the `/engineering/quality` page, and every number below "
+        "is one or the other.",
         "",
         "## Detection",
         "",
@@ -500,7 +500,7 @@ def render_bulletin(summary: dict[str, Any], hook: dict[str, Any]) -> str:
         "",
         "## The hook shot",
         "",
-        f"`/quality` replays one basketball shot (`{hook['match_id']}`, native frame "
+        f"`/engineering/quality` replays one basketball shot (`{hook['match_id']}`, native frame "
         f"`{hook['start_frame']}`) chosen by rule: of every accepted calibration "
         "flight, the one whose fitted g sits closest to the calibration's own median. "
         f"Its g is {hook['g_data']:.2f} m/s² against a calibration median of "

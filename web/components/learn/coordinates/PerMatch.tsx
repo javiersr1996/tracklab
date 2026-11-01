@@ -75,7 +75,7 @@ export function PerMatch({ matches }: { matches: readonly MatchCoordinates[] }) 
         </table>
       </div>
       <figcaption>
-        The steps and their exactness are the clock check of /quality; the rows are the build&apos;s count for{" "}
+        The steps and their exactness are the clock check of /engineering/quality; the rows are the build&apos;s count for{" "}
         <code>frames</code>. Surface and sign come from the match&apos;s published possession: the sign is that of the team
         with the ball, in the period the possession was played.
       </figcaption>

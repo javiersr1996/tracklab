@@ -1,5 +1,5 @@
 // `web/public/data/runs.json` (task 52), as `lib/runs/schema.json` describes it. Only what
-// `/runs` reads is typed; the report subtrees stay loose and are reached through `at`.
+// `/tracking/runs` reads is typed; the report subtrees stay loose and are reached through `at`.
 
 export type Stage = "M1" | "M2" | "M3" | "M4" | "M5a" | "M5b";
 export const STAGES: Stage[] = ["M1", "M2", "M3", "M4", "M5a", "M5b"];

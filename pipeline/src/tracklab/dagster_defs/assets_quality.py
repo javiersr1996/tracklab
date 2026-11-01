@@ -29,9 +29,24 @@ READS: dict[str, list[str]] = {
     "partitions": ["bronze_basketball_tracking_frames", "reports_orientation_football"],
 }
 
+# What each check measures, one line each (published as the node's description in lineage.json).
+DESCRIPTIONS: dict[str, str] = {
+    "detection": "How often the provider says it saw each kind of object, per match.",
+    "gravity": "Apparent gravity of the ball per match: the g its free flights fall with.",
+    "entry_angle": "Entry angle of a made shot: what the bundle reports against the geometry.",
+    "noise": "Frame-to-frame jitter of the ball against detected players, both sports.",
+    "clock": "Whether the clock is exact: the step between two native frames, per match.",
+    "partitions": "The partitions no field in either bundle declares, one row per match.",
+}
+
 
 def _quality_asset(check: str) -> AssetsDefinition:
-    @asset(name=f"quality_{check}", group_name="quality", deps=READS[check])
+    @asset(
+        name=f"quality_{check}",
+        group_name="quality",
+        deps=READS[check],
+        description=DESCRIPTIONS[check],
+    )
     def _run(context: AssetExecutionContext) -> None:
         if run_quality([check], data_dir=data_root(), reports_dir=Path("reports")) != 0:
             raise Failure(f"tracklab quality {check} failed")

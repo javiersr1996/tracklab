@@ -26,7 +26,7 @@ test("the hook animation starts on its own and the table matches quality.json", 
   const requests: Request[] = [];
   page.on("requestfinished", (r) => requests.push(r));
 
-  await page.goto("/quality");
+  await page.goto("/engineering/quality");
 
   await expect(page.locator("figure.hook")).toHaveAttribute("data-state", "playing", {
     timeout: 2_000,
@@ -61,7 +61,7 @@ test("the hook animation starts on its own and the table matches quality.json", 
     expect(Number(text)).toBeCloseTo(expected.value, 6);
     compared++;
   }
-  console.log(`/quality: ${compared} table cells checked against quality.json`);
+  console.log(`/engineering/quality: ${compared} table cells checked against quality.json`);
   expect(compared).toBeGreaterThan(0);
 
   await page.waitForLoadState("networkidle");
@@ -70,12 +70,12 @@ test("the hook animation starts on its own and the table matches quality.json", 
     const sizes = await r.sizes();
     transferred += sizes.responseBodySize + sizes.responseHeadersSize;
   }
-  console.log(`/quality: ${transferred} bytes transferred`);
+  console.log(`/engineering/quality: ${transferred} bytes transferred`);
 
   expect(errors).toEqual([]);
 });
 
 test("the entry_angle check links to its lesson", async ({ page }) => {
-  await page.goto("/quality");
+  await page.goto("/engineering/quality");
   await expect(page.locator('p[data-check="entry_angle"] a[href="/learn/entry"]')).toHaveCount(1);
 });

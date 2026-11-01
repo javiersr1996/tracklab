@@ -87,7 +87,7 @@ export function PerPlayer({ rows, columns }: { rows: Readonly<Record<string, rea
         <Fig name={path(columns.cad_s_sd_hz)}>{at.sd_hz}</Fig> steps/s
       </p>
       <figcaption>
-        The rows /pose prints for the fast band, drawn. Each bar is the error the joints&apos; predicted error explains, not the
+        The rows /tracking/pose prints for the fast band, drawn. Each bar is the error the joints&apos; predicted error explains, not the
         spread of the player&apos;s own windows.
       </figcaption>
     </figure>

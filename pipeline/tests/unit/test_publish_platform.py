@@ -18,6 +18,7 @@ from typing import Any
 import pytest
 
 from tracklab.publish.platform import (
+    guarantees,
     latest_record,
     layers_from_record,
     matches_from_record,
@@ -602,3 +603,100 @@ def test_check_ignores_the_timing_of_a_fresh_record(tmp_path: Path) -> None:
         record_path=fresh_path, record_dir=record_dir, out_dir=out_dir, check=True
     )
     assert code == 0
+
+
+# --- guarantees: counted from the dbt manifest, the contract files and the argparse tree -----
+
+
+def _pipeline_dir(root: Path, singular: int = 1, contracts: int = 2) -> Path:
+    """A fabricated pipeline directory: a manifest with two generic tests and `singular` singular
+    ones (plus a model, which is not a test), and `contracts` contract test files."""
+    nodes: dict[str, Any] = {"model.p.m": {"resource_type": "model", "name": "m"}}
+    for i, kind in enumerate(("not_null", "unique")):
+        nodes[f"test.p.{kind}{i}"] = {
+            "resource_type": "test",
+            "name": f"{kind}_m_c",
+            "test_metadata": {"name": kind},
+        }
+    for i in range(singular):
+        nodes[f"test.p.assert_{i}"] = {"resource_type": "test", "name": f"assert_{i}"}
+    target = root / "dbt" / "target"
+    target.mkdir(parents=True)
+    (target / "manifest.json").write_text(json.dumps({"nodes": nodes}), encoding="utf-8")
+    folder = root / "tests" / "contracts"
+    folder.mkdir(parents=True)
+    for i in range(contracts):
+        (folder / f"test_c{i}.py").write_text("", encoding="utf-8")
+    (folder / "helper.py").write_text("", encoding="utf-8")  # not a contract
+    return root
+
+
+def test_guarantees_count_generic_singular_contracts_and_check_commands(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("tracklab.publish.platform._check_commands", lambda: ["a b", "c"])
+    got = guarantees(_pipeline_dir(tmp_path))
+    assert got["dbt"] == {
+        "total": 3,
+        "generic": 2,
+        "by_kind": {"not_null": 1, "unique": 1},
+        "singular": ["assert_0"],
+    }
+    assert got["contracts"] == {"files": 2, "names": ["test_c0", "test_c1"]}
+    assert got["checks"] == {"count": 2, "commands": ["a b", "c"]}
+
+
+def test_real_guarantees_agree_with_the_files_on_disk_independently() -> None:
+    got = guarantees()
+    pipeline = Path(__file__).resolve().parents[2]
+    assert got["dbt"]["total"] == got["dbt"]["generic"] + len(got["dbt"]["singular"])
+    # singular tests are the .sql files of dbt/tests, counted here without the manifest
+    assert len(got["dbt"]["singular"]) == len(list((pipeline / "dbt" / "tests").glob("*.sql")))
+    assert got["contracts"]["files"] == len(
+        list((pipeline / "tests" / "contracts").glob("test_*.py"))
+    )
+    # some --check flags are added in a loop, so the commands are not countable by text: they are
+    # the argparse tree, and a command that is not one of them must not be in the list
+    assert "publish lineage" in got["checks"]["commands"]
+    assert "publish" not in got["checks"]["commands"]
+    assert "publish platform" in got["checks"]["commands"]
+
+
+def test_check_is_1_when_a_guarantee_count_changes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Add a contract file, a singular test or a `--check` after platform.json was written
+    and `--check` must fail; undo it and it passes."""
+    monkeypatch.setattr("tracklab.publish.platform._check_commands", lambda: ["a b", "c"])
+    record_dir = tmp_path / "build"
+    out_dir = tmp_path / "web"
+    out_dir.mkdir(parents=True)
+    _write_record(record_dir, _record())
+    (out_dir / "index.json").write_text(json.dumps(_index()), encoding="utf-8")
+    pipeline = _pipeline_dir(tmp_path / "pipeline")
+    kwargs = {"record_path": None, "record_dir": record_dir, "out_dir": out_dir}
+    assert run_publish_platform(**kwargs, pipeline_dir=pipeline) == 0
+    assert run_publish_platform(**kwargs, pipeline_dir=pipeline, check=True) == 0
+
+    extra = pipeline / "tests" / "contracts" / "test_new.py"
+    extra.write_text("", encoding="utf-8")
+    assert run_publish_platform(**kwargs, pipeline_dir=pipeline, check=True) == 1
+    extra.unlink()
+
+    manifest = pipeline / "dbt" / "target" / "manifest.json"
+    original = manifest.read_text(encoding="utf-8")
+    nodes = json.loads(original)
+    nodes["nodes"]["test.p.new"] = {"resource_type": "test", "name": "assert_new"}
+    manifest.write_text(json.dumps(nodes), encoding="utf-8")
+    assert run_publish_platform(**kwargs, pipeline_dir=pipeline, check=True) == 1
+    manifest.write_text(original, encoding="utf-8")
+
+    monkeypatch.setattr("tracklab.publish.platform._check_commands", lambda: ["a b", "c", "d"])
+    assert run_publish_platform(**kwargs, pipeline_dir=pipeline, check=True) == 1
+    monkeypatch.setattr("tracklab.publish.platform._check_commands", lambda: ["a b", "c"])
+    assert run_publish_platform(**kwargs, pipeline_dir=pipeline, check=True) == 0
+
+    payload = json.loads((out_dir / "platform.json").read_text(encoding="utf-8"))
+    del payload["guarantees"]  # an older platform.json, written before the field
+    (out_dir / "platform.json").write_text(json.dumps(payload), encoding="utf-8")
+    assert run_publish_platform(**kwargs, pipeline_dir=pipeline, check=True) == 1

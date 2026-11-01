@@ -104,7 +104,7 @@ export function Lesson({ script }: { script: string }) {
         <section aria-labelledby="question-h">
           <h2 id="question-h">The question</h2>
           <p>
-            Cadence is the number of steps a runner takes per second. On <a href="/pose">/pose</a> Track Lab publishes one
+            Cadence is the number of steps a runner takes per second. On <a href="/tracking/pose">/tracking/pose</a> Track Lab publishes one
             for every player of two football matches, in the fast band from {p("protocol.bands.high_m_s_from")}&nbsp;m/s, with
             an sd beside each. This lesson takes that number apart. It asks two things that any reading of a repeating signal
             has to answer: how do you find the period of a signal only a few cycles long, and how sure can you be of it when
@@ -313,7 +313,7 @@ export function Lesson({ script }: { script: string }) {
         <section aria-labelledby="example-h">
           <h2 id="example-h">One window</h2>
           <p>
-            The clip /pose replays for match {ca("match_id")} holds one window chosen by rule, not by eye: of every
+            The clip /tracking/pose replays for match {ca("match_id")} holds one window chosen by rule, not by eye: of every
             fast-band window in the match, the one whose cadence sits nearest the match&apos;s median, never the fastest. It
             belongs to number {ca(`players.${playerA}.number`)} of team {ca(`players.${playerA}.team_id`)}, running at{" "}
             {ca("windows.0.speed_m_s")}&nbsp;m/s, and spans {la("samples")} frames, {la("seconds")}&nbsp;s.
@@ -466,7 +466,7 @@ export function Lesson({ script }: { script: string }) {
             </table>
           </div>
           <p>
-            The number /pose prints for a player is not one window but the median over all of that player&apos;s fast-band windows, and its
+            The number /tracking/pose prints for a player is not one window but the median over all of that player&apos;s fast-band windows, and its
             sd comes from the same draws carried through the median. Many windows pull it down: for the player above, the
             median of {cell(A.match_id, rowA.row, "finite_s")} windows carries {cell(A.match_id, rowA.row, "cad_s_sd_hz")}, against{" "}
             {ca("windows.0.cadence_sd_hz")} for the one window.
@@ -478,7 +478,7 @@ export function Lesson({ script }: { script: string }) {
           <p>
             In both matches the spread between players is many times the error any one of them carries, so the error
             the joints carry does not hide the difference between players. That is the sd of the joints&apos; predicted error
-            only, not the variation of one player between windows (see Limitations). It does not say why they differ, and this lesson does not ask. /pose shows the
+            only, not the variation of one player between windows (see Limitations). It does not say why they differ, and this lesson does not ask. /tracking/pose shows the
             rule the protocol froze around this comparison before the second match was read, and how that match met it.
           </p>
         </section>
@@ -522,7 +522,7 @@ export function Lesson({ script }: { script: string }) {
             </li>
             <li>
               If the provider called the forward foot the left one in every frame, <M><mi>s</mi></M> would swing once per
-              step and every cadence would double. The protocol could not rule that out; /pose lists it with its other blind
+              step and every cadence would double. The protocol could not rule that out; /tracking/pose lists it with its other blind
               spot.
             </li>
             <li>Two matches, one window per published clip, and the fast band only.</li>
@@ -548,7 +548,7 @@ export function Lesson({ script }: { script: string }) {
 
         <Reproduce sql={script} browser="cadence">
           <p>
-            The script reads the clip /pose already publishes and needs nothing but Python&apos;s standard library: no Track
+            The script reads the clip /tracking/pose already publishes and needs nothing but Python&apos;s standard library: no Track
             Lab code, no numpy, and the provider&apos;s match files only through the clip.
           </p>
           <ol>
@@ -589,7 +589,7 @@ export function Lesson({ script }: { script: string }) {
               limits.
             </li>
             <li>
-              <a href="/pose">/pose</a>: the viewer, the protocol and every player&apos;s row this lesson draws.
+              <a href="/tracking/pose">/tracking/pose</a>: the viewer, the protocol and every player&apos;s row this lesson draws.
             </li>
           </ul>
         </section>

@@ -1,5 +1,5 @@
 // `web/public/data/quality.json` (task 30), read at build time like `stats.json`
-// in `lib/data.ts`: every figure on `/quality` is the one this file was built with.
+// in `lib/data.ts`: every figure on `/engineering/quality` is the one this file was built with.
 import quality from "../public/data/quality.json";
 
 export interface QualityRow {

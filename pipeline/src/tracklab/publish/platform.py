@@ -37,6 +37,12 @@ Two decisions, not forced.
    `native_match_id=` partitions, so a season table simply never has a match
    id to be found under.
 
+3. **Guarantees are counted, not typed.** `guarantees` counts the dbt tests in
+   `dbt/target/manifest.json` (a test with `test_metadata` is generic, one without is a singular
+   `tests/*.sql`), the files of `pipeline/tests/contracts` and the `tracklab` subcommands that take
+   `--check` (walking the argparse tree, so a new `--check` or a deleted one changes the count).
+   `--check` recounts all three and fails when the file on disk differs.
+
 `--check` writes nothing. It compares the published layer, title and subtitle (files,
 bytes to watch and to query, live) and row counts -- never the bytes of the Parquet tables, because
 `publish/stats.py` already documents that DuckDB's parallel writer lays out
@@ -50,14 +56,17 @@ instead of agreeing by construction.
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
 from tracklab.publish.format import fmt
 
 SCHEMA_VERSION = 1
+PIPELINE_DIR = Path(__file__).resolve().parents[3]
 PLATFORM_JSON = "platform.json"
 INDEX_JSON = "index.json"
 STATS_JSON = "stats.json"
@@ -400,6 +409,47 @@ def platform_from_record(record: dict[str, Any], index_payload: dict[str, Any]) 
     }
 
 
+def _check_commands() -> list[str]:
+    """Every `tracklab` subcommand that takes `--check`, from the argparse tree itself."""
+    from tracklab.cli import build_parser  # cli imports this module
+
+    def walk(parser: argparse.ArgumentParser, path: list[str]) -> list[str]:
+        found: list[str] = []
+        for action in parser._actions:
+            if isinstance(action, argparse._SubParsersAction):
+                for name, sub in action.choices.items():
+                    found += walk(sub, [*path, name])
+        if any("--check" in a.option_strings for a in parser._actions):
+            found.append(" ".join(path))
+        return found
+
+    return sorted(walk(build_parser(), []))
+
+
+def guarantees(pipeline_dir: Path = PIPELINE_DIR) -> dict[str, Any]:
+    """What guards the pipeline, counted: dbt tests (generic by kind, singular by name), the
+    contract test files over the real bundles, and the `--check` subcommands."""
+    manifest_path = pipeline_dir / "dbt" / "target" / "manifest.json"
+    if not manifest_path.is_file():
+        raise FileNotFoundError(f"{manifest_path} missing; run `dbt parse` first")
+    nodes = load_json(manifest_path)["nodes"].values()
+    tests = [n for n in nodes if n["resource_type"] == "test"]
+    kinds = Counter(n["test_metadata"]["name"] for n in tests if n.get("test_metadata"))
+    singular = sorted(n["name"] for n in tests if not n.get("test_metadata"))
+    contracts = sorted(p.stem for p in (pipeline_dir / "tests" / "contracts").glob("test_*.py"))
+    checks = _check_commands()
+    return {
+        "dbt": {
+            "total": len(tests),
+            "generic": sum(kinds.values()),
+            "by_kind": dict(sorted(kinds.items())),
+            "singular": singular,
+        },
+        "contracts": {"files": len(contracts), "names": contracts},
+        "checks": {"count": len(checks), "commands": checks},
+    }
+
+
 def platform_path(out_dir: Path) -> Path:
     return out_dir / PLATFORM_JSON
 
@@ -467,6 +517,7 @@ def run_publish_platform(
     record_dir: Path,
     out_dir: Path,
     check: bool = False,
+    pipeline_dir: Path = PIPELINE_DIR,
 ) -> int:
     path = record_path or latest_record(record_dir)
     record = load_json(path)
@@ -481,6 +532,7 @@ def run_publish_platform(
 
     record["disk"]["publish"] = measure_publish(out_dir)
     payload = platform_from_record(record, index_payload)
+    payload["guarantees"] = guarantees(pipeline_dir)
 
     print(f"publish platform: record {path.name}")
     print(f"publish platform: title: {payload['title']}")
@@ -509,6 +561,10 @@ def run_publish_platform(
             k: v for k, v in live_publish.items() if k not in timing
         }:
             problems.append(f"layers[publish]: on disk {disk_publish}, live {live_publish}")
+        if on_disk.get("guarantees") != payload["guarantees"]:
+            problems.append(
+                f"guarantees: on disk {on_disk.get('guarantees')}, counted {payload['guarantees']}"
+            )
         if on_disk.get("raw_sources") != payload["raw_sources"]:
             problems.append(
                 f"raw_sources: on disk {on_disk.get('raw_sources')},"

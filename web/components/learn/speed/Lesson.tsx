@@ -395,7 +395,7 @@ export function Lesson({ sql }: { sql: string }) {
         <section aria-labelledby="example-h">
           <h2 id="example-h">One player, one possession</h2>
           <p>
-            Take one player through one of the possessions the <a href="/replay">replay</a> shows,
+            Take one player through one of the possessions the <a href="/tracking/replay">replay</a> shows,
             in match {s("example.match_id")}: {l("frames")} frames, {l("duration_s")}&nbsp;s, with the player in every one.
             The fastest the file has the player going is {l("peak")}&nbsp;m/s. The positions are the published ones, at
             the centimetre; the speed is the file&apos;s own field, converted to metres per second.
@@ -437,7 +437,7 @@ export function Lesson({ sql }: { sql: string }) {
             longer: the gap that one row in a hundred exceeds is {l("p99_lo")} to {l("p99_hi")}&nbsp;m/s.
           </p>
           <p>
-            The clock check on <a href="/quality">/quality</a> had already put the field next to the backward difference,
+            The clock check on <a href="/engineering/quality">/engineering/quality</a> had already put the field next to the backward difference,
             and found their median ratio within {q("summary.ranges.clock_speed_mismatch")}&nbsp;% of one in every match.
             That says the field and the positions run on the same clock. The table answers the next question: of the
             three differences, the field follows the centred one.
@@ -506,7 +506,7 @@ export function Lesson({ sql }: { sql: string }) {
               figure uses the files&apos; full precision.
             </li>
             <li>
-              The clock check&apos;s ratio is taken over its own selection of frames, described on /quality; this
+              The clock check&apos;s ratio is taken over its own selection of frames, described on /engineering/quality; this
               lesson&apos;s figures use every triple.
             </li>
             <li>
@@ -580,7 +580,7 @@ export function Lesson({ sql }: { sql: string }) {
             </li>
             <li>
               <a href="/learn/gravity">Does the ball obey gravity?</a>, the first lesson, for least squares and centring;{" "}
-              <a href="/quality">/quality</a> and the <a href="/bulletin">bulletin</a> for the clock check.
+              <a href="/engineering/quality">/engineering/quality</a> and the <a href="/engineering/bulletin">bulletin</a> for the clock check.
             </li>
           </ul>
         </section>

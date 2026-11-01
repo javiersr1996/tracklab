@@ -78,7 +78,7 @@ export interface PoseClip {
   frames: PoseFrame[];
 }
 
-// `pose.json` (task 62), as validated by summary.schema.json: what /pose says. Its figures are
+// `pose.json` (task 62), as validated by summary.schema.json: what /tracking/pose says. Its figures are
 // read from pipeline/reports/, never typed.
 export type PoseStatus = "alive" | "unreplicated" | "dead";
 

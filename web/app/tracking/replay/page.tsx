@@ -2,14 +2,14 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { Replay } from "../../components/replay/Replay";
-import { Band, PageHead } from "../../components/site/Band";
-import { POSSESSIONS, SPORTS } from "../../lib/data";
-import type { Possession, Sport } from "../../lib/replay/types";
+import { Replay } from "../../../components/replay/Replay";
+import { Band, PageHead } from "../../../components/site/Band";
+import { POSSESSIONS, SPORTS } from "../../../lib/data";
+import type { Possession, Sport } from "../../../lib/replay/types";
 
 const fileName = (file: string) => file.replace(/^possessions\//, "");
 
-// `/replay?p=<file>`: a sport, a match and a possession from index.json.
+// `/tracking/replay?p=<file>`: a sport, a match and a possession from index.json.
 function Picker() {
   const router = useRouter();
   const file = useSearchParams().get("p") ?? fileName(POSSESSIONS[0].file);
@@ -26,7 +26,7 @@ function Picker() {
     };
   }, [current.file]);
 
-  const choose = (p = current) => router.replace(`/replay?p=${fileName(p.file)}`);
+  const choose = (p = current) => router.replace(`/tracking/replay?p=${fileName(p.file)}`);
   const inSport = POSSESSIONS.filter((p) => p.sport === current.sport);
   const matches = [...new Map(inSport.map((p) => [p.match_id, p])).values()];
   const inMatch = inSport.filter((p) => p.match_id === current.match_id);

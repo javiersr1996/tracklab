@@ -160,12 +160,12 @@ function EuroleaguePreview() {
 }
 
 const PREVIEWS: Record<string, () => React.JSX.Element> = {
-  "/replay": ReplayPreview,
-  "/platform": PlatformPreview,
-  "/quality": QualityPreview,
+  "/tracking/replay": ReplayPreview,
+  "/engineering": PlatformPreview,
+  "/engineering/quality": QualityPreview,
   "/warehouse": WarehousePreview,
-  "/runs": RunsPreview,
-  "/pose": PosePreview,
+  "/tracking/runs": RunsPreview,
+  "/tracking/pose": PosePreview,
   "/learn": LearnPreview,
   "/sql": SqlPreview,
   "/euroleague": EuroleaguePreview,

@@ -1,4 +1,4 @@
-// Lesson 5's slice of what /pose publishes (P6, task 62), read at build time: the hook window of
+// Lesson 5's slice of what /tracking/pose publishes (P6, task 62), read at build time: the hook window of
 // each published clip and the fast-band row of every player in `pose.json`'s tables. Nothing new
 // is published; the page passes these few hundred numbers to its figures and leaves the clips on
 // the server. Every figure is the file's, or computed from it in `cadence.ts`.

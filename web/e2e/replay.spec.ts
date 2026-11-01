@@ -22,7 +22,7 @@ for (const file of FILES) {
     page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
     page.on("pageerror", (e) => errors.push(e.message));
 
-    await page.goto(`/replay?p=${file}`);
+    await page.goto(`/tracking/replay?p=${file}`);
     await page.waitForFunction(() => window.__replay?.state === "idle");
     expect((await replay(page)).sport).toBe(possession.sport);
 

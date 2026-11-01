@@ -31,7 +31,7 @@ export function PerMatch({ matches }: { matches: readonly SpeedMatch[] }) {
                   {c.label}
                 </th>
               ))}
-              <th scope="col">ratio to backward, /quality</th>
+              <th scope="col">ratio to backward, /engineering/quality</th>
             </tr>
           </thead>
           <tbody>
@@ -54,7 +54,7 @@ export function PerMatch({ matches }: { matches: readonly SpeedMatch[] }) {
       <figcaption>
         The gap columns are the median of |speed − estimate| in m/s, or its 99th percentile where the header says so,
         over every player row whose frames just before and just after are in the file. The last column is the median ratio of speed to the backward difference
-        that the clock check on /quality published, over its own selection of frames.
+        that the clock check on /engineering/quality published, over its own selection of frames.
       </figcaption>
     </figure>
   );

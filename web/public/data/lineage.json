@@ -15,7 +15,7 @@
       "key": "bronze_basketball_aggregates_drives",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "Season table, one row per player and team of ACB 2025-2026; traded players also carry a `team_name = 'total'` row with a null `team_id`.",
       "step": "bronze_basketball_aggregates",
       "sport": "basketball",
       "schema": "frozen"
@@ -24,7 +24,7 @@
       "key": "bronze_basketball_aggregates_picks",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "Season table, one row per player and team of ACB 2025-2026; traded players also carry a `team_name = 'total'` row with a null `team_id`.",
       "step": "bronze_basketball_aggregates",
       "sport": "basketball",
       "schema": "frozen"
@@ -33,7 +33,7 @@
       "key": "bronze_basketball_aggregates_shots",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "Season table, one row per player and team of ACB 2025-2026; traded players also carry a `team_name = 'total'` row with a null `team_id`.",
       "step": "bronze_basketball_aggregates",
       "sport": "basketball",
       "schema": "frozen"
@@ -42,7 +42,7 @@
       "key": "bronze_basketball_events_chance_players",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per player in a chance: the shot location and the rebound location, with no frames of its own. Conformed into silver `events` as `chance_players`.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -51,7 +51,7 @@
       "key": "bronze_basketball_events_chances",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per chance, a stretch of a possession from its start to its end frame, with the start type, the outcome and where it ended.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -60,7 +60,7 @@
       "key": "bronze_basketball_events_closeouts",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per closeout: the ball handler, the defender who closes out on them, and the start and end locations.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -69,7 +69,7 @@
       "key": "bronze_basketball_events_dribbles",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per dribble: the ball handler, the frame and the location.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -78,7 +78,7 @@
       "key": "bronze_basketball_events_drives",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per drive: the ball handler, the defender on them, the start and end frames and the start and end locations.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -87,7 +87,7 @@
       "key": "bronze_basketball_events_fouls",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per foul: the fouler and their team, the fouled player, the frame and the location.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -96,7 +96,7 @@
       "key": "bronze_basketball_events_free_throws",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "Conformed as `shot`; native_family keeps them apart from open play.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -105,7 +105,7 @@
       "key": "bronze_basketball_events_handoffs",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per handoff: the setter, the receiver, the frame and the location.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -114,7 +114,7 @@
       "key": "bronze_basketball_events_isolations",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per isolation: the ball handler, their defender, the start and end frames and locations.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -123,7 +123,7 @@
       "key": "bronze_basketball_events_matchups",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per matchup: the offensive player, the defender assigned to them and the start and end frames. No location or outcome.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -132,7 +132,7 @@
       "key": "bronze_basketball_events_off_ball_screens",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per off-ball screen: the cutter, the screener, the frame and the location.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -141,7 +141,7 @@
       "key": "bronze_basketball_events_passes",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "A family of its own here; football has no equivalent event and marks a pass on how a player_possession ended.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -150,7 +150,7 @@
       "key": "bronze_basketball_events_picks",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per pick: the ball handler, the screener, the frame and the location.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -159,7 +159,7 @@
       "key": "bronze_basketball_events_possessions",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "The native team possession, and the carrier of `leftHoop`: every other family rotates its coordinates by the one its `possessionId` points at.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -168,7 +168,7 @@
       "key": "bronze_basketball_events_posts",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per post-up: the ball handler, their defender, the start and end frames and locations, and the section of the court.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -177,7 +177,7 @@
       "key": "bronze_basketball_events_rebounds",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per rebound: the rebounder, their team, the frame, the location and whether it was defensive.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -186,7 +186,7 @@
       "key": "bronze_basketball_events_shots",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "`location` is where the provider says the shot happened, not where the shooter stood at `startFrame` (task 9).",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -195,7 +195,7 @@
       "key": "bronze_basketball_events_timeouts",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per timeout: the team that called it and the frame. No player, location or outcome.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -204,7 +204,7 @@
       "key": "bronze_basketball_events_touches",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One player holding the ball. Conformed as `player_possession`.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -213,7 +213,7 @@
       "key": "bronze_basketball_events_turnovers",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per turnover: the player who turned the ball over, the player who stole it, the frame and the location.",
       "step": "bronze_basketball_events",
       "sport": "basketball",
       "schema": "frozen"
@@ -222,7 +222,7 @@
       "key": "bronze_basketball_game_players",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per player and match, both benches included.",
       "step": "bronze_basketball_meta",
       "sport": "basketball",
       "schema": "code"
@@ -231,7 +231,7 @@
       "key": "bronze_basketball_games",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per match, folded from game_data.json: the match header, with the same file read once for this table and game_players.",
       "step": "bronze_basketball_meta",
       "sport": "basketball",
       "schema": "code"
@@ -240,7 +240,7 @@
       "key": "bronze_basketball_matches",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per match of the ACB season bundle; the only place with the score.",
       "step": "bronze_basketball_meta",
       "sport": "basketball",
       "schema": "code"
@@ -249,7 +249,7 @@
       "key": "bronze_basketball_player_id_aliases",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "Season table. Some rows map a duplicated player id onto its canonical one. It never rewrites an id in silver (decision 4): it fills dim_entity.canonical_player_id and gold applies it.",
       "step": "bronze_basketball_meta",
       "sport": "basketball",
       "schema": "code"
@@ -258,7 +258,7 @@
       "key": "bronze_basketball_tracking_frames",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per frame, timeouts included. dim_period reads its period boundaries from here because game_data.json does not publish them.",
       "step": "bronze_basketball_tracking",
       "sport": "basketball",
       "schema": "code"
@@ -267,7 +267,7 @@
       "key": "bronze_basketball_tracking_objects",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per frame and object, the ball included as a side of its own. A timeout frame has no row here at all, which is why `frames` loses about 44% of the basketball file and keeps the timeline in bronze.",
       "step": "bronze_basketball_tracking",
       "sport": "basketball",
       "schema": "code"
@@ -285,7 +285,7 @@
       "key": "bronze_football_aggregates_obr",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "Season table, one row per player, team and `position_group` of the A-League 2024/2025 (not per player and team: that pair repeats).",
       "step": "bronze_football_aggregates",
       "sport": "football",
       "schema": "frozen"
@@ -294,7 +294,7 @@
       "key": "bronze_football_aggregates_passing",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "Season table, one row per player, team and `position_group` of the A-League 2024/2025 (not per player and team: that pair repeats).",
       "step": "bronze_football_aggregates",
       "sport": "football",
       "schema": "frozen"
@@ -303,7 +303,7 @@
       "key": "bronze_football_aggregates_physical",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "Season table, one row per player, team and `position_group` of the A-League 2024/2025 (not per player and team: that pair repeats).",
       "step": "bronze_football_aggregates",
       "sport": "football",
       "schema": "frozen"
@@ -312,7 +312,7 @@
       "key": "bronze_football_bodypose_frames",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per line of the body pose file, in the file's own frame numbering, with the number of players in the frame. Frames outside every period have no players.",
       "step": "bronze_football_bodypose",
       "sport": "football",
       "schema": "code"
@@ -321,7 +321,7 @@
       "key": "bronze_football_bodypose_players",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per frame and player that has a pose: 29 joints in metres and their error. A player with no pose has no row; the count of players stays in bodypose_frames.",
       "step": "bronze_football_bodypose",
       "sport": "football",
       "schema": "code"
@@ -330,7 +330,7 @@
       "key": "bronze_football_dynamic_events",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "The four native event types in one CSV of frozen columns: player_possession, passing_option, on_ball_engagement and off_ball_run. Its `first_player_possession_in_team_possession` flag is the provider delimiting its own team possessions, which is the rule `events` uses.",
       "step": "bronze_football_events",
       "sport": "football",
       "schema": "frozen"
@@ -339,7 +339,7 @@
       "key": "bronze_football_match",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per match, folded from match.json. Carries the score, the pitch (which is not the same in every match: its length varies) and the competition edition.",
       "step": "bronze_football_meta",
       "sport": "football",
       "schema": "code"
@@ -348,7 +348,7 @@
       "key": "bronze_football_match_periods",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per match and period, with the frame the period starts and ends at.",
       "step": "bronze_football_meta",
       "sport": "football",
       "schema": "code"
@@ -357,7 +357,7 @@
       "key": "bronze_football_match_players",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per player and match. `id` is the key the tracking uses (`tracking_objects.player_id`), not `trackable_object`.",
       "step": "bronze_football_meta",
       "sport": "football",
       "schema": "code"
@@ -366,7 +366,7 @@
       "key": "bronze_football_matches",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "Season table written as a single file, one row per match of the A-League 2024/2025 bundle, each row carrying its own `match_id`.",
       "step": "bronze_football_meta",
       "sport": "football",
       "schema": "code"
@@ -375,7 +375,7 @@
       "key": "bronze_football_phases_of_play",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per phase of play. A phase is not a team possession: many carry `team_possession_loss_in_phase`, which is why the chain rule won over merging them.",
       "step": "bronze_football_events",
       "sport": "football",
       "schema": "frozen"
@@ -384,7 +384,7 @@
       "key": "bronze_football_tracking_frames",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per frame, the ball among its columns rather than as an object. Frames outside every period carry a null period, no player and no ball.",
       "step": "bronze_football_tracking",
       "sport": "football",
       "schema": "code"
@@ -393,7 +393,7 @@
       "key": "bronze_football_tracking_objects",
       "group": "bronze",
       "kind": "asset",
-      "description": "",
+      "description": "One row per frame and player; the ball is not here, it is in tracking_frames.",
       "step": "bronze_football_tracking",
       "sport": "football",
       "schema": "code"
@@ -639,7 +639,7 @@
       "key": "quality_clock",
       "group": "quality",
       "kind": "asset",
-      "description": "",
+      "description": "Whether the clock is exact: the step between two native frames, per match.",
       "step": "quality_clock",
       "sport": null,
       "schema": "none"
@@ -648,7 +648,7 @@
       "key": "quality_detection",
       "group": "quality",
       "kind": "asset",
-      "description": "",
+      "description": "How often the provider says it saw each kind of object, per match.",
       "step": "quality_detection",
       "sport": null,
       "schema": "none"
@@ -657,7 +657,7 @@
       "key": "quality_entry_angle",
       "group": "quality",
       "kind": "asset",
-      "description": "",
+      "description": "Entry angle of a made shot: what the bundle reports against the geometry.",
       "step": "quality_entry_angle",
       "sport": null,
       "schema": "none"
@@ -666,7 +666,7 @@
       "key": "quality_gravity",
       "group": "quality",
       "kind": "asset",
-      "description": "",
+      "description": "Apparent gravity of the ball per match: the g its free flights fall with.",
       "step": "quality_gravity",
       "sport": null,
       "schema": "none"
@@ -675,7 +675,7 @@
       "key": "quality_noise",
       "group": "quality",
       "kind": "asset",
-      "description": "",
+      "description": "Frame-to-frame jitter of the ball against detected players, both sports.",
       "step": "quality_noise",
       "sport": null,
       "schema": "none"
@@ -684,7 +684,7 @@
       "key": "quality_partitions",
       "group": "quality",
       "kind": "asset",
-      "description": "",
+      "description": "The partitions no field in either bundle declares, one row per match.",
       "step": "quality_partitions",
       "sport": null,
       "schema": "none"

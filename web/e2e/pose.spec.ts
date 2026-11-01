@@ -7,7 +7,7 @@ import type { PoseClip, PoseSummary } from "../lib/pose/types";
 // state, with room for a loaded machine, and nothing waits on a clock.
 const expect = baseExpect.configure({ timeout: 20_000 });
 
-// `/pose` (task 56): the Body Pose sample in the viewer with its own projection. The viewer is
+// `/tracking/pose` (task 56): the Body Pose sample in the viewer with its own projection. The viewer is
 // driven from the console through `window.__pose` (state, t, frameIndex, yaw, tilt, skeletons,
 // discs, player, probe, ticks), which exists in dev and test builds, not against a deployment.
 // No capture is an assertion and nothing waits on a clock: every wait is on the viewer's state.
@@ -29,7 +29,7 @@ async function open(page: Page) {
   const errors: string[] = [];
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/pose");
+  await page.goto("/tracking/pose");
   await expect(page.locator("main.pose")).toHaveAttribute("data-loaded", "true");
   await expect(page.locator("figure.pose-viewer")).toBeVisible();
   return errors;
@@ -95,7 +95,7 @@ test("the viewer plays, pauses, seeks and turns from the console, and draws what
   expect([ended.state, ended.t, ended.frameIndex, ended.rate]).toEqual(["ended", tEnd, frames.length - 1, 2]);
   await expect(page.locator("figure.pose-viewer")).toHaveAttribute("data-state", "ended");
   const seen = Object.keys(visited).map(Number);
-  console.log(`/pose: played at 2x, ${seen.length} of ${frames.length} frames visited and checked`);
+  console.log(`/tracking/pose: played at 2x, ${seen.length} of ${frames.length} frames visited and checked`);
   expect(seen.length).toBeGreaterThan(frames.length / 3);
   for (const k of seen) {
     expect(visited[k].frame).toBe(frames[k].f);
@@ -147,7 +147,7 @@ test("the viewer plays, pauses, seeks and turns from the console, and draws what
   expect(dz).toBeGreaterThan(0);
   expect(level.v).toBeCloseTo(dz / 100, 6);
   expect(level.v).toBeGreaterThan(flat.v);
-  console.log(`/pose probe ${p0.joint} of player ${p0.i}: u ${p0.u} -> ${p180.u} at yaw 180; v ${flat.v} -> ${level.v} at tilt 90`);
+  console.log(`/tracking/pose probe ${p0.joint} of player ${p0.i}: u ${p0.u} -> ${p180.u} at yaw 180; v ${flat.v} -> ${level.v} at tilt 90`);
 
   // A player who loses the pose from one frame to the next: followed, he is a skeleton, then a
   // disc, on his own panel and on the pitch, and the pitch's skeletons go down with the clip's.
@@ -176,7 +176,7 @@ test("the viewer plays, pauses, seeks and turns from the console, and draws what
   await expect(follow).toHaveAttribute("data-follow", "disc");
   expectDrawnIsTheClips(clip, k + 1, s, `frame ${frames[k + 1].f}`);
   expect(s.skeletons).toBeLessThan(before);
-  console.log(`/pose: player ${lost} loses the pose at frame ${frames[k + 1].f}; skeletons ${before} -> ${s.skeletons}`);
+  console.log(`/tracking/pose: player ${lost} loses the pose at frame ${frames[k + 1].f}; skeletons ${before} -> ${s.skeletons}`);
 
   // A spread of frames by seeking, each drawn as the clip holds it.
   for (let j = 0; j < frames.length; j += 25) {
@@ -245,7 +245,7 @@ async function openWith(page: Page, summary: PoseSummary) {
   return { errors: await open(page), clips };
 }
 
-test("every figure on /pose is a file's, its three limits sit next to the viewer, and the state shows", async ({
+test("every figure on /tracking/pose is a file's, its three limits sit next to the viewer, and the state shows", async ({
   page,
 }) => {
   const clip = await clipOf(page);
@@ -260,7 +260,7 @@ test("every figure on /pose is a file's, its three limits sit next to the viewer
   for (const p of ["joints.length", "match_id", "period", "frame_lo", "frame_hi", "fps", "coverage.with_joints"]) {
     expect(paths, p).toContain(p);
   }
-  console.log(`/pose: ${paths.length} figures checked against pose.json and the clip`);
+  console.log(`/tracking/pose: ${paths.length} figures checked against pose.json and the clip`);
 
   // The state of the project, from the file.
   const status = page.locator("[data-section=status]");
@@ -443,7 +443,7 @@ test("a followed player who drops out of a whole-match clip leaves an empty pane
   }
 });
 
-// The three states the page has a branch for, each handed to it as a file (as /runs is).
+// The three states the page has a branch for, each handed to it as a file (as /tracking/runs is).
 for (const name of ["alive", "unreplicated", "dead"] as const) {
   test(`the ${name} branch shows its own state, with its figures from the file`, async ({ page }) => {
     const summary = fixture(name);
@@ -521,7 +521,7 @@ for (const name of ["dead-m1", "dead-m2", "dead-noise", "dead"] as const) {
 }
 
 for (const [width, shown] of WIDTHS.flatMap((w) => [w, w].map((x, k) => [x, k === 0 ? "sample" : "hook"] as const))) {
-  test(`/pose at ${width} px with the ${shown} clip: no sideways scroll, no overlaps, text of 16 px or more`, async ({
+  test(`/tracking/pose at ${width} px with the ${shown} clip: no sideways scroll, no overlaps, text of 16 px or more`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -591,11 +591,11 @@ for (const [width, shown] of WIDTHS.flatMap((w) => [w, w].map((x, k) => [x, k ==
       expect(boxes.inner[i].top, `viewer row ${i}`).toBeGreaterThanOrEqual(boxes.inner[i - 1].bottom - 1);
       expect(boxes.inner[i].right).toBeLessThanOrEqual(a.right + 0.5);
     }
-    console.log(`/pose at ${width} px: limits ${a.right <= b.left + 0.5 ? "beside" : "below"} the viewer`);
+    console.log(`/tracking/pose at ${width} px: limits ${a.right <= b.left + 0.5 ? "beside" : "below"} the viewer`);
   });
 }
 
-test("the bytes /pose transfers, printed with no verdict, the clip apart", async ({ page }) => {
+test("the bytes /tracking/pose transfers, printed with no verdict, the clip apart", async ({ page }) => {
   const requests: Request[] = [];
   page.on("requestfinished", (r) => requests.push(r));
   await open(page);
@@ -610,15 +610,15 @@ test("the bytes /pose transfers, printed with no verdict, the clip apart", async
     else rest += bytes;
     if (r.resourceType() === "script") script += bytes;
   }
-  console.log(`/pose: ${rest} bytes transferred without the clip (${script} of them scripts); the clip ${clip} bytes`);
+  console.log(`/tracking/pose: ${rest} bytes transferred without the clip (${script} of them scripts); the clip ${clip} bytes`);
   expect(clip).toBeGreaterThan(0);
 });
 
-test("the home page links to /pose", async ({ page }) => {
+test("the home page links to /tracking/pose", async ({ page }) => {
   await page.goto("/");
   const link = page.getByRole("link", { name: "Body pose" });
-  await expect(link).toHaveAttribute("href", "/pose");
+  await expect(link).toHaveAttribute("href", "/tracking/pose");
   await link.click();
-  await expect(page).toHaveURL(/\/pose$/);
+  await expect(page).toHaveURL(/\/tracking\/pose$/);
   await expect(page.locator("main.pose")).toHaveAttribute("data-loaded", "true");
 });

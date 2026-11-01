@@ -1,4 +1,4 @@
-// Lesson 11's data, computed at build time from the two clips /pose publishes (P6, task 62) and
+// Lesson 11's data, computed at build time from the two clips /tracking/pose publishes (P6, task 62) and
 // nothing else: nothing new is published. For every player of each clip, the frames where the
 // player has both shoulders and the nose, a position in the frame before and the frame after,
 // and a speed over the lesson's floor, with the three angles of `facing.ts`. The page passes the

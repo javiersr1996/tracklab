@@ -1,5 +1,5 @@
 // `web/public/data/platform.json` and `lineage.json` (tasks 34, 33), imported at
-// build time like `lib/data.ts`: every figure on `/platform` is the one these two
+// build time like `lib/data.ts`: every figure on `/engineering` is the one these two
 // files were built with.
 import platformJson from "../public/data/platform.json";
 import lineageJson from "../public/data/lineage.json";
@@ -90,6 +90,14 @@ export interface PlatformRawSource {
   bytes: number;
 }
 
+// What guards the pipeline, counted by `tracklab publish platform` (dbt manifest, contract
+// files, argparse tree) and rechecked by its `--check`.
+export interface PlatformGuarantees {
+  dbt: { total: number; generic: number; by_kind: Record<string, number>; singular: string[] };
+  contracts: { files: number; names: string[] };
+  checks: { count: number; commands: string[] };
+}
+
 export interface PlatformData {
   schema_version: number;
   title: string;
@@ -101,6 +109,7 @@ export interface PlatformData {
   tables: PlatformTable[];
   matches: PlatformMatch[];
   season_files: PlatformSeasonFiles;
+  guarantees: PlatformGuarantees;
 }
 
 // Via unknown: the JSON's inferred `steps` type is a union of the steps' own `dbt_seconds` keys.
@@ -193,7 +202,7 @@ export function silverModelRows(
 
 // The four fields the flow animates per layer; `rows` is skipped where the
 // record has none (raw and publish count files, not table rows).
-export type CounterField = "files" | "rows" | "bytes" | "seconds";
+export type CounterField = "files" | "rows" | "bytes" | "seconds" | "downloaded" | "verified" | "bytes_read";
 
 export function counterKey(layer: LayerName, field: CounterField): string {
   return `${layer}.${field}`;
@@ -213,4 +222,47 @@ export function layerDurations(seconds: number[], cycleSeconds = 8, minSeconds =
     const share = totalWeight > 0 ? Math.max(s, 0) / totalWeight : 1 / seconds.length;
     return minSeconds + share * extra;
   });
+}
+
+export interface StepBar {
+  step_key: string;
+  group: string;
+  seconds: number;
+}
+
+export interface StepGroup {
+  group: string;
+  steps: StepBar[];
+  seconds: number;
+}
+
+// The Gantt's rows (task 123): the steps of `platform.json` grouped by their `group`, the groups in
+// `lineage.json`'s flow order (the layers' order) and each group's steps longest first. The record
+// keeps a duration per step and no start time, so every bar is a duration on a shared axis, drawn
+// from 0; nothing here places a step in time.
+export function stepGroups(
+  steps: PlatformStep[] = PLATFORM.steps,
+  order: string[] = LINEAGE.groups,
+): StepGroup[] {
+  const rank = (g: string) => (order.includes(g) ? order.indexOf(g) : order.length);
+  const groups = new Map<string, StepBar[]>();
+  for (const s of steps) {
+    const bars = groups.get(s.group) ?? [];
+    bars.push({ step_key: s.step_key, group: s.group, seconds: s.duration_ms / 1000 });
+    groups.set(s.group, bars);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => rank(a) - rank(b))
+    .map(([group, bars]) => ({
+      group,
+      steps: bars.sort((a, b) => b.seconds - a.seconds),
+      seconds: bars.reduce((sum, b) => sum + b.seconds, 0),
+    }));
+}
+
+// Round tick values from 0 up to `max`, `step` apart.
+export function axisTicks(max: number, step = 500): number[] {
+  const out: number[] = [];
+  for (let t = 0; t <= max; t += step) out.push(t);
+  return out;
 }

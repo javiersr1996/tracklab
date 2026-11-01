@@ -464,8 +464,8 @@ a.wordmark:hover {
   color: var(--fg-muted);
 }
 
-/* Bracketed, terminal style, where nine links fit in two rows or fewer; a phone drops the
-   brackets and wraps them in three rows (P14). */
+/* Bracketed, terminal style, from 640 px; a phone drops the brackets and wraps the six links
+   (P15). */
 @media (min-width: 40rem) {
   .site-nav ul {
     gap: 0 var(--space-5);
@@ -495,6 +495,23 @@ a.wordmark:hover {
   box-shadow: 0 8px 14px -10px var(--neon); /* the underline's glow */
 }
 
+/* Under Tracking or Engineering (P15), the group's pages: a row of their own under a hairline,
+   the same links in mixed case and without brackets, a level below the six. */
+.site-subnav {
+  flex-basis: 100%;
+  border-top: 1px solid var(--rule);
+}
+
+.site-subnav a {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.site-subnav a::before,
+.site-subnav a::after {
+  content: none;
+}
+
 .site-footer {
   padding-block: var(--band-pad);
 }
@@ -503,6 +520,46 @@ a.wordmark:hover {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
+}
+
+/* On a phone the footer is a short block, not a screen: the same text, tighter. */
+@media (max-width: 899px) {
+  .site-footer {
+    padding-block: var(--space-5);
+  }
+
+  /* The wordmark and the licence line share the first row; the data notes take the second. */
+  .site-footer-grid {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "mark code" "data data";
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+
+  .site-footer-grid > :nth-child(1) {
+    grid-area: mark;
+  }
+
+  .site-footer-grid > :nth-child(2) {
+    grid-area: data;
+  }
+
+  .site-footer-grid > :nth-child(3) {
+    grid-area: code;
+    text-align: right;
+  }
+
+  .site-footer-links li {
+    margin-bottom: 0;
+  }
+
+  .site-footer p {
+    margin-block: 0 var(--space-2);
+  }
+
+  .site-footer-label {
+    margin-bottom: var(--space-1);
+  }
 }
 
 @media (min-width: 900px) {
@@ -1223,8 +1280,8 @@ body:has(.home) .site-header::after {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .card[data-section="/replay"],
-  .card[data-section="/platform"],
+  .card[data-section="/tracking/replay"],
+  .card[data-section="/engineering"],
   .card[data-section="/learn"],
   .card[data-section="/sql"] {
     grid-column: span 2;
@@ -1803,13 +1860,8 @@ body:has(.home) .site-header::after {
 }
 
 .bulletin {
-  white-space: pre-wrap;
   word-wrap: break-word;
   max-width: var(--measure);
-  padding: 0;
-  background: none;
-  border: 0;
-  line-height: var(--leading);
 }
 
 .replay-placeholder {
@@ -1932,6 +1984,107 @@ body:has(.home) .site-header::after {
   color: var(--fg-muted);
 }
 
+.platform-blurb {
+  color: var(--fg-muted);
+  margin: 0 0 var(--space-3);
+}
+
+.platform-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.platform-stack li {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-neon);
+  color: var(--fg-strong);
+}
+
+.platform-stack span {
+  color: var(--fg-muted);
+}
+
+.platform-sources,
+.platform-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  list-style: none;
+  margin: var(--space-4) 0;
+  padding: 0;
+}
+
+@media (min-width: 900px) {
+  .platform-sources {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .platform-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.platform-sources > li,
+.platform-cards > li {
+  min-width: 0;
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+
+.platform-cards p {
+  margin: 0 0 var(--space-3);
+}
+
+.platform-cards summary {
+  cursor: pointer;
+  color: var(--fg-muted);
+}
+
+.platform-cards details ul {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  overflow-wrap: anywhere;
+}
+
+.platform-pg {
+  margin: var(--space-4) 0 0;
+}
+
+.platform-pg dt {
+  color: var(--fg-muted);
+}
+
+.platform-pg dd {
+  margin: 0 0 var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+.platform-sources h3,
+.platform-cards h3 {
+  margin: 0 0 var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+.platform-sources dl {
+  margin: 0;
+}
+
+.platform-sources dt {
+  color: var(--fg-muted);
+}
+
+.platform-sources dd {
+  margin: 0 0 var(--space-2);
+  overflow-wrap: anywhere;
+}
+
 .platform-note {
   color: var(--fg-muted);
   margin: var(--space-2) 0 0;
@@ -1943,6 +2096,77 @@ body:has(.home) .site-header::after {
 
 .platform-footer p {
   overflow-wrap: anywhere; /* the 40-hex git sha has no break opportunity */
+}
+
+/* The step durations (task 123): a server-rendered SVG in its own scrolling box, 12 px text. */
+.gantt-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: var(--space-5) 0;
+  padding: var(--space-3);
+  background: var(--canvas);
+  border: 1px solid var(--canvas-line);
+  border-radius: var(--radius);
+}
+
+.gantt-scroll:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 2px;
+}
+
+.gantt-table {
+  margin: calc(-1 * var(--space-3)) 0 var(--space-5);
+}
+
+.gantt-table table {
+  border-collapse: collapse;
+  margin-top: var(--space-2);
+  font-size: 0.9375rem;
+}
+
+.gantt-table th,
+.gantt-table td {
+  text-align: left;
+  padding: 2px var(--space-3) 2px 0;
+  overflow-wrap: anywhere;
+}
+
+.gantt-table td:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+.gantt-scroll svg {
+  display: block;
+  font-family: var(--font-neon);
+  font-size: 12px;
+}
+
+.gantt-scroll text {
+  font-size: 12px;
+  fill: var(--neon-ink);
+}
+
+.gantt-scroll .gantt-tick,
+.gantt-scroll .gantt-value {
+  fill: var(--canvas-muted);
+}
+
+.gantt-scroll .gantt-group {
+  fill: var(--neon);
+  font-weight: 700;
+}
+
+.gantt-grid {
+  stroke: var(--canvas-line);
+}
+
+.gantt-wall {
+  stroke: var(--canvas-edge);
+  stroke-dasharray: 4 3;
+}
+
+.gantt-bar {
+  fill: var(--neon);
 }
 
 .lineage {
@@ -2005,6 +2229,12 @@ body:has(.home) .site-header::after {
 .lineage-test-badge {
   font-size: 8px;
   fill: var(--canvas-muted);
+}
+
+.lineage-detail {
+  min-height: 3.2em;
+  overflow-wrap: anywhere;
+  margin: var(--space-3) 0 0;
 }
 
 .lineage-legend {
@@ -2802,4 +3032,26 @@ body:has(.home) .site-header::after {
   margin-top: var(--space-7);
   padding-top: var(--space-5);
   border-top: 1px solid var(--rule);
+}
+
+.runs-fold {
+  margin-block: var(--space-5);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: 0.5rem;
+  padding: var(--space-3) var(--space-4);
+}
+
+.runs-fold > summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+
+.runs-fold > summary:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 2px;
+}
+
+.runs-fold[open] > summary {
+  margin-bottom: var(--space-4);
 }

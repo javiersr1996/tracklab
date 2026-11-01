@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { layerDurations, poseShare, silverModelRows, type LineageData, type PlatformData } from "../lib/platform";
+import { axisTicks, layerDurations, poseShare, silverModelRows, stepGroups, type LineageData, type PlatformData } from "../lib/platform";
 
 // `layerDurations` (task 35): on-screen seconds per layer for the flow
 // animation. Five layers, one at 0 s (a step that never ran in the fixture
@@ -66,6 +66,11 @@ describe("silverModelRows", () => {
       wall_seconds: 0,
       host: { system: "", cpus: 0, ram_gb: 0 },
       versions: {},
+    },
+    guarantees: {
+      dbt: { total: 0, generic: 0, by_kind: {}, singular: [] },
+      contracts: { files: 0, names: [] },
+      checks: { count: 0, commands: [] },
     },
     layers: [],
     raw_sources: [],
@@ -143,5 +148,31 @@ describe("poseShare", () => {
   it("is null when the pose source is not in the ingest", () => {
     const without = { raw_sources: platform.raw_sources.filter((s) => s.sport === "basketball") };
     expect(poseShare(without as unknown as PlatformData)).toBeNull();
+  });
+});
+
+// `stepGroups` / `axisTicks` (task 123): the Gantt's rows. Groups follow the flow order they are
+// given, steps within a group longest first, group seconds are the sum of their steps.
+describe("stepGroups", () => {
+  const step = (step_key: string, group: string, duration_ms: number) =>
+    ({ step_key, assets: [], group, status: "success", duration_ms, dbt_seconds: {} }) as PlatformData["steps"][number];
+
+  it("orders groups by the flow and steps longest first, and sums each group", () => {
+    const groups = stepGroups(
+      [step("b1", "bronze", 1000), step("i1", "ingest", 500), step("b2", "bronze", 3000)],
+      ["ingest", "bronze"],
+    );
+    expect(groups.map((g) => g.group)).toEqual(["ingest", "bronze"]);
+    expect(groups[1].steps.map((s) => s.step_key)).toEqual(["b2", "b1"]);
+    expect(groups[1].seconds).toBe(4);
+  });
+
+  it("puts a group the flow does not know last", () => {
+    const groups = stepGroups([step("x", "mystery", 1000), step("i", "ingest", 1000)], ["ingest"]);
+    expect(groups.map((g) => g.group)).toEqual(["ingest", "mystery"]);
+  });
+
+  it("axisTicks runs from 0 in equal steps up to the maximum", () => {
+    expect(axisTicks(1200, 500)).toEqual([0, 500, 1000]);
   });
 });
