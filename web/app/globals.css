@@ -2109,6 +2109,32 @@ body:has(.home) .site-header::after {
   border-radius: var(--radius);
 }
 
+.gantt-scroll:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 2px;
+}
+
+.gantt-table {
+  margin: calc(-1 * var(--space-3)) 0 var(--space-5);
+}
+
+.gantt-table table {
+  border-collapse: collapse;
+  margin-top: var(--space-2);
+  font-size: 0.9375rem;
+}
+
+.gantt-table th,
+.gantt-table td {
+  text-align: left;
+  padding: 2px var(--space-3) 2px 0;
+  overflow-wrap: anywhere;
+}
+
+.gantt-table td:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
 .gantt-scroll svg {
   display: block;
   font-family: var(--font-neon);

@@ -28,7 +28,15 @@ export function StepGantt({ platform }: { platform: PlatformData }) {
   const ticks = axisTicks(wall).filter((tick) => ((wall - tick) / wall) * PLOT_W >= 60);
 
   return (
-    <div className="gantt-scroll" data-gantt data-steps={platform.steps.length}>
+    <>
+    <div
+      className="gantt-scroll"
+      data-gantt
+      data-steps={platform.steps.length}
+      tabIndex={0}
+      role="region"
+      aria-label="Step durations chart, scrollable"
+    >
       <svg
         width={width}
         height={height}
@@ -87,5 +95,29 @@ export function StepGantt({ platform }: { platform: PlatformData }) {
         ))}
       </svg>
     </div>
+    <details className="gantt-table" data-gantt-table>
+      <summary>Steps as a table</summary>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Step</th>
+            <th scope="col">Layer</th>
+            <th scope="col">Seconds</th>
+          </tr>
+        </thead>
+        <tbody>
+          {groups.flatMap((g) =>
+            g.steps.map((s) => (
+              <tr key={s.step_key}>
+                <th scope="row">{s.step_key}</th>
+                <td>{g.group}</td>
+                <td>{s.seconds.toFixed(1)}</td>
+              </tr>
+            )),
+          )}
+        </tbody>
+      </table>
+    </details>
+    </>
   );
 }

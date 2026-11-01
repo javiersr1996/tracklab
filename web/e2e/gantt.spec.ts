@@ -63,3 +63,16 @@ test("every lineage node has a description and the panel shows it on selection",
     await expect(page.locator("[data-lineage-description]")).toHaveText(node.description.trim());
   }
 });
+
+test("the chart scrolls by keyboard and every step is also in a table", async ({ page }) => {
+  await page.goto("/engineering");
+  const box = page.locator("[data-gantt]");
+  await expect(box).toHaveAttribute("tabindex", "0");
+  await expect(box).toHaveAttribute("role", "region");
+  await expect(box).toHaveAttribute("aria-label", /.+/);
+  const table = page.locator("[data-gantt-table]");
+  await table.locator("summary").click();
+  await expect(table.locator("tbody tr")).toHaveCount(platform.steps.length);
+  const first = platform.steps[0];
+  await expect(table.locator("tbody tr", { hasText: first.step_key }).first()).toContainText((first.duration_ms / 1000).toFixed(1));
+});
