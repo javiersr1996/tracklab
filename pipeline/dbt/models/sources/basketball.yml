@@ -16,7 +16,7 @@ sources:
         description: One row per player and match, both benches included.
       - name: player_id_aliases
         description: >
-          Season table. 18 rows, 9 of which map a duplicated player id onto its
+          Season table. Some rows map a duplicated player id onto its
           canonical one. It never rewrites an id in silver (decision 4): it fills
           dim_entity.canonical_player_id and gold applies it.
       - name: tracking_frames

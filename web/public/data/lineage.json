@@ -249,7 +249,7 @@
       "key": "bronze_basketball_player_id_aliases",
       "group": "bronze",
       "kind": "asset",
-      "description": "Season table. 18 rows, 9 of which map a duplicated player id onto its canonical one. It never rewrites an id in silver (decision 4): it fills dim_entity.canonical_player_id and gold applies it.",
+      "description": "Season table. Some rows map a duplicated player id onto its canonical one. It never rewrites an id in silver (decision 4): it fills dim_entity.canonical_player_id and gold applies it.",
       "step": "bronze_basketball_meta",
       "sport": "basketball",
       "schema": "code"
@@ -330,7 +330,7 @@
       "key": "bronze_football_dynamic_events",
       "group": "bronze",
       "kind": "asset",
-      "description": "The four native event types in one CSV of 322 frozen columns: player_possession, passing_option, on_ball_engagement and off_ball_run. Its `first_player_possession_in_team_possession` flag is the provider delimiting its own team possessions, which is the rule `events` uses.",
+      "description": "The four native event types in one CSV of frozen columns: player_possession, passing_option, on_ball_engagement and off_ball_run. Its `first_player_possession_in_team_possession` flag is the provider delimiting its own team possessions, which is the rule `events` uses.",
       "step": "bronze_football_events",
       "sport": "football",
       "schema": "frozen"
@@ -339,7 +339,7 @@
       "key": "bronze_football_match",
       "group": "bronze",
       "kind": "asset",
-      "description": "One row per match, folded from match.json. Carries the score, the pitch (which is not the same in every match: 104, 105 and 106 m long) and the competition edition.",
+      "description": "One row per match, folded from match.json. Carries the score, the pitch (which is not the same in every match: its length varies) and the competition edition.",
       "step": "bronze_football_meta",
       "sport": "football",
       "schema": "code"
@@ -375,7 +375,7 @@
       "key": "bronze_football_phases_of_play",
       "group": "bronze",
       "kind": "asset",
-      "description": "One row per phase of play. A phase is not a team possession: 3,986 of the 8,834 carry `team_possession_loss_in_phase`, which is why the chain rule won over merging them.",
+      "description": "One row per phase of play. A phase is not a team possession: many carry `team_possession_loss_in_phase`, which is why the chain rule won over merging them.",
       "step": "bronze_football_events",
       "sport": "football",
       "schema": "frozen"
