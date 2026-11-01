@@ -68,8 +68,6 @@ export const isCurrent = (path: string, href: string) => path === href || path.s
 // Where the site is served, so a relative og:image becomes the absolute URL a link preview needs.
 export const SITE = "https://tracklab-sable.vercel.app";
 
-export const REPO = "https://github.com/javiersr1996/tracklab";
-
 // Where the data comes from. SkillCorner's three, as `pipeline/manifest/sources.json` pins them,
 // are MIT; EuroLeague's is not under any open license, so the footer gives it its own note and
 // the site publishes only aggregates of it (P14).

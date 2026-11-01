@@ -6,7 +6,6 @@ import { RunsHook } from "./Hook";
 // `/runs` (task 53): P5 published with the outcome it had. Every figure is an element
 // `data-fig="path"` whose text is `String(at(runs, path))`: the e2e reads the same path in the
 // file the page was given and compares. Prose carries no figure of its own.
-const REPO = "https://github.com/javiersr1996/tracklab";
 
 function F({ runs, p }: { runs: Runs; p: string }) {
   return <span data-fig={p}>{String(at(runs, p))}</span>;
@@ -663,7 +662,7 @@ function Protocol({ runs }: { runs: Runs }) {
           {(["protocol", "calibration", "coverage"] as const).map((k, j) => (
             <span key={k}>
               {j > 0 ? " · " : ""}
-              <a href={`${REPO}/blob/main/${runs.sources[k]}`}>{runs.sources[k]}</a>
+              <code>{runs.sources[k]}</code>
             </span>
           ))}
         </dd>

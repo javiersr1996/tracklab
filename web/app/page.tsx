@@ -5,7 +5,7 @@ import { Preview } from "../components/home/Preview";
 import { Band } from "../components/site/Band";
 import { POSSESSIONS, rowsOf, SPORTS } from "../lib/data";
 import { PLATFORM } from "../lib/platform";
-import { REPO, SECTIONS } from "../lib/sections";
+import { SECTIONS } from "../lib/sections";
 
 // One possession of each sport, alternating: the first published of each.
 const SHOWCASE = SPORTS.map((sport) => POSSESSIONS.find((p) => p.sport === sport)!);
@@ -84,10 +84,6 @@ export default function HomePage() {
             </li>
           ))}
         </ul>
-        <p>
-          <a href={REPO}>Repository</a> ·{" "}
-          <a href={`${REPO}/blob/main/docs/schema.md`}>Schema</a>
-        </p>
       </Band>
     </main>
   );
