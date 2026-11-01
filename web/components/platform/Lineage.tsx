@@ -210,7 +210,7 @@ export function Lineage({ lineage }: { lineage: LineageData }) {
           </g>
         </svg>
       </div>
-      <p className="lineage-detail" data-lineage-detail aria-live="polite">
+      <p className="lineage-detail" data-lineage-detail>
         {activeKey && nodeByKey.get(activeKey) ? (
           <>
             <code>{activeKey}</code> ({nodeByKey.get(activeKey)?.group}):{" "}
