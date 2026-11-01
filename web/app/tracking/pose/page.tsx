@@ -1,11 +1,11 @@
 "use client";
 
 import { type ReactNode, useEffect, useState } from "react";
-import { Pose } from "../../components/pose/Pose";
-import { Band, PageHead } from "../../components/site/Band";
-import type { PoseClip, PoseSummary } from "../../lib/pose/types";
+import { Pose } from "../../../components/pose/Pose";
+import { Band, PageHead } from "../../../components/site/Band";
+import type { PoseClip, PoseSummary } from "../../../lib/pose/types";
 
-// `/pose` (tasks 56 and 63): the Body Pose of two matches in a viewer with its own projection,
+// `/tracking/pose` (tasks 56 and 63): the Body Pose of two matches in a viewer with its own projection,
 // and what the project found. `pose.json` is fetched, then the clip on show, like the
 // possessions the replay plays. Every figure is an element `data-fig="path"` whose text is
 // `String(value at path)` in `pose.json`, or `data-clip-fig` for a path in the clip on show;

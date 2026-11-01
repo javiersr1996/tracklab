@@ -33,7 +33,7 @@ interface ReplayState {
 declare global {
   interface Window {
     __replay?: ReplayState;
-    // Players that share a page (`/runs`), each under its `name`.
+    // Players that share a page (`/tracking/runs`), each under its `name`.
     __replays?: Record<string, ReplayState>;
   }
 }

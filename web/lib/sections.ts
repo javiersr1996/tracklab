@@ -3,7 +3,7 @@
 // `nav` instead), `about` a line from the section's own page or the README, not new copy.
 export const SECTIONS = [
   {
-    href: "/replay",
+    href: "/tracking/replay",
     nav: "Replay",
     title: "Replay any possession",
     about: "Curated possessions that a single Canvas renderer replays in the browser.",
@@ -29,13 +29,13 @@ export const SECTIONS = [
       "SQL over the season aggregates of both bundles, run by DuckDB in this browser on Parquet files that are read by HTTP range.",
   },
   {
-    href: "/runs",
+    href: "/tracking/runs",
     nav: "Runs",
     title: "The run that moves nobody",
     about: "The project that died, published dead.",
   },
   {
-    href: "/pose",
+    href: "/tracking/pose",
     nav: "Pose",
     title: "Body pose",
     about: "The joints of the players SkillCorner's Body Pose resolves in each frame, each with its predicted error.",

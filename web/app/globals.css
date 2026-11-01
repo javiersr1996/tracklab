@@ -1223,7 +1223,7 @@ body:has(.home) .site-header::after {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .card[data-section="/replay"],
+  .card[data-section="/tracking/replay"],
   .card[data-section="/platform"],
   .card[data-section="/learn"],
   .card[data-section="/sql"] {

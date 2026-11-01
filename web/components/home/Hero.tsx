@@ -7,7 +7,7 @@ import { Alternating } from "../replay/Alternating";
 
 // The home's first screen (P12, task 108): the alternating replay as the background, the
 // headline the page passes as children over its foot, and two actions under it. The first
-// opens the possession playing right now on /replay, so it follows the alternation.
+// opens the possession playing right now on /tracking/replay, so it follows the alternation.
 export function Hero({ entries, children }: { entries: IndexEntry[]; children: ReactNode }) {
   const [current, setCurrent] = useState(entries[0]);
   return (

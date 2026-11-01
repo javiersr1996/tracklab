@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { RunsView } from "../../components/runs/RunsView";
-import { PageHead } from "../../components/site/Band";
-import type { Runs } from "../../lib/runs/types";
+import { RunsView } from "../../../components/runs/RunsView";
+import { PageHead } from "../../../components/site/Band";
+import type { Runs } from "../../../lib/runs/types";
 
 // `runs.json` is fetched, like the possessions the replay pages play, so the page renders
 // whatever the file says: the e2e hands it a fixture for each branch.

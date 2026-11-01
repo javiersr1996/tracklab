@@ -76,7 +76,7 @@ test("the home page starts playing on its own, light, with the figures of stats.
 });
 
 test("the selector switches sport and restarts the renderer", async ({ page }) => {
-  await page.goto("/replay?p=bb_possessions_possession-114243-3-79.json");
+  await page.goto("/tracking/replay?p=bb_possessions_possession-114243-3-79.json");
   await page.getByRole("button", { name: "Play" }).click();
   await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
   const scrub = page.getByLabel("Scrub");
@@ -92,7 +92,7 @@ test("the selector switches sport and restarts the renderer", async ({ page }) =
   if (EXPOSED) {
     const after = await page.evaluate(() => window.__replay!);
     expect([after.sport, after.state, after.frameIndex]).toEqual(["football", "idle", 0]);
-    // The trails are the home's: /replay draws none.
+    // The trails are the home's: /tracking/replay draws none.
     expect(after.trail).toBe(0);
   }
 });
@@ -112,12 +112,12 @@ test("the hero's actions: Open replay follows the possession playing, Run SQL op
   }
   await expect(sql).toHaveAttribute("href", "/sql");
   const href = (await open.getAttribute("href"))!;
-  expect(href).toMatch(/^\/replay\?p=(bb|fb)_/);
+  expect(href).toMatch(/^\/tracking\/replay\?p=(bb|fb)_/);
   if (EXPOSED) {
     const sport = await page.evaluate(() => window.__replay!.sport);
     expect(href).toContain(sport === "basketball" ? "p=bb_" : "p=fb_");
   }
-  // Keyboard: focus and Enter open that very possession on /replay, idle and without trails.
+  // Keyboard: focus and Enter open that very possession on /tracking/replay, idle and without trails.
   await open.focus();
   await expect(open).toBeFocused();
   await page.keyboard.press("Enter");
@@ -241,7 +241,7 @@ test("under prefers-reduced-motion the hero is a still frame, no trails, and off
 // P13: a phone must not scroll sideways on the pages the neon theme touched.
 test.describe("no horizontal scroll at 390 px", () => {
   test.use({ viewport: { width: 390, height: 844 } });
-  for (const path of ["/replay", "/quality", "/platform", "/bulletin", "/warehouse", "/sql", "/sql/select"]) {
+  for (const path of ["/tracking", "/tracking/replay", "/quality", "/platform", "/bulletin", "/warehouse", "/sql", "/sql/select"]) {
     test(path, async ({ page }) => {
       await page.goto(path);
       await page.waitForLoadState("load");

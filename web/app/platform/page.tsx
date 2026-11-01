@@ -74,7 +74,7 @@ export default function PlatformPage() {
             Of the {(pose.bytes + pose.otherBytes).toLocaleString("en-US")} raw bytes,{" "}
             {pose.bytes.toLocaleString("en-US")} come from the{" "}
             {pluralize(pose.files, "body-pose zip")} of opendata-bodypose that P6 added (see{" "}
-            <a href="/pose">/pose</a>); the other sources account for{" "}
+            <a href="/tracking/pose">/tracking/pose</a>); the other sources account for{" "}
             {pose.otherBytes.toLocaleString("en-US")}.
           </p>
         )}

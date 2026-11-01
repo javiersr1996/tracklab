@@ -206,9 +206,9 @@ test("the raw bytes line names the body-pose share, with the figures platform.js
   await expect(line).toHaveText(
     `Of the ${n(raw!.bytes)} raw bytes, ${n(pose!.bytes)} come from the ${pose!.files} ` +
       `body-pose zip${pose!.files === 1 ? "" : "s"} of ` +
-      `opendata-bodypose that P6 added (see /pose); the other sources account for ${n(others)}.`,
+      `opendata-bodypose that P6 added (see /tracking/pose); the other sources account for ${n(others)}.`,
   );
-  await expect(line.getByRole("link", { name: "/pose" })).toHaveAttribute("href", "/pose");
+  await expect(line.getByRole("link", { name: "/tracking/pose" })).toHaveAttribute("href", "/tracking/pose");
 });
 
 test("the home page links to /platform and /quality", async ({ page }) => {
@@ -264,7 +264,7 @@ test("the stack strip, the ingest counters and the sources block print what the 
 });
 
 test("no route links to the private repository", async ({ page }) => {
-  const routes = ["/", "/platform", "/runs", "/quality", "/warehouse", "/replay", "/pose", "/learn", "/sql", "/euroleague", "/bulletin"];
+  const routes = ["/", "/tracking", "/platform", "/tracking/runs", "/quality", "/warehouse", "/tracking/replay", "/tracking/pose", "/learn", "/sql", "/euroleague", "/bulletin"];
   for (const route of routes) {
     await page.goto(route);
     const hrefs = await page.locator("a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href") ?? ""));

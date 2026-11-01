@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { Count } from "../components/home/Count";
 import { Hero } from "../components/home/Hero";
-import { Preview } from "../components/home/Preview";
 import { Band } from "../components/site/Band";
+import { SectionCards } from "../components/site/SectionCards";
 import { POSSESSIONS, rowsOf, SPORTS } from "../lib/data";
 import { PLATFORM } from "../lib/platform";
 import { SECTIONS } from "../lib/sections";
@@ -69,21 +68,7 @@ export default function HomePage() {
 
       <Band>
         <h2 className="eyebrow">Sections</h2>
-        <ul className="cards">
-          {SECTIONS.map((s) => (
-            <li key={s.href} className="card" data-section={s.href}>
-              <Preview href={s.href} />
-              <p className="card-tag">{s.href}</p>
-              <h3>
-                <Link href={s.href}>{s.title}</Link>
-              </h3>
-              <p className="card-about">{s.about}</p>
-              <span className="card-arrow" aria-hidden="true">
-                →
-              </span>
-            </li>
-          ))}
-        </ul>
+        <SectionCards sections={SECTIONS} />
       </Band>
     </main>
   );

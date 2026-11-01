@@ -51,7 +51,8 @@ export const NEON_COLORS: Palette = {
 };
 
 // What a frame is drawn with, beyond the frame itself. Every field is optional and `drawFrame`
-// with none is P1's renderer unchanged: `/replay`, `/runs` and the lessons pass nothing.
+// with none is P1's renderer unchanged: `/tracking/replay`, `/tracking/runs` and the lessons pass
+// nothing.
 export interface DrawOptions {
   colors?: Palette;
   // Earlier snapshots of the same possession, oldest first: each entity's path through them

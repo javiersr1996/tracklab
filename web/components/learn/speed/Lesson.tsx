@@ -395,7 +395,7 @@ export function Lesson({ sql }: { sql: string }) {
         <section aria-labelledby="example-h">
           <h2 id="example-h">One player, one possession</h2>
           <p>
-            Take one player through one of the possessions the <a href="/replay">replay</a> shows,
+            Take one player through one of the possessions the <a href="/tracking/replay">replay</a> shows,
             in match {s("example.match_id")}: {l("frames")} frames, {l("duration_s")}&nbsp;s, with the player in every one.
             The fastest the file has the player going is {l("peak")}&nbsp;m/s. The positions are the published ones, at
             the centimetre; the speed is the file&apos;s own field, converted to metres per second.

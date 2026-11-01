@@ -103,7 +103,7 @@ export function LagPlot({ hook }: { hook: HookWindow }) {
         <Fig name="learn.lag.band">{figures.band}</Fig>
       </p>
       <figcaption>
-        The hook window of match <Fig name={`${hook.file}:match_id`}>{hook.match_id}</Fig>, as /pose publishes it. Where
+        The hook window of match <Fig name={`${hook.file}:match_id`}>{hook.match_id}</Fig>, as /tracking/pose publishes it. Where
         the white copy lies on the cyan signal, the products are positive and r is high.
       </figcaption>
     </figure>

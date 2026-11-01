@@ -3,7 +3,7 @@ import { at, type Runs, STAGES, type Stage } from "../../lib/runs/types";
 import { Band, PageHead } from "../site/Band";
 import { RunsHook } from "./Hook";
 
-// `/runs` (task 53): P5 published with the outcome it had. Every figure is an element
+// `/tracking/runs` (task 53): P5 published with the outcome it had. Every figure is an element
 // `data-fig="path"` whose text is `String(at(runs, path))`: the e2e reads the same path in the
 // file the page was given and compares. Prose carries no figure of its own.
 

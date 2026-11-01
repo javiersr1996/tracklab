@@ -101,7 +101,7 @@ subtitle: 5.5 MB to watch, 2.1 MB to query
 
 ## The run that moves nobody
 
-[`/runs`](https://tracklab-sable.vercel.app/runs) is the project that died, published dead. It
+[`/tracking/runs`](https://tracklab-sable.vercel.app/tracking/runs) is the project that died, published dead. It
 asked which off-ball run types move the defence in the tracking, with a protocol written before
 any outcome was computed (`pipeline/reports/runs_protocol.json`) and death criteria M1 to M5b.
 It stopped at M5a: no subtype was left to take to the held-out matches, which were never opened.
@@ -137,7 +137,7 @@ uv run tracklab publish runs --check       # runs.json and the two clips
 
 ## Body pose
 
-[`/pose`](https://tracklab-sable.vercel.app/pose) is the Body Pose SkillCorner publishes for two
+[`/tracking/pose`](https://tracklab-sable.vercel.app/tracking/pose) is the Body Pose SkillCorner publishes for two
 full matches: the joints of the players it resolves in each frame, each with its predicted error. It
 is meant for detected players, but a few rows with a pose are not flagged as detected (counted below). The question is narrow, the cadence and the step in the high-speed stretches,
 per match and per player, and the instrument is the signal of the ankles' separation along the
