@@ -1,6 +1,6 @@
 # Track Lab data quality bulletin
 
-A calibration kit for anyone building on the two Track Lab bundles, not a verdict on SkillCorner: six checks, each one number (or its range) per match, read straight off `pipeline/reports/quality_*.csv`. `web/public/data/quality.json` carries the same figures for the `/quality` page, and every number below is one or the other.
+A calibration kit for anyone building on the two Track Lab bundles, not a verdict on SkillCorner: six checks, each one number (or its range) per match, read straight off `pipeline/reports/quality_*.csv`. `web/public/data/quality.json` carries the same figures for the `/engineering/quality` page, and every number below is one or the other.
 
 ## Detection
 
@@ -52,7 +52,7 @@ For a consumer: code that assumes one shape across a whole bundle will silently 
 
 ## The hook shot
 
-`/quality` replays one basketball shot (`bb:114086`, native frame `26867`) chosen by rule: of every accepted calibration flight, the one whose fitted g sits closest to the calibration's own median. Its g is 8.15 m/s² against a calibration median of 8.15 m/s²; the page falls a second ball from the same position and velocity the data's own fit has at that instant, but at 9.80665 m/s², the standard value, so the two are visibly not the same flight.
+`/engineering/quality` replays one basketball shot (`bb:114086`, native frame `26867`) chosen by rule: of every accepted calibration flight, the one whose fitted g sits closest to the calibration's own median. Its g is 8.15 m/s² against a calibration median of 8.15 m/s²; the page falls a second ball from the same position and velocity the data's own fit has at that instant, but at 9.80665 m/s², the standard value, so the two are visibly not the same flight.
 
 ## On the body pose bundle's own z axis
 

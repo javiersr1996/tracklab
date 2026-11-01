@@ -120,7 +120,7 @@ test("the header marks Learn current on the index and on a lesson, and only ther
     await expect(learn).toHaveAttribute("aria-current", "page");
     await expect(page.locator('nav[aria-label="Sections"] [aria-current]')).toHaveCount(1);
   }
-  await page.goto("/quality");
+  await page.goto("/engineering/quality");
   await expect(learn).not.toHaveAttribute("aria-current", "page");
 });
 

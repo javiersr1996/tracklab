@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 // `components/platform/Lineage.tsx` (task 36): a hand-written SVG graph plus
-// two server-rendered tables on `/platform`. The closure test below computes
+// two server-rendered tables on `/engineering`. The closure test below computes
 // ancestors/descendants of its own, straight from `lineage.json`'s edges,
 // rather than importing the app's `lib/lineage-graph.ts` -- so a mutation to
 // that module (e.g. swapping `from`/`to` in `ancestors()`) is still visible
@@ -75,7 +75,7 @@ function descendantsOf(edges: LineageEdge[], key: string): Set<string> {
 test("as many [data-node] and [data-edge] as lineage.json has nodes and edges", async ({ page }) => {
   const lineage = (await (await page.request.get("/data/lineage.json")).json()) as LineageJson;
 
-  await page.goto("/platform");
+  await page.goto("/engineering");
 
   await expect(page.locator("[data-node]")).toHaveCount(lineage.nodes.length);
   await expect(page.locator("[data-edge]")).toHaveCount(lineage.edges.length);
@@ -96,7 +96,7 @@ test("clicking silver_frames lights exactly its ancestor and descendant closures
   expect(up.size).toBeGreaterThan(0);
   expect(down.size).toBeGreaterThan(0);
 
-  await page.goto("/platform");
+  await page.goto("/engineering");
   await page.locator('[data-node="silver_frames"]').click();
 
   // Scoped to `[data-node]`: edges carry the same `data-lit` values on their
@@ -123,7 +123,7 @@ test("clicking silver_frames lights exactly its ancestor and descendant closures
 test("the per-match table matches platform.json's matches[] cell for cell", async ({ page }) => {
   const platform = (await (await page.request.get("/data/platform.json")).json()) as PlatformJson;
 
-  await page.goto("/platform");
+  await page.goto("/engineering");
 
   const cells = page.locator("td[data-match][data-field]");
   const count = await cells.count();
@@ -140,7 +140,7 @@ test("the per-match table matches platform.json's matches[] cell for cell", asyn
     expect(text, `match ${matchId} ${field}`).toBe(String(match?.[field]));
     compared++;
   }
-  console.log(`/platform: ${compared} per-match cells checked against platform.json`);
+  console.log(`/engineering: ${compared} per-match cells checked against platform.json`);
   expect(compared).toBe(count);
 });
 
@@ -151,7 +151,7 @@ test("raw_bytes in the DOM plus season_files.bytes equals layers.raw.bytes_pinne
   const bytesPinned = platform.layers.find((l) => l.layer === "raw")?.bytes_pinned;
   expect(bytesPinned).toBeGreaterThan(0);
 
-  await page.goto("/platform");
+  await page.goto("/engineering");
 
   const rawBytesCells = page.locator('td[data-field="raw_bytes"]');
   const count = await rawBytesCells.count();
@@ -163,14 +163,14 @@ test("raw_bytes in the DOM plus season_files.bytes equals layers.raw.bytes_pinne
     sum += Number(text);
   }
   console.log(
-    `/platform: sum(matches raw_bytes)=${sum} + season_files.bytes=${platform.season_files.bytes} = ${sum + platform.season_files.bytes}, layers.raw.bytes_pinned=${bytesPinned}`,
+    `/engineering: sum(matches raw_bytes)=${sum} + season_files.bytes=${platform.season_files.bytes} = ${sum + platform.season_files.bytes}, layers.raw.bytes_pinned=${bytesPinned}`,
   );
   expect(sum + platform.season_files.bytes).toBe(bytesPinned);
 });
 
 test("no horizontal page scroll at phone width", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
-  await page.goto("/platform");
+  await page.goto("/engineering");
   await page.waitForLoadState("networkidle");
 
   const overflowing = await page.evaluate(

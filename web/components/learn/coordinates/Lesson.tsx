@@ -529,7 +529,7 @@ export function Lesson({ sql }: { sql: string }) {
               <Cite id="skillcorner-fb-coords" full />: the providers&apos; own conventions.
             </li>
             <li>
-              <a href="/quality">/quality</a>: the clock check behind the first columns of the table, beside the other
+              <a href="/engineering/quality">/engineering/quality</a>: the clock check behind the first columns of the table, beside the other
               checks of the bundles.
             </li>
           </ul>

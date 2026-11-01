@@ -1,6 +1,6 @@
-import { HookAnimation } from "../../components/quality/Hook";
-import { Band, PageHead } from "../../components/site/Band";
-import { cellKey, HOOK, matchRows, TABLE_METRICS } from "../../lib/quality";
+import { HookAnimation } from "../../../components/quality/Hook";
+import { Band, PageHead } from "../../../components/site/Band";
+import { cellKey, HOOK, matchRows, TABLE_METRICS } from "../../../lib/quality";
 
 export default function QualityPage() {
   const rows = matchRows();
@@ -10,7 +10,7 @@ export default function QualityPage() {
         <h1>Data quality</h1>
         <p className="lede">
           A calibration kit for anyone building on the two bundles: five checks, one figure per
-          match, read from the same reports as <a href="/bulletin">the bulletin</a>.
+          match, read from the same reports as <a href="/engineering/bulletin">the bulletin</a>.
         </p>
       </PageHead>
       <Band dark>

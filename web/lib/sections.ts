@@ -9,14 +9,14 @@ export const SECTIONS = [
     about: "Curated possessions that a single Canvas renderer replays in the browser.",
   },
   {
-    href: "/platform",
+    href: "/engineering",
     nav: "Platform",
     title: "How this was built",
     about:
       "The pipeline as a product: the Dagster asset graph and the layers, raw to publish, with the numbers the latest tracklab build actually produced.",
   },
   {
-    href: "/quality",
+    href: "/engineering/quality",
     nav: "Quality",
     title: "Data quality",
     about: "A calibration kit for anyone building on the two bundles.",

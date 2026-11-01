@@ -5,8 +5,8 @@ import type { ReactNode } from "react";
 // render (3:1 or more) and that each colour is still its token.
 export const CANVAS = "#030712";
 export const INK = {
-  data: "#00e5ff", // --neon, 13.1:1: the samples and what is fitted to them, the cyan of /quality
-  standard: "#ff3ea5", // --neon-alt, 6.2:1: 9.80665 m/s², the magenta of /quality
+  data: "#00e5ff", // --neon, 13.1:1: the samples and what is fitted to them, the cyan of /engineering/quality
+  standard: "#ff3ea5", // --neon-alt, 6.2:1: 9.80665 m/s², the magenta of /engineering/quality
   probe: "#ffffff", // --canvas-hi, 20.1:1: what the reader moves
   axis: "#64748b", // --canvas-edge, 4.2:1
 } as const;

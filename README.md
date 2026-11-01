@@ -82,7 +82,7 @@ against the working directory on Windows.
 
 ## Platform
 
-The pipeline as a product: [`/platform`](https://tracklab-sable.vercel.app/platform) draws the
+The pipeline as a product: [`/engineering`](https://tracklab-sable.vercel.app/engineering) draws the
 Dagster asset graph and animates the layers, raw to publish, with the numbers the latest
 `tracklab build` actually produced. Its H1 and the line under it are the title and subtitle
 `uv run tracklab publish platform` prints, from `web/public/data/platform.json`. "Out" counts what

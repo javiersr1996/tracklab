@@ -1,5 +1,5 @@
 // `web/public/data/platform.json` and `lineage.json` (tasks 34, 33), imported at
-// build time like `lib/data.ts`: every figure on `/platform` is the one these two
+// build time like `lib/data.ts`: every figure on `/engineering` is the one these two
 // files were built with.
 import platformJson from "../public/data/platform.json";
 import lineageJson from "../public/data/lineage.json";

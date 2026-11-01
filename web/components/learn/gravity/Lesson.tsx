@@ -239,7 +239,7 @@ export function Lesson({ sql }: { sql: string }) {
             Here <M><mi>m</mi></M> is the mean of the squared times. The weights are positive at both ends of the
             window, negative in the middle, and add up to zero, so the estimate compares the height at the ends with
             the height in the middle and nothing else: lift every sample by the same amount and it does not move. That
-            line is the estimator behind the gravity check on <a href="/quality">/quality</a>, and the query at the end
+            line is the estimator behind the gravity check on <a href="/engineering/quality">/engineering/quality</a>, and the query at the end
             of this page computes it in SQL.
           </p>
         </section>
@@ -247,7 +247,7 @@ export function Lesson({ sql }: { sql: string }) {
         <section aria-labelledby="example-h">
           <h2 id="example-h">One shot</h2>
           <p>
-            Start with the shot <a href="/quality">/quality</a> replays, which nobody picked by eye: of every flight the
+            Start with the shot <a href="/engineering/quality">/engineering/quality</a> replays, which nobody picked by eye: of every flight the
             check accepted in its calibration matches, it is the one whose g sits closest to their median. It is shot {q("hook.shot_id")} of match {q("hook.match_id")}: {l("samples")} heights, one per
             frame, from {l("half_s")}&nbsp;s before the highest one to {l("half_s")}&nbsp;s after it.
           </p>
@@ -326,7 +326,7 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             A gravity that comes out low has many candidate causes. The check&apos;s own thresholds are out already:
             the control matches settled that. A few more can be tested here, with the shot above, synthetic flights
-            whose g is known, and arithmetic on what /quality publishes.
+            whose g is known, and arithmetic on what /engineering/quality publishes.
           </p>
 
           <h3>Random noise</h3>
@@ -480,9 +480,9 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             Anything computed from the ball&apos;s height in flight depends on it. Release speed and angle, hang time,
             the height of the arc and the angle at the rim all depend on the same heights. The entry-angle check on
-            /quality shows it: the angle the bundle&apos;s own curve gives at the rim sits{" "}
+            /engineering/quality shows it: the angle the bundle&apos;s own curve gives at the rim sits{" "}
             {q("summary.ranges.entry_angle_gap")}&nbsp;degrees, median per match, from the angle the geometry of the same
-            shot requires. The <a href="/bulletin">bulletin</a> tells a consumer to expect a systematic offset of this
+            shot requires. The <a href="/engineering/bulletin">bulletin</a> tells a consumer to expect a systematic offset of this
             size, not random error.
           </p>
           <p>
@@ -575,7 +575,7 @@ export function Lesson({ sql }: { sql: string }) {
               <Cite id="skillcorner-tracking" full />: the provider&apos;s definitions of every field in the tracking files.
             </li>
             <li>
-              <a href="/quality">/quality</a> and the <a href="/bulletin">bulletin</a>: the check this lesson unpacks,
+              <a href="/engineering/quality">/engineering/quality</a> and the <a href="/engineering/bulletin">bulletin</a>: the check this lesson unpacks,
               beside the other checks of the bundles.
             </li>
           </ul>

@@ -95,7 +95,7 @@ test("plays on its own, walks the layers in order, and finishes cycle 1 exact", 
   page.on("requestfinished", (r) => requests.push(r));
 
   await page.addInitScript(installPlatformLogger);
-  await page.goto("/platform");
+  await page.goto("/engineering");
 
   await expect(page.locator("figure.platform")).toHaveAttribute("data-state", "playing", {
     timeout: 2_000,
@@ -139,7 +139,7 @@ test("plays on its own, walks the layers in order, and finishes cycle 1 exact", 
     expect(stripped, `${key}: page shows "${text}", platform.json has ${value}`).toBe(expected);
     compared++;
   }
-  console.log(`/platform: ${compared} counters checked against platform.json at data-state="done"`);
+  console.log(`/engineering: ${compared} counters checked against platform.json at data-state="done"`);
   expect(compared).toBe(count);
 
   await page.waitForLoadState("networkidle");
@@ -148,7 +148,7 @@ test("plays on its own, walks the layers in order, and finishes cycle 1 exact", 
     const sizes = await r.sizes();
     transferred += sizes.responseBodySize + sizes.responseHeadersSize;
   }
-  console.log(`/platform: ${transferred} bytes transferred`);
+  console.log(`/engineering: ${transferred} bytes transferred`);
   expect(transferred).toBeLessThan(400_000);
 
   expect(errors).toEqual([]);
@@ -163,7 +163,7 @@ test.describe("prefers-reduced-motion", () => {
     page.on("pageerror", (e) => errors.push(e.message));
 
     await page.addInitScript(installPlatformLogger);
-    await page.goto("/platform");
+    await page.goto("/engineering");
 
     await expect(page.locator("figure.platform")).toHaveAttribute("data-state", "done");
     await expect(page.locator("figure.platform")).toHaveAttribute("data-cycle", "1");
@@ -201,7 +201,7 @@ test("the raw bytes line names the body-pose share, with the figures platform.js
   const raw = platform.layers.find((l) => l.layer === "raw");
   const others = raw!.bytes - pose!.bytes;
   const n = (v: number) => v.toLocaleString("en-US");
-  await page.goto("/platform");
+  await page.goto("/engineering");
   const line = page.locator("[data-pose-share]");
   await expect(line).toHaveText(
     `Of the ${n(raw!.bytes)} raw bytes, ${n(pose!.bytes)} come from the ${pose!.files} ` +
@@ -211,13 +211,13 @@ test("the raw bytes line names the body-pose share, with the figures platform.js
   await expect(line.getByRole("link", { name: "/tracking/pose" })).toHaveAttribute("href", "/tracking/pose");
 });
 
-test("the home page links to /platform and /quality", async ({ page }) => {
+test("the home page links to /engineering and /engineering/quality", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("link", { name: "How this was built" })).toHaveAttribute(
     "href",
-    "/platform",
+    "/engineering",
   );
-  await expect(page.getByRole("link", { name: "Data quality" })).toHaveAttribute("href", "/quality");
+  await expect(page.getByRole("link", { name: "Data quality" })).toHaveAttribute("href", "/engineering/quality");
 });
 
 test("the stack strip, the ingest counters and the sources block print what the JSON holds", async ({
@@ -231,7 +231,7 @@ test("the stack strip, the ingest counters and the sources block print what the 
     hex: { k: number };
     seasons: { season: string; games_played: number; cutoff: string }[];
   };
-  await page.goto("/platform");
+  await page.goto("/engineering");
 
   for (const [tool, version] of Object.entries(platform.run.versions)) {
     await expect(page.locator(`[data-stack] [data-tool="${tool}"]`)).toHaveText(`${tool} ${version}`);
@@ -264,7 +264,7 @@ test("the stack strip, the ingest counters and the sources block print what the 
 });
 
 test("no route links to the private repository", async ({ page }) => {
-  const routes = ["/", "/tracking", "/platform", "/tracking/runs", "/quality", "/warehouse", "/tracking/replay", "/tracking/pose", "/learn", "/sql", "/euroleague", "/bulletin"];
+  const routes = ["/", "/tracking", "/engineering", "/tracking/runs", "/engineering/quality", "/warehouse", "/tracking/replay", "/tracking/pose", "/learn", "/sql", "/euroleague", "/engineering/bulletin"];
   for (const route of routes) {
     await page.goto(route);
     const hrefs = await page.locator("a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href") ?? ""));
@@ -273,7 +273,7 @@ test("no route links to the private repository", async ({ page }) => {
 });
 
 test("the page does not claim a CI run", async ({ page }) => {
-  await page.goto("/platform");
+  await page.goto("/engineering");
   await expect(page.locator("main")).not.toContainText(/on every CI run|\(private repository\)/);
 });
 
@@ -294,7 +294,7 @@ test("the guarantees and the Postgres block print what platform.json and warehou
     tables: { table: string; rows: number }[];
   };
   const g = platform.guarantees;
-  await page.goto("/platform");
+  await page.goto("/engineering");
 
   const field = (name: string) => page.locator(`[data-guarantees] [data-field="${name}"]`);
   await expect(field("dbt.total")).toHaveText(String(g.dbt.total));
@@ -335,7 +335,7 @@ test("the guarantees and the Postgres block print what platform.json and warehou
 
 test("the guarantee cards do not overflow a phone", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/platform");
+  await page.goto("/engineering");
   for (const sel of ["[data-guarantees]", "[data-pg]"]) {
     const box = await page.locator(sel).boundingBox();
     expect(box!.x + box!.width, sel).toBeLessThanOrEqual(390);

@@ -1224,7 +1224,7 @@ body:has(.home) .site-header::after {
   }
 
   .card[data-section="/tracking/replay"],
-  .card[data-section="/platform"],
+  .card[data-section="/engineering"],
   .card[data-section="/learn"],
   .card[data-section="/sql"] {
     grid-column: span 2;

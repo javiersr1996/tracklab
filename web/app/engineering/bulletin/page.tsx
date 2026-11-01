@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { Band, PageHead } from "../../components/site/Band";
+import { Band, PageHead } from "../../../components/site/Band";
 
 // `docs/bulletin.md`, one directory up from `web/` (`tracklab publish quality`
 // writes it there from the CSVs), read at build time like `quality.json` in
