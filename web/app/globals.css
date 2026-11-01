@@ -1820,13 +1820,8 @@ body:has(.home) .site-header::after {
 }
 
 .bulletin {
-  white-space: pre-wrap;
   word-wrap: break-word;
   max-width: var(--measure);
-  padding: 0;
-  background: none;
-  border: 0;
-  line-height: var(--leading);
 }
 
 .replay-placeholder {

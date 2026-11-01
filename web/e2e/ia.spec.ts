@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 
 // P15, task 121: the information architecture. /tracking is the hub of the three pages that
@@ -98,4 +100,22 @@ test("each old route redirects permanently to its new home, and the new one answ
   await page.goto("/platform");
   await expect(page).toHaveURL(/\/engineering$/);
   await expect(page.getByRole("navigation", { name: "Sections" }).locator("[aria-current]")).toHaveText(["Engineering"]);
+});
+
+// The bulletin under /engineering renders its Markdown (it printed `## Detection` as written): a
+// heading per `## ` line of docs/bulletin.md, code spans as code, the dataset card as a link.
+test("the bulletin's sections are headings, its code is code and its source a link", async ({ page }) => {
+  const md = readFileSync(join(process.cwd(), "..", "docs", "bulletin.md"), "utf-8");
+  const headings = [...md.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+  expect(headings.length).toBeGreaterThan(0);
+  await page.goto("/engineering/bulletin");
+  await expect(page.locator("main h2")).toHaveText(headings);
+  await expect(page.locator("main")).not.toContainText("## ");
+  await expect(page.locator("main")).not.toContainText("`");
+  await expect(page.locator(".bulletin code").first()).toBeVisible();
+  await expect(page.locator(".bulletin blockquote")).toHaveCount((md.match(/^> /gm) ?? []).length);
+  await expect(page.locator(".bulletin a", { hasText: "SkillCorner/opendata-bodypose" })).toHaveAttribute(
+    "href",
+    "https://huggingface.co/datasets/SkillCorner/opendata-bodypose",
+  );
 });

@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import type { ReactNode } from "react";
 import { Band, PageHead } from "../../../components/site/Band";
 
 // `docs/bulletin.md`, one directory up from `web/` (`tracklab publish quality`
@@ -10,16 +11,43 @@ import { Band, PageHead } from "../../../components/site/Band";
 // file locally is the link that works both before and after that merge.
 const BULLETIN_PATH = join(process.cwd(), "..", "docs", "bulletin.md");
 
+// The Markdown the bulletin uses, and no more (P15: until then `## Detection` showed as written):
+// `##` headings, `>` quotes and paragraphs, with `code` and [links](url) inside them.
+function inline(text: string): ReactNode[] {
+  return text.split(/(\[[^\]]+\]\([^)]+\)|`[^`]+`)/).map((part, i) => {
+    const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(part);
+    if (link) return <a key={i} href={link[2]}>{inline(link[1])}</a>;
+    if (part.length > 1 && part.startsWith("`") && part.endsWith("`")) return <code key={i}>{part.slice(1, -1)}</code>;
+    return part;
+  });
+}
+
+function block(text: string, i: number): ReactNode {
+  if (text.startsWith("## ")) return <h2 key={i}>{inline(text.slice(3))}</h2>;
+  if (text.startsWith("> ")) {
+    return (
+      <blockquote key={i}>
+        <p>{inline(text.replace(/^> ?/gm, ""))}</p>
+      </blockquote>
+    );
+  }
+  return <p key={i}>{inline(text)}</p>;
+}
+
 export default function BulletinPage() {
   const bulletin = readFileSync(BULLETIN_PATH, "utf-8");
-  // The file's own title line is the page's heading; the rest is shown as written.
+  // The file's own title line is the page's heading; the rest is its blocks, one per blank line.
   const [first, ...rest] = bulletin.split("\n");
   const title = first.startsWith("# ") ? first.slice(2) : null;
+  const blocks = (title ? rest.join("\n") : bulletin)
+    .split(/\n\s*\n/)
+    .map((b) => b.trim())
+    .filter(Boolean);
   return (
     <main className="page">
       <PageHead eyebrow="Data quality">{title ? <h1>{title}</h1> : null}</PageHead>
       <Band>
-        <pre className="bulletin">{title ? rest.join("\n").trimStart() : bulletin}</pre>
+        <div className="bulletin">{blocks.map(block)}</div>
       </Band>
     </main>
   );
