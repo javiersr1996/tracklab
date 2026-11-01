@@ -14,10 +14,13 @@ is consistently the one in its `FROM` clause (checked against the two singular
 tests that touch two models each: `assert_frames_entities_in_dim_entity` and
 `assert_one_ball_per_match`).
 
-Every other node keeps whatever `description` its `AssetSpec` or `@asset` sets;
-several multi-asset specs (the bronze tables, the quality checks) set none, so
-their `description` is an empty string -- not filled in here, since writing
-prose for someone else's asset definition is not this task's job.
+Every other node keeps whatever `description` its `AssetSpec` or `@asset` sets
+(the quality checks set theirs in `assets_quality`). A bronze table sets none of
+its own: its description is the one of its dbt source table in
+`dbt/models/sources/*.yml` (`source.<project>.bronze_<sport>.<table>` in the
+manifest), so the prose lives in one place and the page reads it from here.
+`undescribed` lists the nodes left without one and both `--check` and the
+publish refuse to go on while it is not empty (task 123).
 
 The output is ordered by key and edge, `indent=2`, no timestamps: the whole
 point is that two runs produce the same bytes, byte for byte, so CI's
@@ -94,6 +97,22 @@ def dbt_nodes(manifest: dict[str, Any]) -> dict[str, DbtNode]:
     return out
 
 
+def dbt_source_descriptions(manifest: dict[str, Any]) -> dict[str, str]:
+    """The description of every dbt source table, keyed by the bronze asset key
+    it documents (`bronze_<sport>_<table>`, the source name minus `bronze_`)."""
+    out: dict[str, str] = {}
+    for src in manifest.get("sources", {}).values():
+        name = str(src["source_name"])
+        if name.startswith("bronze_"):
+            out[f"{name}_{src['name']}"] = str(src.get("description") or "").strip()
+    return out
+
+
+def undescribed(payload: dict[str, Any]) -> list[str]:
+    """Keys of the nodes whose description is empty or blank."""
+    return [n["key"] for n in payload.get("nodes", []) if not str(n.get("description", "")).strip()]
+
+
 def _sport(key: str) -> str | None:
     for sport in ("basketball", "football"):
         if sport in key:
@@ -136,11 +155,13 @@ def lineage_from_defs(
     graph = defs.resolve_asset_graph()
     job = defs.resolve_job_def("build")
     layer = job.asset_layer
-    dbt = (
-        dbt_nodes(json.loads(dbt_manifest_path.read_text(encoding="utf-8")))
+    manifest = (
+        json.loads(dbt_manifest_path.read_text(encoding="utf-8"))
         if dbt_manifest_path.is_file()
         else {}
     )
+    dbt = dbt_nodes(manifest) if manifest else {}
+    sources = dbt_source_descriptions(manifest)
 
     keys = sorted(graph.get_all_asset_keys(), key=lambda k: k.to_user_string())
     nodes: list[dict[str, Any]] = []
@@ -154,7 +175,11 @@ def lineage_from_defs(
             "key": key_str,
             "group": node.group_name,
             "kind": "external" if node.is_external else "asset",
-            "description": dbt[key_str].description if key_str in dbt else (node.description or ""),
+            "description": (
+                dbt[key_str].description
+                if key_str in dbt
+                else (node.description or sources.get(key_str, ""))
+            ),
             "step": step,
             "sport": _sport(key_str),
             "schema": schema_kind(key_str, node.group_name, schemas_dir),
@@ -217,11 +242,23 @@ def run_publish_lineage(
         f"dbt_tests={n_tests}, sha1={sha1}"
     )
 
+    blank = undescribed(payload)
+    if blank:
+        print(f"publish lineage: {len(blank)} node(s) without a description: {blank}")
+        return 1
+
     if check:
         if not path.is_file():
             print(f"publish lineage --check: {path} missing")
             return 1
         current_text = path.read_text(encoding="utf-8")
+        published_blank = undescribed(json.loads(current_text))
+        if published_blank:
+            print(
+                f"publish lineage --check: {path} publishes {len(published_blank)} node(s) "
+                f"without a description: {published_blank}"
+            )
+            return 1
         if current_text == text:
             print(f"publish lineage --check: {path} matches, sha1={sha1}")
             return 0

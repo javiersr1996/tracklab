@@ -45,3 +45,12 @@ sources:
       - name: aggregates_physical
         description: >
           Season table, one row per player, team and `position_group` of the A-League 2024/2025 (not per player and team: that pair repeats).
+      - name: matches
+        description: >
+          Season table written as a single file, one row per match of the A-League 2024/2025 bundle, each row carrying its own `match_id`.
+      - name: bodypose_players
+        description: >
+          One row per frame and player that has a pose: 29 joints in metres and their error. A player with no pose has no row; the count of players stays in bodypose_frames.
+      - name: bodypose_frames
+        description: >
+          One row per line of the body pose file, in the file's own frame numbering, with the number of players in the frame. Frames outside every period have no players.

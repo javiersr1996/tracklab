@@ -29,35 +29,65 @@ sources:
           A timeout frame has no row here at all, which is why `frames` loses
           about 44% of the basketball file and keeps the timeline in bronze.
       - name: events_chance_players
+        description: >
+          One row per player in a chance: the shot location and the rebound location, with no frames of its own. Conformed into silver `events` as `chance_players`.
       - name: events_chances
+        description: >
+          One row per chance, a stretch of a possession from its start to its end frame, with the start type, the outcome and where it ended.
       - name: events_closeouts
+        description: >
+          One row per closeout: the ball handler, the defender who closes out on them, and the start and end locations.
       - name: events_dribbles
+        description: >
+          One row per dribble: the ball handler, the frame and the location.
       - name: events_drives
+        description: >
+          One row per drive: the ball handler, the defender on them, the start and end frames and the start and end locations.
       - name: events_fouls
+        description: >
+          One row per foul: the fouler and their team, the fouled player, the frame and the location.
       - name: events_free_throws
         description: >
           Conformed as `shot`; native_family keeps them apart from open play.
       - name: events_handoffs
+        description: >
+          One row per handoff: the setter, the receiver, the frame and the location.
       - name: events_isolations
+        description: >
+          One row per isolation: the ball handler, their defender, the start and end frames and locations.
       - name: events_matchups
+        description: >
+          One row per matchup: the offensive player, the defender assigned to them and the start and end frames. No location or outcome.
       - name: events_off_ball_screens
+        description: >
+          One row per off-ball screen: the cutter, the screener, the frame and the location.
       - name: events_passes
         description: >
           A family of its own here; football has no equivalent event and marks a pass on how a player_possession ended.
       - name: events_picks
+        description: >
+          One row per pick: the ball handler, the screener, the frame and the location.
       - name: events_possessions
         description: >
           The native team possession, and the carrier of `leftHoop`: every other family rotates its coordinates by the one its `possessionId` points at.
       - name: events_posts
+        description: >
+          One row per post-up: the ball handler, their defender, the start and end frames and locations, and the section of the court.
       - name: events_rebounds
+        description: >
+          One row per rebound: the rebounder, their team, the frame, the location and whether it was defensive.
       - name: events_shots
         description: >
           `location` is where the provider says the shot happened, not where the shooter stood at `startFrame` (task 9).
       - name: events_timeouts
+        description: >
+          One row per timeout: the team that called it and the frame. No player, location or outcome.
       - name: events_touches
         description: >
           One player holding the ball. Conformed as `player_possession`.
       - name: events_turnovers
+        description: >
+          One row per turnover: the player who turned the ball over, the player who stole it, the frame and the location.
       - name: aggregates_drives
         description: >
           Season table, one row per player and team of ACB 2025-2026; traded players also carry a `team_name = 'total'` row with a null `team_id`.
@@ -67,3 +97,6 @@ sources:
       - name: aggregates_shots
         description: >
           Season table, one row per player and team of ACB 2025-2026; traded players also carry a `team_name = 'total'` row with a null `team_id`.
+      - name: games
+        description: >
+          One row per match, folded from game_data.json: the match header, with the same file read once for this table and game_players.

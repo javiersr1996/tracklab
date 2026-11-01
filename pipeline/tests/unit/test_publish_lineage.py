@@ -20,9 +20,12 @@ from tracklab.publish.lineage import (
     GROUPS_IN_FLOW,
     changed_keys,
     dbt_nodes,
+    dbt_source_descriptions,
     lineage_from_defs,
     render,
+    run_publish_lineage,
     schema_kind,
+    undescribed,
 )
 
 
@@ -199,3 +202,55 @@ def test_changed_keys_reports_added_removed_and_modified() -> None:
 def test_changed_keys_is_empty_for_identical_payloads() -> None:
     payload = {"nodes": [{"key": "a", "v": 1}]}
     assert changed_keys(payload, payload) == []
+
+
+# --- every published node is described (task 123) -----------------------------------
+
+
+def test_every_node_of_the_real_graph_has_a_description() -> None:
+    payload = lineage_from_defs(defs, dbt_manifest_path=Path("dbt/target/manifest.json"))
+    assert undescribed(payload) == []
+
+
+def test_a_bronze_node_takes_its_description_from_its_dbt_source() -> None:
+    manifest = {
+        "sources": {
+            "source.tracklab.bronze_basketball.matches": {
+                "source_name": "bronze_basketball",
+                "name": "matches",
+                "description": "  One row per match.\n",
+            },
+            "source.tracklab.reports.orientation": {
+                "source_name": "reports",
+                "name": "orientation",
+                "description": "not bronze",
+            },
+        }
+    }
+    assert dbt_source_descriptions(manifest) == {"bronze_basketball_matches": "One row per match."}
+
+
+def test_undescribed_names_the_empty_and_the_blank_nodes() -> None:
+    payload = {
+        "nodes": [
+            {"key": "a", "description": "ok"},
+            {"key": "b", "description": ""},
+            {"key": "c", "description": "  \n"},
+        ]
+    }
+    assert undescribed(payload) == ["b", "c"]
+
+
+def test_check_fails_when_the_published_file_has_an_empty_description(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    manifest = Path("dbt/target/manifest.json")
+    assert run_publish_lineage(tmp_path, dbt_manifest_path=manifest) == 0
+    path = tmp_path / "lineage.json"
+    assert run_publish_lineage(tmp_path, check=True, dbt_manifest_path=manifest) == 0
+
+    published = json.loads(path.read_text(encoding="utf-8"))
+    published["nodes"][0]["description"] = ""
+    path.write_text(render(published), encoding="utf-8", newline="\n")
+    assert run_publish_lineage(tmp_path, check=True, dbt_manifest_path=manifest) == 1
+    assert "without a description" in capsys.readouterr().out
