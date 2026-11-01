@@ -73,3 +73,29 @@ for (const width of [390, 1440]) {
     }
   });
 }
+
+// The old routes answer with a permanent redirect to the new ones, the query carried over. The
+// list is typed here, not read from next.config.ts, so a redirect dropped there fails here.
+const MOVED: [string, string][] = [
+  ["/replay", "/tracking/replay"],
+  ["/runs", "/tracking/runs"],
+  ["/pose", "/tracking/pose"],
+  ["/platform", "/engineering"],
+  ["/quality", "/engineering/quality"],
+  ["/bulletin", "/engineering/bulletin"],
+];
+
+test("each old route redirects permanently to its new home, and the new one answers 200", async ({ page }) => {
+  for (const [from, to] of MOVED) {
+    const res = await page.request.get(from, { maxRedirects: 0 });
+    expect([301, 308], `${from} status`).toContain(res.status());
+    expect(new URL(res.headers()["location"], "http://x").pathname, `${from} location`).toBe(to);
+    expect((await page.request.get(to, { maxRedirects: 0 })).status(), `${to} status`).toBe(200);
+  }
+  const res = await page.request.get("/replay?p=bb_possessions_possession-114243-3-79.json", { maxRedirects: 0 });
+  expect(res.headers()["location"]).toMatch(/\/tracking\/replay\?p=bb_possessions_possession-114243-3-79\.json$/);
+  // A browser lands on the page itself.
+  await page.goto("/platform");
+  await expect(page).toHaveURL(/\/engineering$/);
+  await expect(page.getByRole("navigation", { name: "Sections" }).locator("[aria-current]")).toHaveText(["Engineering"]);
+});
