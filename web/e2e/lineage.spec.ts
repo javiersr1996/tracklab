@@ -178,3 +178,17 @@ test("no horizontal page scroll at phone width", async ({ page }) => {
   );
   expect(overflowing).toBe(false);
 });
+
+test("the node panel renders code spans without backticks and fits at 390 px", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  const lineage = (await (await page.request.get("/data/lineage.json")).json()) as LineageJson;
+  const withTicks = lineage.nodes.find((n) => n.description.includes("`"))!;
+  await page.goto("/engineering");
+  await page.locator(`[data-node="${withTicks.key}"]`).focus();
+  const panel = page.locator("[data-lineage-detail]");
+  await expect(panel).toContainText(withTicks.key);
+  expect(await panel.innerText()).not.toContain("`");
+  await expect(panel.locator("code")).toHaveCount(1 + (withTicks.description.split("`").length - 1) / 2);
+  const [client, scroll] = await panel.evaluate((e) => [e.clientWidth, e.scrollWidth]);
+  expect(scroll).toBeLessThanOrEqual(client);
+});

@@ -97,6 +97,11 @@ function litDirection(key: string, up: Set<string>, down: Set<string>): "ancesto
   return undefined;
 }
 
+// Descriptions come from dbt yml, where `x` marks code: odd pieces of a split on backticks are code.
+function withCode(text: string) {
+  return text.split("`").map((part, i) => (i % 2 === 1 ? <code key={i}>{part}</code> : part));
+}
+
 export function Lineage({ lineage }: { lineage: LineageData }) {
   const [hovered, setHovered] = useState<string | null>(null);
   const [pinned, setPinned] = useState<string | null>(null);
@@ -214,7 +219,7 @@ export function Lineage({ lineage }: { lineage: LineageData }) {
         {activeKey && nodeByKey.get(activeKey) ? (
           <>
             <code>{activeKey}</code> ({nodeByKey.get(activeKey)?.group}):{" "}
-            <span data-lineage-description>{nodeByKey.get(activeKey)?.description}</span>
+            <span data-lineage-description>{withCode(nodeByKey.get(activeKey)?.description ?? "")}</span>
           </>
         ) : (
           "Hover or focus a node to read what it is."
