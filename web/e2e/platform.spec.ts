@@ -219,3 +219,60 @@ test("the home page links to /platform and /quality", async ({ page }) => {
   );
   await expect(page.getByRole("link", { name: "Data quality" })).toHaveAttribute("href", "/quality");
 });
+
+test("the stack strip, the ingest counters and the sources block print what the JSON holds", async ({
+  page,
+}) => {
+  const platform = (await (await page.request.get("/data/platform.json")).json()) as PlatformJson & {
+    run: { versions: Record<string, string> };
+    layers: { layer: string; downloaded?: number; verified?: number; bytes_read?: number }[];
+  };
+  const league = (await (await page.request.get("/data/euroleague/league.json")).json()) as {
+    hex: { k: number };
+    seasons: { season: string; games_played: number; cutoff: string }[];
+  };
+  await page.goto("/platform");
+
+  for (const [tool, version] of Object.entries(platform.run.versions)) {
+    await expect(page.locator(`[data-stack] [data-tool="${tool}"]`)).toHaveText(`${tool} ${version}`);
+  }
+
+  const raw = platform.layers.find((l) => l.layer === "raw") as unknown as Record<string, number>;
+  for (const field of ["downloaded", "verified", "bytes_read"] as const) {
+    await expect(page.locator(`[data-counter="raw.${field}"]`)).toHaveText(
+      raw[field].toLocaleString("en-US"),
+    );
+  }
+
+  for (const src of platform.raw_sources) {
+    const card = page.locator(`[data-source="${src.source_id}"]`);
+    await expect(card.locator('[data-field="files"]')).toHaveText(String(src.files));
+    await expect(card.locator('[data-field="bytes"]')).toHaveText(src.bytes.toLocaleString("en-US"));
+    await expect(card.locator("[data-counts-in-out]")).toHaveText("yes");
+  }
+  const el = page.locator('[data-source="euroleague"]');
+  for (const s of league.seasons) {
+    const row = el.locator(`[data-season="${s.season}"]`);
+    await expect(row.locator('[data-field="games"]')).toHaveText(String(s.games_played));
+    await expect(row.locator('[data-field="cutoff"]')).toHaveText(s.cutoff);
+  }
+  await expect(el.locator('[data-field="k"]')).toHaveText(String(league.hex.k));
+  await expect(el.locator("[data-counts-in-out]")).toHaveText(/^no/);
+
+  // The title still counts SkillCorner only: EuroLeague is not in "out".
+  await expect(page.locator("h1")).toHaveText("3.6 GB in, 7.6 MB out");
+});
+
+test("no route links to the private repository", async ({ page }) => {
+  const routes = ["/", "/platform", "/runs", "/quality", "/warehouse", "/replay", "/pose", "/learn", "/sql", "/euroleague", "/bulletin"];
+  for (const route of routes) {
+    await page.goto(route);
+    const hrefs = await page.locator("a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href") ?? ""));
+    expect(hrefs.filter((h) => h.includes("github.com/javiersr1996/tracklab")), route).toEqual([]);
+  }
+});
+
+test("the page does not claim a CI run", async ({ page }) => {
+  await page.goto("/platform");
+  await expect(page.locator("main")).not.toContainText(/on every CI run|\(private repository\)/);
+});

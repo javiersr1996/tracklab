@@ -2,9 +2,13 @@ import { Flow } from "../../components/platform/Flow";
 import { Lineage } from "../../components/platform/Lineage";
 import { Band, PageHead } from "../../components/site/Band";
 import { pluralize } from "../../lib/format";
+import { LEAGUE } from "../../lib/euroleague/data";
 import { LINEAGE, PLATFORM, poseShare, silverModelRows } from "../../lib/platform";
+import { DATA_SOURCES, EUROLEAGUE } from "../../lib/sections";
 
-const REPO = "https://github.com/javiersr1996/tracklab";
+// `raw_sources[].source_id` (the manifest's) to the name `DATA_SOURCES` gives the same repository.
+const skillcorner = (id: string) =>
+  DATA_SOURCES.find((s) => s.name === (id === "opendata-football" ? "SkillCorner/opendata" : `SkillCorner/${id}`));
 
 const MATCH_FIELDS = [
   "sport",
@@ -47,6 +51,15 @@ export default function PlatformPage() {
           platform</code> measured on this run, read from{" "}
           <a href="/data/platform.json">platform.json</a>, never typed by hand.
         </p>
+        <ul className="platform-stack" data-stack>
+          {Object.entries(run.versions).map(([tool, version]) => (
+            <li key={tool} data-tool={tool}>
+              {tool} <span>{version}</span>
+            </li>
+          ))}
+          <li>Parquet</li>
+          <li>Postgres on Neon</li>
+        </ul>
         {pose && (
           <p data-pose-share>
             Of the {(pose.bytes + pose.otherBytes).toLocaleString("en-US")} raw bytes,{" "}
@@ -59,6 +72,11 @@ export default function PlatformPage() {
       </PageHead>
       <Band dark>
         <Flow layers={PLATFORM.layers} />
+        <p data-postgres>
+          Gold also loads into Postgres on Neon, incrementally: every row carries a fingerprint, and
+          one transaction inserts, updates or deletes only the keys that differ, so loading the same
+          gold twice writes no row.
+        </p>
         <footer className="platform-footer">
           <p>
             Run {run.git_sha} on {run.started_utc.slice(0, 10)}, {run.host.system},{" "}
@@ -68,12 +86,71 @@ export default function PlatformPage() {
           </p>
         </footer>
       </Band>
+      <Band>
+        <h2>Sources</h2>
+        <p>
+          Two kinds of ingest. SkillCorner is a pinned commit with a sha256 per file; EuroLeague is
+          a public API pulled incrementally at a limited rate, with only aggregates published.
+          The last line of each card says whether its bytes are in the <q>out</q> of the title.
+        </p>
+        <ul className="platform-sources" data-sources>
+          {PLATFORM.raw_sources.map((src) => {
+            const meta = skillcorner(src.source_id);
+            return (
+              <li key={src.source_id} data-source={src.source_id}>
+                <h3>{meta ? <a href={meta.href}>{meta.name}</a> : src.source_id}</h3>
+                <dl>
+                  <dt>ingest</dt>
+                  <dd>pinned commit, sha256 per file, idempotent download</dd>
+                  <dt>in</dt>
+                  <dd>
+                    {meta?.what}: <span data-field="files">{src.files}</span> files,{" "}
+                    <span data-field="bytes">{src.bytes.toLocaleString("en-US")}</span> bytes
+                  </dd>
+                  <dt>license</dt>
+                  <dd>{meta?.license}</dd>
+                  <dt>counts in out</dt>
+                  <dd data-counts-in-out="yes">yes</dd>
+                </dl>
+              </li>
+            );
+          })}
+          <li data-source="euroleague">
+            <h3>
+              <a href={EUROLEAGUE.href}>{EUROLEAGUE.name}</a>
+            </h3>
+            <dl>
+              <dt>ingest</dt>
+              <dd>public API, incremental by manifest, rate-limited</dd>
+              <dt>in</dt>
+              <dd>
+                {EUROLEAGUE.what}:{" "}
+                {LEAGUE.seasons.map((s, i) => (
+                  <span key={s.season} data-season={s.season}>
+                    {i > 0 ? "; " : ""}
+                    <span data-field="games">{s.games_played}</span> games to{" "}
+                    <span data-field="cutoff">{s.cutoff}</span>
+                  </span>
+                ))}
+              </dd>
+              <dt>license</dt>
+              <dd>
+                no open license: aggregates only, at least <span data-field="k">{LEAGUE.hex.k}</span>{" "}
+                shots per hexagon
+              </dd>
+              <dt>counts in out</dt>
+              <dd data-counts-in-out="no">no (another source, another license)</dd>
+            </dl>
+          </li>
+        </ul>
+      </Band>
       <Band dark>
         <h2>Lineage</h2>
         <p>
           The Dagster asset graph (<a href="/data/lineage.json">lineage.json</a>), {LINEAGE.nodes.length}{" "}
           nodes and {LINEAGE.edges.length} edges, exported by <code>tracklab publish lineage</code>{" "}
-          and checked byte for byte against the graph on every CI run. Hover or click a node to trace its upstream and downstream dependencies.
+          and checked against the graph by <code>tracklab publish lineage --check</code> in the local
+          gate before every deploy (GitHub Actions is not running for this private repository). Hover or click a node to trace its upstream and downstream dependencies.
         </p>
         <Lineage lineage={LINEAGE} />
       </Band>
@@ -123,8 +200,7 @@ export default function PlatformPage() {
           <a href="/data/platform.json">platform.json</a>&apos;s <code>tables[]</code> where the
           model writes an actual Parquet file ({pluralize(viewCount, "view")} and{" "}
           {pluralize(seedCount, "seed")} don&apos;t, so those cells stay blank rather than showing an
-          invented 0). Column types and names are documented in{" "}
-          <a href={`${REPO}/blob/main/docs/schema.md`}>docs/schema.md</a> (private repository).
+          invented 0).
         </p>
         <div className="table-scroll">
           <table>

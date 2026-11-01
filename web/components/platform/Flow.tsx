@@ -18,6 +18,19 @@ const DONE_HOLD_MS = 700;
 
 type MotionState = "idle" | "playing" | "done";
 
+// One line per layer: what the code does, no figure (the counters are the figures). Each is
+// backed by the code named beside it, so a change there is a change here.
+const LAYER_BLURB: Partial<Record<PlatformLayer["layer"], string>> = {
+  // ingest/manifest.py (commit and sha256 per file), ingest/fetch.py (plain HTTP, hashed while streaming)
+  raw: "Pinned commit, sha256 per file, plain HTTP. A file already on disk with the right hash is verified, not downloaded again.",
+  // bronze/common.py: typed schema, ZSTD, atomic write, sha256 in the Parquet metadata
+  bronze: "One typed Parquet per match, ZSTD, written atomically, source sha256 in its metadata.",
+  // dbt/models/silver/frames.sql: partition_by sport, native_match_id
+  silver: "dbt on DuckDB: one schema for both sports, partitioned by sport and match.",
+  // dbt/models/gold: dim_player, dim_season_team, dim_metric, fact_player_season_metric
+  gold: "Dimensional model: player, team and metric dimensions and a long fact, plus wide aggregates.",
+};
+
 function formatCount(n: number): string {
   return n.toLocaleString("en-US");
 }
@@ -121,6 +134,7 @@ export function Flow({ layers }: { layers: PlatformLayer[] }) {
           return (
             <div className="platform-layer" key={layer.layer} data-phase={phase}>
               <h3>{layer.layer}</h3>
+              {LAYER_BLURB[layer.layer] && <p className="platform-blurb">{LAYER_BLURB[layer.layer]}</p>}
               <div className="platform-bar">
                 <div className="platform-bar-fill" style={{ width: `${Math.round(localT * 100)}%` }} />
               </div>
@@ -144,6 +158,30 @@ export function Flow({ layers }: { layers: PlatformLayer[] }) {
                   <dd data-counter={counterKey(layer.layer, "bytes")}>{formatCount(bytes)}</dd>
                   <span className="platform-bytes-human">({formatBytes(bytes)})</span>
                 </div>
+                {layer.downloaded !== undefined && (
+                  <div>
+                    <dt>downloaded this run</dt>
+                    <dd data-counter={counterKey(layer.layer, "downloaded")}>
+                      {formatCount(valueAt(layer.downloaded, localT))}
+                    </dd>
+                  </div>
+                )}
+                {layer.verified !== undefined && (
+                  <div>
+                    <dt>verified against sha256</dt>
+                    <dd data-counter={counterKey(layer.layer, "verified")}>
+                      {formatCount(valueAt(layer.verified, localT))}
+                    </dd>
+                  </div>
+                )}
+                {layer.bytes_read !== undefined && (
+                  <div>
+                    <dt>bytes read, decompressed</dt>
+                    <dd data-counter={counterKey(layer.layer, "bytes_read")}>
+                      {formatCount(valueAt(layer.bytes_read, localT))}
+                    </dd>
+                  </div>
+                )}
                 <div>
                   <dt>seconds (longest step)</dt>
                   <dd data-counter={counterKey(layer.layer, "seconds")}>

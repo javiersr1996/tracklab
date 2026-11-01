@@ -1932,6 +1932,73 @@ body:has(.home) .site-header::after {
   color: var(--fg-muted);
 }
 
+.platform-blurb {
+  color: var(--fg-muted);
+  margin: 0 0 var(--space-3);
+}
+
+.platform-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.platform-stack li {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-neon);
+  color: var(--fg-strong);
+}
+
+.platform-stack span {
+  color: var(--fg-muted);
+}
+
+.platform-sources {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  list-style: none;
+  margin: var(--space-4) 0;
+  padding: 0;
+}
+
+@media (min-width: 900px) {
+  .platform-sources {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.platform-sources li {
+  min-width: 0;
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+
+.platform-sources h3 {
+  margin: 0 0 var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+.platform-sources dl {
+  margin: 0;
+}
+
+.platform-sources dt {
+  color: var(--fg-muted);
+}
+
+.platform-sources dd {
+  margin: 0 0 var(--space-2);
+  overflow-wrap: anywhere;
+}
+
 .platform-note {
   color: var(--fg-muted);
   margin: var(--space-2) 0 0;

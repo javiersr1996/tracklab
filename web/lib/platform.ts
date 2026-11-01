@@ -193,7 +193,7 @@ export function silverModelRows(
 
 // The four fields the flow animates per layer; `rows` is skipped where the
 // record has none (raw and publish count files, not table rows).
-export type CounterField = "files" | "rows" | "bytes" | "seconds";
+export type CounterField = "files" | "rows" | "bytes" | "seconds" | "downloaded" | "verified" | "bytes_read";
 
 export function counterKey(layer: LayerName, field: CounterField): string {
   return `${layer}.${field}`;
