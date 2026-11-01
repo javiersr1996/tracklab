@@ -522,6 +522,50 @@ a.wordmark:hover {
   gap: var(--space-5);
 }
 
+/* On a phone the footer is a short block, not a screen: the same text, tighter. */
+@media (max-width: 899px) {
+  .site-footer {
+    padding-block: var(--space-5);
+  }
+
+  /* The wordmark and the licence line share the first row; the data notes take the second. */
+  .site-footer-grid {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "mark code" "data data";
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+
+  .site-footer-grid > :nth-child(1) {
+    grid-area: mark;
+  }
+
+  .site-footer-grid > :nth-child(2) {
+    grid-area: data;
+  }
+
+  .site-footer-grid > :nth-child(3) {
+    grid-area: code;
+    text-align: right;
+  }
+
+  .site-footer-grid > :nth-child(3) .site-footer-label {
+    display: none;
+  }
+
+  .site-footer-links li {
+    margin-bottom: 0;
+  }
+
+  .site-footer p {
+    margin-block: 0 var(--space-2);
+  }
+
+  .site-footer-label {
+    margin-bottom: var(--space-1);
+  }
+}
+
 @media (min-width: 900px) {
   .site-footer-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
@@ -2915,4 +2959,26 @@ body:has(.home) .site-header::after {
   margin-top: var(--space-7);
   padding-top: var(--space-5);
   border-top: 1px solid var(--rule);
+}
+
+.runs-fold {
+  margin-block: var(--space-5);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: 0.5rem;
+  padding: var(--space-3) var(--space-4);
+}
+
+.runs-fold > summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+
+.runs-fold > summary:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 2px;
+}
+
+.runs-fold[open] > summary {
+  margin-bottom: var(--space-4);
 }

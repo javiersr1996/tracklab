@@ -119,3 +119,19 @@ test("the bulletin's sections are headings, its code is code and its source a li
     "https://huggingface.co/datasets/SkillCorner/opendata-bodypose",
   );
 });
+
+// P15, task 122: the footer is a short block on a phone (it was 622 px; it is 442), the same text
+// on every route, and the legal lines stay.
+test("the footer is short at 390 px on every layout and keeps its notices", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  for (const route of ["/", "/tracking/runs", "/sql", "/learn", "/engineering", "/euroleague"]) {
+    await page.goto(route);
+    const footer = page.locator("footer.site-footer");
+    const box = await footer.boundingBox();
+    expect(box!.height, route).toBeLessThan(480);
+    await expect(footer).toContainText("Not affiliated with SkillCorner.");
+    await expect(footer).toContainText("Not affiliated with EuroLeague.");
+    await expect(footer).toContainText("Code under the MIT license");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth), route).toBe(390);
+  }
+});
