@@ -129,6 +129,8 @@ test("the footer is short at 390 px on every layout and keeps its notices", asyn
     const footer = page.locator("footer.site-footer");
     const box = await footer.boundingBox();
     expect(box!.height, route).toBeLessThan(480);
+    const labels = footer.locator(".site-footer-label", { hasText: /^code$/ });
+    await expect(labels, route).toBeVisible();
     await expect(footer).toContainText("Not affiliated with SkillCorner.");
     await expect(footer).toContainText("Not affiliated with EuroLeague.");
     await expect(footer).toContainText("Code under the MIT license");

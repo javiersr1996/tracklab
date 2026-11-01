@@ -549,10 +549,6 @@ a.wordmark:hover {
     text-align: right;
   }
 
-  .site-footer-grid > :nth-child(3) .site-footer-label {
-    display: none;
-  }
-
   .site-footer-links li {
     margin-bottom: 0;
   }
