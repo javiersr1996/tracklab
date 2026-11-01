@@ -10,6 +10,7 @@ import { expect, test } from "@playwright/test";
 interface LineageNode {
   key: string;
   group: string;
+  description: string;
   schema: string;
   dbt_tests?: number;
   dbt_columns?: string[];
