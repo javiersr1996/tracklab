@@ -1,66 +1,85 @@
-// The nine sections, in the order the header and the home page list them. `title` is the link text
-// the home page has always carried (the e2e find those links by name, so the header uses the short
-// `nav` instead), `about` a line from the section's own page or the README, not new copy.
+// The nine sections, in the order the home page lists them. `title` is the link text the home page
+// has always carried (the e2e find those links by name), `about` a line from the section's own page
+// or the README, not new copy.
 export const SECTIONS = [
   {
     href: "/tracking/replay",
-    nav: "Replay",
     title: "Replay any possession",
     about: "Curated possessions that a single Canvas renderer replays in the browser.",
   },
   {
     href: "/engineering",
-    nav: "Platform",
     title: "How this was built",
     about:
       "The pipeline as a product: the Dagster asset graph and the layers, raw to publish, with the numbers the latest tracklab build actually produced.",
   },
   {
     href: "/engineering/quality",
-    nav: "Quality",
     title: "Data quality",
     about: "A calibration kit for anyone building on the two bundles.",
   },
   {
     href: "/warehouse",
-    nav: "Warehouse",
     title: "Warehouse",
     about:
       "SQL over the season aggregates of both bundles, run by DuckDB in this browser on Parquet files that are read by HTTP range.",
   },
   {
     href: "/tracking/runs",
-    nav: "Runs",
     title: "The run that moves nobody",
     about: "The project that died, published dead.",
   },
   {
     href: "/tracking/pose",
-    nav: "Pose",
     title: "Body pose",
     about: "The joints of the players SkillCorner's Body Pose resolves in each frame, each with its predicted error.",
   },
   {
     href: "/learn",
-    nav: "Learn",
     title: "Learn from the data",
     about: "Short lessons that start from a question about the tracking data and end with a query you can run.",
   },
   {
     // Its own section since P12 (until then a second link in the Learn card, task 101).
     href: "/sql",
-    nav: "SQL",
     title: "Learn SQL on the warehouse",
     about: "Eight lessons that take you from your first SELECT to window functions and CTEs.",
   },
   {
     // P14: the first data that is not SkillCorner's, aggregates only.
     href: "/euroleague",
-    nav: "EuroLeague",
     title: "Where EuroLeague shoots from",
     about: "EuroLeague field goals binned into hexagons on a FIBA half court: the league, each team and its main shooters.",
   },
 ] as const;
+
+// The header's six entries (P15, task 121, Javier's option 1 of 2026-11-01). Tracking and
+// Engineering group pages, which a second row of the header lists on any page under them.
+export type NavEntry = { href: string; nav: string; pages?: { href: string; nav: string }[] };
+export const NAV: NavEntry[] = [
+  {
+    href: "/tracking",
+    nav: "Tracking",
+    pages: [
+      { href: "/tracking/replay", nav: "Replay" },
+      { href: "/tracking/runs", nav: "Runs" },
+      { href: "/tracking/pose", nav: "Pose" },
+    ],
+  },
+  {
+    href: "/engineering",
+    nav: "Engineering",
+    pages: [
+      { href: "/engineering", nav: "Platform" },
+      { href: "/engineering/quality", nav: "Quality" },
+      { href: "/engineering/bulletin", nav: "Bulletin" },
+    ],
+  },
+  { href: "/warehouse", nav: "Warehouse" },
+  { href: "/learn", nav: "Learn" },
+  { href: "/sql", nav: "SQL" },
+  { href: "/euroleague", nav: "EuroLeague" },
+];
 
 // The header marks a section current on its own page and on every page under it.
 export const isCurrent = (path: string, href: string) => path === href || path.startsWith(`${href}/`);

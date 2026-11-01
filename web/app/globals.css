@@ -464,8 +464,8 @@ a.wordmark:hover {
   color: var(--fg-muted);
 }
 
-/* Bracketed, terminal style, where nine links fit in two rows or fewer; a phone drops the
-   brackets and wraps them in three rows (P14). */
+/* Bracketed, terminal style, from 640 px; a phone drops the brackets and wraps the six links
+   (P15). */
 @media (min-width: 40rem) {
   .site-nav ul {
     gap: 0 var(--space-5);
@@ -493,6 +493,23 @@ a.wordmark:hover {
   color: var(--neon);
   border-bottom-color: var(--neon);
   box-shadow: 0 8px 14px -10px var(--neon); /* the underline's glow */
+}
+
+/* Under Tracking or Engineering (P15), the group's pages: a row of their own under a hairline,
+   the same links in mixed case and without brackets, a level below the six. */
+.site-subnav {
+  flex-basis: 100%;
+  border-top: 1px solid var(--rule);
+}
+
+.site-subnav a {
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.site-subnav a::before,
+.site-subnav a::after {
+  content: none;
 }
 
 .site-footer {

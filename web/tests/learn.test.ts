@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LESSONS } from "../lib/learn/series";
 import { SOURCES, sourceProblems } from "../lib/learn/sources";
-import { isCurrent, SECTIONS } from "../lib/sections";
+import { isCurrent, NAV, SECTIONS } from "../lib/sections";
 
 describe("the series", () => {
   it("numbers its lessons in order with no gap (P9 renumbers after the lesson Javier dropped)", () => {
@@ -40,5 +40,12 @@ describe("isCurrent", () => {
   it("makes Learn the seventh section, SQL the eighth (P12) and EuroLeague the ninth (P14)", () => {
     expect(SECTIONS).toHaveLength(9);
     expect(SECTIONS.map((s) => s.href).slice(-3)).toEqual(["/learn", "/sql", "/euroleague"]);
+  });
+
+  it("gives the header six entries (P15), each group's pages under its href and every section in the menu", () => {
+    expect(NAV.map((n) => n.nav)).toEqual(["Tracking", "Engineering", "Warehouse", "Learn", "SQL", "EuroLeague"]);
+    for (const n of NAV) for (const p of n.pages ?? []) expect(isCurrent(p.href, n.href), p.href).toBe(true);
+    const reachable = NAV.flatMap((n) => [n.href, ...(n.pages ?? []).map((p) => p.href)]);
+    for (const s of SECTIONS) expect(reachable, s.href).toContain(s.href);
   });
 });
