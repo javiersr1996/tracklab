@@ -273,8 +273,7 @@ export default function PlatformPage() {
         <p>
           The Dagster asset graph (<a href="/data/lineage.json">lineage.json</a>), {LINEAGE.nodes.length}{" "}
           nodes and {LINEAGE.edges.length} edges, exported by <code>tracklab publish lineage</code>{" "}
-          and checked against the graph by <code>tracklab publish lineage --check</code> in the local
-          gate before every deploy (GitHub Actions is not running for this private repository). Hover or click a node to trace its upstream and downstream dependencies.
+          and checked against the graph by <code>tracklab publish lineage --check</code>. Hover or click a node to trace its upstream and downstream dependencies.
         </p>
         <Lineage lineage={LINEAGE} />
       </Band>
