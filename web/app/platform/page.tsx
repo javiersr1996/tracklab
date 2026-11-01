@@ -5,10 +5,19 @@ import { pluralize } from "../../lib/format";
 import { LEAGUE } from "../../lib/euroleague/data";
 import { LINEAGE, PLATFORM, poseShare, silverModelRows } from "../../lib/platform";
 import { DATA_SOURCES, EUROLEAGUE } from "../../lib/sections";
+import pgJson from "../../public/data/warehouse_pg.json";
 
 // `raw_sources[].source_id` (the manifest's) to the name `DATA_SOURCES` gives the same repository.
 const skillcorner = (id: string) =>
   DATA_SOURCES.find((s) => s.name === (id === "opendata-football" ? "SkillCorner/opendata" : `SkillCorner/${id}`));
+
+const PG = pgJson as {
+  measured_at: string;
+  source: { version: string; where: string; where_id: string };
+  database_bytes: number;
+  tables: { table: string; rows: number }[];
+};
+const n = (v: number) => v.toLocaleString("en-US");
 
 const MATCH_FIELDS = [
   "sport",
@@ -31,7 +40,7 @@ function formatMatchField(field: (typeof MATCH_FIELDS)[number], value: string | 
 }
 
 export default function PlatformPage() {
-  const { run, matches, season_files: seasonFiles } = PLATFORM;
+  const { run, matches, season_files: seasonFiles, guarantees: g } = PLATFORM;
   const pose = poseShare();
   const modelRows = silverModelRows();
   const seedCount = modelRows.filter((r) => r.key.startsWith("seed_")).length;
@@ -58,7 +67,7 @@ export default function PlatformPage() {
             </li>
           ))}
           <li>Parquet</li>
-          <li>Postgres on Neon</li>
+          <li data-tool="postgres">Postgres <span>{PG.source.version}</span></li>
         </ul>
         {pose && (
           <p data-pose-share>
@@ -72,11 +81,6 @@ export default function PlatformPage() {
       </PageHead>
       <Band dark>
         <Flow layers={PLATFORM.layers} />
-        <p data-postgres>
-          Gold also loads into Postgres on Neon, incrementally: every row carries a fingerprint, and
-          one transaction inserts, updates or deletes only the keys that differ, so loading the same
-          gold twice writes no row.
-        </p>
         <footer className="platform-footer">
           <p>
             Run {run.git_sha} on {run.started_utc.slice(0, 10)}, {run.host.system},{" "}
@@ -143,6 +147,115 @@ export default function PlatformPage() {
             </dl>
           </li>
         </ul>
+      </Band>
+      <Band dark>
+        <h2>Guarantees</h2>
+        <p>
+          What stops a wrong number from reaching this site, counted by{" "}
+          <code>tracklab publish platform</code> in the dbt manifest, the contract test folder and
+          the command line itself; its <code>--check</code> fails if any count changes.
+        </p>
+        <ul className="platform-cards platform-guarantees" data-guarantees>
+          <li data-guarantee="dbt">
+            <h3>
+              <span data-field="dbt.total">{g.dbt.total}</span> dbt tests
+            </h3>
+            <p>
+              <span data-field="dbt.generic">{g.dbt.generic}</span> generic, on each model&apos;s
+              columns:{" "}
+              {Object.entries(g.dbt.by_kind)
+                .map(([kind, count]) => `${count} ${kind}`)
+                .join(", ")}
+              . <span data-field="dbt.singular">{g.dbt.singular.length}</span> singular, for rules a
+              column test cannot say, like <code>{g.dbt.singular[0]}</code>.
+            </p>
+            <details>
+              <summary>The singular tests</summary>
+              <ul data-list="dbt.singular">
+                {g.dbt.singular.map((name) => (
+                  <li key={name}>{name}</li>
+                ))}
+              </ul>
+            </details>
+          </li>
+          <li data-guarantee="contracts">
+            <h3>
+              <span data-field="contracts.files">{g.contracts.files}</span> contract tests
+            </h3>
+            <p>
+              Each file reads the Parquet built from the real bundles and asserts what the next
+              layer relies on. <code>test_frames</code> rebuilds the row count of every match from
+              bronze with its own SQL and compares it with silver.
+            </p>
+            <details>
+              <summary>The contract files</summary>
+              <ul data-list="contracts.names">
+                {g.contracts.names.map((name) => (
+                  <li key={name}>{name}</li>
+                ))}
+              </ul>
+            </details>
+          </li>
+          <li data-guarantee="checks">
+            <h3>
+              <span data-field="checks.count">{g.checks.count}</span> <code>--check</code> commands
+            </h3>
+            <p>
+              Each recomputes a published file and compares it with the versioned one, writing
+              nothing. <code>publish platform --check</code> recounts rows by table and by match
+              against an independent <code>stats.json</code>.
+            </p>
+            <details>
+              <summary>The commands</summary>
+              <ul data-list="checks.commands">
+                {g.checks.commands.map((name) => (
+                  <li key={name}>{name}</li>
+                ))}
+              </ul>
+            </details>
+          </li>
+        </ul>
+      </Band>
+      <Band>
+        <h2>Postgres</h2>
+        <p data-postgres>
+          Gold also loads into Postgres, the second path next to the Parquet the browser reads,
+          with <code>tracklab load postgres</code>. Each row carries a 16-byte sha256 fingerprint;
+          one transaction compares the gold with the tables by key and fingerprint, inserts the new
+          keys, updates the changed rows and deletes the missing ones, so loading the same gold twice
+          writes no row.
+        </p>
+        <dl className="platform-pg" data-pg>
+          <dt>holds</dt>
+          <dd>
+            {PG.tables.map((t, i) => (
+              <span key={t.table} data-pg-table={t.table}>
+                {i > 0 ? ", " : ""}
+                {t.table} <span data-field="rows">{n(t.rows)}</span>
+              </span>
+            ))}{" "}
+            rows
+          </dd>
+          <dt>measured on</dt>
+          <dd>
+            <span data-field="where">{PG.source.where}</span>, {PG.measured_at.slice(0, 10)},{" "}
+            <span data-field="bytes">{n(PG.database_bytes)}</span> bytes
+          </dd>
+          <dt>not shown</dt>
+          <dd>
+            The load is a command, not a Dagster asset, so it is not in the lineage graph below;
+            adding a node for it would draw something the orchestrator does not run.
+          </dd>
+        </dl>
+        <details data-pg-proof>
+          <summary>What proves it</summary>
+          <p>
+            pytest <code>test_a_second_load_of_the_same_gold_writes_no_row</code>, and two
+            consecutive loads in the steps of <code>ci.yml</code>. The e2e <code>warehouse-pg</code>{" "}
+            proves /warehouse falls back to the snapshot when the database does not answer; its live
+            case needs a database URL{PG.source.where_id === "neon" ? "." : " and has not run against Neon."}
+          </p>
+        </details>
       </Band>
       <Band dark>
         <h2>Lineage</h2>

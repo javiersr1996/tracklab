@@ -276,3 +276,70 @@ test("the page does not claim a CI run", async ({ page }) => {
   await page.goto("/platform");
   await expect(page.locator("main")).not.toContainText(/on every CI run|\(private repository\)/);
 });
+
+test("the guarantees and the Postgres block print what platform.json and warehouse_pg.json hold", async ({
+  page,
+}) => {
+  const platform = (await (await page.request.get("/data/platform.json")).json()) as {
+    guarantees: {
+      dbt: { total: number; generic: number; by_kind: Record<string, number>; singular: string[] };
+      contracts: { files: number; names: string[] };
+      checks: { count: number; commands: string[] };
+    };
+  };
+  const pg = (await (await page.request.get("/data/warehouse_pg.json")).json()) as {
+    measured_at: string;
+    source: { version: string; where: string; where_id: string };
+    database_bytes: number;
+    tables: { table: string; rows: number }[];
+  };
+  const g = platform.guarantees;
+  await page.goto("/platform");
+
+  const field = (name: string) => page.locator(`[data-guarantees] [data-field="${name}"]`);
+  await expect(field("dbt.total")).toHaveText(String(g.dbt.total));
+  await expect(field("dbt.generic")).toHaveText(String(g.dbt.generic));
+  await expect(field("dbt.singular")).toHaveText(String(g.dbt.singular.length));
+  expect(g.dbt.generic + g.dbt.singular.length).toBe(g.dbt.total);
+  for (const [kind, count] of Object.entries(g.dbt.by_kind)) {
+    await expect(page.locator('[data-guarantee="dbt"] p')).toContainText(`${count} ${kind}`);
+  }
+  await expect(field("contracts.files")).toHaveText(String(g.contracts.files));
+  await expect(field("checks.count")).toHaveText(String(g.checks.count));
+  for (const [list, items] of [
+    ["dbt.singular", g.dbt.singular],
+    ["contracts.names", g.contracts.names],
+    ["checks.commands", g.checks.commands],
+  ] as const) {
+    await expect(page.locator(`[data-list="${list}"] li`)).toHaveText([...items]);
+  }
+  expect(g.contracts.names).toHaveLength(g.contracts.files);
+  expect(g.checks.commands).toHaveLength(g.checks.count);
+
+  const n = (v: number) => v.toLocaleString("en-US");
+  for (const t of pg.tables) {
+    await expect(
+      page.locator(`[data-pg-table="${t.table}"] [data-field="rows"]`),
+    ).toHaveText(n(t.rows));
+  }
+  await expect(page.locator('[data-pg] [data-field="bytes"]')).toHaveText(n(pg.database_bytes));
+  await expect(page.locator('[data-pg] [data-field="where"]')).toHaveText(pg.source.where);
+  await expect(page.locator('[data-tool="postgres"]')).toHaveText(`Postgres ${pg.source.version}`);
+  // The page says Neon only when the snapshot was measured there.
+  if (pg.source.where_id !== "neon") {
+    await expect(page.locator("main")).not.toContainText(/on Neon/);
+  }
+
+  await expect(page.locator("h1")).toHaveText("3.6 GB in, 7.6 MB out");
+});
+
+test("the guarantee cards do not overflow a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/platform");
+  for (const sel of ["[data-guarantees]", "[data-pg]"]) {
+    const box = await page.locator(sel).boundingBox();
+    expect(box!.x + box!.width, sel).toBeLessThanOrEqual(390);
+  }
+  const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(wide).toBeLessThanOrEqual(390);
+});

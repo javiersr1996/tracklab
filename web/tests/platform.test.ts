@@ -67,6 +67,11 @@ describe("silverModelRows", () => {
       host: { system: "", cpus: 0, ram_gb: 0 },
       versions: {},
     },
+    guarantees: {
+      dbt: { total: 0, generic: 0, by_kind: {}, singular: [] },
+      contracts: { files: 0, names: [] },
+      checks: { count: 0, commands: [] },
+    },
     layers: [],
     raw_sources: [],
     steps: [

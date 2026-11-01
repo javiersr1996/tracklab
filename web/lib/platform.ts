@@ -90,6 +90,14 @@ export interface PlatformRawSource {
   bytes: number;
 }
 
+// What guards the pipeline, counted by `tracklab publish platform` (dbt manifest, contract
+// files, argparse tree) and rechecked by its `--check`.
+export interface PlatformGuarantees {
+  dbt: { total: number; generic: number; by_kind: Record<string, number>; singular: string[] };
+  contracts: { files: number; names: string[] };
+  checks: { count: number; commands: string[] };
+}
+
 export interface PlatformData {
   schema_version: number;
   title: string;
@@ -101,6 +109,7 @@ export interface PlatformData {
   tables: PlatformTable[];
   matches: PlatformMatch[];
   season_files: PlatformSeasonFiles;
+  guarantees: PlatformGuarantees;
 }
 
 // Via unknown: the JSON's inferred `steps` type is a union of the steps' own `dbt_seconds` keys.

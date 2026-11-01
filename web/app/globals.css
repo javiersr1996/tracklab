@@ -1958,7 +1958,8 @@ body:has(.home) .site-header::after {
   color: var(--fg-muted);
 }
 
-.platform-sources {
+.platform-sources,
+.platform-cards {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
@@ -1971,9 +1972,13 @@ body:has(.home) .site-header::after {
   .platform-sources {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .platform-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
-.platform-sources li {
+.platform-sources > li,
+.platform-cards > li {
   min-width: 0;
   background: var(--raised);
   border: 1px solid var(--rule);
@@ -1981,7 +1986,36 @@ body:has(.home) .site-header::after {
   padding: var(--space-4);
 }
 
-.platform-sources h3 {
+.platform-cards p {
+  margin: 0 0 var(--space-3);
+}
+
+.platform-cards summary {
+  cursor: pointer;
+  color: var(--fg-muted);
+}
+
+.platform-cards details ul {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  overflow-wrap: anywhere;
+}
+
+.platform-pg {
+  margin: var(--space-4) 0 0;
+}
+
+.platform-pg dt {
+  color: var(--fg-muted);
+}
+
+.platform-pg dd {
+  margin: 0 0 var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+.platform-sources h3,
+.platform-cards h3 {
   margin: 0 0 var(--space-3);
   overflow-wrap: anywhere;
 }
