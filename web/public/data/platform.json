@@ -1408,5 +1408,81 @@
         "bytes_read": 6648
       }
     ]
+  },
+  "guarantees": {
+    "dbt": {
+      "total": 171,
+      "generic": 163,
+      "by_kind": {
+        "accepted_values": 18,
+        "not_null": 106,
+        "relationships": 17,
+        "unique": 6,
+        "unique_combination": 16
+      },
+      "singular": [
+        "assert_attack_signs_opposite",
+        "assert_events_carry_a_rotation_or_no_coordinates",
+        "assert_football_possessions_do_not_overlap",
+        "assert_frames_entities_in_dim_entity",
+        "assert_frames_t_ms_increases",
+        "assert_frames_z_only_on_the_ball",
+        "assert_gold_fact_joins_its_dimensions",
+        "assert_one_ball_per_match"
+      ]
+    },
+    "contracts": {
+      "files": 15,
+      "names": [
+        "test_basketball_events_bronze",
+        "test_basketball_tracking_bronze",
+        "test_cross_sport",
+        "test_dims",
+        "test_events",
+        "test_football_aggregates_bronze",
+        "test_football_bodypose_bronze",
+        "test_football_events_bronze",
+        "test_football_format",
+        "test_football_meta_bronze",
+        "test_football_tracking_bronze",
+        "test_frames",
+        "test_gold_season_metrics",
+        "test_orientation",
+        "test_season_aggregates_grain"
+      ]
+    },
+    "checks": {
+      "count": 28,
+      "commands": [
+        "euroleague publish",
+        "learn browser",
+        "learn clock",
+        "learn dribble",
+        "learn entry",
+        "learn gravity",
+        "learn hypotheses",
+        "learn pass",
+        "learn possession",
+        "learn rebound",
+        "learn speed",
+        "pose coverage",
+        "pose metric",
+        "pose probe",
+        "pose protocol",
+        "pose sweep",
+        "pose verdict",
+        "publish examples",
+        "publish lineage",
+        "publish platform",
+        "publish pose",
+        "publish runs",
+        "publish warehouse",
+        "runs coverage",
+        "runs effect",
+        "runs probe",
+        "runs protocol",
+        "sql course"
+      ]
+    }
   }
 }
