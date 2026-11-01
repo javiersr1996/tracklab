@@ -1,5 +1,6 @@
 import { Flow } from "../../components/platform/Flow";
 import { Lineage } from "../../components/platform/Lineage";
+import { StepGantt } from "../../components/platform/StepGantt";
 import { Band, PageHead } from "../../components/site/Band";
 import { pluralize } from "../../lib/format";
 import { LEAGUE } from "../../lib/euroleague/data";
@@ -42,6 +43,7 @@ function formatMatchField(field: (typeof MATCH_FIELDS)[number], value: string | 
 export default function PlatformPage() {
   const { run, matches, season_files: seasonFiles, guarantees: g } = PLATFORM;
   const pose = poseShare();
+  const stepSeconds = PLATFORM.steps.reduce((s, st) => s + st.duration_ms / 1000, 0);
   const modelRows = silverModelRows();
   const seedCount = modelRows.filter((r) => r.key.startsWith("seed_")).length;
   const viewCount = modelRows.filter((r) => r.rows === null && !r.key.startsWith("seed_")).length;
@@ -89,6 +91,14 @@ export default function PlatformPage() {
             clock.
           </p>
         </footer>
+        <h2>Time, per step</h2>
+        <p data-gantt-note>
+          The {PLATFORM.steps.length} steps of the run, grouped by layer, each bar its duration in
+          seconds from <code>platform.json</code>; the axis ends at the run&apos;s {run.wall_seconds}{" "}
+          s wall clock. The bars add up to {stepSeconds.toFixed(1)} s because steps ran in parallel.
+          The record keeps how long each step took, not when it started, so every bar starts at 0.
+        </p>
+        <StepGantt platform={PLATFORM} />
       </Band>
       <Band>
         <h2>Sources</h2>

@@ -2102,6 +2102,51 @@ body:has(.home) .site-header::after {
   overflow-wrap: anywhere; /* the 40-hex git sha has no break opportunity */
 }
 
+/* The step durations (task 123): a server-rendered SVG in its own scrolling box, 12 px text. */
+.gantt-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: var(--space-5) 0;
+  padding: var(--space-3);
+  background: var(--canvas);
+  border: 1px solid var(--canvas-line);
+  border-radius: var(--radius);
+}
+
+.gantt-scroll svg {
+  display: block;
+  font-family: var(--font-neon);
+  font-size: 12px;
+}
+
+.gantt-scroll text {
+  font-size: 12px;
+  fill: var(--neon-ink);
+}
+
+.gantt-scroll .gantt-tick,
+.gantt-scroll .gantt-value {
+  fill: var(--canvas-muted);
+}
+
+.gantt-scroll .gantt-group {
+  fill: var(--neon);
+  font-weight: 700;
+}
+
+.gantt-grid {
+  stroke: var(--canvas-line);
+}
+
+.gantt-wall {
+  stroke: var(--canvas-edge);
+  stroke-dasharray: 4 3;
+}
+
+.gantt-bar {
+  fill: var(--neon);
+}
+
 .lineage {
   margin: var(--space-5) 0;
 }
@@ -2162,6 +2207,11 @@ body:has(.home) .site-header::after {
 .lineage-test-badge {
   font-size: 8px;
   fill: var(--canvas-muted);
+}
+
+.lineage-detail {
+  min-height: 3.2em;
+  margin: var(--space-3) 0 0;
 }
 
 .lineage-legend {

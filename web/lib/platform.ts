@@ -223,3 +223,46 @@ export function layerDurations(seconds: number[], cycleSeconds = 8, minSeconds =
     return minSeconds + share * extra;
   });
 }
+
+export interface StepBar {
+  step_key: string;
+  group: string;
+  seconds: number;
+}
+
+export interface StepGroup {
+  group: string;
+  steps: StepBar[];
+  seconds: number;
+}
+
+// The Gantt's rows (task 123): the steps of `platform.json` grouped by their `group`, the groups in
+// `lineage.json`'s flow order (the layers' order) and each group's steps longest first. The record
+// keeps a duration per step and no start time, so every bar is a duration on a shared axis, drawn
+// from 0; nothing here places a step in time.
+export function stepGroups(
+  steps: PlatformStep[] = PLATFORM.steps,
+  order: string[] = LINEAGE.groups,
+): StepGroup[] {
+  const rank = (g: string) => (order.includes(g) ? order.indexOf(g) : order.length);
+  const groups = new Map<string, StepBar[]>();
+  for (const s of steps) {
+    const bars = groups.get(s.group) ?? [];
+    bars.push({ step_key: s.step_key, group: s.group, seconds: s.duration_ms / 1000 });
+    groups.set(s.group, bars);
+  }
+  return [...groups.entries()]
+    .sort(([a], [b]) => rank(a) - rank(b))
+    .map(([group, bars]) => ({
+      group,
+      steps: bars.sort((a, b) => b.seconds - a.seconds),
+      seconds: bars.reduce((sum, b) => sum + b.seconds, 0),
+    }));
+}
+
+// Round tick values from 0 up to `max`, `step` apart.
+export function axisTicks(max: number, step = 500): number[] {
+  const out: number[] = [];
+  for (let t = 0; t <= max; t += step) out.push(t);
+  return out;
+}

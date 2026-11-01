@@ -210,6 +210,16 @@ export function Lineage({ lineage }: { lineage: LineageData }) {
           </g>
         </svg>
       </div>
+      <p className="lineage-detail" data-lineage-detail aria-live="polite">
+        {activeKey && nodeByKey.get(activeKey) ? (
+          <>
+            <code>{activeKey}</code> ({nodeByKey.get(activeKey)?.group}):{" "}
+            <span data-lineage-description>{nodeByKey.get(activeKey)?.description}</span>
+          </>
+        ) : (
+          "Hover or focus a node to read what it is."
+        )}
+      </p>
       <figcaption className="lineage-legend">
         <span>
           <i className="lineage-swatch" style={{ background: SCHEMA_COLOR.frozen }} /> frozen schema
