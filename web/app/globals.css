@@ -2169,6 +2169,82 @@ body:has(.home) .site-header::after {
   fill: var(--neon);
 }
 
+/* /engineering/history (task 132): the same box and text as the Gantt. A run is a cyan dot when it
+   is of the last run's mode, a hollow slate ring when not, the last run magenta; the median a cyan
+   tick, the threshold a dashed white one. Marks only: no text is magenta. */
+.strip-base {
+  stroke: var(--canvas-line);
+}
+
+.strip-dot {
+  fill: var(--neon);
+}
+
+.strip-other {
+  fill: none;
+  stroke: var(--canvas-edge);
+  stroke-width: 1.5;
+}
+
+.strip-last {
+  fill: var(--neon-alt);
+  stroke: var(--canvas);
+  stroke-width: 1;
+}
+
+.strip-median {
+  stroke: var(--neon);
+  stroke-width: 2;
+}
+
+.strip-threshold {
+  stroke: var(--canvas-hi);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 2;
+}
+
+.strip-above,
+.q-fail {
+  fill: var(--neon-alt);
+}
+
+.q-pass {
+  fill: var(--neon);
+}
+
+.q-other {
+  fill: var(--canvas-edge);
+}
+
+.history-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  list-style: none;
+  padding: 0;
+  margin: var(--space-4) 0;
+}
+
+.history-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.history-legend svg {
+  flex: none;
+  background: var(--canvas);
+  border-radius: var(--radius);
+}
+
+.history-series {
+  margin-top: var(--space-7);
+}
+
+.history-series [data-reasons] {
+  overflow-wrap: anywhere; /* a run id is one long word */
+}
+
 .lineage {
   margin: var(--space-5) 0;
 }

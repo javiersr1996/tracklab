@@ -4,7 +4,7 @@ import { StepGantt } from "../../components/platform/StepGantt";
 import { Band, PageHead } from "../../components/site/Band";
 import { pluralize } from "../../lib/format";
 import { LEAGUE } from "../../lib/euroleague/data";
-import { LINEAGE, PLATFORM, poseShare, silverModelRows } from "../../lib/platform";
+import { firstEvents, LINEAGE, PLATFORM, poseShare, silverModelRows } from "../../lib/platform";
 import { DATA_SOURCES, EUROLEAGUE } from "../../lib/sections";
 import pgJson from "../../public/data/warehouse_pg.json";
 
@@ -44,6 +44,7 @@ export default function PlatformPage() {
   const { run, matches, season_files: seasonFiles, guarantees: g } = PLATFORM;
   const pose = poseShare();
   const stepSeconds = PLATFORM.steps.reduce((s, st) => s + st.duration_ms / 1000, 0);
+  const first = firstEvents();
   const modelRows = silverModelRows();
   const seedCount = modelRows.filter((r) => r.key.startsWith("seed_")).length;
   const viewCount = modelRows.filter((r) => r.rows === null && !r.key.startsWith("seed_")).length;
@@ -92,12 +93,26 @@ export default function PlatformPage() {
           </p>
         </footer>
         <h2>Time, per step</h2>
-        <p data-gantt-note>
-          The {PLATFORM.steps.length} steps of the run, grouped by layer, each bar its duration in
-          seconds from <code>platform.json</code>; the axis ends at the run&apos;s {run.wall_seconds}{" "}
-          s wall clock. The bars add up to {stepSeconds.toFixed(1)} s because steps ran in parallel.
-          The record keeps how long each step took, not when it started, so every bar starts at 0.
-        </p>
+        {first ? (
+          <p data-gantt-note data-placed="end">
+            The {PLATFORM.steps.length} steps of the run, grouped by layer, from{" "}
+            <code>platform.json</code>; the axis ends at the run&apos;s {run.wall_seconds} s wall
+            clock. Each bar ends at the step&apos;s last event in Dagster&apos;s event log and is as
+            long as the step&apos;s own <code>duration_ms</code>, so it sits where the step ran. The
+            log&apos;s first event is not used as a start: for every step it falls {first.min.toFixed(1)}{" "}
+            to {first.max.toFixed(1)} s into the run, before the first bar begins at{" "}
+            {first.firstStart.toFixed(1)} s, so that span would start all the bars at once. The bars add
+            up to {stepSeconds.toFixed(1)} s because steps ran in parallel. Each run of every build
+            is on <a href="/engineering/history">/engineering/history</a>.
+          </p>
+        ) : (
+          <p data-gantt-note data-placed="zero">
+            The {PLATFORM.steps.length} steps of the run, grouped by layer, each bar its duration in
+            seconds from <code>platform.json</code>; the axis ends at the run&apos;s {run.wall_seconds}{" "}
+            s wall clock. The bars add up to {stepSeconds.toFixed(1)} s because steps ran in parallel.
+            The record keeps how long each step took, not when it started, so every bar starts at 0.
+          </p>
+        )}
         <StepGantt platform={PLATFORM} />
       </Band>
       <Band>

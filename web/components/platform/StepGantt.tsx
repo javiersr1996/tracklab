@@ -1,12 +1,13 @@
-import { axisTicks, stepGroups, type PlatformData } from "../../lib/platform";
+import { axisTicks, placedInTime, stepGroups, type PlatformData } from "../../lib/platform";
 
 // Every step of `platform.json` as one bar on a shared seconds axis (task 123), server-rendered SVG,
 // no library. Rows are grouped by layer; all bars wear one neon fill and the group is named in a
-// header row, so no meaning rides on colour. The axis runs to the run's wall clock. The record has
-// durations and no start times, so every bar starts at 0: it says how long a step took, not when.
+// header row, so no meaning rides on colour. The axis runs to the run's wall clock. With a v2 record
+// a bar ends at the step's last event and is its own duration long (task 132, `stepGroups`); a v1
+// record has durations and no times, so every bar starts at 0.
 const LABEL_W = 232;
 const PLOT_W = 440;
-const VALUE_W = 104;
+const VALUE_W = 120;
 const ROW_H = 22;
 const HEAD_H = 26;
 const AXIS_H = 28;
@@ -14,7 +15,8 @@ const BAR_H = 10;
 
 export function StepGantt({ platform }: { platform: PlatformData }) {
   const wall = platform.run.wall_seconds;
-  const groups = stepGroups(platform.steps);
+  const groups = stepGroups(platform.steps, undefined, platform.run.started_utc);
+  const placed = placedInTime(platform.steps);
   const x = (s: number) => LABEL_W + (s / wall) * PLOT_W;
   const width = LABEL_W + PLOT_W + VALUE_W;
 
@@ -42,7 +44,7 @@ export function StepGantt({ platform }: { platform: PlatformData }) {
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label={`Duration of each of the ${platform.steps.length} steps, in seconds, on an axis up to the run's ${wall} second wall clock`}
+        aria-label={`${placed ? "When each" : "Duration of each"} of the ${platform.steps.length} steps ran, in seconds, on an axis up to the run's ${wall} second wall clock`}
       >
         {ticks.map((t) => (
           <g key={t}>
@@ -68,14 +70,16 @@ export function StepGantt({ platform }: { platform: PlatformData }) {
                   key={s.step_key}
                   data-gantt-step={s.step_key}
                   data-seconds={s.seconds.toFixed(1)}
+                  data-start={s.start.toFixed(1)}
+                  data-end={s.end.toFixed(1)}
                 >
-                  <title>{`${s.step_key}: ${s.seconds.toFixed(1)} s`}</title>
+                  <title>{placed ? `${s.step_key}: ${s.seconds.toFixed(1)} s, ending ${s.end.toFixed(1)} s into the run` : `${s.step_key}: ${s.seconds.toFixed(1)} s`}</title>
                   <text className="gantt-label" x={LABEL_W - 8} y={cy + 4} textAnchor="end">
                     {s.step_key}
                   </text>
                   <rect
                     className="gantt-bar"
-                    x={LABEL_W}
+                    x={x(s.start)}
                     y={cy - BAR_H / 2}
                     width={Math.max(2, (s.seconds / wall) * PLOT_W)}
                     height={BAR_H}
@@ -83,7 +87,7 @@ export function StepGantt({ platform }: { platform: PlatformData }) {
                   />
                   <text
                     className="gantt-value"
-                    x={LABEL_W + Math.max(2, (s.seconds / wall) * PLOT_W) + 6}
+                    x={x(s.start) + Math.max(2, (s.seconds / wall) * PLOT_W) + 6}
                     y={cy + 4}
                   >
                     {s.seconds.toFixed(1)} s
@@ -103,6 +107,7 @@ export function StepGantt({ platform }: { platform: PlatformData }) {
             <th scope="col">Step</th>
             <th scope="col">Layer</th>
             <th scope="col">Seconds</th>
+            {placed && <th scope="col">Ends at (s)</th>}
           </tr>
         </thead>
         <tbody>
@@ -112,6 +117,7 @@ export function StepGantt({ platform }: { platform: PlatformData }) {
                 <th scope="row">{s.step_key}</th>
                 <td>{g.group}</td>
                 <td>{s.seconds.toFixed(1)}</td>
+                {placed && <td>{s.end.toFixed(1)}</td>}
               </tr>
             )),
           )}

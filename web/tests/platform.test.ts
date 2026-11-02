@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { axisTicks, layerDurations, poseShare, silverModelRows, stepGroups, type LineageData, type PlatformData } from "../lib/platform";
+import { axisTicks, layerDurations, placedInTime, poseShare, silverModelRows, stepGroups, type LineageData, type PlatformData } from "../lib/platform";
 
 // `layerDurations` (task 35): on-screen seconds per layer for the flow
 // animation. Five layers, one at 0 s (a step that never ran in the fixture
@@ -82,11 +82,14 @@ describe("silverModelRows", () => {
         status: "success",
         duration_ms: 0,
         dbt_seconds: { silver_frames: 69.0, silver_frames_attacking: 0.1 },
+        started_utc: null,
+        finished_utc: null,
       },
     ],
     tables: [{ layer: "silver", sport: null, table: "frames", files: 30, rows: 900000, bytes: 1500 }],
     matches: [],
     season_files: { files: 0, bytes: 0, items: [] },
+    freshness: { published_utc: "", partitions: [] },
   };
 
   it("joins rows and bytes from platform.json's tables[] by the prefix-stripped key", () => {
@@ -154,8 +157,8 @@ describe("poseShare", () => {
 // `stepGroups` / `axisTicks` (task 123): the Gantt's rows. Groups follow the flow order they are
 // given, steps within a group longest first, group seconds are the sum of their steps.
 describe("stepGroups", () => {
-  const step = (step_key: string, group: string, duration_ms: number) =>
-    ({ step_key, assets: [], group, status: "success", duration_ms, dbt_seconds: {} }) as PlatformData["steps"][number];
+  const step = (step_key: string, group: string, duration_ms: number, finished_utc: string | null = null) =>
+    ({ step_key, assets: [], group, status: "success", duration_ms, dbt_seconds: {}, started_utc: finished_utc && "2026-11-02T19:00:01.000+00:00", finished_utc }) as PlatformData["steps"][number];
 
   it("orders groups by the flow and steps longest first, and sums each group", () => {
     const groups = stepGroups(
@@ -170,6 +173,30 @@ describe("stepGroups", () => {
   it("puts a group the flow does not know last", () => {
     const groups = stepGroups([step("x", "mystery", 1000), step("i", "ingest", 1000)], ["ingest"]);
     expect(groups.map((g) => g.group)).toEqual(["ingest", "mystery"]);
+  });
+
+  // Task 132: with a v2 record a bar ends at the step's last event and is its duration long; the first
+  // event (the run's start-up) is never its start. Mutation checked by hand: placing the bar at
+  // `started_utc` sends both starts to 1 s and fails here; restored.
+  it("places a v2 bar ending at its last event, its own duration long", () => {
+    const run = "2026-11-02T19:00:00+00:00";
+    const groups = stepGroups(
+      [step("a", "ingest", 40_000, "2026-11-02T19:01:40.000+00:00"), step("b", "ingest", 5_000, "2026-11-02T19:00:30.500+00:00")],
+      ["ingest"],
+      run,
+    );
+    const bars = Object.fromEntries(groups[0].steps.map((b) => [b.step_key, b]));
+    expect([bars.a.start, bars.a.end]).toEqual([60, 100]);
+    expect([bars.b.start, bars.b.end]).toEqual([25.5, 30.5]);
+  });
+
+  it("draws every bar from 0 when one step has no time (a v1 record)", () => {
+    const steps = [step("a", "ingest", 40_000, "2026-11-02T19:01:40.000+00:00"), step("b", "ingest", 5_000)];
+    expect(placedInTime(steps)).toBe(false);
+    expect(stepGroups(steps, ["ingest"]).flatMap((g) => g.steps.map((b) => [b.start, b.end]))).toEqual([
+      [0, 40],
+      [0, 5],
+    ]);
   });
 
   it("axisTicks runs from 0 in equal steps up to the maximum", () => {
