@@ -205,6 +205,23 @@ def test_cli_builds_both_tables_per_match(
         assert names == [f"{MATCH_A}.parquet", f"{MATCH_B}.parquet"], "one file per match"
 
 
+def test_two_runs_write_the_same_bytes(bundle: tuple[Path, Path]) -> None:
+    """Task 126: the incremental silver fingerprints bronze by its bytes, which only works if
+    bronze rewrites the same raw into the same bytes (no timestamp in the Parquet)."""
+    manifest_path, data_dir = bundle
+    args = ["bronze", "basketball", "--tables", "tracking", "--manifest", str(manifest_path)]
+
+    def digests() -> dict[str, str]:
+        files = sorted((data_dir / "bronze").rglob("*.parquet"))
+        return {p.name + p.parent.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
+
+    assert main([*args, "--data-dir", str(data_dir)]) == 0
+    first = digests()
+    assert main([*args, "--data-dir", str(data_dir)]) == 0
+    assert len(first) == 4
+    assert digests() == first
+
+
 def test_schema_metadata_and_lineage(bundle: tuple[Path, Path]) -> None:
     manifest_path, data_dir = bundle
     main(
