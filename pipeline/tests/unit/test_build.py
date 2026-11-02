@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import os
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from types import SimpleNamespace
@@ -21,8 +22,8 @@ from types import SimpleNamespace
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from dagster import AssetKey, AssetMaterialization, DagsterEvent
-from dagster._core.events import StepMaterializationData
+from dagster import AssetKey, AssetMaterialization, AssetObservation, DagsterEvent, MetadataValue
+from dagster._core.events import AssetObservationData, StepMaterializationData
 from dagster._core.execution.plan.objects import StepFailureData, StepSuccessData
 
 from tracklab.build import (
@@ -38,6 +39,7 @@ from tracklab.build import (
     step_times_from_logs,
     steps_from_events,
 )
+from tracklab.silver.incremental import FULL_ENV, PLAN_METADATA_KEY, Plan
 
 PLAN = {
     "raw_x": StepPlan(("raw_x",), "ingest"),
@@ -431,8 +433,9 @@ def test_the_v2_record_carries_run_id_step_times_and_dbt_counts(tmp_path: Path) 
     assert steps["raw_x"]["dbt"] is None  # no run_results.json for this step
     not_run = steps["bronze_x"]
     assert (not_run["started_utc"], not_run["finished_utc"], not_run["dbt"]) == (None, None, None)
-    # task 127 fills these; the schema is there from the first v2 record.
-    assert all(s["partitions"] == {"written": [], "skipped": []} for s in steps.values())
+    # Only the incremental silver step's observation fills these (task 127).
+    empty = {"written": [], "skipped": [], "deleted": []}
+    assert all(s["partitions"] == empty and s["incremental"] is None for s in steps.values())
 
 
 def test_contracts_are_the_counted_files_and_say_they_were_not_run(tmp_path: Path) -> None:
@@ -455,3 +458,74 @@ def test_step_times_span_the_dagster_events_of_each_step() -> None:
     ]
 
     assert step_times_from_logs(logs) == {"a": (10.0, 14.5), "b": (11.0, 11.0)}
+
+
+# --- the incremental silver step (task 127) ----------------------------------------------
+
+
+def _observed(step_key: str, plan: Plan) -> DagsterEvent:
+    observation = AssetObservation(
+        asset_key=AssetKey("silver_frames"),
+        metadata={PLAN_METADATA_KEY: MetadataValue.json(plan.record())},
+    )
+    return _event("ASSET_OBSERVATION", step_key, AssetObservationData(observation))
+
+
+def test_the_silver_plan_reaches_the_step_record() -> None:
+    plan = Plan("incremental", "1 of 2 matches changed", ["bb/1"], ["fb/2"], ["fb/3"])
+    events = [_observed("silver", plan), _success("silver", 900.0)]
+
+    (step,) = steps_from_events(events, {"silver": PLAN["silver"]})
+
+    assert step.partitions == {"written": ["bb/1"], "skipped": ["fb/2"], "deleted": ["fb/3"]}
+    assert step.incremental == {"mode": "incremental", "reason": "1 of 2 matches changed"}
+
+
+def test_a_skipped_silver_step_records_no_dbt_and_says_why(tmp_path: Path) -> None:
+    """dbt was not launched: no run_results.json, so `dbt` is None and never zero tests."""
+    plan = Plan("skip", "no input changed since run r0", [], ["bb/1", "fb/2"], [])
+    code = run_build(
+        None,
+        tmp_path / "build",
+        tmp_path / "data",
+        execute=_fake_execute(
+            [_observed("silver", plan), _success("silver", 900.0)],
+            {"silver": PLAN["silver"]},
+            {"silver": (1_700_000_000.0, 1_700_000_001.0)},
+        ),
+        reports_dir=tmp_path / "reports",
+        web_data_dir=tmp_path / "web",
+        dbt_target=tmp_path / "target",
+        contracts_dir=tmp_path / "contracts",
+    )
+
+    assert code == 0
+    (silver,) = _only_record(tmp_path / "build")["steps"]  # type: ignore[misc]
+    assert silver["dbt"] is None
+    assert silver["incremental"] == {"mode": "skip", "reason": "no input changed since run r0"}
+    assert silver["partitions"]["skipped"] == ["bb/1", "fb/2"]
+
+
+@pytest.mark.parametrize("full", [True, False])
+def test_full_reaches_the_steps_only_while_the_job_runs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, full: bool
+) -> None:
+    monkeypatch.delenv(FULL_ENV, raising=False)
+    seen: list[str | None] = []
+
+    def execute(keys: Sequence[AssetKey] | None, record_dir: Path) -> RunResult:
+        seen.append(os.environ.get(FULL_ENV))
+        return RunResult(RAW_ONLY, [_success("raw_x", 1.0)], RUN_ID, {})
+
+    run_build(
+        None,
+        tmp_path / "build",
+        tmp_path / "data",
+        execute=execute,
+        reports_dir=tmp_path / "reports",
+        web_data_dir=tmp_path / "web",
+        full=full,
+    )
+
+    assert seen == (["1"] if full else [None])
+    assert FULL_ENV not in os.environ

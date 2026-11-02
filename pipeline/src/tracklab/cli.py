@@ -383,7 +383,9 @@ def _cmd_euroleague_sweep(args: argparse.Namespace) -> int:
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
-    return run_build(select=args.select, record_dir=args.record_dir, data_dir=data_root())
+    return run_build(
+        select=args.select, record_dir=args.record_dir, data_dir=data_root(), full=args.full
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1519,6 +1521,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=default_record_dir(),
         help="Where <utc>_<sha7>.json goes "
         "(default: $TRACKLAB_DATA_ROOT/build, else data/build; ignored by git).",
+    )
+    build.add_argument(
+        "--full",
+        action="store_true",
+        help="Rebuild every silver partition, whatever the state of the last run says "
+        "(TRACKLAB_REQUIRE_FULL does the same).",
     )
     build.set_defaults(func=_cmd_build)
 

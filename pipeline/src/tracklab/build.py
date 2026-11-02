@@ -34,8 +34,11 @@ UTC with milliseconds, from the temporary instance's event log read before it cl
 `dbt` (that step's `run_results.json`, found by `<step>-<run_id[:7]>-*` under `dbt/target`:
 `tests` counted as pass, fail, warn, error and skipped, `nodes` (models and seeds) as
 success, error and skipped, and `elapsed_seconds`; None where the step ran no dbt or left
-no file), and per step `partitions` (`written` and `skipped`, lists of
-`<sport>/<native_match_id>`; empty until the incremental silver of task 127 fills them).
+no file), and per step `partitions` (`written`, `skipped` and `deleted`, lists of
+`<sport>/<native_match_id>`) and `incremental` (`mode` and `reason`), both from the observation
+the incremental silver step leaves (task 127; empty lists and None on every other step). A silver
+step that found nothing changed did not launch dbt: its `dbt` is None and `incremental` says
+`skip` and why, never a count of zero tests.
 `contracts` is what the repo has for contracts: the files of `tests/contracts`, counted,
 with `executed: false`. Nothing in dbt is an enforced model contract and running the pytest
 suite takes minutes, so the build neither runs it nor claims a result for it.
@@ -66,6 +69,7 @@ from tracklab.ingest.manifest import load_manifest
 from tracklab.paths import data_root
 from tracklab.publish.lineage import LINEAGE_JSON
 from tracklab.publish.platform import PLATFORM_JSON
+from tracklab.silver.incremental import FULL_ENV, PLAN_METADATA_KEY
 
 if TYPE_CHECKING:
     from dagster import AssetKey, DagsterEvent, JobDefinition
@@ -112,7 +116,10 @@ class StepRecord:
     started_utc: str | None = None
     finished_utc: str | None = None
     dbt: dict[str, Any] | None = None
-    partitions: dict[str, list[str]] = field(default_factory=lambda: {"written": [], "skipped": []})
+    partitions: dict[str, list[str]] = field(
+        default_factory=lambda: {"written": [], "skipped": [], "deleted": []}
+    )
+    incremental: dict[str, str] | None = None  # task 127: the silver step's mode and reason
 
 
 @dataclass(frozen=True)
@@ -227,6 +234,7 @@ def steps_from_events(
     status: dict[str, str] = {}
     duration: dict[str, float] = {}
     dbt_seconds: dict[str, dict[str, float]] = {}
+    plans: dict[str, dict[str, Any]] = {}
     for event in events:
         key = event.step_key
         if key is None:
@@ -247,19 +255,27 @@ def steps_from_events(
             if value is not None and isinstance(value.value, int | float):
                 asset = materialization.asset_key.to_user_string()
                 dbt_seconds.setdefault(key, {})[asset] = float(value.value)
+        elif event.is_asset_observation:
+            found = event.asset_observation_data.asset_observation.metadata.get(PLAN_METADATA_KEY)
+            if found is not None and isinstance(found.value, dict):
+                plans[key] = found.value
     records = []
     for key in order:
         step = plan.get(key)
-        records.append(
-            StepRecord(
-                step_key=key,
-                assets=list(step.assets) if step else [],
-                group=step.group if step else None,
-                status=status[key],
-                duration_ms=duration.get(key),
-                dbt_seconds=dict(sorted(dbt_seconds.get(key, {}).items())),
-            )
+        record = StepRecord(
+            step_key=key,
+            assets=list(step.assets) if step else [],
+            group=step.group if step else None,
+            status=status[key],
+            duration_ms=duration.get(key),
+            dbt_seconds=dict(sorted(dbt_seconds.get(key, {}).items())),
         )
+        if key in plans:
+            found_plan = plans[key]
+            partitions = {k: list(found_plan[k]) for k in ("written", "skipped", "deleted")}
+            mode = {"mode": found_plan["mode"], "reason": found_plan["reason"]}
+            record = replace(record, partitions=partitions, incremental=mode)
+        records.append(record)
     for key, step in plan.items():
         if key not in status:
             records.append(StepRecord(key, list(step.assets), step.group, "not_run", None, {}))
@@ -604,9 +620,11 @@ def run_build(
     web_data_dir: Path = WEB_DATA_DIR,
     dbt_target: Path = DBT_TARGET,
     contracts_dir: Path = CONTRACTS_DIR,
+    full: bool = False,
 ) -> int:
     """Run the job, write the record whatever happened, exit 1 if any step did not
-    succeed. `execute` is what runs the job; the tests hand in a fake."""
+    succeed. `execute` is what runs the job; the tests hand in a fake. `full` makes the
+    incremental silver step rebuild every match (`FULL_ENV`, inherited by the step's process)."""
     keys: Sequence[AssetKey] | None = None
     if select is not None:
         if not DBT_MANIFEST.is_file():
@@ -621,7 +639,14 @@ def run_build(
     sha = git_sha()
     started = datetime.now(UTC)
     clock = time.perf_counter()
-    run = execute(keys, record_dir)
+    previous = os.environ.get(FULL_ENV)
+    if full:
+        os.environ[FULL_ENV] = "1"
+    try:
+        run = execute(keys, record_dir)
+    finally:
+        if full and previous is None:
+            del os.environ[FULL_ENV]
     wall_seconds = round(time.perf_counter() - clock, 3)
     finished = datetime.now(UTC)
 

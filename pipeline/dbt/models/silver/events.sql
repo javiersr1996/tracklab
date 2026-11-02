@@ -34,11 +34,16 @@
 -- rule wins: it never overlaps, it agrees more, and it is the provider
 -- delimiting its own team possessions rather than this project inferring them
 -- from phases that the file itself says can contain a loss.
+--
+-- Incremental (task 127): like `frames`, every bronze read keeps the matches the
+-- step rebuilds (`silver_matches`), and `OVERWRITE_OR_IGNORE` leaves the partitions
+-- of the others alone (macros/silver_matches.sql).
 
 {{ config(
     options = {
         'partition_by': 'sport, native_match_id',
-        'overwrite': 'true',
+        'overwrite_or_ignore': 'true',
+        'filename_pattern': "'data_{i}'",
     }
 ) }}
 
@@ -76,6 +81,7 @@ WITH basketball_rotation AS (
     SELECT id AS possession_native_id, match_id,
            CASE WHEN leftHoop THEN 1 WHEN NOT leftHoop THEN -1 END AS venue_factor
     FROM {{ source('bronze_basketball', 'events_possessions') }}
+    WHERE {{ silver_matches('basketball', 'match_id') }}
 ),
 
 basketball_raw AS (
@@ -99,6 +105,7 @@ basketball_raw AS (
         {{ f.subtype }}::VARCHAR AS native_subtype,
         {{ f.outcome }}::VARCHAR AS outcome
     FROM {{ source('bronze_basketball', 'events_' ~ f.family) }} e
+    WHERE {{ silver_matches('basketball', 'e.match_id') }}
 {% if not loop.last %}    UNION ALL{% endif %}
 {% endfor %}
 ),
@@ -135,7 +142,7 @@ football_touches AS (
             OR coalesce(period <> lag(period) OVER w, false) AS opens,
         row_number() OVER w AS rn
     FROM {{ source('bronze_football', 'dynamic_events') }}
-    WHERE event_type = 'player_possession'
+    WHERE event_type = 'player_possession' AND {{ silver_matches('football', 'match_id') }}
     WINDOW w AS (PARTITION BY match_id ORDER BY frame_start, event_id)
 ),
 
@@ -185,6 +192,7 @@ football_raw AS (
             AS native_subtype,
         CASE WHEN e.event_type = 'player_possession' THEN e.end_type END AS outcome
     FROM {{ source('bronze_football', 'dynamic_events') }} e
+    WHERE {{ silver_matches('football', 'e.match_id') }}
 
     UNION ALL
 
@@ -202,6 +210,7 @@ football_raw AS (
             WHEN p.team_possession_loss_in_phase THEN 'loss'
         END
     FROM {{ source('bronze_football', 'phases_of_play') }} p
+    WHERE {{ silver_matches('football', 'p.match_id') }}
 
     UNION ALL
 
