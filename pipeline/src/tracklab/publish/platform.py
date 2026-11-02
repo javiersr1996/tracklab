@@ -489,11 +489,14 @@ def _utc_ms(ns: int) -> str:
 def freshness(data_dir: Path) -> list[dict[str, Any]]:
     """One entry per directory under `<data_dir>/silver` and `<data_dir>/gold` that holds Parquet:
     its table, its partition (the path under the table, null for a table written whole), how many
-    Parquet files it holds and the newest `mtime` among them."""
+    Parquet files it holds and the newest `mtime` among them. A Parquet directly under a layer
+    belongs to no table and is left out."""
     newest: dict[tuple[str, str, str], tuple[int, int]] = {}
     for layer in FRESHNESS_LAYERS:
         root = data_dir / layer
         for path in sorted(root.rglob("*.parquet")) if root.is_dir() else []:
+            if path.parent == root:  # a loose file belongs to no table
+                continue
             table, *partition = path.parent.relative_to(root).parts
             key = (layer, table, "/".join(partition))
             files, ns = newest.get(key, (0, 0))
@@ -598,7 +601,11 @@ def run_publish_platform(
 ) -> int:
     """`data_dir`, whose silver and gold `freshness` measures, defaults to the data root the
     records sit in (`record_dir` is `<data root>/build`)."""
-    path = record_path or latest_record(record_dir)
+    try:
+        path = record_path or latest_record(record_dir)
+    except FileNotFoundError as error:
+        print(f"publish platform: {error}; pass --run to name one")
+        return 1
     record = load_json(path)
     if record.get("schema_version", 1) not in RECORD_VERSIONS:
         print(f"publish platform: record {path.name} has schema_version {record['schema_version']}")

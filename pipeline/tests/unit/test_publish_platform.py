@@ -657,6 +657,32 @@ def test_latest_record_raises_without_any_record(tmp_path: Path) -> None:
         latest_record(tmp_path / "build")
 
 
+def test_publish_platform_says_so_when_every_record_is_partial(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    record_dir = tmp_path / "build"
+    record_dir.mkdir()
+    (record_dir / "20261102T141401Z_fe83de4.json").write_text(
+        json.dumps({"select": "group:silver"}), encoding="utf-8"
+    )
+
+    code = run_publish_platform(
+        record_path=None, record_dir=record_dir, out_dir=tmp_path / "web", check=True
+    )
+
+    assert code == 1
+    assert "no complete build record" in capsys.readouterr().out
+
+
+def test_freshness_ignores_a_parquet_that_belongs_to_no_table(tmp_path: Path) -> None:
+    (tmp_path / "silver").mkdir()
+    (tmp_path / "silver" / "stray.parquet").write_bytes(b"PAR1")
+    (tmp_path / "gold" / "dim_team").mkdir(parents=True)
+    (tmp_path / "gold" / "dim_team" / "data.parquet").write_bytes(b"PAR1")
+
+    assert [(r["layer"], r["table"]) for r in freshness(tmp_path)] == [("gold", "dim_team")]
+
+
 def test_check_is_1_when_a_file_is_published_after_platform_json_was_written(
     tmp_path: Path,
 ) -> None:
