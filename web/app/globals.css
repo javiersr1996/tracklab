@@ -2241,6 +2241,10 @@ body:has(.home) .site-header::after {
   margin-top: var(--space-7);
 }
 
+.history-table table {
+  font-size: var(--step-0); /* the Gantt's table is 15 px; these hold the page's figures, at the floor */
+}
+
 .history-series [data-reasons] {
   overflow-wrap: anywhere; /* a run id is one long word */
 }

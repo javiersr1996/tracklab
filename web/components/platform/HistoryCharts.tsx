@@ -156,7 +156,7 @@ export function StepStrips({ series, id }: { series: Series; id: string }) {
 
 export function StepTable({ series }: { series: Series }) {
   return (
-    <details className="gantt-table" data-strips-table>
+    <details className="gantt-table history-table" data-strips-table>
       <summary>Every run as a table</summary>
       <div className="table-scroll">
         <table>
@@ -281,7 +281,7 @@ export function QualityTimeline({ entries }: { entries: HistoryEntry[] }) {
 
 export function QualityTable({ entries }: { entries: HistoryEntry[] }) {
   return (
-    <details className="gantt-table" data-quality-table>
+    <details className="gantt-table history-table" data-quality-table>
       <summary>Every run as a table</summary>
       <div className="table-scroll">
         <table>
