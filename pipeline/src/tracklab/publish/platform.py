@@ -68,6 +68,10 @@ from tracklab.publish.format import fmt
 SCHEMA_VERSION = 1
 PIPELINE_DIR = Path(__file__).resolve().parents[3]
 PLATFORM_JSON = "platform.json"
+# Build records this module reads (task 125): v1, and v2, which adds run facts that
+# `platform.json` does not publish yet, so a step keeps only its v1 keys here.
+RECORD_VERSIONS = (1, 2)
+STEP_KEYS = ("step_key", "assets", "group", "status", "duration_ms", "dbt_seconds")
 INDEX_JSON = "index.json"
 STATS_JSON = "stats.json"
 
@@ -402,7 +406,7 @@ def platform_from_record(record: dict[str, Any], index_payload: dict[str, Any]) 
         "run": run_block(record),
         "layers": layers_from_record(record),
         "raw_sources": raw_sources_from_record(record),
-        "steps": record["steps"],
+        "steps": [{key: step[key] for key in STEP_KEYS} for step in record["steps"]],
         "tables": tables_from_record(record),
         "matches": matches_from_record(record, index_payload),
         "season_files": season_files_from_record(record),
@@ -521,6 +525,9 @@ def run_publish_platform(
 ) -> int:
     path = record_path or latest_record(record_dir)
     record = load_json(path)
+    if record.get("schema_version", 1) not in RECORD_VERSIONS:
+        print(f"publish platform: record {path.name} has schema_version {record['schema_version']}")
+        return 1
     if "error" in record["disk"]:
         print(
             f"publish platform: record {path.name} has no disk measure: {record['disk']['error']}"

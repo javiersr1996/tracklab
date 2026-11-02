@@ -475,6 +475,61 @@ def test_check_is_0_against_a_freshly_written_platform_json_and_1_after_a_hand_e
     assert broken == 1
 
 
+def _as_v2(record: dict[str, Any]) -> dict[str, Any]:
+    """The same run as a schema 2 record: run_id, contracts and the per-step run facts."""
+    steps = [
+        {
+            **s,
+            "started_utc": "2026-09-24T17:00:00.000+00:00",
+            "finished_utc": "2026-09-24T17:00:04.000+00:00",
+            "dbt": {"tests": {"pass": 1, "fail": 0}, "nodes": {}, "elapsed_seconds": 1.0},
+            "partitions": {"written": [], "skipped": []},
+        }
+        for s in record["steps"]
+    ]
+    return {
+        **record,
+        "schema_version": 2,
+        "run_id": "abcdef0",
+        "steps": steps,
+        "contracts": {"files": 15, "executed": False},
+    }
+
+
+def test_a_v2_record_publishes_the_same_platform_as_its_v1(tmp_path: Path) -> None:
+    v1 = platform_from_record(_record(), _index())
+    v2 = platform_from_record(_as_v2(_record()), _index())
+
+    assert v2 == v1
+    assert v2["steps"][0].keys() == {
+        "step_key",
+        "assets",
+        "group",
+        "status",
+        "duration_ms",
+        "dbt_seconds",
+    }
+
+    record_dir, out_dir = tmp_path / "build", tmp_path / "web"
+    out_dir.mkdir(parents=True)
+    _write_record(record_dir, _as_v2(_record()))
+    (out_dir / "index.json").write_text(json.dumps(_index()), encoding="utf-8")
+    kwargs = {"record_path": None, "record_dir": record_dir, "out_dir": out_dir}
+    assert run_publish_platform(**kwargs) == 0
+    assert run_publish_platform(**kwargs, check=True) == 0
+
+
+def test_a_record_of_an_unknown_schema_is_refused(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = _write_record(tmp_path / "build", {**_record(), "schema_version": 3})
+
+    code = run_publish_platform(record_path=path, record_dir=tmp_path, out_dir=tmp_path / "out")
+
+    assert code == 1
+    assert "schema_version 3" in capsys.readouterr().out
+
+
 def test_check_is_1_when_raw_sources_on_disk_drift_from_the_record(tmp_path: Path) -> None:
     """The `/platform` body-pose line reads `raw_sources`; a stale or hand-edited
     breakdown must fail `--check` like a stale match row does."""
