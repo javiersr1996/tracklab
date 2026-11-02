@@ -24,8 +24,9 @@ test("the /tracking hub lists replay, runs and pose as cards that open them", as
 const SIX = ["Tracking", "Engineering", "Warehouse", "Learn", "SQL", "EuroLeague"];
 const GROUPS = [
   { path: "/tracking/pose", group: "Tracking", pages: ["Replay", "Runs", "Pose"], current: "Pose" },
-  { path: "/engineering/quality", group: "Engineering", pages: ["Platform", "Quality", "Bulletin"], current: "Quality" },
-  { path: "/engineering", group: "Engineering", pages: ["Platform", "Quality", "Bulletin"], current: "Platform" },
+  { path: "/engineering/quality", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Quality" },
+  { path: "/engineering", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Platform" },
+  { path: "/engineering/history", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "History" },
 ];
 
 test("the header has the six entries, and a group's pages only under that group", async ({ page }) => {
@@ -53,7 +54,9 @@ test("the header has the six entries, and a group's pages only under that group"
 for (const width of [390, 1440]) {
   test(`at ${width} px the header's two rows neither overlap nor overflow, text 16 px or more`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    for (const path of ["/", "/tracking/runs", "/engineering/bulletin"]) {
+    // The wordmark and the six, then the group's row: three under Tracking, four under Engineering.
+    const LINKS: Record<string, number> = { "/": 7, "/tracking/runs": 10, "/engineering/bulletin": 11, "/engineering/history": 11 };
+    for (const path of Object.keys(LINKS)) {
       await page.goto(path);
       const sideways = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       expect(sideways, `${path} wider than the window by`).toBeLessThanOrEqual(0);
@@ -63,7 +66,7 @@ for (const width of [390, 1440]) {
           return { x: r.left, y: r.top, r: r.right, b: r.bottom, size: parseFloat(getComputedStyle(e).fontSize) };
         }),
       );
-      expect(links.length, path).toBe(path === "/" ? 7 : 10); // the wordmark, six, and three
+      expect(links.length, path).toBe(LINKS[path]);
       for (const [i, a] of links.entries()) {
         expect(a.x, `${path} link ${i} starts inside the window`).toBeGreaterThanOrEqual(0);
         expect(a.r, `${path} link ${i} ends inside the window`).toBeLessThanOrEqual(width);

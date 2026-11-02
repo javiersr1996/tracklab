@@ -8,9 +8,11 @@ import { join } from "node:path";
 interface Step {
   step_key: string;
   duration_ms: number;
+  started_utc: string | null;
+  finished_utc: string | null;
 }
 const read = (name: string) => JSON.parse(readFileSync(join(process.cwd(), "public/data", name), "utf-8"));
-const platform = read("platform.json") as { steps: Step[]; run: { wall_seconds: number } };
+const platform = read("platform.json") as { steps: Step[]; run: { wall_seconds: number; started_utc: string } };
 const lineage = read("lineage.json") as { nodes: { key: string; description: string }[] };
 
 test("one bar per step, each with the seconds platform.json has", async ({ page }) => {
@@ -22,6 +24,25 @@ test("one bar per step, each with the seconds platform.json has", async ({ page 
     await expect(bar).toHaveAttribute("data-seconds", (s.duration_ms / 1000).toFixed(1));
   }
   await expect(page.locator("[data-gantt]")).toHaveAttribute("data-steps", String(platform.steps.length));
+});
+
+// Task 132: with a v2 record each bar ends at its step's last event and is its duration long, and the
+// note says why the first event is not its start.
+test("with a v2 record each bar ends at its step's last event, its own duration long", async ({ page }) => {
+  test.skip(platform.steps.some((s) => s.finished_utc === null), "a v1 record has no step times");
+  const t0 = new Date(platform.run.started_utc).getTime();
+  await page.goto("/engineering");
+  for (const s of platform.steps) {
+    const end = (new Date(s.finished_utc!).getTime() - t0) / 1000;
+    const bar = page.locator(`[data-gantt-step="${s.step_key}"]`);
+    await expect(bar).toHaveAttribute("data-end", end.toFixed(1));
+    await expect(bar).toHaveAttribute("data-start", (end - s.duration_ms / 1000).toFixed(1));
+    expect(end).toBeLessThanOrEqual(platform.run.wall_seconds);
+  }
+  const firsts = platform.steps.map((s) => (new Date(s.started_utc!).getTime() - t0) / 1000);
+  const note = page.locator("[data-gantt-note]");
+  await expect(note).toHaveAttribute("data-placed", "end");
+  await expect(note).toContainText(`falls ${Math.min(...firsts).toFixed(1)} to ${Math.max(...firsts).toFixed(1)} s into the run`);
 });
 
 test("the longest bar is the widest and none passes the wall-clock axis", async ({ page }) => {
