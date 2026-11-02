@@ -27,6 +27,7 @@ from dagster._core.events import AssetObservationData, StepMaterializationData
 from dagster._core.execution.plan.objects import StepFailureData, StepSuccessData
 
 from tracklab.build import (
+    ABOUT_PLATFORM,
     RunResult,
     StepPlan,
     bytes_read,
@@ -41,6 +42,7 @@ from tracklab.build import (
     step_times_from_logs,
     steps_from_events,
 )
+from tracklab.publish.history import HISTORY_JSON
 from tracklab.silver.incremental import FULL_ENV, PLAN_METADATA_KEY, Plan
 
 PLAN = {
@@ -245,7 +247,12 @@ def test_the_record_reads_the_receipt_but_never_writes_source_path(
 
 
 def test_publish_leaves_out_the_files_written_from_a_record(tmp_path: Path) -> None:
-    for name, size in (("stats.json", 10), ("lineage.json", 200), ("platform.json", 300)):
+    for name, size in (
+        ("stats.json", 10),
+        ("lineage.json", 200),
+        ("platform.json", 300),
+        (HISTORY_JSON, 40),
+    ):
         (tmp_path / name).write_bytes(b"x" * size)
     (tmp_path / "possessions").mkdir()
     (tmp_path / "possessions" / "platform.json").write_bytes(b"x" * 7)
@@ -254,6 +261,11 @@ def test_publish_leaves_out_the_files_written_from_a_record(tmp_path: Path) -> N
 
     assert [f["path"] for f in publish["watch"]] == ["stats.json"]
     assert (publish["files"], publish["bytes"]) == (1, 10)
+
+
+def test_about_platform_names_the_history_file() -> None:
+    """`build` cannot import `HISTORY_JSON` (circular), so it spells the name: this ties them."""
+    assert HISTORY_JSON in ABOUT_PLATFORM
 
 
 def test_publish_leaves_out_the_euroleague_aggregates(tmp_path: Path) -> None:

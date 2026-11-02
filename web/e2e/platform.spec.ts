@@ -260,7 +260,7 @@ test("the stack strip, the ingest counters and the sources block print what the 
   await expect(el.locator("[data-counts-in-out]")).toHaveText(/^no/);
 
   // The title still counts SkillCorner only: EuroLeague is not in "out".
-  await expect(page.locator("h1")).toHaveText("3.6 GB in, 7.7 MB out");
+  await expect(page.locator("h1")).toHaveText("3.6 GB in, 7.6 MB out");
 });
 
 test("no route links to the private repository", async ({ page }) => {
@@ -330,7 +330,7 @@ test("the guarantees and the Postgres block print what platform.json and warehou
     await expect(page.locator("main")).not.toContainText(/on Neon/);
   }
 
-  await expect(page.locator("h1")).toHaveText("3.6 GB in, 7.7 MB out");
+  await expect(page.locator("h1")).toHaveText("3.6 GB in, 7.6 MB out");
 });
 
 test("the guarantee cards do not overflow a phone", async ({ page }) => {

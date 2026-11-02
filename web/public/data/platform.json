@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "title": "3.6 GB in, 7.7 MB out",
-  "subtitle": "5.6 MB to watch, 2.1 MB to query",
+  "title": "3.6 GB in, 7.6 MB out",
+  "subtitle": "5.5 MB to watch, 2.1 MB to query",
   "run": {
     "git_sha": "5caf04b6b9f65bf9209ca7084f747ed506600a2e",
     "started_utc": "2026-11-02T19:00:29+00:00",
@@ -67,13 +67,13 @@
     },
     {
       "layer": "publish",
-      "files": 42,
+      "files": 41,
       "rows": null,
-      "bytes": 7693420,
+      "bytes": 7556688,
       "seconds": 14.9,
       "seconds_sum": 23.9,
-      "watch_files": 32,
-      "watch_bytes": 5639319,
+      "watch_files": 31,
+      "watch_bytes": 5502587,
       "query_files": 10,
       "query_bytes": 2054101,
       "note": "split by use: to watch, the possessions and the JSON the other pages are built from; to query, what only /warehouse uses, the Parquet and the warehouse*.json that describe them; as `tracklab build` measured them, without lineage.json and platform.json (counting platform.json would make the title depend on its own previous value, decision 1); the query engine is not data and is not counted, nor is euroleague/, whose source is not in the pipeline's raw layer"
@@ -1529,7 +1529,7 @@
     }
   },
   "freshness": {
-    "published_utc": "2026-11-02T20:17:15+00:00",
+    "published_utc": "2026-11-02T20:41:31+00:00",
     "partitions": [
       {
         "layer": "silver",

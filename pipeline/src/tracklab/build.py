@@ -91,8 +91,9 @@ CONTRACTS_DIR = Path("tests/contracts")
 DBT_TARGET = Path("dbt/target")
 DBT_TEST_STATUSES = ("pass", "fail", "warn", "error", "skipped")
 DBT_NODE_STATUSES = ("success", "error", "skipped")
-# Not written by the job: they describe the platform, not its data (module docstring).
-ABOUT_PLATFORM = frozenset({LINEAGE_JSON, PLATFORM_JSON})
+# Not written by the job: they describe the platform, not its data (module docstring). The name of
+# `history.json` is `publish.history.HISTORY_JSON`, which imports this module (a test ties the two).
+ABOUT_PLATFORM = frozenset({LINEAGE_JSON, PLATFORM_JSON, "history.json"})
 # Not SkillCorner's: `tracklab euroleague publish` writes this folder from another source that the
 # pipeline's "in" never reads, so its aggregates are not part of what the pipeline publishes (P14).
 NOT_THE_PIPELINE = frozenset({"euroleague"})
