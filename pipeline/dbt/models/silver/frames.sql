@@ -40,11 +40,17 @@
 -- seconds elapsed since its period's first frame, which is the period half of
 -- the match clock task 4 fixed (`timestamp = 45:00 x (period - 1) +
 -- (frame - start_frame) / 10`, verified on 100% of non-null timestamps).
+--
+-- Incremental (task 127): `silver_matches` keeps the bronze rows of the matches the
+-- step rebuilds, and `OVERWRITE_OR_IGNORE` writes their partitions and leaves the
+-- others alone; the step removes the rebuilt partitions first, so no file of the
+-- previous build survives in them (macros/silver_matches.sql).
 
 {{ config(
     options = {
         'partition_by': 'sport, native_match_id',
-        'overwrite': 'true',
+        'overwrite_or_ignore': 'true',
+        'filename_pattern': "'data_{i}'",
     }
 ) }}
 
@@ -64,6 +70,7 @@ WITH basketball_players AS (
     JOIN {{ source('bronze_basketball', 'tracking_frames') }} f
         ON f.match_id = o.match_id AND f.frameIdx = o.frameIdx
     WHERE o.side <> 'ball' AND f.period IS NOT NULL
+        AND {{ silver_matches('basketball', 'o.match_id') }}
 ),
 
 basketball_ball AS (
@@ -82,6 +89,7 @@ basketball_ball AS (
     JOIN {{ source('bronze_basketball', 'tracking_frames') }} f
         ON f.match_id = o.match_id AND f.frameIdx = o.frameIdx
     WHERE o.side = 'ball' AND f.period IS NOT NULL
+        AND {{ silver_matches('basketball', 'o.match_id') }}
 ),
 
 football_players AS (
@@ -99,7 +107,7 @@ football_players AS (
     FROM {{ source('bronze_football', 'tracking_objects') }} o
     JOIN {{ source('bronze_football', 'tracking_frames') }} f
         ON f.match_id = o.match_id AND f.frame = o.frame
-    WHERE f.period IS NOT NULL
+    WHERE f.period IS NOT NULL AND {{ silver_matches('football', 'o.match_id') }}
 ),
 
 football_ball AS (
@@ -116,6 +124,7 @@ football_ball AS (
         f.ball_is_detected
     FROM {{ source('bronze_football', 'tracking_frames') }} f
     WHERE f.period IS NOT NULL AND f.ball_x IS NOT NULL
+        AND {{ silver_matches('football', 'f.match_id') }}
 ),
 
 tracking AS (

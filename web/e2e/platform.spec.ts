@@ -264,7 +264,7 @@ test("the stack strip, the ingest counters and the sources block print what the 
 });
 
 test("no route links to the private repository", async ({ page }) => {
-  const routes = ["/", "/tracking", "/engineering", "/tracking/runs", "/engineering/quality", "/warehouse", "/tracking/replay", "/tracking/pose", "/learn", "/sql", "/euroleague", "/engineering/bulletin"];
+  const routes = ["/", "/tracking", "/engineering", "/tracking/runs", "/engineering/quality", "/warehouse", "/tracking/replay", "/tracking/pose", "/learn", "/sql", "/euroleague", "/engineering/bulletin", "/engineering/history"];
   for (const route of routes) {
     await page.goto(route);
     const hrefs = await page.locator("a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href") ?? ""));

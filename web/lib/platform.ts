@@ -45,6 +45,16 @@ export interface PlatformStep {
   // Per-model dbt "Execution Duration" (task 32), keyed by asset key; only
   // the `silver` step has entries, one per dbt model or seed it ran.
   dbt_seconds: Record<string, number>;
+  // The first and last event of the step in Dagster's event log (a v2 record, task 132); null in a v1.
+  started_utc: string | null;
+  finished_utc: string | null;
+}
+
+// When each silver partition and gold table was last written (the newest mtime of its Parquet),
+// measured when `tracklab publish platform` ran (`published_utc`; task 132, decision 4).
+export interface PlatformFreshness {
+  published_utc: string;
+  partitions: { layer: "silver" | "gold"; table: string; partition: string | null; files: number; written_utc: string }[];
 }
 
 export interface PlatformTable {
@@ -110,6 +120,7 @@ export interface PlatformData {
   matches: PlatformMatch[];
   season_files: PlatformSeasonFiles;
   guarantees: PlatformGuarantees;
+  freshness: PlatformFreshness;
 }
 
 // Via unknown: the JSON's inferred `steps` type is a union of the steps' own `dbt_seconds` keys.
@@ -228,6 +239,10 @@ export interface StepBar {
   step_key: string;
   group: string;
   seconds: number;
+  // Where the bar sits on the run's axis, in seconds from the run's start: from 0 when the record
+  // has no times (v1), else ending at the step's last event and `seconds` long (task 132).
+  start: number;
+  end: number;
 }
 
 export interface StepGroup {
@@ -236,19 +251,30 @@ export interface StepGroup {
   seconds: number;
 }
 
+// Whether every step of the run has its last event (a v2 record): then the Gantt places the bars in
+// time, else it draws durations from 0.
+export const placedInTime = (steps: PlatformStep[]) => steps.every((s) => s.finished_utc !== null);
+
 // The Gantt's rows (task 123): the steps of `platform.json` grouped by their `group`, the groups in
-// `lineage.json`'s flow order (the layers' order) and each group's steps longest first. The record
-// keeps a duration per step and no start time, so every bar is a duration on a shared axis, drawn
-// from 0; nothing here places a step in time.
+// `lineage.json`'s flow order (the layers' order) and each group's steps longest first. With a v2
+// record (task 132) a bar ends at the step's last event in the event log and is its `duration_ms`
+// long: the log's first event for a step is the run's own start-up (`firstEvents`), not when the
+// step began, so the span from first to last event would start every bar at once. Without times
+// (v1) every bar is a duration from 0.
 export function stepGroups(
   steps: PlatformStep[] = PLATFORM.steps,
   order: string[] = LINEAGE.groups,
+  runStartedUtc: string = PLATFORM.run.started_utc,
 ): StepGroup[] {
   const rank = (g: string) => (order.includes(g) ? order.indexOf(g) : order.length);
+  const placed = placedInTime(steps);
+  const t0 = new Date(runStartedUtc).getTime();
   const groups = new Map<string, StepBar[]>();
   for (const s of steps) {
     const bars = groups.get(s.group) ?? [];
-    bars.push({ step_key: s.step_key, group: s.group, seconds: s.duration_ms / 1000 });
+    const seconds = s.duration_ms / 1000;
+    const end = placed ? (new Date(s.finished_utc!).getTime() - t0) / 1000 : seconds;
+    bars.push({ step_key: s.step_key, group: s.group, seconds, start: end - seconds, end });
     groups.set(s.group, bars);
   }
   return [...groups.entries()]
@@ -259,6 +285,19 @@ export function stepGroups(
       seconds: bars.reduce((sum, b) => sum + b.seconds, 0),
     }));
 }
+
+// The earliest and latest of the steps' first events in the log, and the earliest bar start, all in
+// seconds from the run's start: what the page says to justify not starting the bars at the first event.
+export function firstEvents(platform: PlatformData = PLATFORM): { min: number; max: number; firstStart: number } | null {
+  if (!placedInTime(platform.steps)) return null;
+  const t0 = new Date(platform.run.started_utc).getTime();
+  const offsets = platform.steps.map((s) => (new Date(s.started_utc!).getTime() - t0) / 1000);
+  const starts = stepGroups(platform.steps, LINEAGE.groups, platform.run.started_utc).flatMap((g) => g.steps.map((b) => b.start));
+  return { min: Math.min(...offsets), max: Math.max(...offsets), firstStart: Math.min(...starts) };
+}
+
+// The "log start before the first bar" remark holds only when every first event falls before it.
+export const firstBeforeBars = (f: { max: number; firstStart: number }) => f.max < f.firstStart;
 
 // Round tick values from 0 up to `max`, `step` apart.
 export function axisTicks(max: number, step = 500): number[] {

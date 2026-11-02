@@ -27,6 +27,27 @@ the data it publishes, and `platform.json` counted would make the next title
 depend on the previous one. A measurement that fails (a truncated Parquet) is
 written into the record as `disk.error`, the exception's type only (its message
 can carry a local path), and the command exits 1.
+
+Schema 2 (task 125, P16) adds what only the run can know about itself, and keeps every
+v1 key: `run_id` (Dagster's), per step its start and end (`started_utc`, `finished_utc`,
+UTC with milliseconds, from the temporary instance's event log read before it closes) and
+`dbt` (that step's `run_results.json`, found by `<step>-<run_id[:7]>-*` under `dbt/target`:
+`tests` counted as pass, fail, warn, error and skipped, `nodes` (models and seeds) as
+success, error and skipped, and `elapsed_seconds`; None where the step ran no dbt or left
+no file), and per step `partitions` (`written`, `skipped` and `deleted`, lists of
+`<sport>/<native_match_id>`) and `incremental` (`mode` and `reason`), both from the observation
+the incremental silver step leaves (task 127; empty lists and None on every other step). A silver
+step that found nothing changed did not launch dbt: its `dbt` is None and `incremental` says
+`skip` and why, never a count of zero tests.
+`contracts` is what the repo has for contracts, the pytest files of `tests/contracts` (nothing
+in dbt is an enforced model contract). A full build (no `--select`) whose steps all succeeded
+runs them once the job is over, after silver and gold, with `TRACKLAB_REQUIRE_FULL=1` (decided
+by Javier on 2026-11-02, task 129): `executed: true`, `status` (`passed` or `failed`), `passed`,
+`failed`, `skipped` and `errors` read from pytest's own junit XML (never from its prose), the
+start, end and duration of the run, and pytest's exit code. A failing contract fails the build
+(exit 1) and the record is still written. A partial build, or a full one with a failed step,
+records `executed: false` and a `status` that says why ("not run (partial build)"); it never
+records zeros. `wall_seconds` covers the contracts too.
 """
 
 from __future__ import annotations
@@ -39,9 +60,10 @@ import subprocess
 import sys
 import tempfile
 import time
+import xml.etree.ElementTree as ET  # noqa: S405 (pytest's own junit file, written a moment ago)
 import zipfile
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field, replace
 from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
@@ -54,6 +76,7 @@ from tracklab.ingest.manifest import load_manifest
 from tracklab.paths import data_root
 from tracklab.publish.lineage import LINEAGE_JSON
 from tracklab.publish.platform import PLATFORM_JSON
+from tracklab.silver.incremental import FULL_ENV, PLAN_METADATA_KEY
 
 if TYPE_CHECKING:
     from dagster import AssetKey, DagsterEvent, JobDefinition
@@ -63,9 +86,14 @@ REPORTS_DIR = Path("reports")
 WEB_DATA_DIR = Path("../web/public/data")
 DBT_MANIFEST = Path("dbt/target/manifest.json")
 DBT_DURATION_KEY = "Execution Duration"
-SCHEMA_VERSION = 1
-# Not written by the job: they describe the platform, not its data (module docstring).
-ABOUT_PLATFORM = frozenset({LINEAGE_JSON, PLATFORM_JSON})
+SCHEMA_VERSION = 2
+CONTRACTS_DIR = Path("tests/contracts")
+DBT_TARGET = Path("dbt/target")
+DBT_TEST_STATUSES = ("pass", "fail", "warn", "error", "skipped")
+DBT_NODE_STATUSES = ("success", "error", "skipped")
+# Not written by the job: they describe the platform, not its data (module docstring). The name of
+# `history.json` is `publish.history.HISTORY_JSON`, which imports this module (a test ties the two).
+ABOUT_PLATFORM = frozenset({LINEAGE_JSON, PLATFORM_JSON, "history.json"})
 # Not SkillCorner's: `tracklab euroleague publish` writes this folder from another source that the
 # pipeline's "in" never reads, so its aggregates are not part of what the pipeline publishes (P14).
 NOT_THE_PIPELINE = frozenset({"euroleague"})
@@ -92,6 +120,14 @@ class StepRecord:
     status: str  # success, failure, skipped or not_run
     duration_ms: float | None  # StepSuccessData; None unless the step succeeded
     dbt_seconds: dict[str, float]  # per model, dagster-dbt's "Execution Duration"
+    # Schema 2 (task 125): None / empty where the run could not know.
+    started_utc: str | None = None
+    finished_utc: str | None = None
+    dbt: dict[str, Any] | None = None
+    partitions: dict[str, list[str]] = field(
+        default_factory=lambda: {"written": [], "skipped": [], "deleted": []}
+    )
+    incremental: dict[str, str] | None = None  # task 127: the silver step's mode and reason
 
 
 @dataclass(frozen=True)
@@ -114,9 +150,20 @@ class TableMeasure:
         return sum(f.bytes for f in self.files)
 
 
-Execute = Callable[
-    ["Sequence[AssetKey] | None", Path], tuple[dict[str, StepPlan], "Sequence[DagsterEvent]"]
-]
+@dataclass(frozen=True)
+class RunResult:
+    """What `execute` hands back: the plan, the events, Dagster's run id and each step's
+    first and last event time (epoch seconds), read while the instance is still open."""
+
+    plan: dict[str, StepPlan]
+    events: Sequence[DagsterEvent]
+    run_id: str
+    step_times: Mapping[str, tuple[float, float]]
+
+
+Execute = Callable[["Sequence[AssetKey] | None", Path], RunResult]
+# (contracts dir, data dir, junit XML path) -> pytest's exit code; writes the XML.
+RunContracts = Callable[[Path, Path, Path], int]
 
 
 # --- the run ---------------------------------------------------------------------
@@ -151,9 +198,20 @@ def plan_from_job(job: JobDefinition) -> dict[str, StepPlan]:
     }
 
 
-def execute_build(
-    keys: Sequence[AssetKey] | None, record_dir: Path
-) -> tuple[dict[str, StepPlan], Sequence[DagsterEvent]]:
+def step_times_from_logs(logs: Iterable[Any]) -> dict[str, tuple[float, float]]:
+    """Step key -> (first, last) timestamp of the Dagster events that name it. `logs` are the
+    instance's event log entries; plain log lines (no Dagster event) are not the step's."""
+    span: dict[str, tuple[float, float]] = {}
+    for entry in logs:
+        key = entry.dagster_event.step_key if entry.dagster_event is not None else None
+        if key is None:
+            continue
+        first, last = span.get(key, (entry.timestamp, entry.timestamp))
+        span[key] = (min(first, entry.timestamp), max(last, entry.timestamp))
+    return span
+
+
+def execute_build(keys: Sequence[AssetKey] | None, record_dir: Path) -> RunResult:
     from dagster import DagsterInstance, execute_job, reconstructable
 
     record_dir.mkdir(parents=True, exist_ok=True)
@@ -167,7 +225,12 @@ def execute_build(
                 asset_selection=keys,
                 raise_on_error=False,
             )
-            return plan_from_job(result.job_def), list(result.all_events)
+            return RunResult(
+                plan_from_job(result.job_def),
+                list(result.all_events),
+                result.run_id,
+                step_times_from_logs(instance.all_logs(result.run_id)),
+            )
 
 
 def steps_from_events(
@@ -181,6 +244,7 @@ def steps_from_events(
     status: dict[str, str] = {}
     duration: dict[str, float] = {}
     dbt_seconds: dict[str, dict[str, float]] = {}
+    plans: dict[str, dict[str, Any]] = {}
     for event in events:
         key = event.step_key
         if key is None:
@@ -201,23 +265,137 @@ def steps_from_events(
             if value is not None and isinstance(value.value, int | float):
                 asset = materialization.asset_key.to_user_string()
                 dbt_seconds.setdefault(key, {})[asset] = float(value.value)
+        elif event.is_asset_observation:
+            found = event.asset_observation_data.asset_observation.metadata.get(PLAN_METADATA_KEY)
+            if found is not None and isinstance(found.value, dict):
+                plans[key] = found.value
     records = []
     for key in order:
         step = plan.get(key)
-        records.append(
-            StepRecord(
-                step_key=key,
-                assets=list(step.assets) if step else [],
-                group=step.group if step else None,
-                status=status[key],
-                duration_ms=duration.get(key),
-                dbt_seconds=dict(sorted(dbt_seconds.get(key, {}).items())),
-            )
+        record = StepRecord(
+            step_key=key,
+            assets=list(step.assets) if step else [],
+            group=step.group if step else None,
+            status=status[key],
+            duration_ms=duration.get(key),
+            dbt_seconds=dict(sorted(dbt_seconds.get(key, {}).items())),
         )
+        if key in plans:
+            found_plan = plans[key]
+            partitions = {k: list(found_plan[k]) for k in ("written", "skipped", "deleted")}
+            mode = {"mode": found_plan["mode"], "reason": found_plan["reason"]}
+            record = replace(record, partitions=partitions, incremental=mode)
+        records.append(record)
     for key, step in plan.items():
         if key not in status:
             records.append(StepRecord(key, list(step.assets), step.group, "not_run", None, {}))
     return records
+
+
+def dbt_results(target: Path, step_key: str, run_id: str) -> dict[str, Any] | None:
+    """The step's dbt outcome from the `run_results.json` that dagster-dbt left in
+    `<target>/<step>-<run id[:7]>-<uuid[:7]>/`; None when the step ran no dbt."""
+    found = sorted(
+        target.glob(f"{step_key}-{run_id[:7]}-*/run_results.json"), key=lambda p: p.stat().st_mtime
+    )
+    if not found:
+        return None
+    return dbt_summary(json.loads(found[-1].read_text(encoding="utf-8")))
+
+
+def dbt_summary(run: Mapping[str, Any]) -> dict[str, Any]:
+    """Tests by status, nodes by status and dbt's own elapsed time, from a parsed `run_results.json`
+    (`publish history` reads the same file for the v1 records, which kept none of this)."""
+    tests = dict.fromkeys(DBT_TEST_STATUSES, 0)
+    nodes = dict.fromkeys(DBT_NODE_STATUSES, 0)
+    for result in run["results"]:
+        counts = tests if result["unique_id"].startswith("test.") else nodes
+        counts[result["status"]] = counts.get(result["status"], 0) + 1
+    return {"tests": tests, "nodes": nodes, "elapsed_seconds": round(run["elapsed_time"], 3)}
+
+
+def _iso(epoch: float) -> str:
+    return datetime.fromtimestamp(epoch, UTC).isoformat(timespec="milliseconds")
+
+
+def with_run_facts(
+    steps: Sequence[StepRecord], run: RunResult, dbt_target: Path
+) -> list[StepRecord]:
+    """Schema 2: each step gets its start and end and its dbt outcome; a step no event
+    named (`not_run`) has neither."""
+    out = []
+    for step in steps:
+        span = run.step_times.get(step.step_key)
+        out.append(
+            replace(
+                step,
+                started_utc=_iso(span[0]) if span else None,
+                finished_utc=_iso(span[1]) if span else None,
+                dbt=dbt_results(dbt_target, step.step_key, run.run_id) if span else None,
+            )
+        )
+    return out
+
+
+def pytest_contracts(contracts_dir: Path, data_dir: Path, junit: Path) -> int:
+    """`pytest tests/contracts` over the data root, in full mode (a skip would hide a missing
+    bundle), in the foreground; its exit code. The result is in the junit XML."""
+    env = {**os.environ, "TRACKLAB_DATA_ROOT": str(data_dir), "TRACKLAB_REQUIRE_FULL": "1"}
+    command = [sys.executable, "-m", "pytest", str(contracts_dir), f"--junitxml={junit}"]
+    return subprocess.run(
+        [*command, "-q", "-p", "no:cacheprovider"], env=env, check=False
+    ).returncode
+
+
+def junit_counts(junit: Path) -> dict[str, int] | None:
+    """passed, failed, skipped and errors from pytest's junit XML; None when it is missing or
+    not a result (pytest died before writing it)."""
+    try:
+        root = ET.parse(junit).getroot()  # noqa: S314
+    except (OSError, ET.ParseError):
+        return None
+    suites = [root] if root.tag == "testsuite" else list(root.iter("testsuite"))
+    if not suites:
+        return None
+    total = {
+        k: sum(int(s.get(k, 0)) for s in suites) for k in ("tests", "failures", "skipped", "errors")
+    }
+    return {
+        "passed": total["tests"] - total["failures"] - total["skipped"] - total["errors"],
+        "failed": total["failures"],
+        "skipped": total["skipped"],
+        "errors": total["errors"],
+    }
+
+
+def not_run_contracts(contracts_dir: Path, why: str) -> dict[str, Any]:
+    return {"files": len(list(contracts_dir.glob("test_*.py"))), "executed": False, "status": why}
+
+
+def run_contracts_step(
+    contracts_dir: Path, data_dir: Path, runner: RunContracts, record_dir: Path
+) -> dict[str, Any]:
+    """Run the contracts and say what came of it; `status` is `passed` only for exit 0 with
+    nothing failed and no error."""
+    record_dir.mkdir(parents=True, exist_ok=True)
+    started = datetime.now(UTC)
+    clock = time.perf_counter()
+    with tempfile.TemporaryDirectory(prefix=".tmp_contracts_", dir=record_dir) as tempdir:
+        junit = Path(tempdir) / "junit.xml"
+        exit_code = runner(contracts_dir, data_dir, junit)
+        counts = junit_counts(junit)
+    record: dict[str, Any] = {
+        **not_run_contracts(contracts_dir, ""),
+        "executed": True,
+        "started_utc": started.isoformat(timespec="milliseconds"),
+        "finished_utc": datetime.now(UTC).isoformat(timespec="milliseconds"),
+        "duration_seconds": round(time.perf_counter() - clock, 3),
+        "pytest_exit_code": exit_code,
+        **(counts or dict.fromkeys(("passed", "failed", "skipped", "errors"))),
+    }
+    ok = exit_code == 0 and counts is not None and not counts["failed"] and not counts["errors"]
+    record["status"] = "passed" if ok else "failed"
+    return record
 
 
 # --- the disk after the run --------------------------------------------------------
@@ -511,9 +689,15 @@ def run_build(
     manifest_path: Path = MANIFEST,
     reports_dir: Path = REPORTS_DIR,
     web_data_dir: Path = WEB_DATA_DIR,
+    dbt_target: Path = DBT_TARGET,
+    contracts_dir: Path = CONTRACTS_DIR,
+    full: bool = False,
+    run_contracts: RunContracts | None = None,
 ) -> int:
     """Run the job, write the record whatever happened, exit 1 if any step did not
-    succeed. `execute` is what runs the job; the tests hand in a fake."""
+    succeed. `execute` is what runs the job; the tests hand in a fake. `full` makes the
+    incremental silver step rebuild every match (`FULL_ENV`, inherited by the step's process).
+    `run_contracts` is what runs `tests/contracts` after a full build (the tests hand in a fake)."""
     keys: Sequence[AssetKey] | None = None
     if select is not None:
         if not DBT_MANIFEST.is_file():
@@ -528,11 +712,26 @@ def run_build(
     sha = git_sha()
     started = datetime.now(UTC)
     clock = time.perf_counter()
-    plan, events = execute(keys, record_dir)
+    previous = os.environ.get(FULL_ENV)
+    if full:
+        os.environ[FULL_ENV] = "1"
+    try:
+        run = execute(keys, record_dir)
+    finally:
+        if full and previous is None:
+            del os.environ[FULL_ENV]
+    steps = with_run_facts(steps_from_events(run.events, run.plan), run, dbt_target)
+    steps_ok = bool(steps) and all(step.status == "success" for step in steps)
+    if select is not None:
+        contracts = not_run_contracts(contracts_dir, "not run (partial build)")
+    elif not steps_ok:
+        contracts = not_run_contracts(contracts_dir, "not run (a step failed)")
+    else:
+        contracts = run_contracts_step(
+            contracts_dir, data_dir, run_contracts or pytest_contracts, record_dir
+        )
     wall_seconds = round(time.perf_counter() - clock, 3)
     finished = datetime.now(UTC)
-
-    steps = steps_from_events(events, plan)
     # Whatever the measurement raises, the run still gets its record: the steps
     # above are the part only this run knows.
     try:
@@ -542,6 +741,7 @@ def run_build(
         print(f"build: measuring the disk failed: {type(exc).__name__}: {exc}")
     payload = {
         "schema_version": SCHEMA_VERSION,
+        "run_id": run.run_id,
         "git_sha": sha,
         "select": select,
         "started_utc": started.isoformat(timespec="seconds"),
@@ -550,6 +750,7 @@ def run_build(
         "host": host_info(),
         "versions": versions(),
         "steps": [asdict(step) for step in steps],
+        "contracts": contracts,
         "disk": disk,
     }
     path = record_path(record_dir, started, sha)
@@ -563,5 +764,11 @@ def run_build(
         f"assets={sum(len(s.assets) for s in steps if s.status == 'success')}"
     )
     print(f"record: {path} ({path.stat().st_size} bytes)")
-    succeeded = steps and all(step.status == "success" for step in steps)
-    return 0 if succeeded and "error" not in disk else 1
+    if contracts["executed"]:
+        print(
+            f"contracts: {contracts['status']} passed={contracts['passed']} "
+            f"failed={contracts['failed']} skipped={contracts['skipped']} "
+            f"errors={contracts['errors']} in {contracts['duration_seconds']}s"
+        )
+    contracts_ok = not contracts["executed"] or contracts["status"] == "passed"
+    return 0 if steps_ok and contracts_ok and "error" not in disk else 1

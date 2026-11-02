@@ -73,6 +73,7 @@ export const NAV: NavEntry[] = [
       { href: "/engineering", nav: "Platform" },
       { href: "/engineering/quality", nav: "Quality" },
       { href: "/engineering/bulletin", nav: "Bulletin" },
+      { href: "/engineering/history", nav: "History" },
     ],
   },
   { href: "/warehouse", nav: "Warehouse" },

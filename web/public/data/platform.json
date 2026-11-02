@@ -3,10 +3,10 @@
   "title": "3.6 GB in, 7.6 MB out",
   "subtitle": "5.5 MB to watch, 2.1 MB to query",
   "run": {
-    "git_sha": "ad5e043e081b02f79361617a4191386380b116df",
-    "started_utc": "2026-10-24T16:20:29+00:00",
-    "finished_utc": "2026-10-24T16:54:52+00:00",
-    "wall_seconds": 2062.692,
+    "git_sha": "5caf04b6b9f65bf9209ca7084f747ed506600a2e",
+    "started_utc": "2026-11-02T19:00:29+00:00",
+    "finished_utc": "2026-11-02T19:54:29+00:00",
+    "wall_seconds": 3239.959,
     "host": {
       "system": "Windows",
       "cpus": 22,
@@ -26,8 +26,8 @@
       "files": 122,
       "rows": null,
       "bytes": 3583918346,
-      "seconds": 9.0,
-      "seconds_sum": 19.1,
+      "seconds": 12.3,
+      "seconds_sum": 20.9,
       "bytes_pinned": 3583918346,
       "bytes_read": 10432244078,
       "downloaded": 0,
@@ -38,40 +38,40 @@
       "files": 394,
       "rows": 34767903,
       "bytes": 1170828672,
-      "seconds": 506.9,
-      "seconds_sum": 852.2
+      "seconds": 737.0,
+      "seconds_sum": 1196.8
     },
     {
       "layer": "silver",
       "files": 66,
       "rows": 29521069,
-      "bytes": 251138002,
-      "seconds": 153.9,
-      "seconds_sum": 153.9
+      "bytes": 251122479,
+      "seconds": 7.0,
+      "seconds_sum": 7.0
     },
     {
       "layer": "gold",
       "files": 10,
       "rows": 371009,
-      "bytes": 1954692,
-      "seconds": 48.4,
-      "seconds_sum": 48.4
+      "bytes": 1954709,
+      "seconds": 2.0,
+      "seconds_sum": 2.0
     },
     {
       "layer": "quality",
       "files": 6,
       "rows": 910,
       "bytes": 57648,
-      "seconds": 191.7,
-      "seconds_sum": 274.4
+      "seconds": 279.1,
+      "seconds_sum": 381.0
     },
     {
       "layer": "publish",
       "files": 41,
       "rows": null,
       "bytes": 7556688,
-      "seconds": 8.1,
-      "seconds_sum": 15.4,
+      "seconds": 14.9,
+      "seconds_sum": 23.9,
       "watch_files": 31,
       "watch_bytes": 5502587,
       "query_files": 10,
@@ -107,8 +107,10 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 3405.9616999002174,
-      "dbt_seconds": {}
+      "duration_ms": 2113.318799994886,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.530+00:00",
+      "finished_utc": "2026-11-02T19:01:14.924+00:00"
     },
     {
       "step_key": "raw_football",
@@ -117,8 +119,10 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 9027.287500095554,
-      "dbt_seconds": {}
+      "duration_ms": 12273.760100011714,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.558+00:00",
+      "finished_utc": "2026-11-02T19:01:25.127+00:00"
     },
     {
       "step_key": "raw_football_bodypose",
@@ -127,8 +131,10 @@
       ],
       "group": "ingest",
       "status": "success",
-      "duration_ms": 6639.089999953285,
-      "dbt_seconds": {}
+      "duration_ms": 6511.269999988144,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.590+00:00",
+      "finished_utc": "2026-11-02T19:01:19.716+00:00"
     },
     {
       "step_key": "bronze_basketball_aggregates",
@@ -139,8 +145,10 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 6967.339000082575,
-      "dbt_seconds": {}
+      "duration_ms": 5485.593899997184,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:40.387+00:00",
+      "finished_utc": "2026-11-02T19:01:44.297+00:00"
     },
     {
       "step_key": "bronze_basketball_events",
@@ -168,8 +176,10 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 26577.37149996683,
-      "dbt_seconds": {}
+      "duration_ms": 33895.208300004015,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:41.584+00:00",
+      "finished_utc": "2026-11-02T19:02:12.905+00:00"
     },
     {
       "step_key": "bronze_basketball_meta",
@@ -181,8 +191,10 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 1669.266099925153,
-      "dbt_seconds": {}
+      "duration_ms": 1428.7584999983665,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:42.254+00:00",
+      "finished_utc": "2026-11-02T19:01:41.033+00:00"
     },
     {
       "step_key": "bronze_basketball_tracking",
@@ -192,8 +204,10 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 146146.72310010064,
-      "dbt_seconds": {}
+      "duration_ms": 195442.56569998106,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:42.382+00:00",
+      "finished_utc": "2026-11-02T19:04:54.753+00:00"
     },
     {
       "step_key": "bronze_football_bodypose",
@@ -203,8 +217,10 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 506932.55429994315,
-      "dbt_seconds": {}
+      "duration_ms": 737042.1016000037,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:42.568+00:00",
+      "finished_utc": "2026-11-02T19:14:01.714+00:00"
     },
     {
       "step_key": "bronze_football_aggregates",
@@ -215,8 +231,10 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 1508.9795999228954,
-      "dbt_seconds": {}
+      "duration_ms": 2204.4735999952536,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:42.476+00:00",
+      "finished_utc": "2026-11-02T19:01:51.519+00:00"
     },
     {
       "step_key": "bronze_football_events",
@@ -226,8 +244,10 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 32791.126399999484,
-      "dbt_seconds": {}
+      "duration_ms": 46680.92390001402,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:42.628+00:00",
+      "finished_utc": "2026-11-02T19:02:36.014+00:00"
     },
     {
       "step_key": "bronze_football_meta",
@@ -239,8 +259,10 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 2357.165200053714,
-      "dbt_seconds": {}
+      "duration_ms": 4182.865899987519,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:42.658+00:00",
+      "finished_utc": "2026-11-02T19:01:53.886+00:00"
     },
     {
       "step_key": "bronze_football_tracking",
@@ -250,8 +272,10 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 117674.41959993448,
-      "dbt_seconds": {}
+      "duration_ms": 156675.9263999993,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:42.803+00:00",
+      "finished_utc": "2026-11-02T19:04:26.971+00:00"
     },
     {
       "step_key": "gold",
@@ -269,19 +293,10 @@
       ],
       "group": "gold",
       "status": "success",
-      "duration_ms": 48352.50349994749,
-      "dbt_seconds": {
-        "gold_agg_bb_drives": 0.863004,
-        "gold_agg_bb_picks": 1.144907,
-        "gold_agg_bb_shots": 0.902269,
-        "gold_agg_fb_obr": 0.870329,
-        "gold_agg_fb_passing": 0.649562,
-        "gold_agg_fb_physical": 0.670063,
-        "gold_dim_metric": 0.218171,
-        "gold_dim_player": 0.732484,
-        "gold_dim_season_team": 0.460743,
-        "gold_fact_player_season_metric": 2.074012
-      }
+      "duration_ms": 2030.4339999856893,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:42.860+00:00",
+      "finished_utc": "2026-11-02T19:02:48.497+00:00"
     },
     {
       "step_key": "orientation",
@@ -292,8 +307,10 @@
       ],
       "group": "bronze",
       "status": "success",
-      "duration_ms": 9563.713299925439,
-      "dbt_seconds": {}
+      "duration_ms": 13715.416899998672,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:42.448+00:00",
+      "finished_utc": "2026-11-02T19:05:26.880+00:00"
     },
     {
       "step_key": "quality_clock",
@@ -302,8 +319,10 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 33578.09989992529,
-      "dbt_seconds": {}
+      "duration_ms": 48564.42660000175,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.362+00:00",
+      "finished_utc": "2026-11-02T19:06:01.665+00:00"
     },
     {
       "step_key": "quality_partitions",
@@ -312,8 +331,10 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 471.81260003708303,
-      "dbt_seconds": {}
+      "duration_ms": 700.2828000113368,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.503+00:00",
+      "finished_utc": "2026-11-02T19:05:44.726+00:00"
     },
     {
       "step_key": "silver",
@@ -333,21 +354,10 @@
       ],
       "group": "silver",
       "status": "success",
-      "duration_ms": 153899.4707999518,
-      "dbt_seconds": {
-        "seed_event_type_map": 0.386025,
-        "seed_surface_spec": 0.389895,
-        "silver_dim_entity": 0.520059,
-        "silver_dim_match": 0.75713,
-        "silver_dim_period": 0.624665,
-        "silver_dim_sport": 0.825263,
-        "silver_dim_team": 0.647452,
-        "silver_dim_team_period": 0.474758,
-        "silver_events": 7.601764,
-        "silver_frame_possession": 0.107498,
-        "silver_frames": 69.262885,
-        "silver_frames_attacking": 0.142455
-      }
+      "duration_ms": 6961.692100012442,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.793+00:00",
+      "finished_utc": "2026-11-02T19:05:51.039+00:00"
     },
     {
       "step_key": "publish_possessions",
@@ -356,8 +366,10 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 6626.324099954218,
-      "dbt_seconds": {}
+      "duration_ms": 8061.877300002379,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.252+00:00",
+      "finished_utc": "2026-11-02T19:06:18.952+00:00"
     },
     {
       "step_key": "quality_detection",
@@ -366,8 +378,10 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 2980.183499981649,
-      "dbt_seconds": {}
+      "duration_ms": 1509.659900009865,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.386+00:00",
+      "finished_utc": "2026-11-02T19:06:12.462+00:00"
     },
     {
       "step_key": "quality_entry_angle",
@@ -376,8 +390,10 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 22785.663500078954,
-      "dbt_seconds": {}
+      "duration_ms": 24051.62849999033,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.414+00:00",
+      "finished_utc": "2026-11-02T19:06:35.284+00:00"
     },
     {
       "step_key": "quality_gravity",
@@ -386,8 +402,10 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 22933.700300054625,
-      "dbt_seconds": {}
+      "duration_ms": 27032.893700001296,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.445+00:00",
+      "finished_utc": "2026-11-02T19:06:38.550+00:00"
     },
     {
       "step_key": "quality_noise",
@@ -396,8 +414,10 @@
       ],
       "group": "quality",
       "status": "success",
-      "duration_ms": 191692.62109999545,
-      "dbt_seconds": {}
+      "duration_ms": 279113.1232000189,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.475+00:00",
+      "finished_utc": "2026-11-02T19:10:51.613+00:00"
     },
     {
       "step_key": "runs_protocol",
@@ -406,8 +426,10 @@
       ],
       "group": "runs",
       "status": "success",
-      "duration_ms": 5592.036300105974,
-      "dbt_seconds": {}
+      "duration_ms": 6454.931400017813,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.765+00:00",
+      "finished_utc": "2026-11-02T19:06:19.076+00:00"
     },
     {
       "step_key": "publish_stats",
@@ -416,8 +438,10 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 757.8609000192955,
-      "dbt_seconds": {}
+      "duration_ms": 934.4386000011582,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.334+00:00",
+      "finished_utc": "2026-11-02T19:06:58.687+00:00"
     },
     {
       "step_key": "runs_coverage",
@@ -426,8 +450,10 @@
       ],
       "group": "runs",
       "status": "success",
-      "duration_ms": 87267.61940005235,
-      "dbt_seconds": {}
+      "duration_ms": 155092.14419999626,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.674+00:00",
+      "finished_utc": "2026-11-02T19:09:33.718+00:00"
     },
     {
       "step_key": "runs_probe",
@@ -436,18 +462,10 @@
       ],
       "group": "runs",
       "status": "success",
-      "duration_ms": 185102.77110000607,
-      "dbt_seconds": {}
-    },
-    {
-      "step_key": "pose_coverage",
-      "assets": [
-        "pose_coverage"
-      ],
-      "group": "pose",
-      "status": "success",
-      "duration_ms": 25947.978799929842,
-      "dbt_seconds": {}
+      "duration_ms": 290071.1541000055,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.736+00:00",
+      "finished_utc": "2026-11-02T19:15:04.313+00:00"
     },
     {
       "step_key": "publish_quality",
@@ -456,8 +474,22 @@
       ],
       "group": "publish",
       "status": "success",
-      "duration_ms": 8058.6624999996275,
-      "dbt_seconds": {}
+      "duration_ms": 14872.878099995432,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.282+00:00",
+      "finished_utc": "2026-11-02T19:11:38.895+00:00"
+    },
+    {
+      "step_key": "pose_coverage",
+      "assets": [
+        "pose_coverage"
+      ],
+      "group": "pose",
+      "status": "success",
+      "duration_ms": 32175.65280001145,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.149+00:00",
+      "finished_utc": "2026-11-02T19:14:48.621+00:00"
     },
     {
       "step_key": "pose_protocol",
@@ -466,8 +498,10 @@
       ],
       "group": "pose",
       "status": "success",
-      "duration_ms": 861.8755000643432,
-      "dbt_seconds": {}
+      "duration_ms": 892.8654000046663,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.199+00:00",
+      "finished_utc": "2026-11-02T19:15:00.388+00:00"
     },
     {
       "step_key": "pose_metric",
@@ -476,8 +510,10 @@
       ],
       "group": "pose",
       "status": "success",
-      "duration_ms": 1402704.4473999413,
-      "dbt_seconds": {}
+      "duration_ms": 2063926.547799987,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.176+00:00",
+      "finished_utc": "2026-11-02T19:49:35.853+00:00"
     },
     {
       "step_key": "runs_effect",
@@ -486,8 +522,10 @@
       ],
       "group": "runs",
       "status": "success",
-      "duration_ms": 46302.991800010204,
-      "dbt_seconds": {}
+      "duration_ms": 69024.86450001015,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.705+00:00",
+      "finished_utc": "2026-11-02T19:16:25.740+00:00"
     },
     {
       "step_key": "publish_runs",
@@ -496,8 +534,10 @@
       ],
       "group": "runs",
       "status": "success",
-      "duration_ms": 36190.31949993223,
-      "dbt_seconds": {}
+      "duration_ms": 63754.84539999161,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.310+00:00",
+      "finished_utc": "2026-11-02T19:17:40.887+00:00"
     },
     {
       "step_key": "publish_pose",
@@ -506,8 +546,10 @@
       ],
       "group": "pose",
       "status": "success",
-      "duration_ms": 19980.56739999447,
-      "dbt_seconds": {}
+      "duration_ms": 38468.78269998706,
+      "dbt_seconds": {},
+      "started_utc": "2026-11-02T19:00:43.225+00:00",
+      "finished_utc": "2026-11-02T19:50:23.248+00:00"
     }
   ],
   "tables": [
@@ -909,7 +951,7 @@
       "table": "dim_metric",
       "files": 1,
       "rows": 1242,
-      "bytes": 14276
+      "bytes": 14312
     },
     {
       "layer": "gold",
@@ -917,7 +959,7 @@
       "table": "dim_player",
       "files": 1,
       "rows": 608,
-      "bytes": 17054
+      "bytes": 17042
     },
     {
       "layer": "gold",
@@ -925,7 +967,7 @@
       "table": "dim_season_team",
       "files": 1,
       "rows": 31,
-      "bytes": 1378
+      "bytes": 1371
     },
     {
       "layer": "gold",
@@ -941,7 +983,7 @@
       "table": "dim_entity",
       "files": 1,
       "rows": 983,
-      "bytes": 25531
+      "bytes": 25463
     },
     {
       "layer": "silver",
@@ -949,7 +991,7 @@
       "table": "dim_match",
       "files": 1,
       "rows": 30,
-      "bytes": 4703
+      "bytes": 4716
     },
     {
       "layer": "silver",
@@ -957,7 +999,7 @@
       "table": "dim_period",
       "files": 1,
       "rows": 81,
-      "bytes": 3151
+      "bytes": 3163
     },
     {
       "layer": "silver",
@@ -973,7 +1015,7 @@
       "table": "dim_team",
       "files": 1,
       "rows": 30,
-      "bytes": 1946
+      "bytes": 1936
     },
     {
       "layer": "silver",
@@ -997,7 +1039,7 @@
       "table": "frames",
       "files": 30,
       "rows": 29340593,
-      "bytes": 244113288
+      "bytes": 244097818
     }
   ],
   "matches": [
@@ -1452,7 +1494,7 @@
       ]
     },
     "checks": {
-      "count": 28,
+      "count": 29,
       "commands": [
         "euroleague publish",
         "learn browser",
@@ -1472,6 +1514,7 @@
         "pose sweep",
         "pose verdict",
         "publish examples",
+        "publish history",
         "publish lineage",
         "publish platform",
         "publish pose",
@@ -1484,5 +1527,542 @@
         "sql course"
       ]
     }
+  },
+  "freshness": {
+    "published_utc": "2026-11-02T20:41:31+00:00",
+    "partitions": [
+      {
+        "layer": "silver",
+        "table": "dim_entity",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.437+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "dim_match",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:42.742+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "dim_period",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:39.036+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "dim_sport",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:36.947+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "dim_team",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:38.936+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "dim_team_period",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:38.897+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=basketball/native_match_id=114086",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.050+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=basketball/native_match_id=114099",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.124+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=basketball/native_match_id=114169",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.174+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=basketball/native_match_id=114234",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.144+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=basketball/native_match_id=114243",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.033+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=basketball/native_match_id=178442",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.236+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=basketball/native_match_id=179612",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:44.997+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=basketball/native_match_id=184439",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.196+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=basketball/native_match_id=188630",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.105+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=basketball/native_match_id=191313",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.253+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=1874553",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.268+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=1886347",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.080+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=1899585",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.287+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=1925299",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.344+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=1927964",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.065+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=1953632",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.453+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=1959846",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.431+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=1986691",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.473+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=1996435",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.487+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=1996436",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.158+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=2006229",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.501+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=2006363",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.515+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=2007448",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.013+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=2007721",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.534+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=2010085",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.550+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=2011166",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.563+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=2013725",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.211+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=2015213",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.413+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=2016236",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.576+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "events",
+        "partition": "sport=football/native_match_id=2017461",
+        "files": 1,
+        "written_utc": "2026-11-02T18:53:45.386+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=basketball/native_match_id=114086",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.217+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=basketball/native_match_id=114099",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.310+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=basketball/native_match_id=114169",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.378+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=basketball/native_match_id=114234",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.374+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=basketball/native_match_id=114243",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.183+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=basketball/native_match_id=178442",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.467+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=basketball/native_match_id=179612",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.116+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=basketball/native_match_id=184439",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.430+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=basketball/native_match_id=188630",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.277+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=basketball/native_match_id=191313",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.469+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=1874553",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.471+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=1886347",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.276+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=1899585",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.472+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=1925299",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.573+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=1927964",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.219+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=1953632",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.719+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=1959846",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.657+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=1986691",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.775+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=1996435",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.815+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=1996436",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.376+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=2006229",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.817+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=2006363",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.859+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=2007448",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.165+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=2007721",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.860+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=2010085",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.862+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=2011166",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.864+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=2013725",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.466+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=2015213",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.639+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=2016236",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.935+00:00"
+      },
+      {
+        "layer": "silver",
+        "table": "frames",
+        "partition": "sport=football/native_match_id=2017461",
+        "files": 1,
+        "written_utc": "2026-11-02T18:55:25.574+00:00"
+      },
+      {
+        "layer": "gold",
+        "table": "agg_bb_drives",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:52:28.815+00:00"
+      },
+      {
+        "layer": "gold",
+        "table": "agg_bb_picks",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:52:29.257+00:00"
+      },
+      {
+        "layer": "gold",
+        "table": "agg_bb_shots",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:52:28.933+00:00"
+      },
+      {
+        "layer": "gold",
+        "table": "agg_fb_obr",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:52:28.813+00:00"
+      },
+      {
+        "layer": "gold",
+        "table": "agg_fb_passing",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:52:29.661+00:00"
+      },
+      {
+        "layer": "gold",
+        "table": "agg_fb_physical",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:52:29.714+00:00"
+      },
+      {
+        "layer": "gold",
+        "table": "dim_metric",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:52:37.500+00:00"
+      },
+      {
+        "layer": "gold",
+        "table": "dim_player",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:52:33.580+00:00"
+      },
+      {
+        "layer": "gold",
+        "table": "dim_season_team",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:52:33.551+00:00"
+      },
+      {
+        "layer": "gold",
+        "table": "fact_player_season_metric",
+        "partition": null,
+        "files": 1,
+        "written_utc": "2026-11-02T18:52:36.135+00:00"
+      }
+    ]
   }
 }
