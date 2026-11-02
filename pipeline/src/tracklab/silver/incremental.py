@@ -73,14 +73,27 @@ def engine_versions() -> dict[str, str]:
 def silver_sources(dbt_manifest: Mapping[str, Any]) -> list[tuple[str, str]]:
     """(source name, table) of every dbt source a silver model reads (every model not tagged
     gold), from dbt's parsed manifest."""
+    return _sources(dbt_manifest, gold=False)
+
+
+def gold_sources(dbt_manifest: Mapping[str, Any]) -> list[tuple[str, str]]:
+    """(source name, table) of every dbt source a gold model reads. A gold model that reads
+    anything else outside gold (a silver model, a seed) fails: the gold fingerprint does not
+    cover it, and a skip would then hide a change."""
+    return _sources(dbt_manifest, gold=True)
+
+
+def _sources(dbt_manifest: Mapping[str, Any], *, gold: bool) -> list[tuple[str, str]]:
     found: set[tuple[str, str]] = set()
     for node in dbt_manifest["nodes"].values():
-        if node["resource_type"] != "model" or "gold" in node.get("tags", []):
+        if node["resource_type"] != "model" or ("gold" in node.get("tags", [])) != gold:
             continue
         for upstream in node["depends_on"]["nodes"]:
             if upstream.startswith("source."):
                 source = dbt_manifest["sources"][upstream]
                 found.add((source["source_name"], source["name"]))
+            elif gold and "gold" not in dbt_manifest["nodes"][upstream].get("tags", []):
+                raise ValueError(f"gold model {node['name']} reads {upstream}, outside gold")
     return sorted(found)
 
 
@@ -223,36 +236,38 @@ class Plan:
         return asdict(self)
 
 
-def external_models(dbt_manifest: Mapping[str, Any]) -> list[str]:
-    """The silver models that write files (`materialized: external`): their folder under
-    `silver/` must hold Parquet for a skip to be honest."""
+def external_models(dbt_manifest: Mapping[str, Any], *, gold: bool = False) -> list[str]:
+    """The silver (or gold) models that write files (`materialized: external`): their folder
+    under `silver/` (`gold/`) must hold Parquet for a skip to be honest."""
     return sorted(
         node["name"]
         for node in dbt_manifest["nodes"].values()
         if node["resource_type"] == "model"
-        and "gold" not in node.get("tags", [])
+        and ("gold" in node.get("tags", [])) == gold
         and node["config"].get("materialized") == "external"
     )
 
 
-def full_reason(*, full: bool, require_full: bool, whole_step: bool) -> str | None:
+def full_reason(
+    *, full: bool, require_full: bool, whole_step: bool, step: str = "silver"
+) -> str | None:
     if full:
         return "--full"
     if require_full:
         return "TRACKLAB_REQUIRE_FULL is set"
     if not whole_step:
-        return "a subset of the silver step was selected"
+        return f"a subset of the {step} step was selected"
     return None
 
 
-def state_path(data_dir: Path) -> Path:
-    return data_dir / "state" / "silver.json"
+def state_path(data_dir: Path, step: str = "silver") -> Path:
+    return data_dir / "state" / f"{step}.json"
 
 
-def read_state(data_dir: Path) -> dict[str, Any] | None:
+def read_state(data_dir: Path, step: str = "silver") -> dict[str, Any] | None:
     """The last successful run's state; None when there is none or it cannot be trusted."""
     try:
-        state = json.loads(state_path(data_dir).read_text(encoding="utf-8"))
+        state = json.loads(state_path(data_dir, step).read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
     if not isinstance(state, dict) or state.get("version") != STATE_VERSION:
@@ -260,9 +275,9 @@ def read_state(data_dir: Path) -> dict[str, Any] | None:
     return state
 
 
-def write_state(data_dir: Path, state: Mapping[str, Any]) -> None:
+def write_state(data_dir: Path, state: Mapping[str, Any], step: str = "silver") -> None:
     """Atomically (a temporary file renamed over the old one), with LF."""
-    path = state_path(data_dir)
+    path = state_path(data_dir, step)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
     text = json.dumps(state, indent=2, sort_keys=True) + "\n"
@@ -399,3 +414,93 @@ def finish(fp: Fingerprints, data_dir: Path, run_id: str, *, whole_step: bool) -
         "matches": matches,
     }
     write_state(data_dir, state)
+
+
+# --- gold (task 129) ---------------------------------------------------------------
+#
+# Gold has no match grain: its six aggregates read the season tables of bronze and the four
+# dimensional models read those six. So the step has one fingerprint and two modes: skip (it
+# is unchanged, every output is on disk) or full. The fingerprint folds in what can change
+# gold's bytes or the verdict of its tests, in four groups the state keeps apart so the
+# reason can say which moved:
+#
+# - `bronze`: every `*.parquet` of each table a gold model reads (`gold_sources`);
+# - `dbt`: `dbt_project.yml`, `profiles.yml`, the macros, gold's models and `schema.yml`, the
+#   source definitions and the singular tests (silver's models and seeds are not gold's);
+# - `plugin`: `silver/dbt_plugin.py`, which loads into the connection;
+# - `engine`: the versions of `duckdb`, `dbt-core`, `dbt-adapters` and `dbt-duckdb`.
+#
+# The state (`<data root>/state/gold.json`) is forgotten before dbt and written only after it
+# succeeds, as silver's is.
+
+GOLD = "gold"
+GOLD_DBT_DIRS = ("macros", "models/gold", "models/sources", "tests")
+
+
+@dataclass(frozen=True)
+class GoldFingerprint:
+    digest: str
+    groups: dict[str, str]  # bronze, dbt, plugin, engine
+
+
+def gold_fingerprint(sources: Sequence[tuple[str, str]], inputs: Inputs) -> GoldFingerprint:
+    bronze: list[tuple[str, str]] = []
+    for source, table in sources:
+        if not source.startswith("bronze_") or source == "bronze_common":
+            raise ValueError(
+                f"gold reads dbt source {source!r}, which the fingerprint does not know"
+            )
+        sport = source.removeprefix("bronze_")
+        for path in _parquet(inputs.data_dir / "bronze" / sport / table):
+            bronze.append(_file_part(f"bronze/{sport}/{table}/{path.name}", path))
+    dbt = [_file_part(f"dbt/{name}", inputs.dbt_dir / name) for name in DBT_PROJECT_FILES]
+    for folder in GOLD_DBT_DIRS:
+        for path in sorted(p for p in (inputs.dbt_dir / folder).rglob("*") if p.is_file()):
+            dbt.append(_file_part(f"dbt/{path.relative_to(inputs.dbt_dir).as_posix()}", path))
+    groups = {
+        "bronze": _digest(sorted(bronze)),
+        "dbt": _digest(dbt),
+        "plugin": _digest([_file_part("plugin", inputs.plugin)]),
+        "engine": _digest((name, inputs.engine[name]) for name in ENGINE_PACKAGES),
+    }
+    return GoldFingerprint(_digest(sorted(groups.items())), groups)
+
+
+def make_gold_plan(
+    fp: GoldFingerprint,
+    state: Mapping[str, Any] | None,
+    data_dir: Path,
+    models: Sequence[str],
+    forced: str | None,
+) -> Plan:
+    """skip or full, from the fingerprint, the state and what is on disk. `models` are the gold
+    models that write files; `forced` is `full_reason`'s answer."""
+    missing = [m for m in models if not any((data_dir / GOLD / m).rglob("*.parquet"))]
+    reason = forced
+    if reason is None and state is None:
+        reason = "no state left by a successful run of the whole step"
+    elif reason is None and missing:
+        reason = f"gold output missing: {', '.join(missing)}"
+    elif reason is None and state is not None and state["digest"] != fp.digest:
+        moved = [g for g, d in fp.groups.items() if state["groups"].get(g) != d]
+        reason = f"gold inputs changed: {', '.join(moved)}"
+    if reason is not None or state is None:
+        return Plan("full", reason or "", [], [], [])
+    return Plan("skip", f"no input changed since run {state['run_id']}", [], [], [])
+
+
+def forget_gold(data_dir: Path) -> None:
+    """Before dbt: the old state goes, so a failed run is rebuilt next time."""
+    state_path(data_dir, GOLD).unlink(missing_ok=True)
+
+
+def finish_gold(fp: GoldFingerprint, data_dir: Path, run_id: str, *, whole_step: bool) -> None:
+    """After dbt succeeded: remember what was built (only when the whole step ran)."""
+    if whole_step:
+        state = {
+            "version": STATE_VERSION,
+            "run_id": run_id,
+            "digest": fp.digest,
+            "groups": fp.groups,
+        }
+        write_state(data_dir, state, GOLD)
