@@ -16,6 +16,7 @@ import gzip
 import json
 from collections.abc import Callable, Sequence
 from pathlib import Path
+from types import SimpleNamespace
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -25,6 +26,7 @@ from dagster._core.events import StepMaterializationData
 from dagster._core.execution.plan.objects import StepFailureData, StepSuccessData
 
 from tracklab.build import (
+    RunResult,
     StepPlan,
     bytes_read,
     default_record_dir,
@@ -33,6 +35,7 @@ from tracklab.build import (
     measure_table,
     run_build,
     serves_query,
+    step_times_from_logs,
     steps_from_events,
 )
 
@@ -61,12 +64,15 @@ def _failure(step_key: str) -> DagsterEvent:
     return _event("STEP_FAILURE", step_key, StepFailureData(error=None, user_failure_data=None))
 
 
+RUN_ID = "abcdef0123456789"
+
+
 def _fake_execute(
-    events: Sequence[DagsterEvent], plan: dict[str, StepPlan] = PLAN
-) -> Callable[
-    [Sequence[AssetKey] | None, Path], tuple[dict[str, StepPlan], Sequence[DagsterEvent]]
-]:
-    return lambda keys, record_dir: (plan, events)
+    events: Sequence[DagsterEvent],
+    plan: dict[str, StepPlan] = PLAN,
+    step_times: dict[str, tuple[float, float]] | None = None,
+) -> Callable[[Sequence[AssetKey] | None, Path], RunResult]:
+    return lambda keys, record_dir: RunResult(plan, events, RUN_ID, step_times or {})
 
 
 RAW_ONLY = {"raw_x": PLAN["raw_x"]}
@@ -346,3 +352,106 @@ def test_the_newest_real_record_names_no_machine(
     record = json.loads(newest.read_text(encoding="utf-8"))
     print(f"{newest.name}: {len(record['steps'])} steps, wall {record['wall_seconds']} s")
     assert_no_local_traces(record)
+
+
+# --- schema 2 (task 125) ---------------------------------------------------------------
+
+
+def _run_results(
+    target: Path, step: str, run_id: str, statuses: dict[str, str], elapsed: float
+) -> None:
+    folder = target / f"{step}-{run_id[:7]}-1a2b3c4"
+    folder.mkdir(parents=True)
+    results = [{"unique_id": uid, "status": status} for uid, status in statuses.items()]
+    (folder / "run_results.json").write_text(
+        json.dumps({"elapsed_time": elapsed, "results": results}), encoding="utf-8"
+    )
+
+
+def _v2_record(tmp_path: Path, step_times: dict[str, tuple[float, float]]) -> dict[str, object]:
+    target = tmp_path / "target"
+    _run_results(
+        target,
+        "silver",
+        RUN_ID,
+        {
+            "model.t.frames": "success",
+            "seed.t.surface": "success",
+            "model.t.events": "error",
+            "test.t.not_null_a": "pass",
+            "test.t.not_null_b": "pass",
+            "test.t.unique_a": "fail",
+            "test.t.range_a": "warn",
+            "test.t.rel_a": "skipped",
+        },
+        66.84,
+    )
+    # A run of another id in the same folder must not be read as this one's.
+    _run_results(target, "silver", "ffffffff", {"test.t.other": "pass"}, 1.0)
+    contracts = tmp_path / "contracts"
+    contracts.mkdir()
+    for name in ("test_a.py", "test_b.py", "helpers.py"):
+        (contracts / name).write_text("", encoding="utf-8")
+    code = run_build(
+        None,
+        tmp_path / "build",
+        tmp_path / "data",
+        execute=_fake_execute(
+            [_success("raw_x", 100.0), _success("silver", 200.0)], PLAN, step_times
+        ),
+        reports_dir=tmp_path / "reports",
+        web_data_dir=tmp_path / "web",
+        dbt_target=target,
+        contracts_dir=contracts,
+    )
+    assert code == 1  # bronze_x is in the plan and no event names it: not_run
+    return _only_record(tmp_path / "build")
+
+
+def test_the_v2_record_carries_run_id_step_times_and_dbt_counts(tmp_path: Path) -> None:
+    record = _v2_record(
+        tmp_path,
+        {
+            "raw_x": (1_700_000_000.0, 1_700_000_000.1),
+            "silver": (1_700_000_001.5, 1_700_000_068.25),
+        },
+    )
+
+    assert record["schema_version"] == 2
+    assert record["run_id"] == RUN_ID
+    steps = {s["step_key"]: s for s in record["steps"]}  # type: ignore[attr-defined]
+    silver = steps["silver"]
+    assert silver["started_utc"] == "2023-11-14T22:13:21.500+00:00"
+    assert silver["finished_utc"] == "2023-11-14T22:14:28.250+00:00"
+    assert silver["dbt"] == {
+        "tests": {"pass": 2, "fail": 1, "warn": 1, "error": 0, "skipped": 1},
+        "nodes": {"success": 2, "error": 1, "skipped": 0},
+        "elapsed_seconds": 66.84,
+    }
+    assert steps["raw_x"]["dbt"] is None  # no run_results.json for this step
+    not_run = steps["bronze_x"]
+    assert (not_run["started_utc"], not_run["finished_utc"], not_run["dbt"]) == (None, None, None)
+    # task 127 fills these; the schema is there from the first v2 record.
+    assert all(s["partitions"] == {"written": [], "skipped": []} for s in steps.values())
+
+
+def test_contracts_are_the_counted_files_and_say_they_were_not_run(tmp_path: Path) -> None:
+    record = _v2_record(tmp_path, {})
+
+    assert record["contracts"] == {"files": 2, "executed": False}
+
+
+def test_step_times_span_the_dagster_events_of_each_step() -> None:
+    def entry(step: str | None, at: float, *, event: bool = True) -> SimpleNamespace:
+        dagster_event = _event("STEP_START", step) if (event and step) else None
+        return SimpleNamespace(dagster_event=dagster_event, timestamp=at)
+
+    logs = [
+        entry("a", 10.0),
+        entry(None, 5.0),
+        entry("b", 11.0),
+        entry("a", 14.5),
+        entry("a", 3.0, event=False),  # a plain log line carries no Dagster event
+    ]
+
+    assert step_times_from_logs(logs) == {"a": (10.0, 14.5), "b": (11.0, 11.0)}

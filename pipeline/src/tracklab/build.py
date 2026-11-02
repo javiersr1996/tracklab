@@ -27,6 +27,18 @@ the data it publishes, and `platform.json` counted would make the next title
 depend on the previous one. A measurement that fails (a truncated Parquet) is
 written into the record as `disk.error`, the exception's type only (its message
 can carry a local path), and the command exits 1.
+
+Schema 2 (task 125, P16) adds what only the run can know about itself, and keeps every
+v1 key: `run_id` (Dagster's), per step its start and end (`started_utc`, `finished_utc`,
+UTC with milliseconds, from the temporary instance's event log read before it closes) and
+`dbt` (that step's `run_results.json`, found by `<step>-<run_id[:7]>-*` under `dbt/target`:
+`tests` counted as pass, fail, warn, error and skipped, `nodes` (models and seeds) as
+success, error and skipped, and `elapsed_seconds`; None where the step ran no dbt or left
+no file), and per step `partitions` (`written` and `skipped`, lists of
+`<sport>/<native_match_id>`; empty until the incremental silver of task 127 fills them).
+`contracts` is what the repo has for contracts: the files of `tests/contracts`, counted,
+with `executed: false`. Nothing in dbt is an enforced model contract and running the pytest
+suite takes minutes, so the build neither runs it nor claims a result for it.
 """
 
 from __future__ import annotations
@@ -41,7 +53,7 @@ import tempfile
 import time
 import zipfile
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field, replace
 from datetime import UTC, datetime
 from importlib.metadata import version
 from pathlib import Path
@@ -63,7 +75,11 @@ REPORTS_DIR = Path("reports")
 WEB_DATA_DIR = Path("../web/public/data")
 DBT_MANIFEST = Path("dbt/target/manifest.json")
 DBT_DURATION_KEY = "Execution Duration"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+CONTRACTS_DIR = Path("tests/contracts")
+DBT_TARGET = Path("dbt/target")
+DBT_TEST_STATUSES = ("pass", "fail", "warn", "error", "skipped")
+DBT_NODE_STATUSES = ("success", "error", "skipped")
 # Not written by the job: they describe the platform, not its data (module docstring).
 ABOUT_PLATFORM = frozenset({LINEAGE_JSON, PLATFORM_JSON})
 # Not SkillCorner's: `tracklab euroleague publish` writes this folder from another source that the
@@ -92,6 +108,11 @@ class StepRecord:
     status: str  # success, failure, skipped or not_run
     duration_ms: float | None  # StepSuccessData; None unless the step succeeded
     dbt_seconds: dict[str, float]  # per model, dagster-dbt's "Execution Duration"
+    # Schema 2 (task 125): None / empty where the run could not know.
+    started_utc: str | None = None
+    finished_utc: str | None = None
+    dbt: dict[str, Any] | None = None
+    partitions: dict[str, list[str]] = field(default_factory=lambda: {"written": [], "skipped": []})
 
 
 @dataclass(frozen=True)
@@ -114,9 +135,18 @@ class TableMeasure:
         return sum(f.bytes for f in self.files)
 
 
-Execute = Callable[
-    ["Sequence[AssetKey] | None", Path], tuple[dict[str, StepPlan], "Sequence[DagsterEvent]"]
-]
+@dataclass(frozen=True)
+class RunResult:
+    """What `execute` hands back: the plan, the events, Dagster's run id and each step's
+    first and last event time (epoch seconds), read while the instance is still open."""
+
+    plan: dict[str, StepPlan]
+    events: Sequence[DagsterEvent]
+    run_id: str
+    step_times: Mapping[str, tuple[float, float]]
+
+
+Execute = Callable[["Sequence[AssetKey] | None", Path], RunResult]
 
 
 # --- the run ---------------------------------------------------------------------
@@ -151,9 +181,20 @@ def plan_from_job(job: JobDefinition) -> dict[str, StepPlan]:
     }
 
 
-def execute_build(
-    keys: Sequence[AssetKey] | None, record_dir: Path
-) -> tuple[dict[str, StepPlan], Sequence[DagsterEvent]]:
+def step_times_from_logs(logs: Iterable[Any]) -> dict[str, tuple[float, float]]:
+    """Step key -> (first, last) timestamp of the Dagster events that name it. `logs` are the
+    instance's event log entries; plain log lines (no Dagster event) are not the step's."""
+    span: dict[str, tuple[float, float]] = {}
+    for entry in logs:
+        key = entry.dagster_event.step_key if entry.dagster_event is not None else None
+        if key is None:
+            continue
+        first, last = span.get(key, (entry.timestamp, entry.timestamp))
+        span[key] = (min(first, entry.timestamp), max(last, entry.timestamp))
+    return span
+
+
+def execute_build(keys: Sequence[AssetKey] | None, record_dir: Path) -> RunResult:
     from dagster import DagsterInstance, execute_job, reconstructable
 
     record_dir.mkdir(parents=True, exist_ok=True)
@@ -167,7 +208,12 @@ def execute_build(
                 asset_selection=keys,
                 raise_on_error=False,
             )
-            return plan_from_job(result.job_def), list(result.all_events)
+            return RunResult(
+                plan_from_job(result.job_def),
+                list(result.all_events),
+                result.run_id,
+                step_times_from_logs(instance.all_logs(result.run_id)),
+            )
 
 
 def steps_from_events(
@@ -218,6 +264,51 @@ def steps_from_events(
         if key not in status:
             records.append(StepRecord(key, list(step.assets), step.group, "not_run", None, {}))
     return records
+
+
+def dbt_results(target: Path, step_key: str, run_id: str) -> dict[str, Any] | None:
+    """The step's dbt outcome from the `run_results.json` that dagster-dbt left in
+    `<target>/<step>-<run id[:7]>-<uuid[:7]>/`; None when the step ran no dbt."""
+    found = sorted(
+        target.glob(f"{step_key}-{run_id[:7]}-*/run_results.json"), key=lambda p: p.stat().st_mtime
+    )
+    if not found:
+        return None
+    run = json.loads(found[-1].read_text(encoding="utf-8"))
+    tests = dict.fromkeys(DBT_TEST_STATUSES, 0)
+    nodes = dict.fromkeys(DBT_NODE_STATUSES, 0)
+    for result in run["results"]:
+        counts = tests if result["unique_id"].startswith("test.") else nodes
+        counts[result["status"]] = counts.get(result["status"], 0) + 1
+    return {"tests": tests, "nodes": nodes, "elapsed_seconds": round(run["elapsed_time"], 3)}
+
+
+def _iso(epoch: float) -> str:
+    return datetime.fromtimestamp(epoch, UTC).isoformat(timespec="milliseconds")
+
+
+def with_run_facts(
+    steps: Sequence[StepRecord], run: RunResult, dbt_target: Path
+) -> list[StepRecord]:
+    """Schema 2: each step gets its start and end and its dbt outcome; a step no event
+    named (`not_run`) has neither."""
+    out = []
+    for step in steps:
+        span = run.step_times.get(step.step_key)
+        out.append(
+            replace(
+                step,
+                started_utc=_iso(span[0]) if span else None,
+                finished_utc=_iso(span[1]) if span else None,
+                dbt=dbt_results(dbt_target, step.step_key, run.run_id) if span else None,
+            )
+        )
+    return out
+
+
+def contracts_record(contracts_dir: Path) -> dict[str, Any]:
+    """The contracts the repo has: the pytest files over the real bundles, counted, not run."""
+    return {"files": len(list(contracts_dir.glob("test_*.py"))), "executed": False}
 
 
 # --- the disk after the run --------------------------------------------------------
@@ -511,6 +602,8 @@ def run_build(
     manifest_path: Path = MANIFEST,
     reports_dir: Path = REPORTS_DIR,
     web_data_dir: Path = WEB_DATA_DIR,
+    dbt_target: Path = DBT_TARGET,
+    contracts_dir: Path = CONTRACTS_DIR,
 ) -> int:
     """Run the job, write the record whatever happened, exit 1 if any step did not
     succeed. `execute` is what runs the job; the tests hand in a fake."""
@@ -528,11 +621,11 @@ def run_build(
     sha = git_sha()
     started = datetime.now(UTC)
     clock = time.perf_counter()
-    plan, events = execute(keys, record_dir)
+    run = execute(keys, record_dir)
     wall_seconds = round(time.perf_counter() - clock, 3)
     finished = datetime.now(UTC)
 
-    steps = steps_from_events(events, plan)
+    steps = with_run_facts(steps_from_events(run.events, run.plan), run, dbt_target)
     # Whatever the measurement raises, the run still gets its record: the steps
     # above are the part only this run knows.
     try:
@@ -542,6 +635,7 @@ def run_build(
         print(f"build: measuring the disk failed: {type(exc).__name__}: {exc}")
     payload = {
         "schema_version": SCHEMA_VERSION,
+        "run_id": run.run_id,
         "git_sha": sha,
         "select": select,
         "started_utc": started.isoformat(timespec="seconds"),
@@ -550,6 +644,7 @@ def run_build(
         "host": host_info(),
         "versions": versions(),
         "steps": [asdict(step) for step in steps],
+        "contracts": contracts_record(contracts_dir),
         "disk": disk,
     }
     path = record_path(record_dir, started, sha)
