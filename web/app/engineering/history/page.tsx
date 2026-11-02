@@ -8,7 +8,7 @@ import {
   StepTable,
 } from "../../../components/platform/HistoryCharts";
 import { Band, PageHead } from "../../../components/site/Band";
-import { freshnessRows, HISTORY, MIN_EARLIER, modeSummary, runLabel, seriesOf, stepMode } from "../../../lib/history";
+import { freshnessRows, HISTORY, MIN_EARLIER, modeSummary, runLabel, sameTestCount, seriesOf, stepMode } from "../../../lib/history";
 import { PLATFORM } from "../../../lib/platform";
 
 export const metadata: Metadata = { title: "Build history | Track Lab" };
@@ -72,6 +72,7 @@ export default function HistoryPage() {
   );
   const stepOf = (k: string) => lastSteps.find((x) => x.step_key === k);
 
+  const sameTests = sameTestCount(mode("silver", "full")?.tests, mode("silver", "incremental")?.tests);
   const ran = entries.filter((e) => e.quality.contracts.executed === true);
   const noDbt = entries.filter((e) => e.quality.dbt.tests === null);
 
@@ -124,8 +125,11 @@ export default function HistoryPage() {
             {incSplit && incSplit[0] === 1 && (
               <>, far from 1/{incSplit[1]} of a full rebuild</>
             )}
-            : its dbt still ran all {mode("silver", "incremental")!.tests ?? "its"} silver tests, as many as
-            a full run.
+            {sameTests ? (
+              <>: its dbt still ran all {mode("silver", "incremental")!.tests} silver tests, as many as a full run.</>
+            ) : (
+              "."
+            )}
             {longest && lastComplete && stepOf("silver") && stepOf("gold") && (
               <>
                 {" "}

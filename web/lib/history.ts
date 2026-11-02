@@ -188,6 +188,9 @@ export function modeSummary(series: Series, keys: string[]): ModeSummary[] {
     });
 }
 
+// "as many tests as a full run" is only said when both counts are known and equal.
+export const sameTestCount = (a: number | null | undefined, b: number | null | undefined) => a != null && a === b;
+
 export const testTotal = (t: TestCounts | null) => (t ? t.pass + t.fail + t.warn + t.error + t.skipped : null);
 
 // "20261102T190029Z_5caf04b" -> "2026-11-02 19:00 · 5caf04b"

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ageUnit, freshnessRows, median, seriesOf, type HistoryEntry } from "../lib/history";
+import { ageUnit, freshnessRows, median, sameTestCount, seriesOf, type HistoryEntry } from "../lib/history";
 import type { PlatformData } from "../lib/platform";
 
 // Task 132: the series, medians and thresholds of /engineering/history, on fabricated entries so a
@@ -100,5 +100,14 @@ describe("freshnessRows", () => {
     expect(ageUnit(3600).unit).toBe("min");
     expect(ageUnit(10 * 3600).unit).toBe("h");
     expect(ageUnit(5 * 86400).unit).toBe("d");
+  });
+});
+
+describe("what a missing value says", () => {
+  it("claims equal test counts only when both are known and equal", () => {
+    expect(sameTestCount(104, 104)).toBe(true);
+    expect(sameTestCount(104, 90)).toBe(false);
+    expect(sameTestCount(null, null)).toBe(false);
+    expect(sameTestCount(undefined, undefined)).toBe(false);
   });
 });
