@@ -59,8 +59,10 @@ test("every run of history.json is a row of the quality chart, in order, with it
     if (c.executed === true) await expect(row).toHaveAttribute("data-contracts", new RegExp(`^${c.passed} passed`));
     else if (c.executed === false) await expect(row).toHaveAttribute("data-contracts", c.status ?? "not run");
     else await expect(row).toHaveAttribute("data-contracts", /run: no data$/);
-    // "no data" is never drawn as a zero.
-    if (total === null) await expect(row).toContainText("no data");
+    // A missing count is never drawn as a zero: "not run (skip)" when every dbt step skipped, else "no data".
+    const dbtSteps = e.steps.filter((s) => s.incremental);
+    const skipped = dbtSteps.length > 0 && dbtSteps.every((s) => s.incremental!.mode === "skip");
+    if (total === null) await expect(row).toContainText(skipped ? "not run (skip)" : "no data");
   }
 });
 
