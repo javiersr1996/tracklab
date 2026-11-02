@@ -610,6 +610,29 @@ def test_latest_record_picks_the_newest_by_name(tmp_path: Path) -> None:
     assert latest_record(record_dir) == newest
 
 
+def test_latest_record_skips_a_newer_partial_build(tmp_path: Path) -> None:
+    record_dir = tmp_path / "build"
+    record_dir.mkdir()
+    complete = record_dir / "20261024T162029Z_ad5e043.json"
+    complete.write_text(json.dumps({"select": None}), encoding="utf-8")
+    (record_dir / "20261102T141401Z_fe83de4.json").write_text(
+        json.dumps({"select": "group:silver or group:gold"}), encoding="utf-8"
+    )
+
+    assert latest_record(record_dir) == complete
+
+
+def test_latest_record_raises_when_every_record_is_partial(tmp_path: Path) -> None:
+    record_dir = tmp_path / "build"
+    record_dir.mkdir()
+    (record_dir / "20261102T141401Z_fe83de4.json").write_text(
+        json.dumps({"select": "group:silver"}), encoding="utf-8"
+    )
+
+    with pytest.raises(FileNotFoundError, match="no complete build record"):
+        latest_record(record_dir)
+
+
 def test_latest_record_raises_without_any_record(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         latest_record(tmp_path / "build")

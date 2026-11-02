@@ -95,10 +95,15 @@ _NATIVE_PARTITION = re.compile(r"native_match_id=(\d+)")
 
 
 def latest_record(record_dir: Path) -> Path:
+    """The newest COMPLETE build (no `select`): a partial one, such as P16's `group:silver or
+    group:gold` runs, would publish a platform that is missing most of the steps."""
     records = sorted(record_dir.glob("*.json"))
     if not records:
         raise FileNotFoundError(f"no build record under {record_dir}; run `tracklab build` first")
-    return records[-1]
+    for path in reversed(records):
+        if load_json(path).get("select") is None:
+            return path
+    raise FileNotFoundError(f"no complete build record under {record_dir} (every one has a select)")
 
 
 def load_json(path: Path) -> dict[str, Any]:

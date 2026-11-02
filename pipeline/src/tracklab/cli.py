@@ -59,6 +59,7 @@ from tracklab.pose.sweep import CLIP as POSE_CLIP
 from tracklab.pose.sweep import run_pose_sweep
 from tracklab.pose.verdict import run_pose_verdict
 from tracklab.publish.examples import run_publish_examples
+from tracklab.publish.history import run_publish_history
 from tracklab.publish.lineage import run_publish_lineage
 from tracklab.publish.platform import run_publish_platform
 from tracklab.publish.pose import run_publish_pose
@@ -214,6 +215,10 @@ def _cmd_publish_platform(args: argparse.Namespace) -> int:
         out_dir=args.out_dir,
         check=args.check,
     )
+
+
+def _cmd_publish_history(args: argparse.Namespace) -> int:
+    return run_publish_history(record_dir=args.record_dir, out_dir=args.out_dir, check=args.check)
 
 
 def _cmd_publish_warehouse(args: argparse.Namespace) -> int:
@@ -641,6 +646,31 @@ def build_parser() -> argparse.ArgumentParser:
         "they differ.",
     )
     publish_platform.set_defaults(func=_cmd_publish_platform)
+
+    publish_history = publish_sub.add_parser(
+        "history",
+        help="Write web/public/data/history.json: one entry per build record (steps, dbt tests, "
+        "contracts); it only grows, an entry already there is never rewritten or dropped.",
+    )
+    publish_history.add_argument(
+        "--record-dir",
+        type=Path,
+        default=default_record_dir(),
+        help="Where the build records are (default: $TRACKLAB_DATA_ROOT/build, else data/build).",
+    )
+    publish_history.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where history.json goes (default: ../web/public/data).",
+    )
+    publish_history.add_argument(
+        "--check",
+        action="store_true",
+        help="Write nothing; compare every record on disk with its entry and exit 1 if one is "
+        "missing or differs. No records, or none of them in the file, is PARTIAL.",
+    )
+    publish_history.set_defaults(func=_cmd_publish_history)
 
     publish_warehouse = publish_sub.add_parser(
         "warehouse",

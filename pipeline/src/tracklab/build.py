@@ -299,7 +299,12 @@ def dbt_results(target: Path, step_key: str, run_id: str) -> dict[str, Any] | No
     )
     if not found:
         return None
-    run = json.loads(found[-1].read_text(encoding="utf-8"))
+    return dbt_summary(json.loads(found[-1].read_text(encoding="utf-8")))
+
+
+def dbt_summary(run: Mapping[str, Any]) -> dict[str, Any]:
+    """Tests by status, nodes by status and dbt's own elapsed time, from a parsed `run_results.json`
+    (`publish history` reads the same file for the v1 records, which kept none of this)."""
     tests = dict.fromkeys(DBT_TEST_STATUSES, 0)
     nodes = dict.fromkeys(DBT_NODE_STATUSES, 0)
     for result in run["results"]:
