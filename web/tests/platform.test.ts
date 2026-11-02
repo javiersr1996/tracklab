@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { axisTicks, layerDurations, placedInTime, poseShare, silverModelRows, stepGroups, type LineageData, type PlatformData } from "../lib/platform";
+import { axisTicks, firstBeforeBars, layerDurations, placedInTime, poseShare, silverModelRows, stepGroups, type LineageData, type PlatformData } from "../lib/platform";
 
 // `layerDurations` (task 35): on-screen seconds per layer for the flow
 // animation. Five layers, one at 0 s (a step that never ran in the fixture
@@ -201,5 +201,13 @@ describe("stepGroups", () => {
 
   it("axisTicks runs from 0 in equal steps up to the maximum", () => {
     expect(axisTicks(1200, 500)).toEqual([0, 500, 1000]);
+  });
+});
+
+describe("firstBeforeBars", () => {
+  it("holds only when every first event falls before the first bar", () => {
+    expect(firstBeforeBars({ max: 3, firstStart: 5 })).toBe(true);
+    expect(firstBeforeBars({ max: 7, firstStart: 5 })).toBe(false);
+    expect(firstBeforeBars({ max: 5, firstStart: 5 })).toBe(false);
   });
 });

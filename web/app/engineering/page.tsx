@@ -4,7 +4,7 @@ import { StepGantt } from "../../components/platform/StepGantt";
 import { Band, PageHead } from "../../components/site/Band";
 import { pluralize } from "../../lib/format";
 import { LEAGUE } from "../../lib/euroleague/data";
-import { firstEvents, LINEAGE, PLATFORM, poseShare, silverModelRows } from "../../lib/platform";
+import { firstBeforeBars, firstEvents, LINEAGE, PLATFORM, poseShare, silverModelRows } from "../../lib/platform";
 import { DATA_SOURCES, EUROLEAGUE } from "../../lib/sections";
 import pgJson from "../../public/data/warehouse_pg.json";
 
@@ -99,9 +99,15 @@ export default function PlatformPage() {
             <code>platform.json</code>; the axis ends at the run&apos;s {run.wall_seconds} s wall
             clock. Each bar ends at the step&apos;s last event in Dagster&apos;s event log and is as
             long as the step&apos;s own <code>duration_ms</code>, so it sits where the step ran. The
-            log&apos;s first event is not used as a start: for every step it falls {first.min.toFixed(1)}{" "}
-            to {first.max.toFixed(1)} s into the run, before the first bar begins at{" "}
-            {first.firstStart.toFixed(1)} s, so that span would start all the bars at once. The bars add
+            log&apos;s first event is not used as a start
+            {firstBeforeBars(first) ? (
+              <>
+                : for every step it falls {first.min.toFixed(1)} to {first.max.toFixed(1)} s into the
+                run, before the first bar begins at {first.firstStart.toFixed(1)} s, so that span would
+                start all the bars at once
+              </>
+            ) : null}
+            . The bars add
             up to {stepSeconds.toFixed(1)} s because steps ran in parallel. Each run of every build
             is on <a href="/engineering/history">/engineering/history</a>.
           </p>

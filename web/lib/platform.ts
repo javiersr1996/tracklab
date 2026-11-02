@@ -296,6 +296,9 @@ export function firstEvents(platform: PlatformData = PLATFORM): { min: number; m
   return { min: Math.min(...offsets), max: Math.max(...offsets), firstStart: Math.min(...starts) };
 }
 
+// The "log start before the first bar" remark holds only when every first event falls before it.
+export const firstBeforeBars = (f: { max: number; firstStart: number }) => f.max < f.firstStart;
+
 // Round tick values from 0 up to `max`, `step` apart.
 export function axisTicks(max: number, step = 500): number[] {
   const out: number[] = [];
