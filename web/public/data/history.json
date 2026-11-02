@@ -1,0 +1,5972 @@
+{
+ "schema_version": 1,
+ "entries": [
+  {
+   "id": "20260924T171627Z_052928e",
+   "record_version": 1,
+   "sha": "052928ed847b0ebc663d1779d7d99df38aac0851",
+   "select": "group:silver",
+   "started_utc": "2026-09-24T17:16:27+00:00",
+   "finished_utc": "2026-09-24T17:17:13+00:00",
+   "wall_seconds": 46.621,
+   "steps": [
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 29000.015800003894,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 13.695
+     },
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 122,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 12,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20260924T171814Z_052928e",
+   "record_version": 1,
+   "sha": "052928ed847b0ebc663d1779d7d99df38aac0851",
+   "select": null,
+   "started_utc": "2026-09-24T17:18:14+00:00",
+   "finished_utc": "2026-09-24T17:26:47+00:00",
+   "wall_seconds": 512.747,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 2137.2393000638112,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 6845.907800015993,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5830.792800057679,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 36164.77799997665,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 1998.3995000366122,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 144492.4651000183,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 3693.3802000712603,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 40391.051599988714,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5290.378000005148,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 124042.10380010772,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 9756.804600008763,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 34919.38219999429,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 485.7245999155566,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 150849.07469991595,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 130.129
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 8071.335999993607,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 2262.583800009452,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 20970.16450006049,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 21876.543099991977,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 119209.17909999844,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 758.5276999743655,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 6503.897399990819,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 122,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 12,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20260925T203808Z_b5ad93f",
+   "record_version": 1,
+   "sha": "b5ad93f8a084df52e99f93e71d3e3fa05c38906b",
+   "select": null,
+   "started_utc": "2026-09-25T20:38:08+00:00",
+   "finished_utc": "2026-09-25T20:50:55+00:00",
+   "wall_seconds": 767.297,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 2136.2642999738455,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 6410.754200071096,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 12287.125599919818,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 55995.488599990495,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 7969.5277999853715,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 207907.55960007664,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 3514.5722000161186,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 46794.392599957064,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 6682.071599992923,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 168054.96550002135,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 7486.309500061907,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 44505.740600056015,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 602.584500098601,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 209618.22950001806,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 179.077
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 7336.3861999241635,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 2657.901500002481,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 20217.129800003022,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 20708.04469997529,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 219881.34910003282,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 694.0383000764996,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 11235.132199944928,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 122,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 12,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20260926T163335Z_e0961e8",
+   "record_version": 1,
+   "sha": "e0961e8875bd24c34623f5b50278edef87e49d8a",
+   "select": null,
+   "started_utc": "2026-09-26T16:33:35+00:00",
+   "finished_utc": "2026-09-26T16:41:39+00:00",
+   "wall_seconds": 484.529,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 980.6351000443101,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 5971.933200024068,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 6030.494600068778,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 34678.54300001636,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 2984.333600034006,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 145258.51239997428,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 3904.342200024985,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 37643.38360005058,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 4835.493399994448,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 118152.53660001326,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 9919.910800061189,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 37179.49379992206,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 632.8552999766544,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 141721.95969999302,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 115.713
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 7649.74139991682,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 2101.7253999598324,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 18050.182499922812,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 18105.70259997621,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 116569.85890003853,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 707.1647000266239,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 5756.717600044794,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 122,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 12,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261008T134405Z_1c1383d",
+   "record_version": 1,
+   "sha": "1c1383daed179c770e1ebe11ffa1c36837d87735",
+   "select": null,
+   "started_utc": "2026-10-08T13:44:05+00:00",
+   "finished_utc": "2026-10-08T13:50:56+00:00",
+   "wall_seconds": 410.972,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 1926.8624000251293,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 5919.9503001291305,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 7872.588400030509,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 37164.82589999214,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 2537.935599917546,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 118801.1731998995,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 4891.72330009751,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 37516.56079990789,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 6879.3426000047475,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 96138.41010001488,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 29890.418800059706,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 5.421
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 9786.97400004603,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 31383.58090003021,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 463.8984000775963,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 115470.49950016662,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 99.065
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 5549.300600076094,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 620.9545999299735,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 13923.666599905118,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 14171.818400034681,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 98832.99069991335,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 494.0810000989586,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 4826.874300139025,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 14,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261008T144831Z_d63ad2d",
+   "record_version": 1,
+   "sha": "d63ad2ddfb60a88c334b31910975f356d2988540",
+   "select": null,
+   "started_utc": "2026-10-08T14:48:31+00:00",
+   "finished_utc": "2026-10-08T14:58:07+00:00",
+   "wall_seconds": 576.93,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 3163.3043999318033,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 7206.863000057638,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5479.8488998785615,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 22759.733899962157,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 2780.675199814141,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 160608.4755999036,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5633.8641999755055,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 30624.39649994485,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5738.6147999204695,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 133981.07869992964,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 44057.41289979778,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 10.541
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 9062.20389995724,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 39399.60239990614,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 370.6350999418646,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 166390.75089991093,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 138.003
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 7556.0054001398385,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 1052.633399842307,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 19437.575799878687,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 20164.87960005179,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 154903.17689999938,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 1094.1545001696795,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 5899.5374999940395,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 14,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261008T162705Z_83bdf4e",
+   "record_version": 1,
+   "sha": "83bdf4e618a503a8d345d0fd507efb8a71471d31",
+   "select": null,
+   "started_utc": "2026-10-08T16:27:05+00:00",
+   "finished_utc": "2026-10-08T16:39:46+00:00",
+   "wall_seconds": 761.069,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 2077.036299975589,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 7054.562999866903,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 6170.719200046733,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 48636.292200069875,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 3546.386200003326,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 173486.47390003316,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 3799.7649000026286,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 49879.92749991827,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 7044.559399830177,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 152327.89009995759,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 50325.61509986408,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 15.067
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 11294.198400108144,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 48397.47550012544,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 591.6361999697983,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 197852.65049990267,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 161.391
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 15826.913800090551,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 3134.2396000400186,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 34479.752300074324,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 33035.00819997862,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 263526.50490007363,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 986.7845999542624,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 16072.959200013429,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 14,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261011T184219Z_90ec6b4",
+   "record_version": 1,
+   "sha": "90ec6b47ed96d19c02d42772f16ba5217e7ac0f4",
+   "select": "not group:runs",
+   "started_utc": "2026-10-11T18:42:19+00:00",
+   "finished_utc": "2026-10-11T18:52:22+00:00",
+   "wall_seconds": 602.86,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 2624.214399998891,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 7463.961899993592,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5297.913800008246,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 34091.4472000004,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 2727.271199997631,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 159483.29190000368,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 3634.7353999881307,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 37975.11640000448,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 4618.7852999864845,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 136459.9973000004,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 53917.90410000249,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 15.207
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 11368.991000010283,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 37237.65369999455,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 506.93560000217985,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 151234.1080000042,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 129.577
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 10628.692500002217,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 3510.6916000077035,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 25057.418500000495,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 25612.921500010998,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 174916.57800000394,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 802.6412000035634,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 12188.918899992132,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 14,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261013T141021Z_e6b163b",
+   "record_version": 1,
+   "sha": "e6b163b54542a07ade2d0c291c5f2cc4557d451f",
+   "select": null,
+   "started_utc": "2026-10-13T14:10:21+00:00",
+   "finished_utc": "2026-10-13T14:23:02+00:00",
+   "wall_seconds": 761.108,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 1815.3525000088848,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 6370.965800015256,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5973.001300008036,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 31217.284300015308,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 1758.1639000563882,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 155412.27039997466,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 3505.8458000421524,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 36180.94429996563,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 4274.8597000027075,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 138651.0693000164,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 38484.521300008055,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 7.363
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 8797.284599975683,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 40143.73389998218,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 372.29980004485697,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 154354.90360000404,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 126.386
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 6520.938600006048,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 1425.090699980501,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 16545.882200007327,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 16899.458800035063,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 192769.28069995483,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_protocol",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 3964.936400006991,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 681.437499995809,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_coverage",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 102029.87859997666,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_probe",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 163347.5515000173,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 6894.946000014897,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_effect",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 33402.68030000152,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_runs",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 40470.63439997146,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 14,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261013T145718Z_457cb13",
+   "record_version": 1,
+   "sha": "457cb135e3f4a5a9ba7b457267b47535ec95bb61",
+   "select": null,
+   "started_utc": "2026-10-13T14:57:18+00:00",
+   "finished_utc": "2026-10-13T15:13:52+00:00",
+   "wall_seconds": 994.443,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 2438.5379999876022,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 8971.023500023875,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 10176.703799981624,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 42857.30659996625,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5352.424500044435,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 196531.47240000544,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 4546.105699962936,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 41207.93069998035,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5485.18449999392,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 161421.08539998299,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 61172.722599992994,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 21.788
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 9731.956099974923,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 43135.16550004715,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 347.5062999641523,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 188736.5381999989,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 162.205
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 7668.101899966132,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 1378.4977999748662,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 19817.35069997376,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 19151.69860003516,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 218913.39750000043,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_protocol",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 4938.739100005478,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_coverage",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 109751.6750000068,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 1011.6351000033319,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_probe",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 286804.30660001,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 15546.686699963175,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_effect",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 47702.47760001803,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_runs",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 22969.802300038282,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 14,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261013T193645Z_4dc7e13",
+   "record_version": 1,
+   "sha": "4dc7e139fb8561f1c8f5b2cc56d1a82271d3ea87",
+   "select": "group:ingest",
+   "started_utc": "2026-10-13T19:36:45+00:00",
+   "finished_utc": "2026-10-13T19:37:09+00:00",
+   "wall_seconds": 23.315,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 2777.5939000421204,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 8278.235199977644,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football_bodypose",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 5960.4672999703325,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": null,
+     "source": null
+    },
+    "contracts": {
+     "files": 14,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261013T204957Z_687f66d",
+   "record_version": 1,
+   "sha": "687f66d85feb34caafdf210d58c7ff0a03d5da44",
+   "select": "key:\"bronze_football_bodypose*\"",
+   "started_utc": "2026-10-13T20:49:57+00:00",
+   "finished_utc": "2026-10-13T20:54:18+00:00",
+   "wall_seconds": 260.658,
+   "steps": [
+    {
+     "step_key": "bronze_football_bodypose",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 252974.2852000054,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": null,
+     "source": null
+    },
+    "contracts": {
+     "files": 15,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261015T193949Z_67f72f7",
+   "record_version": 1,
+   "sha": "67f72f7f9f1d2599c3b68f4f6bb4d3430a3290bd",
+   "select": "not group:runs and not group:pose",
+   "started_utc": "2026-10-15T19:39:49+00:00",
+   "finished_utc": "2026-10-15T19:50:38+00:00",
+   "wall_seconds": 649.688,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 2495.4610999993747,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 9134.73040000099,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football_bodypose",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 5524.696499996935,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 7233.240900000965,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 36230.8492000011,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 2888.6924000034924,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 181843.8740000056,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_bodypose",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 577118.2345000051,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 4047.315099996922,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 36947.64199999918,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5485.826399999496,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 144215.6163999971,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 45110.37480000232,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 11.733
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 13654.72790000058,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 45764.106199996604,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 520.1349999988452,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 163288.34930000448,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 131.633
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 7321.707700000843,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 2528.644300000451,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 17709.648200005176,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 18395.027300000947,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 177850.0503000032,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 613.1469999963883,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 5342.512199997145,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261015T204626Z_bf097a9",
+   "record_version": 1,
+   "sha": "bf097a9dc4acedec607817133ce143deeeab4792",
+   "select": "not group:runs and not group:pose",
+   "started_utc": "2026-10-15T20:46:26+00:00",
+   "finished_utc": "2026-10-15T20:55:15+00:00",
+   "wall_seconds": 529.461,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 2028.6068999994313,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 6474.488400002883,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football_bodypose",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 4618.403600004967,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 6140.813500001968,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 35323.74490000075,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 1826.7055999967852,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 153229.01830000046,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_bodypose",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 467291.37129999435,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 2632.6135999988765,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 37754.324200002884,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 4042.418400000315,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 124856.04269999749,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 39924.33280000114,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 11.979
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 7465.367899996636,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 34955.739700002596,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 443.0212000006577,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 141082.3894999994,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 114.552
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 5541.0067000048,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 1567.7458999998635,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 14937.522799998987,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 15458.140999995521,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 143220.56650000013,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 585.6420000054641,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 6123.180900001898,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261024T155819Z_1bf8a5d",
+   "record_version": 1,
+   "sha": "1bf8a5d13c41a30719bbcb9560c6be709dfc89ac",
+   "select": null,
+   "started_utc": "2026-10-24T15:58:19+00:00",
+   "finished_utc": "2026-10-24T16:19:22+00:00",
+   "wall_seconds": 1262.478,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 2627.4450999917462,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 7315.930800046772,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football_bodypose",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 5537.950500031002,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 7119.787599891424,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 21871.377900009975,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 1165.6415000325069,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 130806.87189998571,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_bodypose",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 472317.46719998773,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 1626.0595999192446,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 29761.823200038634,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 2258.432100061327,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 106722.57940005511,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 57631.95309997536,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 14.788
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 10796.077899984084,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 36836.67620003689,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 578.7852000212297,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 142337.95280009508,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 120.747
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 6513.7451000045985,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 1440.0239000096917,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 20250.77289994806,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 20619.853999931365,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 201215.19409993198,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_protocol",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 5047.426300006919,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 831.8857999984175,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_coverage",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 86149.00690002833,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_probe",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 182218.01009995397,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "pose_coverage",
+     "group": "pose",
+     "status": "success",
+     "duration_ms": 29951.46319991909,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "pose_protocol",
+     "group": "pose",
+     "status": "success",
+     "duration_ms": 1188.3357999613509,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 8250.210100086406,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "pose_metric",
+     "group": "pose",
+     "status": "failure",
+     "duration_ms": null,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_effect",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 41026.551299961284,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_runs",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 26790.705199935474,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_pose",
+     "group": "pose",
+     "status": "not_run",
+     "duration_ms": null,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261024T162029Z_ad5e043",
+   "record_version": 1,
+   "sha": "ad5e043e081b02f79361617a4191386380b116df",
+   "select": null,
+   "started_utc": "2026-10-24T16:20:29+00:00",
+   "finished_utc": "2026-10-24T16:54:52+00:00",
+   "wall_seconds": 2062.692,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 3405.9616999002174,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 9027.287500095554,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "raw_football_bodypose",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 6639.089999953285,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 6967.339000082575,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 26577.37149996683,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 1669.266099925153,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 146146.72310010064,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_bodypose",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 506932.55429994315,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 1508.9795999228954,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 32791.126399999484,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 2357.165200053714,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 117674.41959993448,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 48352.50349994749,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 8.584
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 9563.713299925439,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 33578.09989992529,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 471.81260003708303,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 153899.4707999518,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 126.594
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 6626.324099954218,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 2980.183499981649,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 22785.663500078954,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 22933.700300054625,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 191692.62109999545,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_protocol",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 5592.036300105974,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 757.8609000192955,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_coverage",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 87267.61940005235,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_probe",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 185102.77110000607,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "pose_coverage",
+     "group": "pose",
+     "status": "success",
+     "duration_ms": 25947.978799929842,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 8058.6624999996275,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "pose_protocol",
+     "group": "pose",
+     "status": "success",
+     "duration_ms": 861.8755000643432,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "pose_metric",
+     "group": "pose",
+     "status": "success",
+     "duration_ms": 1402704.4473999413,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "runs_effect",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 46302.991800010204,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_runs",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 36190.31949993223,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "publish_pose",
+     "group": "pose",
+     "status": "success",
+     "duration_ms": 19980.56739999447,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": null,
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T141401Z_fe83de4",
+   "record_version": 1,
+   "sha": "fe83de4353f85d13075b90606748862464d11eef",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T14:14:01+00:00",
+   "finished_utc": "2026-11-02T14:15:54+00:00",
+   "wall_seconds": 113.288,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 18466.3603999943,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 4.956
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 78684.222699987,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 66.793
+     },
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T141607Z_fe83de4",
+   "record_version": 1,
+   "sha": "fe83de4353f85d13075b90606748862464d11eef",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T14:16:07+00:00",
+   "finished_utc": "2026-11-02T14:18:20+00:00",
+   "wall_seconds": 132.725,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 14860.929599992232,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 3.356
+     },
+     "incremental": null,
+     "partitions": null
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 101340.29320001719,
+     "started_utc": null,
+     "finished_utc": null,
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 88.71
+     },
+     "incremental": null,
+     "partitions": null
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "run_results"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": null,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T152616Z_a921425",
+   "record_version": 2,
+   "sha": "a921425d2ceffa7b50ab277cd823ae8bbe8fc7e1",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T15:26:16+00:00",
+   "finished_utc": "2026-11-02T15:28:44+00:00",
+   "wall_seconds": 148.06,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 21772.617699985858,
+     "started_utc": "2026-11-02T15:26:20.603+00:00",
+     "finished_utc": "2026-11-02T15:27:02.080+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 3.916
+     },
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 96043.91730000498,
+     "started_utc": "2026-11-02T15:26:21.483+00:00",
+     "finished_utc": "2026-11-02T15:28:42.950+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 81.415
+     },
+     "incremental": {
+      "mode": "full",
+      "reason": "no state left by a successful run of the whole step"
+     },
+     "partitions": {
+      "written": 30,
+      "skipped": 0,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "record"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": false,
+     "status": null,
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T155317Z_e64b68f",
+   "record_version": 2,
+   "sha": "e64b68f79fcdfb637f73bee132d3a49faeb6961a",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T15:53:17+00:00",
+   "finished_utc": "2026-11-02T15:55:40+00:00",
+   "wall_seconds": 143.035,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 17717.105799994897,
+     "started_utc": "2026-11-02T15:53:20.850+00:00",
+     "finished_utc": "2026-11-02T15:53:50.916+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 4.855
+     },
+     "incremental": {
+      "mode": "full",
+      "reason": "--full"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 102086.98900000309,
+     "started_utc": "2026-11-02T15:53:21.378+00:00",
+     "finished_utc": "2026-11-02T15:55:38.481+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 83.677
+     },
+     "incremental": {
+      "mode": "full",
+      "reason": "--full"
+     },
+     "partitions": {
+      "written": 30,
+      "skipped": 0,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "record"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": false,
+     "status": "not run (partial build)",
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T155606Z_e64b68f",
+   "record_version": 2,
+   "sha": "e64b68f79fcdfb637f73bee132d3a49faeb6961a",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T15:56:06+00:00",
+   "finished_utc": "2026-11-02T15:58:48+00:00",
+   "wall_seconds": 162.553,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 20869.442800001707,
+     "started_utc": "2026-11-02T15:56:11.536+00:00",
+     "finished_utc": "2026-11-02T15:56:52.908+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 5.653
+     },
+     "incremental": {
+      "mode": "full",
+      "reason": "--full"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 105253.34419999854,
+     "started_utc": "2026-11-02T15:56:12.783+00:00",
+     "finished_utc": "2026-11-02T15:58:47.320+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 87.489
+     },
+     "incremental": {
+      "mode": "full",
+      "reason": "--full"
+     },
+     "partitions": {
+      "written": 30,
+      "skipped": 0,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "record"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": false,
+     "status": "not run (partial build)",
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T155914Z_e64b68f",
+   "record_version": 2,
+   "sha": "e64b68f79fcdfb637f73bee132d3a49faeb6961a",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T15:59:14+00:00",
+   "finished_utc": "2026-11-02T16:01:25+00:00",
+   "wall_seconds": 131.468,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 15159.139800001867,
+     "started_utc": "2026-11-02T15:59:16.305+00:00",
+     "finished_utc": "2026-11-02T15:59:41.759+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 3.619
+     },
+     "incremental": {
+      "mode": "full",
+      "reason": "--full"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 96088.7359000044,
+     "started_utc": "2026-11-02T15:59:16.702+00:00",
+     "finished_utc": "2026-11-02T16:01:24.295+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 81.272
+     },
+     "incremental": {
+      "mode": "full",
+      "reason": "--full"
+     },
+     "partitions": {
+      "written": 30,
+      "skipped": 0,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "record"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": false,
+     "status": "not run (partial build)",
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T160146Z_e64b68f",
+   "record_version": 2,
+   "sha": "e64b68f79fcdfb637f73bee132d3a49faeb6961a",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T16:01:46+00:00",
+   "finished_utc": "2026-11-02T16:02:08+00:00",
+   "wall_seconds": 21.753,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 811.5289999986999,
+     "started_utc": "2026-11-02T16:01:48.556+00:00",
+     "finished_utc": "2026-11-02T16:02:00.085+00:00",
+     "dbt": null,
+     "incremental": {
+      "mode": "skip",
+      "reason": "no input changed since run 8e9ec1cd-d88d-446a-8886-cd9fb849d147"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 1973.9325999980792,
+     "started_utc": "2026-11-02T16:01:49.044+00:00",
+     "finished_utc": "2026-11-02T16:02:07.271+00:00",
+     "dbt": null,
+     "incremental": {
+      "mode": "skip",
+      "reason": "no input changed since run 8e9ec1cd-d88d-446a-8886-cd9fb849d147"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 30,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": null,
+     "source": null
+    },
+    "contracts": {
+     "files": 15,
+     "executed": false,
+     "status": "not run (partial build)",
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T160222Z_e64b68f",
+   "record_version": 2,
+   "sha": "e64b68f79fcdfb637f73bee132d3a49faeb6961a",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T16:02:22+00:00",
+   "finished_utc": "2026-11-02T16:02:51+00:00",
+   "wall_seconds": 29.3,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 807.4426999955904,
+     "started_utc": "2026-11-02T16:02:24.585+00:00",
+     "finished_utc": "2026-11-02T16:02:38.115+00:00",
+     "dbt": null,
+     "incremental": {
+      "mode": "skip",
+      "reason": "no input changed since run 8e9ec1cd-d88d-446a-8886-cd9fb849d147"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 3870.269700011704,
+     "started_utc": "2026-11-02T16:02:25.108+00:00",
+     "finished_utc": "2026-11-02T16:02:49.757+00:00",
+     "dbt": null,
+     "incremental": {
+      "mode": "skip",
+      "reason": "no input changed since run 8e9ec1cd-d88d-446a-8886-cd9fb849d147"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 30,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": null,
+     "source": null
+    },
+    "contracts": {
+     "files": 15,
+     "executed": false,
+     "status": "not run (partial build)",
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T160322Z_e64b68f",
+   "record_version": 2,
+   "sha": "e64b68f79fcdfb637f73bee132d3a49faeb6961a",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T16:03:22+00:00",
+   "finished_utc": "2026-11-02T16:05:13+00:00",
+   "wall_seconds": 110.955,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 1979.5331000059377,
+     "started_utc": "2026-11-02T16:03:26.023+00:00",
+     "finished_utc": "2026-11-02T16:03:41.681+00:00",
+     "dbt": null,
+     "incremental": {
+      "mode": "skip",
+      "reason": "no input changed since run 8e9ec1cd-d88d-446a-8886-cd9fb849d147"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 78788.8663999911,
+     "started_utc": "2026-11-02T16:03:26.502+00:00",
+     "finished_utc": "2026-11-02T16:05:11.816+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 41.682
+     },
+     "incremental": {
+      "mode": "incremental",
+      "reason": "1 of 30 matches changed"
+     },
+     "partitions": {
+      "written": 1,
+      "skipped": 29,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 122,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "record"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": false,
+     "status": "not run (partial build)",
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T160551Z_e64b68f",
+   "record_version": 2,
+   "sha": "e64b68f79fcdfb637f73bee132d3a49faeb6961a",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T16:05:51+00:00",
+   "finished_utc": "2026-11-02T16:07:36+00:00",
+   "wall_seconds": 105.067,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 1257.9631000116933,
+     "started_utc": "2026-11-02T16:05:57.924+00:00",
+     "finished_utc": "2026-11-02T16:06:22.326+00:00",
+     "dbt": null,
+     "incremental": {
+      "mode": "skip",
+      "reason": "no input changed since run 8e9ec1cd-d88d-446a-8886-cd9fb849d147"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 63773.49950000644,
+     "started_utc": "2026-11-02T16:05:59.990+00:00",
+     "finished_utc": "2026-11-02T16:07:34.578+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 43.785
+     },
+     "incremental": {
+      "mode": "incremental",
+      "reason": "1 of 30 matches changed"
+     },
+     "partitions": {
+      "written": 1,
+      "skipped": 29,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 122,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "record"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": false,
+     "status": "not run (partial build)",
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T184837Z_5caf04b",
+   "record_version": 2,
+   "sha": "5caf04b6b9f65bf9209ca7084f747ed506600a2e",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T18:48:37+00:00",
+   "finished_utc": "2026-11-02T18:50:47+00:00",
+   "wall_seconds": 129.524,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 1796.4364000072237,
+     "started_utc": "2026-11-02T18:48:43.374+00:00",
+     "finished_utc": "2026-11-02T18:49:05.661+00:00",
+     "dbt": null,
+     "incremental": {
+      "mode": "skip",
+      "reason": "no input changed since run 8e9ec1cd-d88d-446a-8886-cd9fb849d147"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 91248.25939998846,
+     "started_utc": "2026-11-02T18:48:44.365+00:00",
+     "finished_utc": "2026-11-02T18:50:45.243+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 48.529
+     },
+     "incremental": {
+      "mode": "incremental",
+      "reason": "1 of 30 matches changed"
+     },
+     "partitions": {
+      "written": 1,
+      "skipped": 29,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 122,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "record"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": false,
+     "status": "not run (partial build)",
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T185124Z_5caf04b",
+   "record_version": 2,
+   "sha": "5caf04b6b9f65bf9209ca7084f747ed506600a2e",
+   "select": "group:silver or group:gold",
+   "started_utc": "2026-11-02T18:51:24+00:00",
+   "finished_utc": "2026-11-02T18:56:22+00:00",
+   "wall_seconds": 297.208,
+   "steps": [
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 46683.38110001059,
+     "started_utc": "2026-11-02T18:51:29.465+00:00",
+     "finished_utc": "2026-11-02T18:52:40.313+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 49,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 10,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 11.487
+     },
+     "incremental": {
+      "mode": "full",
+      "reason": "--full"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 206136.17740001064,
+     "started_utc": "2026-11-02T18:51:30.320+00:00",
+     "finished_utc": "2026-11-02T18:56:19.458+00:00",
+     "dbt": {
+      "tests": {
+       "pass": 122,
+       "fail": 0,
+       "warn": 0,
+       "error": 0,
+       "skipped": 0
+      },
+      "nodes": {
+       "success": 12,
+       "error": 0,
+       "skipped": 0
+      },
+      "elapsed_seconds": 161.363
+     },
+     "incremental": {
+      "mode": "full",
+      "reason": "--full"
+     },
+     "partitions": {
+      "written": 30,
+      "skipped": 0,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": {
+      "pass": 171,
+      "fail": 0,
+      "warn": 0,
+      "error": 0,
+      "skipped": 0
+     },
+     "source": "record"
+    },
+    "contracts": {
+     "files": 15,
+     "executed": false,
+     "status": "not run (partial build)",
+     "passed": null,
+     "failed": null,
+     "skipped": null,
+     "errors": null,
+     "duration_seconds": null
+    }
+   }
+  },
+  {
+   "id": "20261102T190029Z_5caf04b",
+   "record_version": 2,
+   "sha": "5caf04b6b9f65bf9209ca7084f747ed506600a2e",
+   "select": null,
+   "started_utc": "2026-11-02T19:00:29+00:00",
+   "finished_utc": "2026-11-02T19:54:29+00:00",
+   "wall_seconds": 3239.959,
+   "steps": [
+    {
+     "step_key": "raw_basketball",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 2113.318799994886,
+     "started_utc": "2026-11-02T19:00:43.530+00:00",
+     "finished_utc": "2026-11-02T19:01:14.924+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "raw_football",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 12273.760100011714,
+     "started_utc": "2026-11-02T19:00:43.558+00:00",
+     "finished_utc": "2026-11-02T19:01:25.127+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "raw_football_bodypose",
+     "group": "ingest",
+     "status": "success",
+     "duration_ms": 6511.269999988144,
+     "started_utc": "2026-11-02T19:00:43.590+00:00",
+     "finished_utc": "2026-11-02T19:01:19.716+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "bronze_basketball_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 5485.593899997184,
+     "started_utc": "2026-11-02T19:00:40.387+00:00",
+     "finished_utc": "2026-11-02T19:01:44.297+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "bronze_basketball_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 33895.208300004015,
+     "started_utc": "2026-11-02T19:00:41.584+00:00",
+     "finished_utc": "2026-11-02T19:02:12.905+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "bronze_basketball_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 1428.7584999983665,
+     "started_utc": "2026-11-02T19:00:42.254+00:00",
+     "finished_utc": "2026-11-02T19:01:41.033+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "bronze_basketball_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 195442.56569998106,
+     "started_utc": "2026-11-02T19:00:42.382+00:00",
+     "finished_utc": "2026-11-02T19:04:54.753+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "bronze_football_bodypose",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 737042.1016000037,
+     "started_utc": "2026-11-02T19:00:42.568+00:00",
+     "finished_utc": "2026-11-02T19:14:01.714+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "bronze_football_aggregates",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 2204.4735999952536,
+     "started_utc": "2026-11-02T19:00:42.476+00:00",
+     "finished_utc": "2026-11-02T19:01:51.519+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "bronze_football_events",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 46680.92390001402,
+     "started_utc": "2026-11-02T19:00:42.628+00:00",
+     "finished_utc": "2026-11-02T19:02:36.014+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "bronze_football_meta",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 4182.865899987519,
+     "started_utc": "2026-11-02T19:00:42.658+00:00",
+     "finished_utc": "2026-11-02T19:01:53.886+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "bronze_football_tracking",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 156675.9263999993,
+     "started_utc": "2026-11-02T19:00:42.803+00:00",
+     "finished_utc": "2026-11-02T19:04:26.971+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "gold",
+     "group": "gold",
+     "status": "success",
+     "duration_ms": 2030.4339999856893,
+     "started_utc": "2026-11-02T19:00:42.860+00:00",
+     "finished_utc": "2026-11-02T19:02:48.497+00:00",
+     "dbt": null,
+     "incremental": {
+      "mode": "skip",
+      "reason": "no input changed since run f06955be-d467-45e8-bc03-2ec492797ee6"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "orientation",
+     "group": "bronze",
+     "status": "success",
+     "duration_ms": 13715.416899998672,
+     "started_utc": "2026-11-02T19:00:42.448+00:00",
+     "finished_utc": "2026-11-02T19:05:26.880+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "quality_clock",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 48564.42660000175,
+     "started_utc": "2026-11-02T19:00:43.362+00:00",
+     "finished_utc": "2026-11-02T19:06:01.665+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "quality_partitions",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 700.2828000113368,
+     "started_utc": "2026-11-02T19:00:43.503+00:00",
+     "finished_utc": "2026-11-02T19:05:44.726+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "silver",
+     "group": "silver",
+     "status": "success",
+     "duration_ms": 6961.692100012442,
+     "started_utc": "2026-11-02T19:00:43.793+00:00",
+     "finished_utc": "2026-11-02T19:05:51.039+00:00",
+     "dbt": null,
+     "incremental": {
+      "mode": "skip",
+      "reason": "no input changed since run f06955be-d467-45e8-bc03-2ec492797ee6"
+     },
+     "partitions": {
+      "written": 0,
+      "skipped": 30,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "publish_possessions",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 8061.877300002379,
+     "started_utc": "2026-11-02T19:00:43.252+00:00",
+     "finished_utc": "2026-11-02T19:06:18.952+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "quality_detection",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 1509.659900009865,
+     "started_utc": "2026-11-02T19:00:43.386+00:00",
+     "finished_utc": "2026-11-02T19:06:12.462+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "quality_entry_angle",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 24051.62849999033,
+     "started_utc": "2026-11-02T19:00:43.414+00:00",
+     "finished_utc": "2026-11-02T19:06:35.284+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "quality_gravity",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 27032.893700001296,
+     "started_utc": "2026-11-02T19:00:43.445+00:00",
+     "finished_utc": "2026-11-02T19:06:38.550+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "quality_noise",
+     "group": "quality",
+     "status": "success",
+     "duration_ms": 279113.1232000189,
+     "started_utc": "2026-11-02T19:00:43.475+00:00",
+     "finished_utc": "2026-11-02T19:10:51.613+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "runs_protocol",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 6454.931400017813,
+     "started_utc": "2026-11-02T19:00:43.765+00:00",
+     "finished_utc": "2026-11-02T19:06:19.076+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "publish_stats",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 934.4386000011582,
+     "started_utc": "2026-11-02T19:00:43.334+00:00",
+     "finished_utc": "2026-11-02T19:06:58.687+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "runs_coverage",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 155092.14419999626,
+     "started_utc": "2026-11-02T19:00:43.674+00:00",
+     "finished_utc": "2026-11-02T19:09:33.718+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "runs_probe",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 290071.1541000055,
+     "started_utc": "2026-11-02T19:00:43.736+00:00",
+     "finished_utc": "2026-11-02T19:15:04.313+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "publish_quality",
+     "group": "publish",
+     "status": "success",
+     "duration_ms": 14872.878099995432,
+     "started_utc": "2026-11-02T19:00:43.282+00:00",
+     "finished_utc": "2026-11-02T19:11:38.895+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "pose_coverage",
+     "group": "pose",
+     "status": "success",
+     "duration_ms": 32175.65280001145,
+     "started_utc": "2026-11-02T19:00:43.149+00:00",
+     "finished_utc": "2026-11-02T19:14:48.621+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "pose_protocol",
+     "group": "pose",
+     "status": "success",
+     "duration_ms": 892.8654000046663,
+     "started_utc": "2026-11-02T19:00:43.199+00:00",
+     "finished_utc": "2026-11-02T19:15:00.388+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "pose_metric",
+     "group": "pose",
+     "status": "success",
+     "duration_ms": 2063926.547799987,
+     "started_utc": "2026-11-02T19:00:43.176+00:00",
+     "finished_utc": "2026-11-02T19:49:35.853+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "runs_effect",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 69024.86450001015,
+     "started_utc": "2026-11-02T19:00:43.705+00:00",
+     "finished_utc": "2026-11-02T19:16:25.740+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "publish_runs",
+     "group": "runs",
+     "status": "success",
+     "duration_ms": 63754.84539999161,
+     "started_utc": "2026-11-02T19:00:43.310+00:00",
+     "finished_utc": "2026-11-02T19:17:40.887+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    },
+    {
+     "step_key": "publish_pose",
+     "group": "pose",
+     "status": "success",
+     "duration_ms": 38468.78269998706,
+     "started_utc": "2026-11-02T19:00:43.225+00:00",
+     "finished_utc": "2026-11-02T19:50:23.248+00:00",
+     "dbt": null,
+     "incremental": null,
+     "partitions": {
+      "written": 0,
+      "skipped": 0,
+      "deleted": 0
+     }
+    }
+   ],
+   "quality": {
+    "dbt": {
+     "tests": null,
+     "source": null
+    },
+    "contracts": {
+     "files": 15,
+     "executed": true,
+     "status": "passed",
+     "passed": 104,
+     "failed": 0,
+     "skipped": 0,
+     "errors": 0,
+     "duration_seconds": 244.702
+    }
+   }
+  }
+ ]
+}
