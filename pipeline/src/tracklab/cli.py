@@ -1513,7 +1513,8 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument(
         "--select",
         default=None,
-        help='Asset selection, e.g. "group:silver" (default: every asset of the job).',
+        help='Asset selection, e.g. "group:silver" (default: every asset of the job, then '
+        "`tests/contracts`, which a partial build records as not run).",
     )
     build.add_argument(
         "--record-dir",
@@ -1525,7 +1526,7 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument(
         "--full",
         action="store_true",
-        help="Rebuild every silver partition, whatever the state of the last run says "
+        help="Rebuild every silver partition and gold, whatever the state of the last run says "
         "(TRACKLAB_REQUIRE_FULL does the same).",
     )
     build.set_defaults(func=_cmd_build)

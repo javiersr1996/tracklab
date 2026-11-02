@@ -39,9 +39,15 @@ no file), and per step `partitions` (`written`, `skipped` and `deleted`, lists o
 the incremental silver step leaves (task 127; empty lists and None on every other step). A silver
 step that found nothing changed did not launch dbt: its `dbt` is None and `incremental` says
 `skip` and why, never a count of zero tests.
-`contracts` is what the repo has for contracts: the files of `tests/contracts`, counted,
-with `executed: false`. Nothing in dbt is an enforced model contract and running the pytest
-suite takes minutes, so the build neither runs it nor claims a result for it.
+`contracts` is what the repo has for contracts, the pytest files of `tests/contracts` (nothing
+in dbt is an enforced model contract). A full build (no `--select`) whose steps all succeeded
+runs them once the job is over, after silver and gold, with `TRACKLAB_REQUIRE_FULL=1` (decided
+by Javier on 2026-11-02, task 129): `executed: true`, `status` (`passed` or `failed`), `passed`,
+`failed`, `skipped` and `errors` read from pytest's own junit XML (never from its prose), the
+start, end and duration of the run, and pytest's exit code. A failing contract fails the build
+(exit 1) and the record is still written. A partial build, or a full one with a failed step,
+records `executed: false` and a `status` that says why ("not run (partial build)"); it never
+records zeros. `wall_seconds` covers the contracts too.
 """
 
 from __future__ import annotations
@@ -54,6 +60,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import xml.etree.ElementTree as ET  # noqa: S405 (pytest's own junit file, written a moment ago)
 import zipfile
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field, replace
@@ -154,6 +161,8 @@ class RunResult:
 
 
 Execute = Callable[["Sequence[AssetKey] | None", Path], RunResult]
+# (contracts dir, data dir, junit XML path) -> pytest's exit code; writes the XML.
+RunContracts = Callable[[Path, Path, Path], int]
 
 
 # --- the run ---------------------------------------------------------------------
@@ -322,9 +331,65 @@ def with_run_facts(
     return out
 
 
-def contracts_record(contracts_dir: Path) -> dict[str, Any]:
-    """The contracts the repo has: the pytest files over the real bundles, counted, not run."""
-    return {"files": len(list(contracts_dir.glob("test_*.py"))), "executed": False}
+def pytest_contracts(contracts_dir: Path, data_dir: Path, junit: Path) -> int:
+    """`pytest tests/contracts` over the data root, in full mode (a skip would hide a missing
+    bundle), in the foreground; its exit code. The result is in the junit XML."""
+    env = {**os.environ, "TRACKLAB_DATA_ROOT": str(data_dir), "TRACKLAB_REQUIRE_FULL": "1"}
+    command = [sys.executable, "-m", "pytest", str(contracts_dir), f"--junitxml={junit}"]
+    return subprocess.run(
+        [*command, "-q", "-p", "no:cacheprovider"], env=env, check=False
+    ).returncode
+
+
+def junit_counts(junit: Path) -> dict[str, int] | None:
+    """passed, failed, skipped and errors from pytest's junit XML; None when it is missing or
+    not a result (pytest died before writing it)."""
+    try:
+        root = ET.parse(junit).getroot()  # noqa: S314
+    except (OSError, ET.ParseError):
+        return None
+    suites = [root] if root.tag == "testsuite" else list(root.iter("testsuite"))
+    if not suites:
+        return None
+    total = {
+        k: sum(int(s.get(k, 0)) for s in suites) for k in ("tests", "failures", "skipped", "errors")
+    }
+    return {
+        "passed": total["tests"] - total["failures"] - total["skipped"] - total["errors"],
+        "failed": total["failures"],
+        "skipped": total["skipped"],
+        "errors": total["errors"],
+    }
+
+
+def not_run_contracts(contracts_dir: Path, why: str) -> dict[str, Any]:
+    return {"files": len(list(contracts_dir.glob("test_*.py"))), "executed": False, "status": why}
+
+
+def run_contracts_step(
+    contracts_dir: Path, data_dir: Path, runner: RunContracts, record_dir: Path
+) -> dict[str, Any]:
+    """Run the contracts and say what came of it; `status` is `passed` only for exit 0 with
+    nothing failed and no error."""
+    record_dir.mkdir(parents=True, exist_ok=True)
+    started = datetime.now(UTC)
+    clock = time.perf_counter()
+    with tempfile.TemporaryDirectory(prefix=".tmp_contracts_", dir=record_dir) as tempdir:
+        junit = Path(tempdir) / "junit.xml"
+        exit_code = runner(contracts_dir, data_dir, junit)
+        counts = junit_counts(junit)
+    record: dict[str, Any] = {
+        **not_run_contracts(contracts_dir, ""),
+        "executed": True,
+        "started_utc": started.isoformat(timespec="milliseconds"),
+        "finished_utc": datetime.now(UTC).isoformat(timespec="milliseconds"),
+        "duration_seconds": round(time.perf_counter() - clock, 3),
+        "pytest_exit_code": exit_code,
+        **(counts or dict.fromkeys(("passed", "failed", "skipped", "errors"))),
+    }
+    ok = exit_code == 0 and counts is not None and not counts["failed"] and not counts["errors"]
+    record["status"] = "passed" if ok else "failed"
+    return record
 
 
 # --- the disk after the run --------------------------------------------------------
@@ -621,10 +686,12 @@ def run_build(
     dbt_target: Path = DBT_TARGET,
     contracts_dir: Path = CONTRACTS_DIR,
     full: bool = False,
+    run_contracts: RunContracts | None = None,
 ) -> int:
     """Run the job, write the record whatever happened, exit 1 if any step did not
     succeed. `execute` is what runs the job; the tests hand in a fake. `full` makes the
-    incremental silver step rebuild every match (`FULL_ENV`, inherited by the step's process)."""
+    incremental silver step rebuild every match (`FULL_ENV`, inherited by the step's process).
+    `run_contracts` is what runs `tests/contracts` after a full build (the tests hand in a fake)."""
     keys: Sequence[AssetKey] | None = None
     if select is not None:
         if not DBT_MANIFEST.is_file():
@@ -647,10 +714,18 @@ def run_build(
     finally:
         if full and previous is None:
             del os.environ[FULL_ENV]
+    steps = with_run_facts(steps_from_events(run.events, run.plan), run, dbt_target)
+    steps_ok = bool(steps) and all(step.status == "success" for step in steps)
+    if select is not None:
+        contracts = not_run_contracts(contracts_dir, "not run (partial build)")
+    elif not steps_ok:
+        contracts = not_run_contracts(contracts_dir, "not run (a step failed)")
+    else:
+        contracts = run_contracts_step(
+            contracts_dir, data_dir, run_contracts or pytest_contracts, record_dir
+        )
     wall_seconds = round(time.perf_counter() - clock, 3)
     finished = datetime.now(UTC)
-
-    steps = with_run_facts(steps_from_events(run.events, run.plan), run, dbt_target)
     # Whatever the measurement raises, the run still gets its record: the steps
     # above are the part only this run knows.
     try:
@@ -669,7 +744,7 @@ def run_build(
         "host": host_info(),
         "versions": versions(),
         "steps": [asdict(step) for step in steps],
-        "contracts": contracts_record(contracts_dir),
+        "contracts": contracts,
         "disk": disk,
     }
     path = record_path(record_dir, started, sha)
@@ -683,5 +758,11 @@ def run_build(
         f"assets={sum(len(s.assets) for s in steps if s.status == 'success')}"
     )
     print(f"record: {path} ({path.stat().st_size} bytes)")
-    succeeded = steps and all(step.status == "success" for step in steps)
-    return 0 if succeeded and "error" not in disk else 1
+    if contracts["executed"]:
+        print(
+            f"contracts: {contracts['status']} passed={contracts['passed']} "
+            f"failed={contracts['failed']} skipped={contracts['skipped']} "
+            f"errors={contracts['errors']} in {contracts['duration_seconds']}s"
+        )
+    contracts_ok = not contracts["executed"] or contracts["status"] == "passed"
+    return 0 if steps_ok and contracts_ok and "error" not in disk else 1

@@ -31,9 +31,11 @@ from tracklab.build import (
     StepPlan,
     bytes_read,
     default_record_dir,
+    junit_counts,
     measure_disk,
     measure_publish,
     measure_table,
+    pytest_contracts,
     run_build,
     serves_query,
     step_times_from_logs,
@@ -67,6 +69,26 @@ def _failure(step_key: str) -> DagsterEvent:
 
 
 RUN_ID = "abcdef0123456789"
+
+
+def _junit(path: Path, *, tests: int, failures: int = 0, skipped: int = 0, errors: int = 0) -> None:
+    path.write_text(
+        '<?xml version="1.0" encoding="utf-8"?><testsuites>'
+        f'<testsuite name="pytest" errors="{errors}" failures="{failures}" skipped="{skipped}" '
+        f'tests="{tests}" time="1.5"></testsuite></testsuites>',
+        encoding="utf-8",
+    )
+
+
+@pytest.fixture(autouse=True)
+def _no_real_contracts(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A full build in these tests must never launch the real `tests/contracts` (minutes)."""
+
+    def fake(contracts_dir: Path, data_dir: Path, junit: Path) -> int:
+        _junit(junit, tests=3)
+        return 0
+
+    monkeypatch.setattr("tracklab.build.pytest_contracts", fake)
 
 
 def _fake_execute(
@@ -438,10 +460,146 @@ def test_the_v2_record_carries_run_id_step_times_and_dbt_counts(tmp_path: Path) 
     assert all(s["partitions"] == empty and s["incremental"] is None for s in steps.values())
 
 
-def test_contracts_are_the_counted_files_and_say_they_were_not_run(tmp_path: Path) -> None:
-    record = _v2_record(tmp_path, {})
+def test_a_partial_build_records_the_contracts_as_not_run_never_as_zero(tmp_path: Path) -> None:
+    calls: list[Path] = []
 
-    assert record["contracts"] == {"files": 2, "executed": False}
+    def runner(contracts_dir: Path, data_dir: Path, junit: Path) -> int:
+        calls.append(junit)
+        return 0
+
+    record = _contracts_run(tmp_path, select="group:gold", runner=runner)
+
+    assert record["contracts"] == {
+        "files": 2,
+        "executed": False,
+        "status": "not run (partial build)",
+    }
+    assert calls == []
+
+
+def test_a_full_build_with_a_failed_step_does_not_run_the_contracts(tmp_path: Path) -> None:
+    calls: list[Path] = []
+
+    def runner(contracts_dir: Path, data_dir: Path, junit: Path) -> int:
+        calls.append(junit)
+        return 0
+
+    events = [_success("raw_x", 1.0), _failure("bronze_x")]
+    record = _contracts_run(tmp_path, runner=runner, events=events, expect=1)
+
+    assert record["contracts"] == {
+        "files": 2,
+        "executed": False,
+        "status": "not run (a step failed)",
+    }
+    assert calls == []
+
+
+def _contracts_run(
+    tmp_path: Path,
+    *,
+    runner: Callable[[Path, Path, Path], int],
+    select: str | None = None,
+    events: Sequence[DagsterEvent] | None = None,
+    expect: int = 0,
+) -> dict[str, object]:
+    contracts = tmp_path / "contracts"
+    contracts.mkdir(exist_ok=True)
+    for name in ("test_a.py", "test_b.py", "helpers.py"):
+        (contracts / name).write_text("", encoding="utf-8")
+    code = run_build(
+        select,
+        tmp_path / "build",
+        tmp_path / "data",
+        execute=_fake_execute(events or [_success("raw_x", 1.0)], RAW_ONLY),
+        reports_dir=tmp_path / "reports",
+        web_data_dir=tmp_path / "web",
+        contracts_dir=contracts,
+        run_contracts=runner,
+    )
+    assert code == expect
+    return _only_record(tmp_path / "build")
+
+
+def test_a_full_build_runs_the_contracts_and_records_pytests_own_counts(tmp_path: Path) -> None:
+    seen: list[tuple[Path, Path]] = []
+
+    def runner(contracts_dir: Path, data_dir: Path, junit: Path) -> int:
+        seen.append((contracts_dir, data_dir))
+        _junit(junit, tests=104, failures=0, skipped=3)
+        return 0
+
+    record = _contracts_run(tmp_path, runner=runner)
+    contracts: dict[str, object] = record["contracts"]  # type: ignore[assignment]
+
+    assert seen == [(tmp_path / "contracts", tmp_path / "data")]
+    assert {
+        k: contracts[k] for k in ("executed", "status", "passed", "failed", "skipped", "errors")
+    } == {
+        "executed": True,
+        "status": "passed",
+        "passed": 101,
+        "failed": 0,
+        "skipped": 3,
+        "errors": 0,
+    }
+    assert contracts["files"] == 2 and contracts["pytest_exit_code"] == 0
+    assert contracts["duration_seconds"] >= 0  # type: ignore[operator]
+    assert str(contracts["started_utc"]) <= str(contracts["finished_utc"])
+    assert not list((tmp_path / "build").glob(".tmp_contracts_*")), "the junit file is gone"
+
+
+def test_a_failing_contract_fails_the_build_and_the_record_is_still_written(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def runner(contracts_dir: Path, data_dir: Path, junit: Path) -> int:
+        _junit(junit, tests=104, failures=2, skipped=3, errors=1)
+        return 1
+
+    record = _contracts_run(tmp_path, runner=runner, expect=1)
+    contracts: dict[str, object] = record["contracts"]  # type: ignore[assignment]
+
+    assert contracts["status"] == "failed"
+    assert [contracts[k] for k in ("passed", "failed", "skipped", "errors")] == [98, 2, 3, 1]
+    assert contracts["pytest_exit_code"] == 1
+    assert "contracts: failed passed=98 failed=2 skipped=3 errors=1" in capsys.readouterr().out
+
+
+def test_a_contract_run_that_left_no_result_is_a_failure_with_no_counts(tmp_path: Path) -> None:
+    record = _contracts_run(tmp_path, runner=lambda c, d, j: 2, expect=1)
+    contracts: dict[str, object] = record["contracts"]  # type: ignore[assignment]
+
+    assert contracts["status"] == "failed"
+    assert [contracts[k] for k in ("passed", "failed", "skipped", "errors")] == [None] * 4
+
+
+def test_the_real_runner_reads_pytests_own_junit_in_full_mode(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """One passing, one failing, one skipped and one erroring test, run by the real pytest."""
+    contracts = tmp_path / "contracts"
+    contracts.mkdir()
+    (contracts / "conftest.py").write_text(
+        "import pytest\n\n@pytest.fixture\ndef broken():\n    raise RuntimeError('x')\n",
+        encoding="utf-8",
+    )
+    (contracts / "test_x.py").write_text(
+        "import os, pytest\n"
+        "def test_env():\n"
+        "    assert os.environ['TRACKLAB_REQUIRE_FULL'] == '1'\n"
+        "    assert os.environ['TRACKLAB_DATA_ROOT'].endswith('dataroot')\n"
+        "def test_bad():\n    assert False\n"
+        "@pytest.mark.skip\ndef test_skipped():\n    pass\n"
+        "def test_error(broken):\n    pass\n",
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("TRACKLAB_REQUIRE_FULL", raising=False)
+    junit = tmp_path / "junit.xml"
+
+    code = pytest_contracts(contracts, tmp_path / "dataroot", junit)
+
+    assert code == 1
+    assert junit_counts(junit) == {"passed": 1, "failed": 1, "skipped": 1, "errors": 1}
 
 
 def test_step_times_span_the_dagster_events_of_each_step() -> None:
