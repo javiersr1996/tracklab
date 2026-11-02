@@ -188,6 +188,13 @@ export function modeSummary(series: Series, keys: string[]): ModeSummary[] {
     });
 }
 
+// A run whose steps that could run dbt (those with an `incremental` block) all skipped it: its
+// missing tests are "not run", not a record that holds none.
+export const dbtSkipped = (e: HistoryEntry) => {
+  const incremental = e.steps.filter((s) => s.incremental !== null);
+  return incremental.length > 0 && incremental.every((s) => stepMode(s) === "skip");
+};
+
 // "as many tests as a full run" is only said when both counts are known and equal.
 export const sameTestCount = (a: number | null | undefined, b: number | null | undefined) => a != null && a === b;
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ageUnit, freshnessRows, median, sameTestCount, seriesOf, type HistoryEntry } from "../lib/history";
+import { contractsText, dbtText } from "../components/platform/HistoryCharts";
+import { ageUnit, dbtSkipped, freshnessRows, median, sameTestCount, seriesOf, type HistoryEntry } from "../lib/history";
 import type { PlatformData } from "../lib/platform";
 
 // Task 132: the series, medians and thresholds of /engineering/history, on fabricated entries so a
@@ -104,6 +105,23 @@ describe("freshnessRows", () => {
 });
 
 describe("what a missing value says", () => {
+  const skipped = entry("20261102T190029Z_a", null, [["raw", 1, null], ["silver", 1, "skip"], ["gold", 1, "skip"]]);
+
+  it("a run whose dbt steps all skipped says so, a v1 run keeps no data", () => {
+    expect(dbtSkipped(skipped)).toBe(true);
+    expect(dbtText(null, dbtSkipped(skipped))).toBe("not run (skip)");
+    const v1 = entry("20261013T193645Z_a", null, [["raw", 1, null]]);
+    expect(dbtSkipped(v1)).toBe(false);
+    expect(dbtText(null, dbtSkipped(v1))).toBe("no data");
+    expect(dbtSkipped(entry("20261102T190029Z_b", null, [["silver", 1, "skip"], ["gold", 1, "full"]]))).toBe(false);
+  });
+
+  it("contracts executed with no junit do not say null passed", () => {
+    const c = { files: 15, executed: true, status: null, passed: null, failed: null, skipped: null, errors: null, duration_seconds: null };
+    expect(contractsText(c)).toBe("no data passed");
+    expect(contractsText({ ...c, passed: 104, failed: 0 })).toBe("104 passed");
+  });
+
   it("claims equal test counts only when both are known and equal", () => {
     expect(sameTestCount(104, 104)).toBe(true);
     expect(sameTestCount(104, 90)).toBe(false);

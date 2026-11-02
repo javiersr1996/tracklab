@@ -2,6 +2,7 @@ import {
   ageUnit,
   runLabel,
   testTotal,
+  dbtSkipped,
   type FreshnessRow,
   type HistoryEntry,
   type Series,
@@ -203,14 +204,14 @@ export const selectLabel = (select: string | null) => select ?? "complete build"
 export function contractsText(c: HistoryEntry["quality"]["contracts"]): string {
   if (c.executed === true) {
     const extra = [c.failed ? `${c.failed} failed` : null, c.errors ? `${c.errors} errors` : null, c.skipped ? `${c.skipped} skipped` : null];
-    return [`${c.passed} passed`, ...extra].filter(Boolean).join(", ");
+    return [`${c.passed ?? "no data"} passed`, ...extra].filter(Boolean).join(", ");
   }
   if (c.executed === false) return c.status ?? "not run";
   return `${c.files === null ? "no data" : `${c.files} files`}, run: no data`;
 }
 
-export function dbtText(t: HistoryEntry["quality"]["dbt"]["tests"]): string {
-  if (!t) return "no data";
+export function dbtText(t: HistoryEntry["quality"]["dbt"]["tests"], skipped = false): string {
+  if (!t) return skipped ? "not run (skip)" : "no data";
   const parts = (["pass", "fail", "warn", "error", "skipped"] as const).filter((k) => k === "pass" || t[k] > 0);
   return parts.map((k) => `${t[k]} ${k}`).join(", ");
 }
@@ -250,7 +251,7 @@ export function QualityTimeline({ entries }: { entries: HistoryEntry[] }) {
               data-run={e.id}
               data-select={selectLabel(e.select)}
               data-dbt={total === null ? "no data" : String(total)}
-              data-dbt-text={dbtText(t)}
+              data-dbt-text={dbtText(t, dbtSkipped(e))}
               data-contracts={contractsText(c)}
             >
               <text className="gantt-label" x={0} y={cy + 4}>
@@ -263,7 +264,7 @@ export function QualityTimeline({ entries }: { entries: HistoryEntry[] }) {
                 sg.n > 0 ? <rect key={sg.cls} className={sg.cls} x={sg.x} y={cy - 5} width={w(sg.n)} height={10} /> : null,
               )}
               <text className={t ? "gantt-label" : "gantt-value"} x={t ? bx + 6 : x0} y={cy + 4}>
-                {dbtText(t)}
+                {dbtText(t, dbtSkipped(e))}
               </text>
               {c.executed === true && (c.failed ?? 0) + (c.errors ?? 0) > 0 && (
                 <path className="strip-above" d={`M${x0 + Q_BAR_W + Q_BAR_LABEL_W - 14} ${cy + 4} l5 -9 l5 9 z`} />
@@ -298,7 +299,7 @@ export function QualityTable({ entries }: { entries: HistoryEntry[] }) {
               <tr key={e.id}>
                 <th scope="row">{runLabel(e.id)}</th>
                 <td>{selectLabel(e.select)}</td>
-                <td>{dbtText(e.quality.dbt.tests)}</td>
+                <td>{dbtText(e.quality.dbt.tests, dbtSkipped(e))}</td>
                 <td>{contractsText(e.quality.contracts)}</td>
               </tr>
             ))}
