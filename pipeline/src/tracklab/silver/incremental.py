@@ -58,6 +58,8 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Any
 
+import duckdb
+
 ENGINE_PACKAGES = ("duckdb", "dbt-core", "dbt-adapters", "dbt-duckdb")
 DBT_PROJECT_FILES = ("dbt_project.yml", "profiles.yml")
 DBT_PROJECT_DIRS = ("models", "macros", "seeds", "tests")
@@ -388,17 +390,37 @@ def prepare(
                 shutil.rmtree(target)
 
 
+def _drop_null_key_partitions(root: Path, model: str) -> None:
+    """dbt-duckdb writes one NULL row under `__HIVE_DEFAULT_PARTITION__` when a partitioned
+    model returns no row, which happens when the only match rebuilt has no frames or events.
+    That lone row is no data: drop it, so the model simply has no partition for the match.
+    Several rows under a NULL key are real data the view would hide, so those still raise."""
+    for folder in (
+        *root.glob(f"sport={NO_KEY}"),
+        *root.glob(f"sport=[!_]*/native_match_id={NO_KEY}"),
+    ):
+        files = [str(p) for p in folder.rglob("*.parquet")]
+        rows = 0
+        if files:
+            with duckdb.connect() as con:
+                rows = con.execute("SELECT count(*) FROM read_parquet(?)", [files]).fetchone()[0]  # type: ignore[index]
+        if rows > 1:
+            raise RuntimeError(
+                f"silver {model}: dbt wrote {rows} rows with no match key, which the view over "
+                "it hides; rebuild with `tracklab build --full`"
+            )
+        shutil.rmtree(folder)
+        if folder.parent != root and not any(folder.parent.iterdir()):
+            folder.parent.rmdir()
+
+
 def finish(fp: Fingerprints, data_dir: Path, run_id: str, *, whole_step: bool) -> None:
-    """After dbt succeeded: refuse a partition with no match key, then remember what was built
+    """After dbt succeeded: drop the lone NULL row dbt writes for an empty model (several rows
+    with no match key raise), then remember what was built
     (only when the whole step ran: a subset leaves no state behind)."""
     silver = data_dir / "silver"
     for model in PARTITIONED:
-        if (silver / model / f"sport={NO_KEY}").exists():
-            raise RuntimeError(
-                f"silver {model}: dbt wrote a partition with no match key, which dbt-duckdb does "
-                "when the model returns no row, and the view over it then hides every row with a "
-                "NULL; rebuild with `tracklab build --full`"
-            )
+        _drop_null_key_partitions(silver / model, model)
     if not whole_step:
         return
     disk = partitions_on_disk(silver)

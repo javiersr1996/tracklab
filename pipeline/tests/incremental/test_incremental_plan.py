@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+import duckdb
 import pytest
 
 from tracklab.silver.incremental import (
@@ -254,16 +255,37 @@ def test_a_subset_leaves_no_state(tmp_path: Path) -> None:
     assert not state_path(tmp_path).exists()
 
 
-def test_finish_refuses_a_partition_with_no_match_key(tmp_path: Path) -> None:
+def _null_partition(data: Path, model: str, folder: str, rows: int) -> Path:
+    target = data / "silver" / model / folder
+    target.mkdir(parents=True)
+    with duckdb.connect() as con:
+        con.execute(f"COPY (SELECT range AS n FROM range({rows})) TO '{target / 'd.parquet'}'")
+    return target
+
+
+@pytest.mark.parametrize(
+    "folder",
+    [
+        f"sport={NO_KEY}/native_match_id={NO_KEY}",
+        f"sport={FB.split('/')[0]}/native_match_id={NO_KEY}",
+    ],
+)
+def test_finish_drops_the_lone_null_row_of_an_empty_model(tmp_path: Path, folder: str) -> None:
     silver_tree(tmp_path, [BB])
-    _write(
-        tmp_path
-        / "silver"
-        / "frames"
-        / f"sport={NO_KEY}"
-        / f"native_match_id={NO_KEY}"
-        / "d.parquet"
-    )
+    target = _null_partition(tmp_path, "frames", folder, 1)
+
+    finish(fingerprints({BB: "a"}), tmp_path, "run-2", whole_step=True)
+
+    assert not target.exists()
+    assert json.loads(state_path(tmp_path).read_bytes())["matches"][BB]["partitions"] == [
+        "events",
+        "frames",
+    ]
+
+
+def test_finish_refuses_several_rows_with_no_match_key(tmp_path: Path) -> None:
+    silver_tree(tmp_path, [BB])
+    _null_partition(tmp_path, "frames", f"sport={NO_KEY}/native_match_id={NO_KEY}", 2)
     with pytest.raises(RuntimeError, match="no match key"):
         finish(fingerprints({BB: "a"}), tmp_path, "run-2", whole_step=True)
     assert not state_path(tmp_path).exists()
