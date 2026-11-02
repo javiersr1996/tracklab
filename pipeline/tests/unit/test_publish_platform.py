@@ -12,12 +12,15 @@ without a built bundle, same as `tests/publish/test_stats.py`.
 from __future__ import annotations
 
 import json
+import os
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 from tracklab.publish.platform import (
+    freshness,
     guarantees,
     latest_record,
     layers_from_record,
@@ -496,11 +499,25 @@ def _as_v2(record: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def test_a_v2_record_publishes_the_same_platform_as_its_v1(tmp_path: Path) -> None:
+def test_a_v2_record_publishes_its_v1_platform_plus_each_steps_start_and_end(
+    tmp_path: Path,
+) -> None:
+    """Task 132: of the v2 run facts a step publishes its start and end, for the Gantt; a v1 has
+    none and says so with null, never a made-up instant."""
     v1 = platform_from_record(_record(), _index())
     v2 = platform_from_record(_as_v2(_record()), _index())
 
-    assert v2 == v1
+    times = ("started_utc", "finished_utc")
+    assert {k: v for k, v in v2.items() if k != "steps"} == {
+        k: v for k, v in v1.items() if k != "steps"
+    }
+    assert [{k: v for k, v in s.items() if k not in times} for s in v2["steps"]] == [
+        {k: v for k, v in s.items() if k not in times} for s in v1["steps"]
+    ]
+    assert all(s["started_utc"] is None and s["finished_utc"] is None for s in v1["steps"])
+    assert {(s["started_utc"], s["finished_utc"]) for s in v2["steps"]} == {
+        ("2026-09-24T17:00:00.000+00:00", "2026-09-24T17:00:04.000+00:00")
+    }
     assert v2["steps"][0].keys() == {
         "step_key",
         "assets",
@@ -508,6 +525,8 @@ def test_a_v2_record_publishes_the_same_platform_as_its_v1(tmp_path: Path) -> No
         "status",
         "duration_ms",
         "dbt_seconds",
+        "started_utc",
+        "finished_utc",
     }
 
     record_dir, out_dir = tmp_path / "build", tmp_path / "web"
@@ -681,6 +700,133 @@ def test_check_ignores_the_timing_of_a_fresh_record(tmp_path: Path) -> None:
         record_path=fresh_path, record_dir=record_dir, out_dir=out_dir, check=True
     )
     assert code == 0
+
+
+# --- freshness: the newest mtime of each silver partition and gold table (decision 4) -------
+
+
+def _parquet_at(path: Path, mtime_s: int) -> None:
+    """A file named like a Parquet: freshness only reads its mtime."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b"PAR1")
+    os.utime(path, ns=(mtime_s * 10**9, mtime_s * 10**9))
+
+
+T0 = 1_790_000_000  # 2026-09-21T14:13:20Z
+
+
+def _data_tree(root: Path) -> Path:
+    bb = root / "silver" / "frames" / "sport=basketball" / "native_match_id=1"
+    _parquet_at(bb / "data_0.parquet", T0)
+    _parquet_at(bb / "data_1.parquet", T0 + 90)
+    _parquet_at(
+        root / "silver" / "frames" / "sport=football" / "native_match_id=2001" / "data_0.parquet",
+        T0 + 30,
+    )
+    _parquet_at(root / "silver" / "dim_match" / "data.parquet", T0 + 60)
+    _parquet_at(root / "gold" / "dim_player" / "data.parquet", T0 + 120)
+    (root / "silver" / "frames" / "notes.txt").write_text("not parquet\n", encoding="utf-8")
+    return root
+
+
+def test_freshness_is_the_newest_parquet_mtime_of_each_partition_and_whole_table(
+    tmp_path: Path,
+) -> None:
+    rows = freshness(_data_tree(tmp_path))
+
+    assert rows == [
+        {
+            "layer": "silver",
+            "table": "dim_match",
+            "partition": None,
+            "files": 1,
+            "written_utc": "2026-09-21T14:14:20.000+00:00",
+        },
+        {
+            "layer": "silver",
+            "table": "frames",
+            "partition": "sport=basketball/native_match_id=1",
+            "files": 2,
+            "written_utc": "2026-09-21T14:14:50.000+00:00",
+        },
+        {
+            "layer": "silver",
+            "table": "frames",
+            "partition": "sport=football/native_match_id=2001",
+            "files": 1,
+            "written_utc": "2026-09-21T14:13:50.000+00:00",
+        },
+        {
+            "layer": "gold",
+            "table": "dim_player",
+            "partition": None,
+            "files": 1,
+            "written_utc": "2026-09-21T14:15:20.000+00:00",
+        },
+    ]
+    assert freshness(tmp_path / "nowhere") == []
+
+
+def _published(tmp_path: Path) -> dict[str, Any]:
+    record_dir, out_dir = tmp_path / "build", tmp_path / "web"
+    out_dir.mkdir(parents=True)
+    _data_tree(tmp_path)
+    _write_record(record_dir, _as_v2(_record()))
+    (out_dir / "index.json").write_text(json.dumps(_index()), encoding="utf-8")
+    kwargs: dict[str, Any] = {"record_path": None, "record_dir": record_dir, "out_dir": out_dir}
+    assert run_publish_platform(**kwargs) == 0
+    return kwargs
+
+
+def test_publish_writes_freshness_from_the_data_root_the_records_sit_in(tmp_path: Path) -> None:
+    kwargs = _published(tmp_path)
+    payload = json.loads((kwargs["out_dir"] / "platform.json").read_text(encoding="utf-8"))
+
+    assert payload["freshness"]["partitions"] == freshness(tmp_path)
+    published = datetime.fromisoformat(payload["freshness"]["published_utc"])
+    assert published.tzinfo is not None
+    assert all(
+        published >= datetime.fromisoformat(p["written_utc"])
+        for p in payload["freshness"]["partitions"]
+    )
+    assert run_publish_platform(**kwargs, check=True) == 0
+
+
+def test_check_is_1_when_a_partition_is_rewritten_after_platform_json(tmp_path: Path) -> None:
+    kwargs = _published(tmp_path)
+    _parquet_at(
+        tmp_path
+        / "silver"
+        / "frames"
+        / "sport=football"
+        / "native_match_id=2001"
+        / "data_0.parquet",
+        T0 + 600,
+    )
+    assert run_publish_platform(**kwargs, check=True) == 1
+
+
+def test_check_is_1_after_a_hand_edit_of_a_written_time(tmp_path: Path) -> None:
+    kwargs = _published(tmp_path)
+    target = kwargs["out_dir"] / "platform.json"
+    payload = json.loads(target.read_text(encoding="utf-8"))
+    payload["freshness"]["partitions"][0]["written_utc"] = "2026-09-21T15:00:00.000+00:00"
+    target.write_text(json.dumps(payload), encoding="utf-8")
+    assert run_publish_platform(**kwargs, check=True) == 1
+
+
+def test_check_does_not_compare_freshness_against_another_runs_record(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """full-build's fresh record on a runner wrote its own silver: those times are that run's."""
+    kwargs = _published(tmp_path)
+    _parquet_at(tmp_path / "gold" / "dim_player" / "data.parquet", T0 + 900)
+    fresh = {**_as_v2(_record()), "started_utc": "2026-09-25T09:00:00+00:00"}
+    fresh_path = kwargs["record_dir"] / "20260925T090000Z_abc1234.json"
+    fresh_path.write_text(json.dumps(fresh), encoding="utf-8")
+
+    assert run_publish_platform(**{**kwargs, "record_path": fresh_path}, check=True) == 0
+    assert "freshness not compared" in capsys.readouterr().out
 
 
 # --- guarantees: counted from the dbt manifest, the contract files and the argparse tree -----

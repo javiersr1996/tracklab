@@ -43,6 +43,17 @@ Two decisions, not forced.
    `--check` (walking the argparse tree, so a new `--check` or a deleted one changes the count).
    `--check` recounts all three and fails when the file on disk differs.
 
+4. **Freshness is the disk at publish time, not the record (task 132).** A step that skipped
+   (P16's silver and gold) wrote nothing, so the run `platform.json` describes is not when its
+   data was written. `freshness` holds, for every directory of `<data root>/silver` and
+   `<data root>/gold` that holds Parquet (a partition of `frames` or `events`, a table written
+   whole), the newest `mtime` of its files, measured when this command runs (`published_utc`);
+   `/engineering/history` prints each one's age at that instant. `--check` re-measures and compares
+   them when its record is the run `platform.json` was published from; against another run's
+   record (full-build's fresh one on a runner) those times are that run's, like the seconds below,
+   and are not compared. A v2 record's per-step `started_utc` and `finished_utc` are projected
+   with the step (null for a v1) for the Gantt of `/engineering`.
+
 `--check` writes nothing. It compares the published layer, title and subtitle (files,
 bytes to watch and to query, live) and row counts -- never the bytes of the Parquet tables, because
 `publish/stats.py` already documents that DuckDB's parallel writer lays out
@@ -60,6 +71,7 @@ import argparse
 import json
 import re
 from collections import Counter
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -68,10 +80,12 @@ from tracklab.publish.format import fmt
 SCHEMA_VERSION = 1
 PIPELINE_DIR = Path(__file__).resolve().parents[3]
 PLATFORM_JSON = "platform.json"
-# Build records this module reads (task 125): v1, and v2, which adds run facts that
-# `platform.json` does not publish yet, so a step keeps only its v1 keys here.
+# Build records this module reads (task 125): v1, and v2, which adds run facts; of those a step
+# publishes only its start and end (task 132), null for a v1.
 RECORD_VERSIONS = (1, 2)
 STEP_KEYS = ("step_key", "assets", "group", "status", "duration_ms", "dbt_seconds")
+STEP_TIME_KEYS = ("started_utc", "finished_utc")
+FRESHNESS_LAYERS = ("silver", "gold")
 INDEX_JSON = "index.json"
 STATS_JSON = "stats.json"
 
@@ -411,7 +425,13 @@ def platform_from_record(record: dict[str, Any], index_payload: dict[str, Any]) 
         "run": run_block(record),
         "layers": layers_from_record(record),
         "raw_sources": raw_sources_from_record(record),
-        "steps": [{key: step[key] for key in STEP_KEYS} for step in record["steps"]],
+        "steps": [
+            {
+                **{key: step[key] for key in STEP_KEYS},
+                **{key: step.get(key) for key in STEP_TIME_KEYS},
+            }
+            for step in record["steps"]
+        ],
         "tables": tables_from_record(record),
         "matches": matches_from_record(record, index_payload),
         "season_files": season_files_from_record(record),
@@ -457,6 +477,53 @@ def guarantees(pipeline_dir: Path = PIPELINE_DIR) -> dict[str, Any]:
         "contracts": {"files": len(contracts), "names": contracts},
         "checks": {"count": len(checks), "commands": checks},
     }
+
+
+# --- freshness: when silver and gold were last written, from the disk (decision 4) ----------
+
+
+def _utc_ms(ns: int) -> str:
+    return datetime.fromtimestamp(ns // 1_000_000 / 1000, tz=UTC).isoformat(timespec="milliseconds")
+
+
+def freshness(data_dir: Path) -> list[dict[str, Any]]:
+    """One entry per directory under `<data_dir>/silver` and `<data_dir>/gold` that holds Parquet:
+    its table, its partition (the path under the table, null for a table written whole), how many
+    Parquet files it holds and the newest `mtime` among them."""
+    newest: dict[tuple[str, str, str], tuple[int, int]] = {}
+    for layer in FRESHNESS_LAYERS:
+        root = data_dir / layer
+        for path in sorted(root.rglob("*.parquet")) if root.is_dir() else []:
+            table, *partition = path.parent.relative_to(root).parts
+            key = (layer, table, "/".join(partition))
+            files, ns = newest.get(key, (0, 0))
+            newest[key] = (files + 1, max(ns, path.stat().st_mtime_ns))
+    return [
+        {
+            "layer": layer,
+            "table": table,
+            "partition": partition or None,
+            "files": files,
+            "written_utc": _utc_ms(ns),
+        }
+        for (layer, table, partition), (files, ns) in sorted(
+            newest.items(), key=lambda kv: (FRESHNESS_LAYERS.index(kv[0][0]), *kv[0][1:])
+        )
+    ]
+
+
+def _diff_freshness(on_disk: list[dict[str, Any]], live: list[dict[str, Any]]) -> list[str]:
+    def by_dir(rows: list[dict[str, Any]]) -> dict[tuple[str, str, str | None], Any]:
+        return {
+            (r["layer"], r["table"], r["partition"]): (r["files"], r["written_utc"]) for r in rows
+        }
+
+    disk, now = by_dir(on_disk), by_dir(live)
+    return [
+        f"freshness {key}: platform.json {disk.get(key)}, on disk now {now.get(key)}"
+        for key in sorted(disk.keys() | now.keys(), key=lambda k: (k[0], k[1], k[2] or ""))
+        if disk.get(key) != now.get(key)
+    ]
 
 
 def platform_path(out_dir: Path) -> Path:
@@ -527,7 +594,10 @@ def run_publish_platform(
     out_dir: Path,
     check: bool = False,
     pipeline_dir: Path = PIPELINE_DIR,
+    data_dir: Path | None = None,
 ) -> int:
+    """`data_dir`, whose silver and gold `freshness` measures, defaults to the data root the
+    records sit in (`record_dir` is `<data root>/build`)."""
     path = record_path or latest_record(record_dir)
     record = load_json(path)
     if record.get("schema_version", 1) not in RECORD_VERSIONS:
@@ -545,6 +615,10 @@ def run_publish_platform(
     record["disk"]["publish"] = measure_publish(out_dir)
     payload = platform_from_record(record, index_payload)
     payload["guarantees"] = guarantees(pipeline_dir)
+    payload["freshness"] = {
+        "published_utc": datetime.now(UTC).isoformat(timespec="seconds"),
+        "partitions": freshness(data_dir if data_dir is not None else record_dir.parent),
+    }
 
     print(f"publish platform: record {path.name}")
     print(f"publish platform: title: {payload['title']}")
@@ -581,6 +655,16 @@ def run_publish_platform(
             problems.append(
                 f"raw_sources: on disk {on_disk.get('raw_sources')},"
                 f" record {payload['raw_sources']}"
+            )
+        if on_disk.get("run") == payload["run"]:
+            problems += _diff_freshness(
+                (on_disk.get("freshness") or {}).get("partitions") or [],
+                payload["freshness"]["partitions"],
+            )
+        else:
+            print(
+                f"publish platform --check: freshness not compared: {path.name} is not the run "
+                "platform.json was published from"
             )
         if problems:
             detail = "\n  ".join(problems)
