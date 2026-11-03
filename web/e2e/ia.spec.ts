@@ -123,15 +123,18 @@ test("the bulletin's sections are headings, its code is code and its source a li
   );
 });
 
-// P15, task 122: the footer is a short block on a phone (it was 622 px; it is 442), the same text
-// on every route, and the legal lines stay.
+// P15, task 122: the footer is a short block on a phone (it was 622 px), the same text on every
+// route, and the legal lines stay. The 560 px limit is there to catch a return to the old 622 px
+// footer. The body font depends on the OS (--font-body resolves to Segoe UI on Windows and to
+// another face on Linux), so the same footer measures about 476 px on Windows and 527.5 px on the
+// GitHub Ubuntu runner; a tighter limit passes in one place and fails in the other.
 test("the footer is short at 390 px on every layout and keeps its notices", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });
   for (const route of ["/", "/tracking/runs", "/sql", "/learn", "/engineering", "/euroleague"]) {
     await page.goto(route);
     const footer = page.locator("footer.site-footer");
     const box = await footer.boundingBox();
-    expect(box!.height, route).toBeLessThan(480);
+    expect(box!.height, route).toBeLessThan(560);
     const labels = footer.locator(".site-footer-label", { hasText: /^code$/ });
     await expect(labels, route).toBeVisible();
     await expect(footer).toContainText("Not affiliated with SkillCorner.");

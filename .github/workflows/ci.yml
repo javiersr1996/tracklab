@@ -14,7 +14,9 @@ on:
 jobs:
   pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 30, not 15: pytest alone went from 6.6 min (11-01) to 9.7 min (11-02) to over 11.5 min, and
+    # the job was cancelled at 15 min on 11-02 22:40 and again on 11-03 (runs 41539248260, 41632169321).
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: pipeline
