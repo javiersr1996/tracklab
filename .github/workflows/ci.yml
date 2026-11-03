@@ -5,11 +5,31 @@
 # task 44 runs against a service container, never against Neon.
 name: ci
 
+# Paths that no job reads are ignored, so a notes-only change spends no minutes. docs/bulletin.md
+# is the exception: test_quality.py and the e2e of the bulletin read it. The branch has no
+# protection (the plan does not allow it), so no required check can stay pending.
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "tasks/**"
+      - "README.md"
+      - "LICENSE"
+      - "docs/**"
+      - "!docs/bulletin.md"
   pull_request:
+    paths-ignore:
+      - "tasks/**"
+      - "README.md"
+      - "LICENSE"
+      - "docs/**"
+      - "!docs/bulletin.md"
   workflow_dispatch:
+
+# A newer run of the same PR or branch replaces the one in flight.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   pipeline:
