@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { tableFromIPC } from "apache-arrow";
-import { cellText, columnCell } from "../lib/warehouse/cell";
+import { tableFromArrays, tableFromIPC } from "apache-arrow";
+import { cellText, columnCell, columnValue } from "../lib/warehouse/cell";
 
 // How /warehouse writes a result value (`lib/warehouse/cell.ts`), fed what Arrow's `get()`
 // returns for each type: a decimal's unscaled integer (a BigNum whose text is its digits; a
@@ -79,5 +79,34 @@ describe("columnCell on what DuckDB sends", () => {
     expect(column("dec_map", 0)).toBe("{k=1.5}");
     expect(column("u", 0)).toBe("1.5");
     expect(column("st_iv", 0)).toBe("{'span': 03:00:00}");
+  });
+});
+
+describe("columnValue", () => {
+  const table = tableFromArrays({
+    n: [1.5, null],
+    i: new BigInt64Array([BigInt(2) ** BigInt(60), BigInt(7)]),
+    s: ["a", null],
+    b: [true, false],
+  });
+  const col = (name: "n" | "i" | "s" | "b") => table.getChild(name)!;
+
+  it("gives numbers, strings and booleans as themselves and NULL as null", () => {
+    expect(columnValue(col("n"), 0)).toBe(1.5);
+    expect(columnValue(col("n"), 1)).toBeNull();
+    expect(columnValue(col("s"), 0)).toBe("a");
+    expect(columnValue(col("s"), 1)).toBeNull();
+    expect(columnValue(col("b"), 1)).toBe(false);
+  });
+
+  it("gives a BIGINT as a number when it is safe and as its digits when it is not", () => {
+    expect(columnValue(col("i"), 1)).toBe(7);
+    expect(columnValue(col("i"), 0)).toBe(String(BigInt(2) ** BigInt(60)));
+  });
+
+  it("gives what is not a plain value (a date) as the text the table shows", () => {
+    const dates = tableFromArrays({ d: [new Date(Date.UTC(2001, 1, 14))] }).getChild("d")!;
+    expect(columnValue(dates, 0)).toBe(columnCell(dates, 0));
+    expect(typeof columnValue(dates, 0)).toBe("string");
   });
 });

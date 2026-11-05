@@ -15,6 +15,7 @@ const PARQUET: QueryResult = {
   sql: "",
   columns: [],
   rows: [],
+  values: [],
   rowCount: 0,
   ms: 1,
   bytes: 0,
