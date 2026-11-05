@@ -39,8 +39,8 @@
      each fill a mark (3:1 or more on the band) under its own text (4.5:1 or more); under 20 there is
      no fill. A high percentile is a high value, not a verdict: brighter is higher, not better. */
   --pct-1: #0c7890; /* 3.2:1 on the band; white text 5.1:1 */
-  --pct-2: #098ca5; /* 4.1:1; dark text 5.1:1 */
-  --pct-3: #06aac3; /* 5.9:1; dark text 7.2:1 */
+  --pct-2: #0896af; /* 4.7:1; dark text 5.7:1 */
+  --pct-3: #05b4cd; /* 6.6:1; dark text 8.1:1 */
   --pct-4: var(--neon); /* 10.7:1; dark text 13.1:1 */
   --pct-ink-1: var(--canvas-hi);
   --pct-ink-2: var(--canvas-ink);
