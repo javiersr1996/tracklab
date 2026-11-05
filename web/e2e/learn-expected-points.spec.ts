@@ -5,7 +5,8 @@ import { display } from "../lib/learn/display";
 
 // Lesson 12 (task 117) in the browser. Every figure is read back from expected-points.json on
 // disk, and the ones the page computes are computed again here from its counts, never typed:
-// the head panel, the tables, "Run it here", the attribution, and the floors of P13.
+// the head panel, the tables and their intervals (task 117b), "Run it here", the attribution, and
+// the floors of P13.
 const expect = baseExpect.configure({ timeout: 20_000 });
 
 const ROUTE = "/learn/expected-points";
@@ -27,16 +28,21 @@ interface Team extends Zones {
   xpps: number;
   mix: number;
   making: number;
+  mix_ci: [number, number];
+  making_ci: [number, number];
 }
 interface Season {
   season: string;
   league: Zones;
   pps: Record<string, number>;
   mean: number;
+  games_ratio: { mix: { median: number } };
   teams: Team[];
 }
 const FILE = JSON.parse(readFileSync(path.join(process.cwd(), "public", "data", "euroleague", "expected-points.json"), "utf-8")) as {
   source: string;
+  level: number;
+  z: number;
   seasons: Season[];
 } & Record<string, unknown>;
 
@@ -55,6 +61,13 @@ function inFile(name: string): unknown {
 // The figures the text computes, worked out again from the file: `learn.season.<season>.<key>`
 // and `learn.ex.<key>`.
 const round = (x: number, d: number) => Number(x.toFixed(d));
+// An interval excludes zero when both bounds are on one side of it, as the file prints them.
+const excludes = ([lo, hi]: [number, number]) => lo > 0 || hi < 0;
+const width = ([lo, hi]: [number, number]) => hi - lo;
+const median = (xs: number[]) => {
+  const s = [...xs].sort((a, b) => a - b);
+  return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+};
 function computed(): Record<string, unknown> {
   const season: Record<string, unknown> = {};
   for (const s of FILE.seasons) {
@@ -78,12 +91,21 @@ function computed(): Record<string, unknown> {
       making_range: range("making"),
       ratio: round(range("making") / range("mix"), 1),
       making_pos: s.teams.filter((t) => t.making > 0).length,
+      excl_mix: s.teams.filter((t) => excludes(t.mix_ci)).length,
+      excl_making: s.teams.filter((t) => excludes(t.making_ci)).length,
+      chance: round((1 - FILE.level) * s.teams.length, 1),
+      width_ratio: round(median(s.teams.map((t) => width(t.making_ci))) / median(s.teams.map((t) => width(t.mix_ci))), 1),
+      wide_mix: s.teams.filter((t) => Math.abs(t.mix) > (s.games_ratio.mix.median * width(t.mix_ci)) / 2).length,
     };
   }
   const first = FILE.seasons[0];
   const ex = first.teams.reduce((a, t) => (t.pps > a.pps ? t : a));
   const n = CLASSES.reduce((a, c) => a + ex[c].n, 0);
-  return { season, ex: { season: first.season, code: ex.code, share: Object.fromEntries(CLASSES.map((c) => [c, round((100 * ex[c].n) / n, 1)])) } };
+  return {
+    season,
+    ex: { season: first.season, code: ex.code, share: Object.fromEntries(CLASSES.map((c) => [c, round((100 * ex[c].n) / n, 1)])) },
+    level_pct: round(100 * FILE.level, 0),
+  };
 }
 const LEARN = computed();
 const pick = (root: unknown, dotted: string) =>
@@ -158,6 +180,44 @@ test.describe(ROUTE, () => {
     }
   });
 
+  test("every team's intervals are the file's, in its row and in its strip", async ({ page }) => {
+    await open(page);
+    let rows = 0;
+    for (const s of FILE.seasons) {
+      const got = await page.locator(`table[data-season="${s.season}"] tr[data-team]`).evaluateAll((trs) =>
+        trs.map((tr) => ({
+          code: tr.getAttribute("data-team")!,
+          cells: Array.from(tr.querySelectorAll("td")).map((td) => (td.textContent ?? "").trim()),
+          middle: Number(tr.querySelector("svg")!.getAttribute("viewBox")!.split(" ")[2]) / 2,
+          // Each interval's line, in the strip's own units: [x1, x2].
+          lines: Array.from(tr.querySelectorAll("[data-interval] line:first-child")).map((l) => [Number(l.getAttribute("x1")), Number(l.getAttribute("x2"))]),
+        })),
+      );
+      for (const row of got) {
+        const t = s.teams.find((x) => x.code === row.code)!;
+        expect(row.cells, row.code).toContain(`${t.mix_ci[0]} to ${t.mix_ci[1]}`);
+        expect(row.cells, row.code).toContain(`${t.making_ci[0]} to ${t.making_ci[1]}`);
+        // The strip is symmetric about zero, so a bound b sits at its middle plus b times one scale.
+        expect(row.lines).toHaveLength(2);
+        const [mixLine, makingLine] = row.lines;
+        const mid = (mixLine[0] * t.mix_ci[1] - mixLine[1] * t.mix_ci[0]) / (t.mix_ci[1] - t.mix_ci[0]);
+        const scale = (mixLine[1] - mixLine[0]) / width(t.mix_ci);
+        expect(mid, `${row.code} zero`).toBeCloseTo(row.middle, 6);
+        expect(makingLine[0], `${row.code} making from`).toBeCloseTo(row.middle + scale * t.making_ci[0], 6);
+        expect(makingLine[1], `${row.code} making to`).toBeCloseTo(row.middle + scale * t.making_ci[1], 6);
+        rows++;
+      }
+    }
+    expect(rows).toBe(FILE.seasons.reduce((a, s) => a + s.teams.length, 0));
+    const counts = FILE.seasons.map((s) => `${s.season}: making ${s.teams.filter((t) => excludes(t.making_ci)).length}, mix ${s.teams.filter((t) => excludes(t.mix_ci)).length} of ${s.teams.length}`);
+    console.log(`${ROUTE}: ${rows} rows with their intervals; exclude zero ${counts.join("; ")}`);
+    for (const s of FILE.seasons) {
+      for (const key of ["excl_making", "excl_mix"]) {
+        await expect(page.locator(`[data-fig="learn.season.${s.season}.${key}"]`).first()).toHaveText(String(pick(LEARN, `season.${s.season}.${key}`)));
+      }
+    }
+  });
+
   test("the head panel counts up to the first season's points per attempt by class", async ({ page }) => {
     const [first] = FILE.seasons;
     const expected = [first.pps.rim, first.pps.three, first.pps.mid].map(String);
@@ -188,8 +248,8 @@ test.describe(ROUTE, () => {
     await expect(figure).toHaveAttribute("data-query", /^(done|error)$/, { timeout: 120_000 });
     expect(await figure.getAttribute("data-error")).toBeNull();
     const n = Number(await figure.getAttribute("data-figures"));
-    // Each class of each season, the two means, and the four figures of every team.
-    expect(n).toBe(FILE.seasons.reduce((a, s) => a + 3 + 2 + 4 * s.teams.length, 0));
+    // Each class of each season, the two means, and the four figures and four bounds of every team.
+    expect(n).toBe(FILE.seasons.reduce((a, s) => a + 3 + 2 + 8 * s.teams.length, 0));
     await expect(figure).toHaveAttribute("data-matched", String(n));
     if (EXPOSED) expect(await page.evaluate(() => (window.__learn as { reproduce?: unknown }).reproduce)).toMatchObject({ matched: n, n });
     const data = urls.filter((u) => u.includes("/data/"));
@@ -247,6 +307,7 @@ for (const width of [390, 1440]) {
       const counts = page.locator(".head-panel [data-count]");
       await expect.poll(() => counts.evaluateAll((els) => els.length > 0 && els.every((e) => e.getAttribute("data-count") === "done"))).toBe(true);
       await page.screenshot({ path: path.join(SHOTS, `expected-points-${width}.png`), fullPage: true });
+      await page.locator('section[aria-labelledby="teams-h"]').screenshot({ path: path.join(SHOTS, `expected-points-teams-${width}.png`) });
     }
   });
 }
