@@ -31,7 +31,12 @@ export default function WarehousePage() {
         </p>
         <p>
           <Link href="/sql">Learn SQL on these tables</Link>: eight lessons with exercises checked in this
-          browser.
+          browser.{" "}
+          <Link href="/warehouse/scouting" prefetch={false}>
+            Scout the players
+          </Link>
+          : every player in a table sorted by any metric, each percentile beside its pool, and two players side
+          by side.
         </p>
       </PageHead>
 

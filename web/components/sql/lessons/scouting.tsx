@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { factOf } from "../Fact";
 
 // Lesson 8 of /sql. Every number comes from `sqlcourse/scouting/facts.sql` through `f`.
@@ -34,6 +35,13 @@ export function ScoutingProse() {
           percentile for the filter and round the one they show.
           And divide with a decimal, <code>total_points * 1.0 / games_played</code>, so that a rate of points per
           game is not cut to a whole number before it is compared.
+        </p>
+        <p>
+          The same windows, one per metric over every wide table of the warehouse, are behind{" "}
+          <Link href="/warehouse/scouting" prefetch={false}>
+            the scouting table
+          </Link>
+          : each player&apos;s percentile in each pool, sortable by any metric, and two players side by side.
         </p>
       </section>
     </>
