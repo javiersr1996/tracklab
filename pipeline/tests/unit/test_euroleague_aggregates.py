@@ -130,7 +130,13 @@ def test_zone_classes() -> None:
 
 def test_league(data: Path, tmp_path: Path) -> None:
     files = _publish(data, tmp_path / "out")
-    assert sorted(files) == ["league.json", "teams/AAA.json", "teams/BBB.json", "teams/CCC.json"]
+    assert sorted(files) == [
+        "expected-points.json",
+        "league.json",
+        "teams/AAA.json",
+        "teams/BBB.json",
+        "teams/CCC.json",
+    ]
     league = files["league.json"]
     assert league["version"] == 1
     assert league["source"] == "EuroLeague (live.euroleague.net)"
@@ -215,6 +221,14 @@ def test_what_has_changed(data: Path, tmp_path: Path) -> None:
     ]
 
 
+def test_expected_points_leave_out_what_is_under_k(data: Path, tmp_path: Path) -> None:
+    # E2026's league has no mid-range shot, and BBB took one in E2025: only AAA's E2025 is in.
+    doc = _publish(data, tmp_path / "out")["expected-points.json"]
+    assert [s["season"] for s in doc["seasons"]] == ["E2025"]
+    assert [t["code"] for t in doc["seasons"][0]["teams"]] == ["AAA"]
+    assert doc["seasons"][0]["teams_left_out"] == 1
+
+
 def test_no_field_of_a_shot_is_written(data: Path, tmp_path: Path) -> None:
     _publish(data, tmp_path / "out")
     for path in (tmp_path / "out" / "euroleague").rglob("*.json"):
@@ -234,7 +248,7 @@ def test_check_and_stale_files(
     assert not stale.exists()
     assert b"\r" not in (out / "euroleague" / "league.json").read_bytes()
     assert run_euroleague_publish(data, out, check=True) == 0
-    assert "FULL 4/4" in capsys.readouterr().out
+    assert "FULL 5/5" in capsys.readouterr().out
     (out / "euroleague" / "teams" / "BBB.json").write_text("{}\n", "utf-8")
     assert run_euroleague_publish(data, out, check=True) == 1
     assert run_euroleague_publish(tmp_path / "nothing", out, check=True) == 0

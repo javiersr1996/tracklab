@@ -1,11 +1,12 @@
 """The guard of the EuroLeague JSON (P14, task 115): aggregates only, read from the published files.
 
 The data has no open license (docs/superpowers/specs/2026-10-31-euroleague-design.md), so every
-file under `web/public/data/euroleague/` must hold counts of hexagons and nothing that rebuilds a
-shot. This reads those files as the browser gets them and never calls the code that writes them:
-its constants (k, the byte caps of docs/euroleague-probe.md, the keys of the raw feed) are its
-own. The folder is in git, so it runs everywhere, CI included, and fails if the folder is gone.
-The second half mutates a copy of the real files and sees the guard fail on each mutation.
+file under `web/public/data/euroleague/` must hold counts of hexagons (and, for lesson 12, of zone
+classes) and nothing that rebuilds a shot. This reads those files as the browser gets them and
+never calls the code that writes them: its constants (k, the byte caps of docs/euroleague-probe.md,
+the keys of the raw feed) are its own. The folder is in git, so it runs everywhere, CI included,
+and fails if the folder is gone. The second half mutates a copy of the real files and sees the
+guard fail on each mutation.
 """
 
 from __future__ import annotations
@@ -24,6 +25,8 @@ FOLDER = PUBLIC / "data" / "euroleague"
 K_MIN = 5  # the spec: never under 5
 TEAM_CAP = 24_000
 LEAGUE_CAP_PER_SEASON = 4_000
+EXPECTED = "expected-points.json"  # lesson 12 (task 117): counts by zone class, no hexagon
+EXPECTED_CAP = 16_000
 SOURCE = "EuroLeague (live.euroleague.net)"
 # Every key of a row of Points, PlaybyPlay and Boxscore, as the feed spells it.
 RAW_KEYS = {
@@ -78,16 +81,17 @@ def _payload_problems(name: str, doc: Any, size: int) -> list[str]:
         if not _is_int(block.get("games_played")) or block["games_played"] <= 0:
             out.append(f"{label}: no games_played")
     cap = LEAGUE_CAP_PER_SEASON * len(seasons) if name == "league.json" else TEAM_CAP
+    cap = EXPECTED_CAP if name == EXPECTED else cap
     if size > cap:
         out.append(f"{name}: {size} B over its cap of {cap} B")
-    k = doc.get("hex", {}).get("k")
+    k: Any = doc.get("k") if name == EXPECTED else doc.get("hex", {}).get("k")
     if not _is_int(k) or k < K_MIN:
         out.append(f"{name}: k is {k!r}, under {K_MIN}")
         k = K_MIN
     widths = set()
     for key in ("cell_fields", "player_cell_fields"):
         fields = doc.get(key)
-        if fields is None and key == "player_cell_fields":
+        if fields is None and (key == "player_cell_fields" or name == EXPECTED):
             continue
         if not isinstance(fields, list) or fields[:3] != ["q", "r", "n"]:
             out.append(f"{name}: {key} does not start with q, r, n")
@@ -98,6 +102,12 @@ def _payload_problems(name: str, doc: Any, size: int) -> list[str]:
             for key in value:
                 if key in RAW_KEYS or key.lower() in ROW_KEYS:
                     out.append(f"{name}{where}: raw key {key!r}")
+            if "n" in value and "made" in value:  # a count of shots: a zone class of a season
+                n, made = value["n"], value["made"]
+                if not (_is_int(n) and _is_int(made) and 0 <= made <= n):
+                    out.append(f"{name}{where}: not a count of shots")
+                elif n < max(k, K_MIN):
+                    out.append(f"{name}{where}: n={n}, under k={max(k, K_MIN)}")
             if "cells" in value and isinstance(value["cells"], list):
                 shown = sum(c[2] for c in value["cells"] if isinstance(c, list) and len(c) > 2)
                 if value.get("shots_shown") != shown:
@@ -120,12 +130,14 @@ def _payload_problems(name: str, doc: Any, size: int) -> list[str]:
 
 def problems(folder: Path) -> list[str]:
     """What is wrong with the published folder; an empty list means the guard passes."""
-    if not (folder / "league.json").is_file() or not list(folder.glob("teams/*.json")):
-        return [f"{folder}: league.json or teams/*.json missing"]
+    if not all((folder / f).is_file() for f in ("league.json", EXPECTED)) or not list(
+        folder.glob("teams/*.json")
+    ):
+        return [f"{folder}: league.json, {EXPECTED} or teams/*.json missing"]
     out: list[str] = []
     for path in sorted(p for p in folder.rglob("*") if p.is_file()):
         name = path.relative_to(folder).as_posix()
-        if name != "league.json" and not _TEAM_FILE.match(name):
+        if name not in ("league.json", EXPECTED) and not _TEAM_FILE.match(name):
             out.append(f"{name}: not a file of the atlas")
             continue
         data = path.read_bytes()
@@ -210,6 +222,41 @@ def test_each_mutation_fails_the_guard(copy: Path, mutation: str) -> None:
     _edit(_team(copy), change)
     found = problems(copy)
     assert any(expected in p for p in found), found
+
+
+def _expected_shot_row(doc: dict[str, Any]) -> None:
+    doc["seasons"][0]["teams"][0]["shots"] = [[-12, -6, 1]]
+
+
+def _expected_under_k(doc: dict[str, Any]) -> None:
+    doc["seasons"][-1]["teams"][0]["mid"].update(n=4, made=1, pts=2)
+
+
+EXPECTED_MUTATIONS: dict[str, tuple[Callable[[dict[str, Any]], None], str]] = {
+    "a row of a shot": (_expected_shot_row, "a list of rows outside cells"),
+    "a zone class of four shots": (_expected_under_k, "n=4, under k=5"),
+    "a COORD_X key": (lambda d: d["seasons"][0]["teams"][0].update(COORD_X=120), "raw key"),
+    "k lowered to 1": (lambda d: d.update(k=1), "k is 1"),
+    "more makes than shots": (
+        lambda d: d["seasons"][0]["league"]["rim"].update(made=10**6),
+        "not a count of shots",
+    ),
+    "no cutoff": (lambda d: d["seasons"][0].pop("cutoff"), "no cutoff"),
+    "over the cap": (lambda d: d.update(pad="x" * EXPECTED_CAP), "over its cap"),
+}
+
+
+@pytest.mark.parametrize("mutation", list(EXPECTED_MUTATIONS))
+def test_each_mutation_of_the_expected_points_fails_the_guard(copy: Path, mutation: str) -> None:
+    change, expected = EXPECTED_MUTATIONS[mutation]
+    _edit(copy / EXPECTED, change)
+    found = problems(copy)
+    assert any(EXPECTED in p and expected in p for p in found), found
+
+
+def test_a_missing_expected_points_fails_the_guard(copy: Path) -> None:
+    (copy / EXPECTED).unlink()
+    assert any("missing" in p for p in problems(copy))
 
 
 def test_a_stray_file_fails_the_guard(copy: Path) -> None:

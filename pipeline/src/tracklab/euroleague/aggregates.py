@@ -13,6 +13,9 @@ coordinate is ever written. The figures come from the probe (docs/euroleague-pro
   zone is ``mid`` (D to G, and the few twos the feed tags H or I); a two with no zone is
   ``unclassified``;
 - players with ``PLAYER_MIN_SHOTS`` field goals or more for the team in the season.
+
+``expected-points.json`` (P14b, task 117) is lesson 12's file: by season, the league's and each
+team's attempts, makes and points in each zone class, and the points per shot they give.
 """
 
 from __future__ import annotations
@@ -33,6 +36,8 @@ K = 5
 PLAYER_MIN_SHOTS = 100
 TEAM_CAP_BYTES = 24_000
 LEAGUE_CAP_BYTES_PER_SEASON = 4_000
+EXPECTED_FILE = "expected-points.json"
+EXPECTED_CAP_BYTES = 16_000
 RIM_ZONES = frozenset("ABC")
 CLASSES = ("rim", "mid", "three")
 FIELD_GOALS = {"2FGM": True, "2FGA": False, "3FGM": True, "3FGA": False}  # action -> made
@@ -307,8 +312,82 @@ def team_payloads(
     }
 
 
+def _under_k(zones: dict[str, dict[str, int]], k: int) -> bool:
+    return any(zones[c]["n"] < k for c in CLASSES)
+
+
+def expected_split(
+    zones: dict[str, dict[str, int]], league_pps: dict[str, float], league_mean: float
+) -> dict[str, float]:
+    """A team's points per shot, its expected points per shot (its attempts in each class at the
+    league's points per shot there, over its attempts) and the two parts of the difference with
+    the league: ``mix`` = xpps - mean and ``making`` = pps - xpps."""
+    n = sum(zones[c]["n"] for c in CLASSES)
+    pps = sum(zones[c]["pts"] for c in CLASSES) / n
+    xpps = sum(zones[c]["n"] * league_pps[c] for c in CLASSES) / n
+    return {
+        "pps": _r3(pps),
+        "xpps": _r3(xpps),
+        "mix": _r3(xpps - league_mean),
+        "making": _r3(pps - xpps),
+    }
+
+
+def expected_payload(seasons: list[Season], k: int = K) -> dict[str, Any]:
+    """Expected points by zone class. A season whose league has a class under k attempts is left
+    out, and so is a team with one (``teams_left_out``): no published count is under k."""
+    blocks = []
+    for s in seasons:
+        league, unclassified = zone_totals(s.shots)
+        if _under_k(league, k):
+            continue
+        pps = {c: league[c]["pts"] / league[c]["n"] for c in CLASSES}
+        mean = sum(league[c]["pts"] for c in CLASSES) / sum(league[c]["n"] for c in CLASSES)
+        by_team: dict[str, list[Shot]] = defaultdict(list)
+        for shot in s.shots:
+            by_team[shot.team].append(shot)
+        teams = []
+        for code in sorted(s.names):
+            zones, _ = zone_totals(by_team[code])
+            if not _under_k(zones, k):
+                teams.append(
+                    {
+                        "code": code,
+                        "name": s.names[code],
+                        **zones,
+                        **expected_split(zones, pps, mean),
+                    }
+                )
+        blocks.append(
+            {
+                **_season_head(s),
+                "league": {**league, "unclassified": unclassified},
+                "pps": {c: _r3(pps[c]) for c in CLASSES},
+                "mean": _r3(mean),
+                "teams": teams,
+                "teams_left_out": len(s.names) - len(teams),
+            }
+        )
+    if not blocks:
+        raise EuroleaguePublishError(f"{EXPECTED_FILE}: no season with {k} attempts in every class")
+    return {
+        "version": VERSION,
+        "source": SOURCE,
+        "k": k,
+        "classes": list(CLASSES),
+        "rim_zones": sorted(RIM_ZONES),
+        "seasons": blocks,
+    }
+
+
 def render(payload: dict[str, Any]) -> str:
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n"
+
+
+def _cap(name: str, seasons: int) -> int:
+    if name == "league.json":
+        return LEAGUE_CAP_BYTES_PER_SEASON * seasons
+    return EXPECTED_CAP_BYTES if name == EXPECTED_FILE else TEAM_CAP_BYTES
 
 
 def build_files(raw: Path, seasons: Iterable[str]) -> dict[str, str]:
@@ -317,15 +396,44 @@ def build_files(raw: Path, seasons: Iterable[str]) -> dict[str, str]:
     files = {"league.json": render(league_payload(loaded))}
     for code, payload in team_payloads(loaded).items():
         files[f"teams/{code}.json"] = render(payload)
+    files[EXPECTED_FILE] = render(expected_payload(loaded))
     over = []
     for name, text in files.items():
         size = len(text.encode("utf-8"))
-        cap = LEAGUE_CAP_BYTES_PER_SEASON * len(loaded) if name == "league.json" else TEAM_CAP_BYTES
+        cap = _cap(name, len(loaded))
         if size > cap:
             over.append(f"{name}: {size} B > {cap} B")
     if over:
         raise EuroleaguePublishError("over the byte cap, nothing written: " + "; ".join(over))
     return files
+
+
+PUBLIC_SQL = Path(__file__).parents[1] / "learn" / "expected-points.sql"
+TABLE_FIELDS = ("pps", "xpps", "mix", "making")
+
+
+def public_sql_problems(path: Path) -> tuple[int, list[str]]:
+    """Lesson 12's "Reproduce it" query run with DuckDB on a published expected-points.json: its
+    rows against the file's own, every team of every season, exactly."""
+    import duckdb
+
+    sql = PUBLIC_SQL.read_text(encoding="utf-8").replace(
+        "'expected-points.json'", f"'{path.resolve().as_posix()}'"
+    )
+    rows = duckdb.connect().execute(sql).fetchall()
+    doc = _read_json(path)
+    want = {
+        (s["season"], t["code"]): tuple(t[f] for f in TABLE_FIELDS)
+        for s in doc["seasons"]
+        for t in s["teams"]
+    }
+    got = {(season, code): tuple(values) for season, code, *values in rows}
+    problems = [
+        f"{key}: query {got.get(key)}, file {want.get(key)}"
+        for key in sorted(want.keys() | got.keys())
+        if got.get(key) != want.get(key)
+    ]
+    return len(want), problems
 
 
 def _on_disk(folder: Path) -> dict[str, bytes]:
@@ -360,7 +468,15 @@ def run_euroleague_publish(
         if differ:
             print(f"euroleague publish --check: {len(differ)} files differ: {', '.join(differ)}")
             return 1
-        print(f"euroleague publish --check: FULL {len(wanted)}/{len(wanted)} files rebuilt")
+        rows, problems = public_sql_problems(folder / EXPECTED_FILE)
+        if problems:
+            detail = "; ".join(problems)
+            print(f"euroleague publish --check: learn/expected-points.sql differs: {detail}")
+            return 1
+        print(
+            f"euroleague publish --check: FULL {len(wanted)}/{len(wanted)} files rebuilt; "
+            f"learn/expected-points.sql gives the {rows} rows of {EXPECTED_FILE}"
+        )
         return 0
     for name in present.keys() - wanted.keys():
         (folder / name).unlink()

@@ -1616,7 +1616,8 @@ def build_parser() -> argparse.ArgumentParser:
         "publish",
         help="Write the aggregates of the downloaded games to <out>/euroleague/: league.json "
         "and teams/<CODE>.json (hexagons of 1.0 m with k = 5, players with 100 shots or more, "
-        "the attempt mix by season); never a shot.",
+        "the attempt mix by season) and expected-points.json (lesson 12: counts by zone class); "
+        "never a shot.",
     )
     euroleague_publish.add_argument(
         "--season",
