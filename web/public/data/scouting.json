@@ -1,0 +1,1561 @@
+{
+ "schema_version": 1,
+ "age_reference": "2025-06-30",
+ "default_pairs": {
+  "football": [
+   {
+    "player_id": 159688,
+    "team_id": 868,
+    "position_group": "Midfield",
+    "player_name": "Jordi Valadon",
+    "team_name": "Melbourne Victory Football Club",
+    "age": 22
+   },
+   {
+    "player_id": 51675,
+    "team_id": 1803,
+    "position_group": "Midfield",
+    "player_name": "Angus Thurgate",
+    "team_name": "Western United",
+    "age": 25
+   }
+  ],
+  "basketball": [
+   {
+    "player_id": 28336,
+    "team_id": 1315,
+    "player_name": "Otis Livingston II",
+    "team_name": "Basquet Girona"
+   },
+   {
+    "player_id": 28390,
+    "team_id": 1315,
+    "player_name": "Mark Hughes",
+    "team_name": "Basquet Girona"
+   }
+  ]
+ },
+ "aliases": [
+  {
+   "player_id": 446,
+   "canonical_player_id": 11247
+  },
+  {
+   "player_id": 58625,
+   "canonical_player_id": 58436
+  },
+  {
+   "player_id": 59094,
+   "canonical_player_id": 32852
+  },
+  {
+   "player_id": 59237,
+   "canonical_player_id": 59129
+  },
+  {
+   "player_id": 83339,
+   "canonical_player_id": 35554
+  },
+  {
+   "player_id": 84388,
+   "canonical_player_id": 22915
+  },
+  {
+   "player_id": 84394,
+   "canonical_player_id": 59187
+  },
+  {
+   "player_id": 92815,
+   "canonical_player_id": 59180
+  },
+  {
+   "player_id": 94602,
+   "canonical_player_id": 27976
+  }
+ ],
+ "tables": [
+  {
+   "table": "fb_physical",
+   "sport": "football",
+   "file": "fb_physical.13917553.parquet",
+   "sha256": "1391755343ac1af03df62c353f57b231e24c6f63ab861f365f3cd3210c83528a",
+   "key": [
+    "player_id",
+    "team_id",
+    "position_group"
+   ],
+   "sample": "count_match",
+   "floor": "count_match >= 5",
+   "partition": "position_group",
+   "metrics": [
+    {
+     "id": "total_distance_full_all",
+     "expr": "total_distance_full_all",
+     "label": "Distance",
+     "scale": "per_match",
+     "unit": "m"
+    },
+    {
+     "id": "total_metersperminute_full_all",
+     "expr": "total_metersperminute_full_all",
+     "label": "Distance per min",
+     "scale": "m_per_min",
+     "unit": "m/min"
+    },
+    {
+     "id": "hsr_distance_full_all",
+     "expr": "hsr_distance_full_all",
+     "label": "HSR distance",
+     "scale": "per_match",
+     "unit": "m"
+    },
+    {
+     "id": "hsr_count_full_all",
+     "expr": "hsr_count_full_all",
+     "label": "HSR runs",
+     "scale": "per_match",
+     "unit": ""
+    },
+    {
+     "id": "sprint_distance_full_all",
+     "expr": "sprint_distance_full_all",
+     "label": "Sprint distance",
+     "scale": "per_match",
+     "unit": "m"
+    },
+    {
+     "id": "sprint_count_full_all",
+     "expr": "sprint_count_full_all",
+     "label": "Sprints",
+     "scale": "per_match",
+     "unit": ""
+    },
+    {
+     "id": "psv99",
+     "expr": "psv99",
+     "label": "Peak speed",
+     "scale": "km_per_h",
+     "unit": "km/h"
+    },
+    {
+     "id": "medaccel_count_full_all",
+     "expr": "medaccel_count_full_all",
+     "label": "Medium accels",
+     "scale": "per_match",
+     "unit": ""
+    },
+    {
+     "id": "highaccel_count_full_all",
+     "expr": "highaccel_count_full_all",
+     "label": "High accels",
+     "scale": "per_match",
+     "unit": ""
+    },
+    {
+     "id": "highdecel_count_full_all",
+     "expr": "highdecel_count_full_all",
+     "label": "High decels",
+     "scale": "per_match",
+     "unit": ""
+    }
+   ],
+   "pools": [
+    {
+     "group": "Center Forward",
+     "rows": 33,
+     "players": 33,
+     "sample_total": 417,
+     "n": [
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      33,
+      33
+     ]
+    },
+    {
+     "group": "Central Defender",
+     "rows": 44,
+     "players": 44,
+     "sample_total": 658,
+     "n": [
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44
+     ]
+    },
+    {
+     "group": "Full Back",
+     "rows": 47,
+     "players": 47,
+     "sample_total": 610,
+     "n": [
+      47,
+      47,
+      47,
+      47,
+      47,
+      47,
+      47,
+      47,
+      47,
+      47
+     ]
+    },
+    {
+     "group": "Midfield",
+     "rows": 47,
+     "players": 47,
+     "sample_total": 722,
+     "n": [
+      47,
+      47,
+      47,
+      47,
+      47,
+      47,
+      47,
+      47,
+      47,
+      47
+     ]
+    },
+    {
+     "group": "Wide Attacker",
+     "rows": 39,
+     "players": 39,
+     "sample_total": 474,
+     "n": [
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "player_id": 159688,
+     "team_id": 868,
+     "position_group": "Midfield",
+     "in_pool": true,
+     "values": {
+      "total_distance_full_all": [
+       11544.59,
+       60.9
+      ],
+      "total_metersperminute_full_all": [
+       121.84,
+       32.6
+      ],
+      "hsr_distance_full_all": [
+       545.34,
+       58.7
+      ],
+      "hsr_count_full_all": [
+       48.41,
+       65.2
+      ],
+      "sprint_distance_full_all": [
+       112.17,
+       63.0
+      ],
+      "sprint_count_full_all": [
+       6.52,
+       63.0
+      ],
+      "psv99": [
+       27.86,
+       84.8
+      ],
+      "medaccel_count_full_all": [
+       102.45,
+       28.3
+      ],
+      "highaccel_count_full_all": [
+       3.83,
+       73.9
+      ],
+      "highdecel_count_full_all": [
+       12.0,
+       63.0
+      ]
+     }
+    },
+    {
+     "player_id": 51675,
+     "team_id": 1803,
+     "position_group": "Midfield",
+     "in_pool": true,
+     "values": {
+      "total_distance_full_all": [
+       12606.75,
+       97.8
+      ],
+      "total_metersperminute_full_all": [
+       129.9,
+       89.1
+      ],
+      "hsr_distance_full_all": [
+       651.07,
+       82.6
+      ],
+      "hsr_count_full_all": [
+       54.18,
+       82.6
+      ],
+      "sprint_distance_full_all": [
+       146.64,
+       89.1
+      ],
+      "sprint_count_full_all": [
+       8.36,
+       87.0
+      ],
+      "psv99": [
+       27.9,
+       89.1
+      ],
+      "medaccel_count_full_all": [
+       112.82,
+       78.3
+      ],
+      "highaccel_count_full_all": [
+       3.39,
+       47.8
+      ],
+      "highdecel_count_full_all": [
+       13.25,
+       80.4
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "table": "fb_passing",
+   "sport": "football",
+   "file": "fb_passing.dd38e541.parquet",
+   "sha256": "dd38e541a7a5523fa91384407412dec0248d0dd8350c1d0470798844f65fa493",
+   "key": [
+    "player_id",
+    "team_id",
+    "position_group"
+   ],
+   "sample": "performance_count",
+   "floor": "performance_count >= 5",
+   "partition": "position_group",
+   "metrics": [
+    {
+     "id": "pass_count_attempted_p30tip",
+     "expr": "pass_count_attempted_p30tip",
+     "label": "Passes",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "pass_count_completed_p30tip",
+     "expr": "pass_count_completed_p30tip",
+     "label": "Completed",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "pass_count_linebreak_attempted_p30tip",
+     "expr": "pass_count_linebreak_attempted_p30tip",
+     "label": "Line-breaks",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "pass_count_dangerous_attempted_p30tip",
+     "expr": "pass_count_dangerous_attempted_p30tip",
+     "label": "Dangerous",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "pass_count_longrange_attempted_p30tip",
+     "expr": "pass_count_longrange_attempted_p30tip",
+     "label": "Long-range",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "pass_count_torun_attempted_p30tip",
+     "expr": "pass_count_torun_attempted_p30tip",
+     "label": "To a run",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "pass_count_difficultpass_attempted_p30tip",
+     "expr": "pass_count_difficultpass_attempted_p30tip",
+     "label": "Difficult",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "pass_pct_completed",
+     "expr": "pass_pct_completed",
+     "label": "Completion",
+     "scale": "per_hundred",
+     "unit": ""
+    },
+    {
+     "id": "pass_avgxpass_attempted",
+     "expr": "pass_avgxpass_attempted",
+     "label": "xPass",
+     "scale": "per_hundred",
+     "unit": ""
+    },
+    {
+     "id": "pass_avgdistance",
+     "expr": "pass_avgdistance",
+     "label": "Pass length",
+     "scale": "per_action",
+     "unit": "m"
+    }
+   ],
+   "pools": [
+    {
+     "group": "Center Forward",
+     "rows": 26,
+     "players": 26,
+     "sample_total": 294,
+     "n": [
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26
+     ]
+    },
+    {
+     "group": "Central Defender",
+     "rows": 39,
+     "players": 39,
+     "sample_total": 491,
+     "n": [
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39
+     ]
+    },
+    {
+     "group": "Full Back",
+     "rows": 37,
+     "players": 37,
+     "sample_total": 442,
+     "n": [
+      37,
+      37,
+      37,
+      37,
+      37,
+      37,
+      37,
+      37,
+      37,
+      37
+     ]
+    },
+    {
+     "group": "Goalkeeper",
+     "rows": 19,
+     "players": 19,
+     "sample_total": 263,
+     "n": [
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      19
+     ]
+    },
+    {
+     "group": "Midfield",
+     "rows": 41,
+     "players": 41,
+     "sample_total": 540,
+     "n": [
+      41,
+      41,
+      41,
+      41,
+      41,
+      41,
+      41,
+      41,
+      41,
+      41
+     ]
+    },
+    {
+     "group": "Wide Attacker",
+     "rows": 32,
+     "players": 32,
+     "sample_total": 334,
+     "n": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "player_id": 159688,
+     "team_id": 868,
+     "position_group": "Midfield",
+     "in_pool": true,
+     "values": {
+      "pass_count_attempted_p30tip": [
+       43.3,
+       35.0
+      ],
+      "pass_count_completed_p30tip": [
+       38.66,
+       40.0
+      ],
+      "pass_count_linebreak_attempted_p30tip": [
+       4.7,
+       27.5
+      ],
+      "pass_count_dangerous_attempted_p30tip": [
+       4.27,
+       55.0
+      ],
+      "pass_count_longrange_attempted_p30tip": [
+       1.92,
+       37.5
+      ],
+      "pass_count_torun_attempted_p30tip": [
+       6.51,
+       35.0
+      ],
+      "pass_count_difficultpass_attempted_p30tip": [
+       5.18,
+       27.5
+      ],
+      "pass_pct_completed": [
+       89.27,
+       82.5
+      ],
+      "pass_avgxpass_attempted": [
+       87.91,
+       57.5
+      ],
+      "pass_avgdistance": [
+       14.9,
+       37.5
+      ]
+     }
+    },
+    {
+     "player_id": 51675,
+     "team_id": 1803,
+     "position_group": "Midfield",
+     "in_pool": true,
+     "values": {
+      "pass_count_attempted_p30tip": [
+       42.04,
+       32.5
+      ],
+      "pass_count_completed_p30tip": [
+       34.08,
+       20.0
+      ],
+      "pass_count_linebreak_attempted_p30tip": [
+       6.27,
+       60.0
+      ],
+      "pass_count_dangerous_attempted_p30tip": [
+       5.6,
+       80.0
+      ],
+      "pass_count_longrange_attempted_p30tip": [
+       2.06,
+       42.5
+      ],
+      "pass_count_torun_attempted_p30tip": [
+       6.07,
+       27.5
+      ],
+      "pass_count_difficultpass_attempted_p30tip": [
+       8.28,
+       72.5
+      ],
+      "pass_pct_completed": [
+       81.05,
+       5.0
+      ],
+      "pass_avgxpass_attempted": [
+       84.04,
+       17.5
+      ],
+      "pass_avgdistance": [
+       15.8,
+       60.0
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "table": "fb_obr",
+   "sport": "football",
+   "file": "fb_obr.417337cd.parquet",
+   "sha256": "417337cd32c639068d8f470894e6bc776a3e73b588e6b665898a7453b81009a9",
+   "key": [
+    "player_id",
+    "team_id",
+    "position_group"
+   ],
+   "sample": "performance_count",
+   "floor": "performance_count >= 5",
+   "partition": "position_group",
+   "metrics": [
+    {
+     "id": "offballrun_count_p30tip",
+     "expr": "offballrun_count_p30tip",
+     "label": "Off-ball runs",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "behindrun_count_p30tip",
+     "expr": "behindrun_count_p30tip",
+     "label": "Behind",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "overlaprun_count_p30tip",
+     "expr": "overlaprun_count_p30tip",
+     "label": "Overlap",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "underlaprun_count_p30tip",
+     "expr": "underlaprun_count_p30tip",
+     "label": "Underlap",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "supportrun_count_p30tip",
+     "expr": "supportrun_count_p30tip",
+     "label": "Support",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "droppingoffrun_count_p30tip",
+     "expr": "droppingoffrun_count_p30tip",
+     "label": "Dropping off",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "aheadoftheballrun_count_p30tip",
+     "expr": "aheadoftheballrun_count_p30tip",
+     "label": "Ahead of ball",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "offballrun_count_dangerous_p30tip",
+     "expr": "offballrun_count_dangerous_p30tip",
+     "label": "Dangerous runs",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "offballrun_count_received_p30tip",
+     "expr": "offballrun_count_received_p30tip",
+     "label": "Runs received",
+     "scale": "per_30_tip",
+     "unit": ""
+    },
+    {
+     "id": "offballrun_avgdistance",
+     "expr": "offballrun_avgdistance",
+     "label": "Run length",
+     "scale": "per_action",
+     "unit": "m"
+    }
+   ],
+   "pools": [
+    {
+     "group": "Center Forward",
+     "rows": 26,
+     "players": 26,
+     "sample_total": 294,
+     "n": [
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26
+     ]
+    },
+    {
+     "group": "Central Defender",
+     "rows": 39,
+     "players": 39,
+     "sample_total": 491,
+     "n": [
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39,
+      39
+     ]
+    },
+    {
+     "group": "Full Back",
+     "rows": 37,
+     "players": 37,
+     "sample_total": 442,
+     "n": [
+      37,
+      37,
+      37,
+      37,
+      37,
+      37,
+      37,
+      37,
+      37,
+      37
+     ]
+    },
+    {
+     "group": "Goalkeeper",
+     "rows": 19,
+     "players": 19,
+     "sample_total": 263,
+     "n": [
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      19,
+      14
+     ]
+    },
+    {
+     "group": "Midfield",
+     "rows": 41,
+     "players": 41,
+     "sample_total": 540,
+     "n": [
+      41,
+      41,
+      41,
+      41,
+      41,
+      41,
+      41,
+      41,
+      41,
+      41
+     ]
+    },
+    {
+     "group": "Wide Attacker",
+     "rows": 32,
+     "players": 32,
+     "sample_total": 334,
+     "n": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32,
+      32
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "player_id": 159688,
+     "team_id": 868,
+     "position_group": "Midfield",
+     "in_pool": true,
+     "values": {
+      "offballrun_count_p30tip": [
+       27.07,
+       47.5
+      ],
+      "behindrun_count_p30tip": [
+       0.43,
+       62.5
+      ],
+      "overlaprun_count_p30tip": [
+       0.32,
+       60.0
+      ],
+      "underlaprun_count_p30tip": [
+       0.75,
+       60.0
+      ],
+      "supportrun_count_p30tip": [
+       10.95,
+       97.5
+      ],
+      "droppingoffrun_count_p30tip": [
+       1.28,
+       45.0
+      ],
+      "aheadoftheballrun_count_p30tip": [
+       4.22,
+       42.5
+      ],
+      "offballrun_count_dangerous_p30tip": [
+       6.25,
+       67.5
+      ],
+      "offballrun_count_received_p30tip": [
+       7.26,
+       52.5
+      ],
+      "offballrun_avgdistance": [
+       11.94,
+       47.5
+      ]
+     }
+    },
+    {
+     "player_id": 51675,
+     "team_id": 1803,
+     "position_group": "Midfield",
+     "in_pool": true,
+     "values": {
+      "offballrun_count_p30tip": [
+       26.98,
+       45.0
+      ],
+      "behindrun_count_p30tip": [
+       0.41,
+       60.0
+      ],
+      "overlaprun_count_p30tip": [
+       0.31,
+       57.5
+      ],
+      "underlaprun_count_p30tip": [
+       1.59,
+       92.5
+      ],
+      "supportrun_count_p30tip": [
+       7.97,
+       67.5
+      ],
+      "droppingoffrun_count_p30tip": [
+       1.85,
+       72.5
+      ],
+      "aheadoftheballrun_count_p30tip": [
+       4.73,
+       52.5
+      ],
+      "offballrun_count_dangerous_p30tip": [
+       7.14,
+       75.0
+      ],
+      "offballrun_count_received_p30tip": [
+       7.97,
+       62.5
+      ],
+      "offballrun_avgdistance": [
+       12.56,
+       85.0
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "table": "bb_shots",
+   "sport": "basketball",
+   "file": "bb_shots.38163f30.parquet",
+   "sha256": "38163f30cd10d7ae0e840e19aa12191c97d254a6b65feff4ffa9a16dbe3388fb",
+   "key": [
+    "player_id",
+    "team_id"
+   ],
+   "sample": "games_played",
+   "floor": "NOT is_season_total AND games_played >= 10",
+   "partition": null,
+   "metrics": [
+    {
+     "id": "fg_percentage",
+     "expr": "fg_percentage",
+     "label": "FG%",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "two_pt_percentage",
+     "expr": "two_pt_percentage",
+     "label": "2P%",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "three_pt_percentage",
+     "expr": "three_pt_percentage",
+     "label": "3P%",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "ft_percentage",
+     "expr": "ft_percentage",
+     "label": "FT%",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "efg_percentage",
+     "expr": "efg_percentage",
+     "label": "eFG%",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "three_pa_rate",
+     "expr": "three_pa_rate",
+     "label": "3PA rate",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "rim_attempt_rate",
+     "expr": "rim_attempt_rate",
+     "label": "Rim rate",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "rim_fg_percentage",
+     "expr": "rim_fg_percentage",
+     "label": "Rim FG%",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "points_per_shot",
+     "expr": "points_per_shot",
+     "label": "Points per shot",
+     "scale": "per_action",
+     "unit": ""
+    },
+    {
+     "id": "avg_attempts_distance",
+     "expr": "avg_attempts_distance",
+     "label": "Shot distance",
+     "scale": "per_action",
+     "unit": "m"
+    },
+    {
+     "id": "total_points_per_game",
+     "expr": "total_points / games_played",
+     "label": "Points",
+     "scale": "per_match",
+     "unit": ""
+    }
+   ],
+   "pools": [
+    {
+     "group": null,
+     "rows": 248,
+     "players": 248,
+     "sample_total": 6227,
+     "n": [
+      248,
+      248,
+      224,
+      247,
+      248,
+      248,
+      248,
+      246,
+      248,
+      248,
+      248
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "player_id": 28336,
+     "team_id": 1315,
+     "in_pool": true,
+     "values": {
+      "fg_percentage": [
+       0.3963,
+       20.6
+      ],
+      "two_pt_percentage": [
+       0.431,
+       11.3
+      ],
+      "three_pt_percentage": [
+       0.3663,
+       61.0
+      ],
+      "ft_percentage": [
+       0.8161,
+       73.2
+      ],
+      "efg_percentage": [
+       0.4947,
+       25.9
+      ],
+      "three_pa_rate": [
+       0.5372,
+       64.8
+      ],
+      "rim_attempt_rate": [
+       0.0931,
+       12.1
+      ],
+      "rim_fg_percentage": [
+       0.6857,
+       53.9
+      ],
+      "points_per_shot": [
+       1.0693,
+       25.9
+      ],
+      "avg_attempts_distance": [
+       18.1525,
+       81.8
+      ],
+      "total_points_per_game": [
+       13.0294,
+       89.5
+      ]
+     }
+    },
+    {
+     "player_id": 28390,
+     "team_id": 1315,
+     "in_pool": true,
+     "values": {
+      "fg_percentage": [
+       0.4208,
+       28.7
+      ],
+      "two_pt_percentage": [
+       0.4684,
+       22.7
+      ],
+      "three_pt_percentage": [
+       0.3944,
+       78.0
+      ],
+      "ft_percentage": [
+       0.9048,
+       94.7
+      ],
+      "efg_percentage": [
+       0.5475,
+       51.0
+      ],
+      "three_pa_rate": [
+       0.6425,
+       87.0
+      ],
+      "rim_attempt_rate": [
+       0.1222,
+       23.1
+      ],
+      "rim_fg_percentage": [
+       0.5556,
+       16.7
+      ],
+      "points_per_shot": [
+       1.2022,
+       59.9
+      ],
+      "avg_attempts_distance": [
+       18.3451,
+       84.2
+      ],
+      "total_points_per_game": [
+       8.7941,
+       63.2
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "table": "bb_drives",
+   "sport": "basketball",
+   "file": "bb_drives.17be543e.parquet",
+   "sha256": "17be543e023f4a1a86b63eac43e736e432445e2fb5171f12e603de86de0f5f38",
+   "key": [
+    "player_id",
+    "team_id"
+   ],
+   "sample": "games_played",
+   "floor": "NOT is_season_total AND games_played >= 10",
+   "partition": null,
+   "metrics": [
+    {
+     "id": "total_drives_per_game",
+     "expr": "total_drives / games_played",
+     "label": "Drives",
+     "scale": "per_match",
+     "unit": ""
+    },
+    {
+     "id": "points_per_drive",
+     "expr": "points_per_drive",
+     "label": "Points per drive",
+     "scale": "per_action",
+     "unit": ""
+    },
+    {
+     "id": "points_per_shot_in_drive",
+     "expr": "points_per_shot_in_drive",
+     "label": "Points per shot in drive",
+     "scale": "per_action",
+     "unit": ""
+    },
+    {
+     "id": "successful_drives_rate",
+     "expr": "successful_drives_rate",
+     "label": "Successful",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "made_baskets_rate",
+     "expr": "made_baskets_rate",
+     "label": "Made baskets",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "assists_rate",
+     "expr": "assists_rate",
+     "label": "Assists",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "potential_assists_rate",
+     "expr": "potential_assists_rate",
+     "label": "Potential assists",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "fouls_rate",
+     "expr": "fouls_rate",
+     "label": "Fouls",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "end_type_turnover_rate",
+     "expr": "end_type_turnover_rate",
+     "label": "Turnovers",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "end_type_kickout_rate",
+     "expr": "end_type_kickout_rate",
+     "label": "Kick-outs",
+     "scale": "per_one",
+     "unit": ""
+    }
+   ],
+   "pools": [
+    {
+     "group": null,
+     "rows": 241,
+     "players": 241,
+     "sample_total": 6100,
+     "n": [
+      241,
+      241,
+      235,
+      241,
+      241,
+      241,
+      241,
+      241,
+      241,
+      241
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "player_id": 28336,
+     "team_id": 1315,
+     "in_pool": true,
+     "values": {
+      "total_drives_per_game": [
+       8.8529,
+       96.3
+      ],
+      "points_per_drive": [
+       0.4917,
+       32.1
+      ],
+      "points_per_shot_in_drive": [
+       1.0361,
+       43.6
+      ],
+      "successful_drives_rate": [
+       0.4784,
+       30.8
+      ],
+      "made_baskets_rate": [
+       0.1296,
+       19.6
+      ],
+      "assists_rate": [
+       0.1096,
+       79.2
+      ],
+      "potential_assists_rate": [
+       0.0498,
+       86.3
+      ],
+      "fouls_rate": [
+       0.1063,
+       40.4
+      ],
+      "end_type_turnover_rate": [
+       0.0233,
+       37.5
+      ],
+      "end_type_kickout_rate": [
+       0.3621,
+       82.9
+      ]
+     }
+    },
+    {
+     "player_id": 28390,
+     "team_id": 1315,
+     "in_pool": true,
+     "values": {
+      "total_drives_per_game": [
+       2.8235,
+       60.0
+      ],
+      "points_per_drive": [
+       0.5833,
+       54.2
+      ],
+      "points_per_shot_in_drive": [
+       1.2239,
+       74.8
+      ],
+      "successful_drives_rate": [
+       0.5417,
+       60.0
+      ],
+      "made_baskets_rate": [
+       0.1667,
+       35.0
+      ],
+      "assists_rate": [
+       0.0833,
+       62.9
+      ],
+      "potential_assists_rate": [
+       0.0625,
+       92.5
+      ],
+      "fouls_rate": [
+       0.1458,
+       59.6
+      ],
+      "end_type_turnover_rate": [
+       0.0521,
+       70.0
+      ],
+      "end_type_kickout_rate": [
+       0.2917,
+       63.3
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "table": "bb_picks",
+   "sport": "basketball",
+   "file": "bb_picks.89cc2992.parquet",
+   "sha256": "89cc2992d04adfe1f698bd8d05cec19f03db526297b8d0d48889fe17f7f9da10",
+   "key": [
+    "player_id",
+    "team_id"
+   ],
+   "sample": "games_played",
+   "floor": "NOT is_season_total AND games_played >= 10",
+   "partition": null,
+   "metrics": [
+    {
+     "id": "handler_total_picks_per_game",
+     "expr": "handler_total_picks / games_played",
+     "label": "Picks as handler",
+     "scale": "per_match",
+     "unit": ""
+    },
+    {
+     "id": "screener_total_picks_per_game",
+     "expr": "screener_total_picks / games_played",
+     "label": "Picks as screener",
+     "scale": "per_match",
+     "unit": ""
+    },
+    {
+     "id": "handler_ppp",
+     "expr": "handler_ppp",
+     "label": "Handler points per pick",
+     "scale": "per_action",
+     "unit": ""
+    },
+    {
+     "id": "screener_ppp",
+     "expr": "screener_ppp",
+     "label": "Screener points per pick",
+     "scale": "per_action",
+     "unit": ""
+    },
+    {
+     "id": "handler_score_rate",
+     "expr": "handler_score_rate",
+     "label": "Handler scores",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "handler_turnover_rate",
+     "expr": "handler_turnover_rate",
+     "label": "Handler turnovers",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "handler_assist_rate",
+     "expr": "handler_assist_rate",
+     "label": "Handler assists",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "screener_score_rate",
+     "expr": "screener_score_rate",
+     "label": "Screener scores",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "screener_turnover_rate",
+     "expr": "screener_turnover_rate",
+     "label": "Screener turnovers",
+     "scale": "per_one",
+     "unit": ""
+    },
+    {
+     "id": "screener_success_rate",
+     "expr": "screener_success_rate",
+     "label": "Screener success",
+     "scale": "per_one",
+     "unit": ""
+    }
+   ],
+   "pools": [
+    {
+     "group": null,
+     "rows": 248,
+     "players": 248,
+     "sample_total": 6227,
+     "n": [
+      248,
+      248,
+      200,
+      246,
+      200,
+      200,
+      200,
+      246,
+      246,
+      246
+     ]
+    }
+   ],
+   "probes": [
+    {
+     "player_id": 28336,
+     "team_id": 1315,
+     "in_pool": true,
+     "values": {
+      "handler_total_picks_per_game": [
+       16.6765,
+       98.0
+      ],
+      "screener_total_picks_per_game": [
+       0.0882,
+       4.9
+      ],
+      "handler_ppp": [
+       0.7937,
+       69.8
+      ],
+      "screener_ppp": [
+       1.0,
+       98.0
+      ],
+      "handler_score_rate": [
+       0.1534,
+       52.3
+      ],
+      "handler_turnover_rate": [
+       0.0741,
+       41.2
+      ],
+      "handler_assist_rate": [
+       0.1764,
+       79.9
+      ],
+      "screener_score_rate": [
+       0.3333,
+       98.0
+      ],
+      "screener_turnover_rate": [
+       0.0,
+       0.0
+      ],
+      "screener_success_rate": [
+       0.3333,
+       95.5
+      ]
+     }
+    },
+    {
+     "player_id": 28390,
+     "team_id": 1315,
+     "in_pool": true,
+     "values": {
+      "handler_total_picks_per_game": [
+       3.0882,
+       63.2
+      ],
+      "screener_total_picks_per_game": [
+       0.2353,
+       17.8
+      ],
+      "handler_ppp": [
+       0.6857,
+       52.8
+      ],
+      "screener_ppp": [
+       0.75,
+       95.9
+      ],
+      "handler_score_rate": [
+       0.1619,
+       55.8
+      ],
+      "handler_turnover_rate": [
+       0.1048,
+       61.8
+      ],
+      "handler_assist_rate": [
+       0.1429,
+       63.3
+      ],
+      "screener_score_rate": [
+       0.25,
+       96.7
+      ],
+      "screener_turnover_rate": [
+       0.0,
+       0.0
+      ],
+      "screener_success_rate": [
+       0.25,
+       89.8
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

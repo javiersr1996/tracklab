@@ -66,6 +66,7 @@ from tracklab.publish.pose import run_publish_pose
 from tracklab.publish.possessions import run_publish_possessions
 from tracklab.publish.quality import run_publish_quality
 from tracklab.publish.runs import run_publish_runs
+from tracklab.publish.scouting import run_publish_scouting
 from tracklab.publish.stats import run_publish_stats
 from tracklab.publish.warehouse import run_publish_warehouse
 from tracklab.publish.warehouse_pg import WHERE, run_publish_warehouse_pg
@@ -227,6 +228,10 @@ def _cmd_publish_warehouse(args: argparse.Namespace) -> int:
 
 def _cmd_publish_examples(args: argparse.Namespace) -> int:
     return run_publish_examples(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
+
+
+def _cmd_publish_scouting(args: argparse.Namespace) -> int:
+    return run_publish_scouting(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
 
 
 def _cmd_publish_runs(args: argparse.Namespace) -> int:
@@ -720,6 +725,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="Regenerate in memory and compare with the file on disk; write nothing.",
     )
     publish_examples.set_defaults(func=_cmd_publish_examples)
+
+    publish_scouting = publish_sub.add_parser(
+        "scouting",
+        help="Write scouting.json: the pools, the sample floors and the expected values and "
+        "percentiles of the probe players of the scouting page, computed in plain Python from "
+        "the published warehouse Parquet.",
+    )
+    publish_scouting.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; only the bronze basketball aliases are read from it (default: data).",
+    )
+    publish_scouting.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where scouting.json goes and warehouse.json and warehouse/ are read from "
+        "(default: ../web/public/data).",
+    )
+    publish_scouting.add_argument(
+        "--check",
+        action="store_true",
+        help="Regenerate in memory and compare byte for byte with the file on disk; write nothing.",
+    )
+    publish_scouting.set_defaults(func=_cmd_publish_scouting)
 
     publish_runs = publish_sub.add_parser(
         "runs",
