@@ -506,7 +506,7 @@ a.wordmark:hover {
   box-shadow: 0 8px 14px -10px var(--neon); /* the underline's glow */
 }
 
-/* Under Tracking or Engineering (P15), the group's pages: a row of their own under a hairline,
+/* Under Tracking, Engineering or Warehouse (P15, P17), the group's pages: a row of their own under a hairline,
    the same links in mixed case and without brackets, a level below the six. */
 .site-subnav {
   flex-basis: 100%;

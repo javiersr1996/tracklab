@@ -53,8 +53,9 @@ export const SECTIONS = [
   },
 ] as const;
 
-// The header's six entries (P15, task 121, Javier's option 1 of 2026-11-01). Tracking and
-// Engineering group pages, which a second row of the header lists on any page under them.
+// The header's six entries (P15, task 121, Javier's option 1 of 2026-11-01). Tracking,
+// Engineering and Warehouse (P17) group pages, which a second row of the header lists on any page
+// under them.
 export type NavEntry = { href: string; nav: string; pages?: { href: string; nav: string }[] };
 export const NAV: NavEntry[] = [
   {
@@ -76,7 +77,14 @@ export const NAV: NavEntry[] = [
       { href: "/engineering/history", nav: "History" },
     ],
   },
-  { href: "/warehouse", nav: "Warehouse" },
+  {
+    href: "/warehouse",
+    nav: "Warehouse",
+    pages: [
+      { href: "/warehouse", nav: "Console" },
+      { href: "/warehouse/scouting", nav: "Scouting" },
+    ],
+  },
   { href: "/learn", nav: "Learn" },
   { href: "/sql", nav: "SQL" },
   { href: "/euroleague", nav: "EuroLeague" },
