@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { Lesson as CadenceLesson } from "../components/learn/cadence/Lesson";
 import { Lesson as ClockLesson } from "../components/learn/clock/Lesson";
 import { Lesson as EntryLesson } from "../components/learn/entry/Lesson";
+import { Lesson as ExpectedLesson } from "../components/learn/expected/Lesson";
 import { Lesson as FacingLesson } from "../components/learn/facing/Lesson";
 import { Lesson as PassLesson } from "../components/learn/pass/Lesson";
 import { Lesson as PossessionLesson } from "../components/learn/possession/Lesson";
@@ -90,6 +91,7 @@ describe("the text of lesson 1", () => {
       ...hrefs(renderToStaticMarkup(createElement(DribbleLesson, { sql: learn("dribble.sql") }))),
       ...hrefs(renderToStaticMarkup(createElement(PossessionLesson, { sql: learn("possession.sql") }))),
       ...hrefs(renderToStaticMarkup(createElement(FacingLesson, { script: learn("facing.py") }))),
+      ...hrefs(renderToStaticMarkup(createElement(ExpectedLesson, { sql: learn("expected-points.sql") }))),
     ]);
     expect([...cited].filter((h) => !urls.includes(h))).toEqual([]);
     expect(urls.filter((u) => !cited.has(u))).toEqual([]);

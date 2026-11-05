@@ -43,6 +43,7 @@ LESSONS = (
     "dribble",
     "possession",
     "facing",
+    "expected-points",
 )
 HERE = Path(__file__).parent
 FILES_LINE = re.compile(r"^-- files: (.+)$", re.MULTILINE)
@@ -250,6 +251,25 @@ def _facing(public: Path) -> Expected:
     }
 
 
+def _expected_points(public: Path) -> Expected:
+    # The SQL's points per attempt, means and per-team figures from the counts against the ones
+    # `euroleague publish` wrote next to them (the file's own, exactly); the plain mean of the
+    # classes, which the file does not carry, against Python's on the same counts.
+    doc = _json(public, "/data/euroleague/expected-points.json")
+    out: Expected = {}
+    for s in doc["seasons"]:
+        season = s["season"]
+        for zone, value in s["pps"].items():
+            out[f"xp.{season}.pps.{zone}"] = (value, 1e-9)
+        out[f"xp.{season}.mean"] = (s["mean"], 1e-9)
+        plain = sum(s["league"][c]["pts"] / s["league"][c]["n"] for c in doc["classes"]) / 3
+        out[f"learn.season.{season}.plain"] = (plain, 0.0005 + 1e-9)
+        for team in s["teams"]:
+            for field in ("pps", "xpps", "mix", "making"):
+                out[f"xp.{season}.teams.{team['code']}.{field}"] = (team[field], 1e-9)
+    return out
+
+
 EXPECT: dict[str, Callable[[Path], Expected]] = {
     "gravity": _gravity,
     "speed": _speed,
@@ -262,6 +282,7 @@ EXPECT: dict[str, Callable[[Path], Expected]] = {
     "dribble": _dribble,
     "possession": _possession,
     "facing": _facing,
+    "expected-points": _expected_points,
 }
 
 

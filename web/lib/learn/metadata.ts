@@ -17,7 +17,7 @@ export function lessonMetadata(slug: string): Metadata {
 
 export const learnMetadata: Metadata = {
   title: "Learn from the tracking data",
-  description: "Short lessons that each start from a question about SkillCorner's open tracking data and end with a query you can run.",
+  description: "Short lessons that each start from a question about SkillCorner's open tracking data or the EuroLeague's shot counts and end with a query you can run.",
   openGraph: { type: "website", title: "Learn from the tracking data", url: "/learn" },
   twitter: { card: "summary_large_image", title: "Learn from the tracking data" },
 };

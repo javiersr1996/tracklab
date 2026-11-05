@@ -464,6 +464,14 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-25",
     quote: "is known as the mean resultant length",
   },
+  // Lesson 12.
+  "mathworld-expectation": {
+    label: "Wolfram MathWorld, Expectation Value",
+    short: "MathWorld, Expectation Value",
+    url: "https://mathworld.wolfram.com/ExpectationValue.html",
+    read: "2026-11-05",
+    quote: "is its probability-weighted average",
+  },
 };
 
 export function sourceProblems(id: string, s: Source): string[] {

@@ -13,9 +13,10 @@ export default function LearnPage() {
       <PageHead eyebrow="Learn" aside={<SketchPanel href="/learn" label="A flight of the ball" />}>
         <h1>Learn from the tracking data</h1>
         <p className="lede">
-          Each lesson starts from one question about SkillCorner&apos;s open tracking data, works the idea on the
-          published frames, and ends with a figure per match and the query or script that reproduces it. The
-          lessons are grouped by level, and each names the sport whose data it uses.
+          Each lesson starts from one question about SkillCorner&apos;s open tracking data, or, in the twelfth, about
+          the EuroLeague&apos;s published shot counts, works the idea on the published data, and ends with its figures
+          and the query or script that reproduces them. The lessons are grouped by level, and each names the sport
+          whose data it uses.
         </p>
         <p>
           The lessons end in SQL. If you have not written any, <Link href="/sql">Learn SQL on the warehouse</Link>{" "}
