@@ -5,15 +5,11 @@ import { Console } from "../../components/warehouse/Console";
 import { rowsOf } from "../../lib/data";
 import { EXAMPLES_FILE } from "../../lib/warehouse/examples";
 import { exampleIds, summary } from "../../lib/warehouse/pg";
+import { BASKETBALL_README, FOOTBALL_README } from "../../lib/warehouse/readmes";
 import { WAREHOUSE } from "../../lib/warehouse/registry";
 import { formatBytes } from "../../lib/format";
 
 export const metadata: Metadata = { title: "Warehouse | Track Lab" };
-
-// The READMEs at the commit that was read, at the quoted line.
-const BASKETBALL_README =
-  "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/README.md#L31";
-const FOOTBALL_README = "https://github.com/SkillCorner/opendata/blob/02a396ffd09b283c9f092fdedeff11da6d535b66/README.md";
 
 const fixed = (value: number) => value.toFixed(1);
 
