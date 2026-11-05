@@ -22,8 +22,8 @@ export interface ScoutingPool {
 
 export interface ScoutingProbe extends PlayerKey {
   in_pool: boolean;
-  // Per metric id: [value, percentile].
-  values?: Record<string, [number, number]>;
+  // Per metric id: [value, percentile], or null where the probe has no value for the metric.
+  values?: Record<string, [number, number] | null>;
 }
 
 export interface CatalogTable extends ScoutingTable {
@@ -44,6 +44,14 @@ export interface ScoutingFile extends ScoutingCatalog {
   default_pairs: Record<Sport, [DefaultPlayer, DefaultPlayer]>;
   aliases: { player_id: number; canonical_player_id: number }[];
   tables: CatalogTable[];
+}
+
+// The metrics of a probe the head panel can draw: a metric the probe has no value for has no bar.
+export function probeMetrics(t: ScoutingTable, probe: ScoutingProbe): { id: string; label: string; pctl: number }[] {
+  return t.metrics.flatMap((m) => {
+    const pctl = probe.values?.[m.id]?.[1];
+    return pctl === undefined ? [] : [{ id: m.id, label: m.label, pctl }];
+  });
 }
 
 export const SCOUTING = scoutingJson as unknown as ScoutingFile;

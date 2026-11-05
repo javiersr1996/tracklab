@@ -7,6 +7,7 @@ import {
   keyText,
   paramsQuery,
   pctlStep,
+  probeMetrics,
   poolsOf,
   readParams,
   rowsOf,
@@ -14,6 +15,7 @@ import {
   sortRows,
   tableOf,
 } from "../lib/scouting/catalog";
+import type { ScoutingProbe } from "../lib/scouting/catalog";
 import type { RawValue } from "../lib/warehouse/cell";
 
 // The helpers of /warehouse/scouting (task 136) on the real `scouting.json`: what the URL may say,
@@ -150,5 +152,23 @@ describe("a comparison", () => {
     expect(c.tables[1].cells.every((x) => x.value === null && x.pctl === null)).toBe(true);
     expect(c.tables[0].cells[0]).toEqual({ value: 1, pctl: 42 });
     expect(c.tables[0].pool?.players).toBe(SCOUTING.tables[0].pools.find((p) => p.group === "Midfield")?.players);
+  });
+});
+
+describe("the head panel's probe", () => {
+  const metrics = [
+    { id: "a", expr: "a", label: "A", scale: "per_match", unit: "" },
+    { id: "b", expr: "b", label: "B", scale: "per_match", unit: "" },
+  ];
+  const table = { table: "t", sport: "football", sample: "count_match", floor: "count_match >= 5", metrics } as never;
+
+  it("leaves out a metric the probe has no value for instead of failing", () => {
+    const probe: ScoutingProbe = { player_id: 1, team_id: 2, in_pool: true, values: { a: [1.5, 40], b: null } };
+    expect(probeMetrics(table, probe)).toEqual([{ id: "a", label: "A", pctl: 40 }]);
+  });
+
+  it("draws every metric when the probe has them all", () => {
+    const probe: ScoutingProbe = { player_id: 1, team_id: 2, in_pool: true, values: { a: [1, 10], b: [2, 90] } };
+    expect(probeMetrics(table, probe).map((m) => m.pctl)).toEqual([10, 90]);
   });
 });

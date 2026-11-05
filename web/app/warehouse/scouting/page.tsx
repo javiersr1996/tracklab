@@ -4,7 +4,7 @@ import { ProbePanel, type ProbeView } from "../../../components/scouting/ProbePa
 import { Scouting } from "../../../components/scouting/Scouting";
 import { Band, PageHead } from "../../../components/site/Band";
 import { rowsOf } from "../../../lib/data";
-import { SCOUTING, sameKey, sampleNoun, TABLE_LABEL } from "../../../lib/scouting/catalog";
+import { probeMetrics, SCOUTING, sameKey, sampleNoun, TABLE_LABEL } from "../../../lib/scouting/catalog";
 import { BASKETBALL_README, FOOTBALL_README } from "../../../lib/warehouse/readmes";
 import "./scouting.css";
 
@@ -30,7 +30,7 @@ function probeView(): ProbeView {
     ageReference: SCOUTING.age_reference,
     table: TABLE_LABEL[table.table] ?? table.table,
     pool: { players: pool.players, sample: pool.sample_total, noun: sampleNoun(table, pool.sample_total) },
-    metrics: table.metrics.map((m) => ({ id: m.id, label: m.label, pctl: probe.values![m.id][1] })),
+    metrics: probeMetrics(table, probe),
   };
 }
 
