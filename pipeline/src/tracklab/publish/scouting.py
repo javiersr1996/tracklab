@@ -73,9 +73,11 @@ class TableSpec:
         return f"NOT is_season_total AND {text}" if self.drop_season_total else text
 
     def passes(self, row: dict[str, Any]) -> bool:
-        if self.drop_season_total and row["is_season_total"]:
+        # As the SQL's WHERE: a NULL sample or a NULL is_season_total is not a row that passes.
+        if self.drop_season_total and row["is_season_total"] is not False:
             return False
-        return bool(row[self.sample] >= self.floor)
+        sample = row[self.sample]
+        return sample is not None and bool(sample >= self.floor)
 
 
 FB_KEY = ("player_id", "team_id", "position_group")

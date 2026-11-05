@@ -185,6 +185,17 @@ def test_basketball_pool_leaves_out_total_rows_and_rows_below_the_floor() -> Non
     assert p1["values"]["pts_per_game"] == [2.0, 25.0]
 
 
+def test_a_null_sample_or_a_null_total_flag_does_not_pass_the_floor_as_in_the_sql() -> None:
+    fb = {"count_match": None}
+    assert FB.passes(fb) is False
+    assert FB.passes({"count_match": 5}) is True
+    assert BB.passes({"games_played": None, "is_season_total": False}) is False
+    # NOT NULL is NULL in the WHERE: the row is out.
+    assert BB.passes({"games_played": 20, "is_season_total": None}) is False
+    assert BB.passes({"games_played": 20, "is_season_total": False}) is True
+    assert BB.passes({"games_played": 20, "is_season_total": True}) is False
+
+
 def test_expression_per_game_divides_by_games_played() -> None:
     (p3,) = table_block(BB, bb_rows(), [(3, 200)])["probes"]
     assert p3["values"]["pts_per_game"] == [5.0, 75.0]  # 60 / 12; [2, 5, 5, 1, 3] has 3 below a 5
