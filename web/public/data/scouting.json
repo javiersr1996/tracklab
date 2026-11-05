@@ -86,6 +86,7 @@
    ],
    "sample": "count_match",
    "floor": "count_match >= 5",
+   "rows_total": 406,
    "partition": "position_group",
    "metrics": [
     {
@@ -362,6 +363,7 @@
    ],
    "sample": "performance_count",
    "floor": "performance_count >= 5",
+   "rows_total": 407,
    "partition": "position_group",
    "metrics": [
     {
@@ -656,6 +658,7 @@
    ],
    "sample": "performance_count",
    "floor": "performance_count >= 5",
+   "rows_total": 407,
    "partition": "position_group",
    "metrics": [
     {
@@ -949,6 +952,7 @@
    ],
    "sample": "games_played",
    "floor": "NOT is_season_total AND games_played >= 10",
+   "rows_total": 326,
    "partition": null,
    "metrics": [
     {
@@ -1166,6 +1170,7 @@
    ],
    "sample": "games_played",
    "floor": "NOT is_season_total AND games_played >= 10",
+   "rows_total": 301,
    "partition": null,
    "metrics": [
     {
@@ -1367,6 +1372,7 @@
    ],
    "sample": "games_played",
    "floor": "NOT is_season_total AND games_played >= 10",
+   "rows_total": 319,
    "partition": null,
    "metrics": [
     {
