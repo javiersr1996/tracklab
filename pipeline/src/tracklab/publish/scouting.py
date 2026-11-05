@@ -362,7 +362,7 @@ def _default_pair(
     for k in common:
         by_group.setdefault(k[2] if first.partition else None, []).append(k)
     best = min(by_group, key=lambda g: (-len(by_group[g]), str(g)))
-    ranked = sorted(by_group[best], key=lambda k: (-sample[k], k[0]))
+    ranked = sorted(by_group[best], key=lambda k: (-sample[k], k))
     if len(ranked) < 2:
         raise ValueError(f"{first.sport}: fewer than two players in the pool of every table")
     return ranked[:2]

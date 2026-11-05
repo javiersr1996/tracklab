@@ -196,6 +196,16 @@ def test_a_null_sample_or_a_null_total_flag_does_not_pass_the_floor_as_in_the_sq
     assert BB.passes({"games_played": 20, "is_season_total": True}) is False
 
 
+def test_the_default_pair_breaks_a_tie_in_the_sample_by_the_whole_key() -> None:
+    rows = fb_rows()
+    for r in rows:
+        if r["position_group"] == "A":
+            r["count_match"] = 7  # p1, p2, p4 all tied
+    rows.append({**rows[0], "team_id": 101})  # player 1 again, in another team
+    pair = scouting._default_pair([FB], {FB.table: rows})
+    assert [(k[0], k[1]) for k in pair] == [(1, 100), (1, 101)]
+
+
 def test_expression_per_game_divides_by_games_played() -> None:
     (p3,) = table_block(BB, bb_rows(), [(3, 200)])["probes"]
     assert p3["values"]["pts_per_game"] == [5.0, 75.0]  # 60 / 12; [2, 5, 5, 1, 3] has 3 below a 5
