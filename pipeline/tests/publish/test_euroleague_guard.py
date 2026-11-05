@@ -12,6 +12,7 @@ guard fail on each mutation.
 from __future__ import annotations
 
 import json
+import math
 import re
 import shutil
 from collections.abc import Callable, Iterator
@@ -27,6 +28,7 @@ TEAM_CAP = 24_000
 LEAGUE_CAP_PER_SEASON = 4_000
 EXPECTED = "expected-points.json"  # lesson 12 (task 117): counts by zone class, no hexagon
 EXPECTED_CAP = 16_000
+INTERVALS = ("mix_ci", "making_ci")  # task 117b: the only lists of numbers it may hold, two each
 SOURCE = "EuroLeague (live.euroleague.net)"
 # Every key of a row of Points, PlaybyPlay and Boxscore, as the feed spells it.
 RAW_KEYS = {
@@ -61,6 +63,30 @@ def _is_int(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
 
+def _is_num(value: Any) -> bool:
+    return isinstance(value, int | float) and not isinstance(value, bool)
+
+
+def _interval_problems(doc: dict[str, Any]) -> list[str]:
+    """Lesson 12's intervals (task 117b): a level between 0 and 1 and a z; every team with the two
+    bounds of each interval around its figure; nothing else."""
+    out = []
+    level, z = doc.get("level"), doc.get("z")
+    if not (_is_num(level) and 0 < level < 1 and _is_num(z) and z > 0):
+        out.append(f"{EXPECTED}: level {level!r} or z {z!r} is not an interval's")
+    for block in doc.get("seasons", []):
+        for team in block.get("teams", []):
+            for field in ("mix", "making"):
+                ci = team.get(f"{field}_ci")
+                ok = isinstance(ci, list) and len(ci) == 2 and all(map(_is_num, ci))
+                if not (ok and ci[0] <= team.get(field, math.nan) <= ci[1]):
+                    out.append(
+                        f"{EXPECTED} {block.get('season')} {team.get('code')}: "
+                        f"{field}_ci {ci!r} is not an interval around {field}"
+                    )
+    return out
+
+
 def _payload_problems(name: str, doc: Any, size: int) -> list[str]:
     out: list[str] = []
     if not isinstance(doc, dict):
@@ -88,6 +114,8 @@ def _payload_problems(name: str, doc: Any, size: int) -> list[str]:
     if not _is_int(k) or k < K_MIN:
         out.append(f"{name}: k is {k!r}, under {K_MIN}")
         k = K_MIN
+    if name == EXPECTED:
+        out.extend(_interval_problems(doc))
     widths = set()
     for key in ("cell_fields", "player_cell_fields"):
         fields = doc.get(key)
@@ -114,6 +142,9 @@ def _payload_problems(name: str, doc: Any, size: int) -> list[str]:
                     out.append(f"{name}{where}: shots_shown is not the sum of its cells")
                 if not _is_int(value.get("shots_total")) or value["shots_total"] < shown:
                     out.append(f"{name}{where}: shots_total under shots_shown")
+        if name == EXPECTED and isinstance(value, list) and value and all(map(_is_num, value)):
+            if not (where.endswith(INTERVALS) and len(value) == 2):
+                out.append(f"{name}{where}: a list of values outside an interval")
         if isinstance(value, list) and any(isinstance(item, list) for item in value):
             if not where.endswith(".cells"):
                 out.append(f"{name}{where}: a list of rows outside cells")
@@ -243,6 +274,24 @@ EXPECTED_MUTATIONS: dict[str, tuple[Callable[[dict[str, Any]], None], str]] = {
     ),
     "no cutoff": (lambda d: d["seasons"][0].pop("cutoff"), "no cutoff"),
     "over the cap": (lambda d: d.update(pad="x" * EXPECTED_CAP), "over its cap"),
+    # Task 117b: the intervals.
+    "a team without its making interval": (
+        lambda d: d["seasons"][-1]["teams"][0].pop("making_ci"),
+        "making_ci None is not an interval",
+    ),
+    "an interval upside down": (
+        lambda d: d["seasons"][0]["teams"][0]["mix_ci"].reverse(),
+        "is not an interval around mix",
+    ),
+    "an interval of three bounds": (
+        lambda d: d["seasons"][0]["teams"][0]["making_ci"].append(0.5),
+        "a list of values outside an interval",
+    ),
+    "a value per game": (
+        lambda d: d["seasons"][0]["teams"][0].update(making_by_game=[0.12, -0.3, 0.05]),
+        "a list of values outside an interval",
+    ),
+    "no level": (lambda d: d.pop("level"), "is not an interval's"),
 }
 
 

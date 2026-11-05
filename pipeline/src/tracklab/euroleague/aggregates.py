@@ -15,18 +15,24 @@ coordinate is ever written. The figures come from the probe (docs/euroleague-pro
 - players with ``PLAYER_MIN_SHOTS`` field goals or more for the team in the season.
 
 ``expected-points.json`` (P14b, task 117) is lesson 12's file: by season, the league's and each
-team's attempts, makes and points in each zone class, and the points per shot they give.
+team's attempts, makes and points in each zone class, and the points per shot they give. Task 117b
+adds an interval to each team's mix and making (the normal one of independent attempts, which the
+published counts rebuild) and, by season, how much wider a bootstrap over whole games makes them
+(from the shots of each game, never published).
 """
 
 from __future__ import annotations
 
 import json
 import math
+import statistics
 from collections import Counter, defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+import numpy as np
 
 VERSION = 1
 SOURCE = "EuroLeague (live.euroleague.net)"
@@ -38,8 +44,12 @@ TEAM_CAP_BYTES = 24_000
 LEAGUE_CAP_BYTES_PER_SEASON = 4_000
 EXPECTED_FILE = "expected-points.json"
 EXPECTED_CAP_BYTES = 16_000
+LEVEL = 0.95  # of the intervals of mix and making (task 117b)
+GAMES_SEED = 117  # the bootstrap over whole games that checks them
+GAMES_REPLICATES = 10_000
 RIM_ZONES = frozenset("ABC")
 CLASSES = ("rim", "mid", "three")
+VALUES = {"rim": 2, "mid": 2, "three": 3}  # what a make in each class scores
 FIELD_GOALS = {"2FGM": True, "2FGA": False, "3FGM": True, "3FGA": False}  # action -> made
 QUARTERS = ("FirstQuarter", "SecondQuarter", "ThirdQuarter", "ForthQuarter", "ExtraTime")
 CELL_FIELDS = ["q", "r", "n", "made", "pts"]
@@ -86,6 +96,7 @@ class Shot:
     cell: tuple[int, int] | None  # None: the feed gave no location
     zone_class: str | None
     fastbreak: bool
+    game: str = ""  # the gamecode, for the bootstrap over games; never published
 
 
 @dataclass
@@ -102,7 +113,7 @@ def _read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _shot(row: dict[str, Any], side_cm: float) -> Shot | None:
+def _shot(row: dict[str, Any], side_cm: float, game: str = "") -> Shot | None:
     action = str(row["ID_ACTION"]).strip()
     if action == "FTM":
         return None
@@ -120,6 +131,7 @@ def _shot(row: dict[str, Any], side_cm: float) -> Shot | None:
         cell=cell,
         zone_class=zone_class(action, zone),
         fastbreak=str(row["FASTBREAK"]).strip() == "1",
+        game=game,
     )
 
 
@@ -144,7 +156,7 @@ def load_season(raw: Path, season: str, side_cm: float = HEX_SIDE_M * 100.0) -> 
             team_games[code] += 1
             playing.add(code)
         for row in _read_json(raw / season / game["files"]["Points"])["Rows"] or []:
-            shot = _shot(row, side_cm)
+            shot = _shot(row, side_cm, str(game["gamecode"]))
             if shot is None:
                 continue
             if shot.team not in playing:
@@ -316,26 +328,116 @@ def _under_k(zones: dict[str, dict[str, int]], k: int) -> bool:
     return any(zones[c]["n"] < k for c in CLASSES)
 
 
+def z_of(level: float) -> float:
+    """The z of a central interval at ``level`` of a normal, at two decimals: 1.96 at 0.95."""
+    return round(statistics.NormalDist().inv_cdf((1 + level) / 2), 2)
+
+
+def standard_errors(
+    zones: dict[str, dict[str, int]], league_pps: dict[str, float]
+) -> tuple[float, float]:
+    """The standard errors of mix and making if the team's attempts were independent draws, each
+    from its own mix of classes and made at its own rate in the class. Both parts are means over
+    the attempts: mix of e_z - mean, making of the attempt's points - e_z. So each error is the
+    spread of what one attempt adds, over sqrt(n). From counts: in a class, every attempt adds e_z
+    to the first; a make adds v_z - e_z to the second and a miss -e_z."""
+    n = sum(zones[c]["n"] for c in CLASSES)
+    xpps = sum(zones[c]["n"] * league_pps[c] for c in CLASSES) / n
+    making = sum(zones[c]["pts"] - zones[c]["n"] * league_pps[c] for c in CLASSES) / n
+    mix_sq = sum(zones[c]["n"] * league_pps[c] ** 2 for c in CLASSES) / n
+    making_sq = (
+        sum(
+            zones[c]["made"] * (VALUES[c] - league_pps[c]) ** 2
+            + (zones[c]["n"] - zones[c]["made"]) * league_pps[c] ** 2
+            for c in CLASSES
+        )
+        / n
+    )
+    return math.sqrt((mix_sq - xpps**2) / n), math.sqrt((making_sq - making**2) / n)
+
+
 def expected_split(
-    zones: dict[str, dict[str, int]], league_pps: dict[str, float], league_mean: float
-) -> dict[str, float]:
+    zones: dict[str, dict[str, int]],
+    league_pps: dict[str, float],
+    league_mean: float,
+    errors: tuple[float, float],
+    z: float,
+) -> dict[str, Any]:
     """A team's points per shot, its expected points per shot (its attempts in each class at the
-    league's points per shot there, over its attempts) and the two parts of the difference with
-    the league: ``mix`` = xpps - mean and ``making`` = pps - xpps."""
+    league's points per shot there, over its attempts), the two parts of the difference with the
+    league, ``mix`` = xpps - mean and ``making`` = pps - xpps, and their intervals, each part
+    plus and minus z of its standard ``errors``."""
     n = sum(zones[c]["n"] for c in CLASSES)
     pps = sum(zones[c]["pts"] for c in CLASSES) / n
     xpps = sum(zones[c]["n"] * league_pps[c] for c in CLASSES) / n
+    mix, making = xpps - league_mean, pps - xpps
+    se_mix, se_making = errors
     return {
         "pps": _r3(pps),
         "xpps": _r3(xpps),
-        "mix": _r3(xpps - league_mean),
-        "making": _r3(pps - xpps),
+        "mix": _r3(mix),
+        "making": _r3(making),
+        "mix_ci": [_r3(mix - z * se_mix), _r3(mix + z * se_mix)],
+        "making_ci": [_r3(making - z * se_making), _r3(making + z * se_making)],
     }
 
 
-def expected_payload(seasons: list[Season], k: int = K) -> dict[str, Any]:
+def games_ratios(
+    shots: list[Shot],
+    league_pps: dict[str, float],
+    league_mean: float,
+    errors: tuple[float, float],
+    level: float,
+    z: float,
+    rng: np.random.Generator,
+    replicates: int,
+) -> tuple[float, float]:
+    """The check of the intervals' independence: the team's games drawn again with replacement,
+    ``replicates`` times, and the width of the central ``level`` of the mix and the making those
+    draws give, each over the width of its interval (2 z se, ``errors``)."""
+    by_game: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0, 0.0])
+    for shot in shots:
+        if shot.zone_class is not None:
+            g = by_game[shot.game]
+            g[0] += 1  # attempts
+            g[1] += league_pps[shot.zone_class]  # their expected points
+            g[2] += shot.pts
+    games = np.array([by_game[k] for k in sorted(by_game)])
+    draws = games[rng.integers(0, len(games), size=(replicates, len(games)))].sum(axis=1)
+    n, expected, pts = draws[:, 0], draws[:, 1], draws[:, 2]
+    tail = (1 - level) / 2
+
+    def width(values: np.ndarray) -> float:
+        lo, hi = np.quantile(values, [tail, 1 - tail])
+        return float(hi - lo)
+
+    return (
+        width(expected / n - league_mean) / (2 * z * errors[0]),
+        width((pts - expected) / n) / (2 * z * errors[1]),
+    )
+
+
+def _spread(ratios: list[float]) -> dict[str, float]:
+    return {
+        "median": round(statistics.median(ratios), 2),
+        "min": round(min(ratios), 2),
+        "max": round(max(ratios), 2),
+    }
+
+
+def expected_payload(
+    seasons: list[Season],
+    k: int = K,
+    level: float = LEVEL,
+    seed: int = GAMES_SEED,
+    replicates: int = GAMES_REPLICATES,
+) -> dict[str, Any]:
     """Expected points by zone class. A season whose league has a class under k attempts is left
-    out, and so is a team with one (``teams_left_out``): no published count is under k."""
+    out, and so is a team with one (``teams_left_out``): no published count is under k. Each team
+    carries the intervals of its mix and making at ``level``; each season, how many times as wide
+    the bootstrap over games (``seed``, ``replicates``) makes them: median, min and max over its
+    teams, or null if no team is in."""
+    z = z_of(level)
     blocks = []
     for s in seasons:
         league, unclassified = zone_totals(s.shots)
@@ -346,17 +448,22 @@ def expected_payload(seasons: list[Season], k: int = K) -> dict[str, Any]:
         by_team: dict[str, list[Shot]] = defaultdict(list)
         for shot in s.shots:
             by_team[shot.team].append(shot)
-        teams = []
+        rng = np.random.default_rng(seed)
+        teams, ratios = [], []
         for code in sorted(s.names):
             zones, _ = zone_totals(by_team[code])
             if not _under_k(zones, k):
+                errors = standard_errors(zones, pps)
                 teams.append(
                     {
                         "code": code,
                         "name": s.names[code],
                         **zones,
-                        **expected_split(zones, pps, mean),
+                        **expected_split(zones, pps, mean, errors, z),
                     }
+                )
+                ratios.append(
+                    games_ratios(by_team[code], pps, mean, errors, level, z, rng, replicates)
                 )
         blocks.append(
             {
@@ -364,6 +471,12 @@ def expected_payload(seasons: list[Season], k: int = K) -> dict[str, Any]:
                 "league": {**league, "unclassified": unclassified},
                 "pps": {c: _r3(pps[c]) for c in CLASSES},
                 "mean": _r3(mean),
+                "games_ratio": {
+                    "mix": _spread([r[0] for r in ratios]),
+                    "making": _spread([r[1] for r in ratios]),
+                }
+                if ratios
+                else None,
                 "teams": teams,
                 "teams_left_out": len(s.names) - len(teams),
             }
@@ -374,6 +487,9 @@ def expected_payload(seasons: list[Season], k: int = K) -> dict[str, Any]:
         "version": VERSION,
         "source": SOURCE,
         "k": k,
+        "level": level,
+        "z": z,
+        "games_bootstrap": {"seed": seed, "replicates": replicates},
         "classes": list(CLASSES),
         "rim_zones": sorted(RIM_ZONES),
         "seasons": blocks,
@@ -410,11 +526,13 @@ def build_files(raw: Path, seasons: Iterable[str]) -> dict[str, str]:
 
 PUBLIC_SQL = Path(__file__).parents[1] / "learn" / "expected-points.sql"
 TABLE_FIELDS = ("pps", "xpps", "mix", "making")
+INTERVAL_FIELDS = ("mix_ci", "making_ci")
 
 
 def public_sql_problems(path: Path) -> tuple[int, list[str]]:
     """Lesson 12's "Reproduce it" query run with DuckDB on a published expected-points.json: its
-    rows against the file's own, every team of every season, exactly."""
+    rows against the file's own, every team of every season, exactly, the bounds of the two
+    intervals included."""
     import duckdb
 
     sql = PUBLIC_SQL.read_text(encoding="utf-8").replace(
@@ -423,7 +541,10 @@ def public_sql_problems(path: Path) -> tuple[int, list[str]]:
     rows = duckdb.connect().execute(sql).fetchall()
     doc = _read_json(path)
     want = {
-        (s["season"], t["code"]): tuple(t[f] for f in TABLE_FIELDS)
+        (s["season"], t["code"]): (
+            *(t[f] for f in TABLE_FIELDS),
+            *(bound for f in INTERVAL_FIELDS for bound in t[f]),
+        )
         for s in doc["seasons"]
         for t in s["teams"]
     }
