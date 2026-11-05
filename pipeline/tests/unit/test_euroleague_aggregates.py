@@ -133,6 +133,7 @@ def test_league(data: Path, tmp_path: Path) -> None:
     assert sorted(files) == [
         "expected-points.json",
         "league.json",
+        "runs.json",
         "teams/AAA.json",
         "teams/BBB.json",
         "teams/CCC.json",
@@ -248,7 +249,7 @@ def test_check_and_stale_files(
     assert not stale.exists()
     assert b"\r" not in (out / "euroleague" / "league.json").read_bytes()
     assert run_euroleague_publish(data, out, check=True) == 0
-    assert "FULL 5/5" in capsys.readouterr().out
+    assert "FULL 6/6" in capsys.readouterr().out
     (out / "euroleague" / "teams" / "BBB.json").write_text("{}\n", "utf-8")
     assert run_euroleague_publish(data, out, check=True) == 1
     assert run_euroleague_publish(tmp_path / "nothing", out, check=True) == 0

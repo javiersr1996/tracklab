@@ -44,6 +44,8 @@ TEAM_CAP_BYTES = 24_000
 LEAGUE_CAP_BYTES_PER_SEASON = 4_000
 EXPECTED_FILE = "expected-points.json"
 EXPECTED_CAP_BYTES = 16_000
+RUNS_FILE = "runs.json"  # task 118
+RUNS_CAP_BYTES = 16_000
 LEVEL = 0.95  # of the intervals of mix and making (task 117b)
 GAMES_SEED = 117  # the bootstrap over whole games that checks them
 GAMES_REPLICATES = 10_000
@@ -503,16 +505,21 @@ def render(payload: dict[str, Any]) -> str:
 def _cap(name: str, seasons: int) -> int:
     if name == "league.json":
         return LEAGUE_CAP_BYTES_PER_SEASON * seasons
+    if name == RUNS_FILE:
+        return RUNS_CAP_BYTES
     return EXPECTED_CAP_BYTES if name == EXPECTED_FILE else TEAM_CAP_BYTES
 
 
 def build_files(raw: Path, seasons: Iterable[str]) -> dict[str, str]:
     """Published path (relative to the euroleague folder) -> text, after the byte caps."""
+    from tracklab.euroleague.runs import runs_payload  # runs.py imports this module
+
     loaded = [load_season(raw, s) for s in seasons]
     files = {"league.json": render(league_payload(loaded))}
     for code, payload in team_payloads(loaded).items():
         files[f"teams/{code}.json"] = render(payload)
     files[EXPECTED_FILE] = render(expected_payload(loaded))
+    files[RUNS_FILE] = render(runs_payload(raw, [s.season for s in loaded]))
     over = []
     for name, text in files.items():
         size = len(text.encode("utf-8"))

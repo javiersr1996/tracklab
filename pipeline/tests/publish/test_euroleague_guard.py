@@ -29,6 +29,22 @@ LEAGUE_CAP_PER_SEASON = 4_000
 EXPECTED = "expected-points.json"  # lesson 12 (task 117): counts by zone class, no hexagon
 EXPECTED_CAP = 16_000
 INTERVALS = ("mix_ci", "making_ci")  # task 117b: the only lists of numbers it may hold, two each
+RUNS = "runs.json"  # task 118: the biggest run and comeback, a ranking and a summary by team
+RUNS_CAP = 16_000
+RUNS_ROWS = 25  # a ranking is 10 and whoever ties with the 10th; a row per game would be 400
+RUNS_KEYS = {
+    "run": {"team", "opp", "date", "size", "from", "to"},
+    "comeback": {"team", "opp", "date", "deficit", "at", "final"},
+    "team": {
+        "code",
+        "games",
+        "best_run",
+        "runs_n",
+        "comeback_for",
+        "comeback_against",
+        "wins_from_n",
+    },
+}
 SOURCE = "EuroLeague (live.euroleague.net)"
 # Every key of a row of Points, PlaybyPlay and Boxscore, as the feed spells it.
 RAW_KEYS = {
@@ -87,6 +103,69 @@ def _interval_problems(doc: dict[str, Any]) -> list[str]:
     return out
 
 
+def _pair(value: Any) -> bool:
+    return isinstance(value, list) and len(value) == 2 and all(map(_is_int, value))
+
+
+def _runs_problems(doc: dict[str, Any]) -> list[str]:
+    """runs.json (task 118): only the two rankings and the summary by team, the keys of the
+    schema and nothing a play could hide in."""
+    out = []
+    for key in ("top", "run_min", "deficit_min"):
+        if not (_is_int(doc.get(key)) and doc[key] > 0):
+            out.append(f"{RUNS}: {key} is {doc.get(key)!r}")
+    for block in doc.get("seasons", []):
+        label = f"{RUNS} {block.get('season')}"
+        read, played = block.get("games_read"), block.get("games_played")
+        if not (_is_int(read) and _is_int(played) and 0 < read <= played):
+            out.append(f"{label}: games_read {read!r} is not within games_played {played!r}")
+        for kind, field in (("run", "runs"), ("comeback", "comebacks")):
+            rows = block.get(field)
+            if not isinstance(rows, list) or not 0 < len(rows) <= RUNS_ROWS:
+                out.append(f"{label}: {field} is not a ranking of at most {RUNS_ROWS}")
+                continue
+            sizes = []
+            for i, row in enumerate(rows):
+                where = f"{label} {field}[{i}]"
+                if not isinstance(row, dict) or set(row) != RUNS_KEYS[kind]:
+                    out.append(f"{where}: keys are not {sorted(RUNS_KEYS[kind])}")
+                    continue
+                size_key = "size" if kind == "run" else "deficit"
+                begin, end = ("from", "to") if kind == "run" else ("at", "final")
+                if not (_is_int(row[size_key]) and row[size_key] > 0):
+                    out.append(f"{where}: no {size_key}")
+                    continue
+                sizes.append(row[size_key])
+                if not (_pair(row[begin]) and _pair(row[end])) or min(row[begin] + row[end]) < 0:
+                    out.append(f"{where}: {begin} and {end} are not two scores")
+                elif kind == "run" and not (
+                    row["to"][0] - row["from"][0] == row["size"] and row["to"][1] == row["from"][1]
+                ):
+                    out.append(f"{where}: the run is not size points in a row")
+                elif kind == "comeback" and not (
+                    row["final"][0] > row["final"][1]
+                    and row["at"][1] - row["at"][0] == row["deficit"]
+                ):
+                    out.append(f"{where}: not a winner that trailed by the deficit")
+                if not (_DATE.match(str(row["date"])) and row["team"] != row["opp"]):
+                    out.append(f"{where}: date or teams")
+            if sizes != sorted(sizes, reverse=True):
+                out.append(f"{label}: {field} is not in order")
+        teams = block.get("teams")
+        if not isinstance(teams, list) or not 0 < len(teams) <= 30:
+            out.append(f"{label}: teams is not a list of at most 30")
+            continue
+        for team in teams:
+            ok = isinstance(team, dict) and set(team) == RUNS_KEYS["team"]
+            ok = ok and re.match(r"^[A-Z0-9]{2,4}$", str(team.get("code"))) is not None
+            ok = ok and all(_is_int(v) and v >= 0 for k, v in team.items() if k != "code")
+            ok = ok and team["runs_n"] <= team["games"] >= team["wins_from_n"]
+            if not ok:
+                who = team.get("code") if isinstance(team, dict) else team
+                out.append(f"{label} {who}: not a team")
+    return out
+
+
 def _payload_problems(name: str, doc: Any, size: int) -> list[str]:
     out: list[str] = []
     if not isinstance(doc, dict):
@@ -107,9 +186,19 @@ def _payload_problems(name: str, doc: Any, size: int) -> list[str]:
         if not _is_int(block.get("games_played")) or block["games_played"] <= 0:
             out.append(f"{label}: no games_played")
     cap = LEAGUE_CAP_PER_SEASON * len(seasons) if name == "league.json" else TEAM_CAP
-    cap = EXPECTED_CAP if name == EXPECTED else cap
+    cap = EXPECTED_CAP if name == EXPECTED else RUNS_CAP if name == RUNS else cap
     if size > cap:
         out.append(f"{name}: {size} B over its cap of {cap} B")
+    if name == RUNS:
+        out.extend(_runs_problems(doc))
+        for where, value in _walk(doc):
+            if isinstance(value, dict):
+                out.extend(
+                    f"{name}{where}: raw key {key!r}"
+                    for key in value
+                    if key in RAW_KEYS or key.lower() in ROW_KEYS
+                )
+        return out
     k: Any = doc.get("k") if name == EXPECTED else doc.get("hex", {}).get("k")
     if not _is_int(k) or k < K_MIN:
         out.append(f"{name}: k is {k!r}, under {K_MIN}")
@@ -161,14 +250,14 @@ def _payload_problems(name: str, doc: Any, size: int) -> list[str]:
 
 def problems(folder: Path) -> list[str]:
     """What is wrong with the published folder; an empty list means the guard passes."""
-    if not all((folder / f).is_file() for f in ("league.json", EXPECTED)) or not list(
+    if not all((folder / f).is_file() for f in ("league.json", EXPECTED, RUNS)) or not list(
         folder.glob("teams/*.json")
     ):
-        return [f"{folder}: league.json, {EXPECTED} or teams/*.json missing"]
+        return [f"{folder}: league.json, {EXPECTED}, {RUNS} or teams/*.json missing"]
     out: list[str] = []
     for path in sorted(p for p in folder.rglob("*") if p.is_file()):
         name = path.relative_to(folder).as_posix()
-        if name not in ("league.json", EXPECTED) and not _TEAM_FILE.match(name):
+        if name not in ("league.json", EXPECTED, RUNS) and not _TEAM_FILE.match(name):
             out.append(f"{name}: not a file of the atlas")
             continue
         data = path.read_bytes()
@@ -301,6 +390,63 @@ def test_each_mutation_of_the_expected_points_fails_the_guard(copy: Path, mutati
     _edit(copy / EXPECTED, change)
     found = problems(copy)
     assert any(EXPECTED in p and expected in p for p in found), found
+
+
+def _run_play_rows(doc: dict[str, Any]) -> None:
+    doc["seasons"][0]["runs"][0]["plays"] = [[1, 2], [3, 4]]
+
+
+def _row_per_game(doc: dict[str, Any]) -> None:
+    block = doc["seasons"][0]
+    block["runs"] = [dict(block["runs"][-1]) for _ in range(100)]
+
+
+def _run_wrong_size(doc: dict[str, Any]) -> None:
+    doc["seasons"][0]["runs"][0]["size"] += 1
+
+
+def _runs_out_of_order(doc: dict[str, Any]) -> None:
+    doc["seasons"][0]["comebacks"].reverse()
+
+
+RUNS_MUTATIONS: dict[str, tuple[Callable[[dict[str, Any]], None], str]] = {
+    "a list of plays in a row": (_run_play_rows, "keys are not"),
+    "an event id": (lambda d: d["seasons"][0]["runs"][0].update(NUM_ANOT=412), "keys are not"),
+    "a NUMBEROFPLAY key": (lambda d: d["seasons"][0].update(NUMBEROFPLAY=3), "raw key"),
+    "a game id": (lambda d: d["seasons"][0]["comebacks"][0].update(gamecode=7), "keys are not"),
+    "a row per game": (_row_per_game, "not a ranking of at most"),
+    "a run that is not its size": (_run_wrong_size, "not size points in a row"),
+    "a ranking out of order": (_runs_out_of_order, "is not in order"),
+    "a clock in a row": (
+        lambda d: d["seasons"][0]["runs"][0].update(MARKERTIME="07:17"),
+        "keys are not",
+    ),
+    "a UTC": (lambda d: d.update(name="20250930174549"), "the shape of a UTC"),
+    "no cutoff": (lambda d: d["seasons"][0].pop("cutoff"), "no cutoff"),
+    "a team with a key more": (
+        lambda d: d["seasons"][0]["teams"][0].update(plays=3),
+        "not a team",
+    ),
+    "a win from behind over the games": (
+        lambda d: d["seasons"][0]["teams"][0].update(wins_from_n=10**4),
+        "not a team",
+    ),
+    "no run_min": (lambda d: d.pop("run_min"), "run_min is None"),
+    "over the cap": (lambda d: d.update(pad="x" * RUNS_CAP), "over its cap"),
+}
+
+
+@pytest.mark.parametrize("mutation", list(RUNS_MUTATIONS))
+def test_each_mutation_of_the_runs_fails_the_guard(copy: Path, mutation: str) -> None:
+    change, expected = RUNS_MUTATIONS[mutation]
+    _edit(copy / RUNS, change)
+    found = problems(copy)
+    assert any(RUNS in p and expected in p for p in found), found
+
+
+def test_a_missing_runs_file_fails_the_guard(copy: Path) -> None:
+    (copy / RUNS).unlink()
+    assert any("missing" in p for p in problems(copy))
 
 
 def test_a_missing_expected_points_fails_the_guard(copy: Path) -> None:
