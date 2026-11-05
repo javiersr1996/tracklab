@@ -5,9 +5,12 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import leagueJson from "../../public/data/euroleague/league.json";
+import runsJson from "../../public/data/euroleague/runs.json";
 import { CURRENT_SEASON, type League, type Team, type TeamChanges } from "./atlas";
+import type { Runs } from "./runs";
 
 export const LEAGUE = leagueJson as unknown as League;
+export const RUNS = runsJson as unknown as Runs;
 
 const TEAMS_DIR = join(process.cwd(), "public", "data", "euroleague", "teams");
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Atlas } from "../../components/euroleague/Atlas";
 import { LeaguePanel } from "../../components/euroleague/LeaguePanel";
 import { Band, PageHead } from "../../components/site/Band";
-import { LEAGUE, teamsSummary } from "../../lib/euroleague/data";
+import { LEAGUE, RUNS, teamsSummary } from "../../lib/euroleague/data";
 import { EUROLEAGUE, SECTIONS, TAKEDOWN_CONTACT } from "../../lib/sections";
 import "./euroleague.css";
 
@@ -34,7 +34,7 @@ export default function EuroleaguePage() {
           of its players, in the season just finished or the one under way.
         </p>
       </PageHead>
-      <Atlas league={LEAGUE} {...summary} />
+      <Atlas league={LEAGUE} runs={RUNS} {...summary} />
       <Band dark className="el-attribution">
         <section aria-labelledby="el-source-title">
           <h2 id="el-source-title">The data</h2>

@@ -371,3 +371,177 @@
 .el-seg[data-zone="three"] {
   background: var(--neon);
 }
+
+/* Runs and comebacks (task 118): two ranked lists side by side from 1000 px, then a card per team. */
+.el-rankings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 1000px) {
+  .el-rankings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.el-rank-block h3 {
+  margin-top: 0;
+}
+
+.el-rank-note {
+  margin: 0 0 var(--space-3);
+  color: var(--fg-muted);
+}
+
+.el-ranking {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.el-rank-row {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+  grid-template-areas:
+    "place who size"
+    "place bar bar"
+    "place meta meta";
+  column-gap: var(--space-2);
+  align-items: baseline;
+  max-width: none; /* .band li keeps prose at --measure; a row is not prose */
+  padding: var(--space-2) var(--space-3);
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.el-rank-row[data-selected] {
+  border-color: var(--neon);
+  box-shadow: 0 0 24px -6px var(--neon-glow);
+}
+
+.el-rank-place {
+  grid-area: place;
+  font-family: var(--font-neon);
+  font-weight: 700;
+  color: var(--fg-muted);
+}
+
+.el-rank-who {
+  grid-area: who;
+  min-width: 0;
+}
+
+.el-rank-size {
+  grid-area: size;
+  font-family: var(--font-neon);
+  font-size: var(--step-2);
+  font-weight: 700;
+  color: var(--neon);
+  white-space: nowrap;
+}
+
+.el-rank-unit {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.el-rank-bar {
+  grid-area: bar;
+  display: block;
+  height: 0.375rem;
+  margin: var(--space-1) 0;
+  background: var(--rule);
+  border-radius: 999px;
+}
+
+.el-rank-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--neon);
+  border-radius: 999px;
+}
+
+.el-score {
+  white-space: nowrap;
+}
+
+.el-rank-meta {
+  grid-area: meta;
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.el-streak-teams {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .el-streak-teams {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .el-streak-teams {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.el-streak-team {
+  max-width: none;
+  padding: var(--space-3) var(--space-4);
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.el-streak-team[data-selected] {
+  border-color: var(--neon);
+  box-shadow: 0 0 24px -6px var(--neon-glow);
+}
+
+.el-streak-name {
+  margin: 0;
+  font-size: var(--step-1);
+}
+
+.el-streak-games {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.el-streak-stats {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.el-streak-stats > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.el-streak-stats dt {
+  color: var(--fg-muted);
+}
+
+.el-streak-stats dd {
+  margin: 0;
+  font-family: var(--font-neon);
+  font-weight: 700;
+  color: var(--fg-strong);
+}

@@ -33,7 +33,9 @@ import {
 } from "../../lib/euroleague/atlas";
 import { pluralize } from "../../lib/format";
 import { Band } from "../site/Band";
+import type { Runs } from "../../lib/euroleague/runs";
 import { Changes } from "./Changes";
+import { Streaks } from "./Streaks";
 
 const COURT_PATHS = courtPaths();
 const keyOf = (c: { q: number; r: number }) => `${c.q},${c.r}`;
@@ -67,12 +69,14 @@ function Swatch({ tone }: { tone: Tone }) {
 export function Atlas({
   league,
   changes,
+  runs,
   playerMinShots,
   playersNow,
   teamsWithPlayersNow,
 }: {
   league: League;
   changes: TeamChanges[];
+  runs: Runs;
   playerMinShots: number;
   playersNow: number;
   teamsWithPlayersNow: number;
@@ -87,6 +91,7 @@ export function Atlas({
   const side = league.hex.side_m * 100;
   const leagueSeason = league.seasons.find((s) => s.season === season)!;
   const teams = [...leagueSeason.teams].sort((a, b) => a.name.localeCompare(b.name));
+  const names = Object.fromEntries(league.seasons.flatMap((s) => s.teams.map((t) => [t.code, t.name])));
   const teamSeason = team ? loaded[team]?.seasons.find((s) => s.season === season) : undefined;
   const playerData = player ? teamSeason?.players.find((p) => p.name === player) : undefined;
   const teamName = teams.find((t) => t.code === team)?.name ?? team;
@@ -357,6 +362,7 @@ export function Atlas({
         </div>
       </Band>
       <Changes changes={changes} seasons={league.seasons.map((s) => s.season)} selected={team} />
+      <Streaks runs={runs} season={season} selected={team} names={names} />
     </>
   );
 }
