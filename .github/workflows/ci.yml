@@ -110,6 +110,8 @@ jobs:
       # (the fixtures carry the six season aggregates whole, so the bytes are the real ones).
       - run: uv run tracklab publish warehouse --check
       - run: uv run tracklab publish examples --check
+      # Task 134 (P17): scouting.json is what the published warehouse Parquet give (their sha256 inside).
+      - run: uv run tracklab publish scouting --check
       # Task 60: the synthetic sweep reads no data, so CI regenerates all of it and compares
       # the bytes of reports/pose_sweep.json (about 1.5 minutes).
       - run: uv run tracklab pose sweep --check

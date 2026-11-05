@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import type { AsyncDuckDB, AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
-import { columnCell } from "../warehouse/cell";
+import { columnCell, columnValue, type RawValue } from "../warehouse/cell";
 import {
   readsByFile,
   rowGroupsRead,
@@ -46,6 +46,10 @@ export interface QueryResult {
   columns: string[];
   // Each value as the text the table shows (`cellText`).
   rows: string[][];
+  // The same rows as values, not text (task 135): NULL is `null`, a number a number, anything
+  // that is not a plain number, string or boolean (a date, a decimal) its text. For sorting and
+  // drawing; `rows` stays what the table shows.
+  values: RawValue[][];
   rowCount: number;
   // From the start of the query (views it needed included) to its result.
   ms: number;
@@ -347,6 +351,7 @@ export function createEngine(spec: EngineSpec): Engine {
     const vectors = fields.map((_, i) => table.getChildAt(i)!);
     const kept = Math.min(table.numRows, ROW_LIMIT);
     const rows = Array.from({ length: kept }, (_, r) => vectors.map((v) => columnCell(v, r)));
+    const values = Array.from({ length: kept }, (_, r) => vectors.map((v) => columnValue(v, r)));
     const files: FileDetail[] = [];
     for (const f of summary.files) {
       const registered = e.files.find((r) => r.file === f.file)!;
@@ -358,7 +363,7 @@ export function createEngine(spec: EngineSpec): Engine {
       });
     }
     const { bytes, distinctBytes, requests } = summary;
-    return { sql, columns, rows, rowCount: table.numRows, ms, bytes, distinctBytes, requests, files };
+    return { sql, columns, rows, values, rowCount: table.numRows, ms, bytes, distinctBytes, requests, files };
   }
 
   // Creates the views a query names and runs it. A query that fails can still have read a file

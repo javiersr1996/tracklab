@@ -1,0 +1,683 @@
+/* /warehouse/scouting (P17, task 136): loaded by that page only, so no other page pays for it.
+   The percentile steps (--pct-*) stay in globals.css, where tests/tokens-contrast.test.ts reads
+   them. Cyan is A and magenta B, a mark and never text; every text here is 16 px or more. */
+
+/* ---- A bar: a hairline track and a lit fill, in the head panel and in the comparison ---- */
+.scout-track {
+  position: relative;
+  display: block;
+  height: 0.75rem;
+  overflow: hidden;
+  background: var(--neon-line);
+  border-radius: 1px;
+}
+
+.scout-fill {
+  display: block;
+  height: 100%;
+  background: var(--neon);
+  box-shadow: 0 0 12px var(--neon-glow);
+  transform-origin: left center;
+}
+
+[data-slot="b"] > .scout-track .scout-fill {
+  background: var(--neon-alt);
+  box-shadow: 0 0 12px rgba(255, 62, 165, 0.35);
+}
+
+@keyframes scout-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Motion only where it is welcome: the head panel's bars grow once, the comparison's grow when
+   they appear and slide to a new pair's widths. Reduced motion paints them at their final width. */
+@media (prefers-reduced-motion: no-preference) {
+  .scout-probe[data-grow="growing"] .scout-fill {
+    animation: scout-grow 1.8s cubic-bezier(0.33, 1, 0.68, 1) both;
+  }
+
+  .scout-bar .scout-fill {
+    animation: scout-grow 0.9s cubic-bezier(0.33, 1, 0.68, 1) both;
+    transition: width 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  .scout-load-button {
+    animation: scout-breathe 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes scout-breathe {
+  50% {
+    box-shadow: 0 0 32px -2px var(--neon-glow);
+  }
+}
+
+/* ---- The head panel: one player's percentiles ---- */
+.scout-probe-who {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.scout-probe-name {
+  font-family: var(--font-neon);
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+  color: var(--neon);
+  text-shadow: 0 0 18px var(--neon-glow);
+}
+
+.scout-probe-meta,
+.scout-probe-pool {
+  margin: 0;
+  color: var(--fg-muted);
+}
+
+.scout-probe-bars {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scout-probe-bars li {
+  display: grid;
+  grid-template-columns: minmax(0, 8.5rem) minmax(3rem, 1fr) 3.5rem;
+  gap: var(--space-3);
+  align-items: center;
+  max-width: none;
+}
+
+.scout-probe-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scout-probe-pct {
+  font-family: var(--font-neon);
+  font-weight: 700;
+  text-align: right;
+  color: var(--fg-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.scout-probe-pool {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+}
+
+/* Under the lede the panel stays short: five bars of ten. */
+@media (max-width: 999.98px) {
+  .scout-probe-bars li:nth-child(n + 6) {
+    display: none;
+  }
+}
+
+/* ---- The legend over the explorer ---- */
+.scout-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-neon);
+}
+
+.scout-legend li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: none;
+}
+
+.scout-legend-label {
+  color: var(--fg-muted);
+}
+
+.scout-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.scout-steps span {
+  padding: var(--space-1) var(--space-2);
+  white-space: nowrap;
+}
+
+.scout-swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 0.75rem;
+  background: var(--neon);
+  box-shadow: 0 0 10px var(--neon-glow);
+}
+
+.scout-swatch[data-slot="b"] {
+  margin-left: var(--space-3);
+  background: var(--neon-alt);
+  box-shadow: 0 0 10px rgba(255, 62, 165, 0.35);
+}
+
+/* The steps, on the legend and on the cells: a fill by fifth of the pool and its own ink. */
+[data-step="0"] {
+  color: var(--fg-muted);
+}
+
+[data-step="1"] {
+  background: var(--pct-1);
+  color: var(--pct-ink-1);
+}
+
+[data-step="2"] {
+  background: var(--pct-2);
+  color: var(--pct-ink-2);
+}
+
+[data-step="3"] {
+  background: var(--pct-3);
+  color: var(--pct-ink-3);
+}
+
+[data-step="4"] {
+  background: var(--pct-4);
+  color: var(--pct-ink-4);
+  font-weight: 700;
+}
+
+.scout-steps [data-step="0"] {
+  outline: 1px solid var(--neon-line-strong);
+  outline-offset: -1px;
+}
+
+/* ---- The controls ---- */
+.scout-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4) var(--space-5);
+}
+
+.scout-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.scout-field-label {
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.scout-segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.scout-search {
+  flex: 1 1 14rem;
+  max-width: 24rem;
+}
+
+.scout-search input {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: var(--space-2) var(--space-3);
+  background: var(--control-bg);
+  border: 1px solid var(--control-line);
+  border-radius: var(--radius);
+}
+
+.scout-check {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-height);
+  font-family: var(--font-neon);
+  cursor: pointer;
+}
+
+.scout-load {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  background: var(--raised);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+}
+
+.scout-load p {
+  flex: 1 1 18rem;
+  margin: 0;
+  color: var(--fg-muted);
+}
+
+.scout-load-button {
+  min-height: 3.25rem;
+  padding-inline: var(--space-6);
+  box-shadow: 0 0 20px -6px var(--neon-glow);
+}
+
+.scout-status {
+  margin-top: var(--space-4);
+  font-family: var(--font-neon);
+  color: var(--neon);
+}
+
+.scout-status:empty {
+  display: none;
+}
+
+/* ---- A beside B ---- */
+.scout-compare {
+  margin-top: var(--space-6);
+}
+
+.scout-compare h3 {
+  margin-top: 0;
+}
+
+.scout-versus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+@media (min-width: 700px) {
+  .scout-versus {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.band .scout-who {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "slot name" "slot meta";
+  gap: 0 var(--space-3);
+  align-items: center;
+  max-width: none;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--raised);
+  border-left: 4px solid var(--neon);
+  border-radius: var(--radius);
+  box-shadow: 0 0 24px -12px var(--neon-glow);
+}
+
+.scout-who[data-slot="b"] {
+  border-left-color: var(--neon-alt);
+  box-shadow: 0 0 24px -12px rgba(255, 62, 165, 0.5);
+}
+
+.scout-who .scout-slot {
+  grid-area: slot;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: var(--step-2);
+}
+
+.scout-who-name {
+  grid-area: name;
+  font-family: var(--font-neon);
+  font-size: var(--step-2);
+  font-weight: 700;
+  color: var(--fg-strong);
+  overflow-wrap: anywhere;
+}
+
+.scout-who-meta {
+  grid-area: meta;
+  color: var(--fg-muted);
+}
+
+/* The letter of a slot: dark ink on its colour (13.1:1 on cyan, 6.2:1 on magenta). */
+.scout-slot {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-family: var(--font-neon);
+  font-weight: 700;
+  line-height: 1;
+  background: var(--neon);
+  color: var(--neon-bg);
+  border-radius: var(--radius);
+}
+
+[data-slot="b"] > .scout-slot {
+  background: var(--neon-alt);
+}
+
+.scout-compare-tables {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5) var(--space-6);
+}
+
+@media (min-width: 1100px) {
+  .scout-compare-tables {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.scout-compare-narrow {
+  color: var(--fg-muted);
+}
+
+@media (max-width: 1099.98px) {
+  .scout-compare-table:not([data-current]) {
+    display: none;
+  }
+}
+
+@media (min-width: 1100px) {
+  .band .scout-compare-narrow {
+    display: none;
+  }
+
+  .scout-compare-table[data-current] h4 {
+    text-shadow: 0 0 14px var(--neon-glow);
+    border-bottom-color: var(--neon);
+  }
+}
+
+.scout-compare-table h4 {
+  margin: 0 0 var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--neon-line-strong);
+  color: var(--neon);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.band .scout-pools {
+  margin-bottom: var(--space-3);
+  color: var(--fg-muted);
+}
+
+.scout-metrics {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.band .scout-metrics li {
+  max-width: none;
+}
+
+.scout-metric-head {
+  margin: 0 0 var(--space-1);
+}
+
+.scout-metric-label {
+  font-weight: 600;
+  color: var(--fg-strong);
+}
+
+.scout-metric-scale {
+  color: var(--fg-muted);
+}
+
+/* Fixed text columns, so the two bars of a metric (and every bar of a table) share one track. */
+.scout-bar {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(2.5rem, 1fr) 5ch 7ch 5ch;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-1);
+  font-family: var(--font-neon);
+  font-variant-numeric: tabular-nums;
+}
+
+.scout-bar-pct {
+  font-weight: 700;
+  text-align: right;
+  color: var(--fg-strong);
+}
+
+.scout-bar-value {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.scout-bar-n {
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.scout-bar-note {
+  grid-column: 2 / -1;
+  color: var(--fg-muted);
+}
+
+/* ---- The table ---- */
+.scout-table-h {
+  margin-top: var(--space-7);
+}
+
+.band .scout-count {
+  color: var(--fg-muted);
+}
+
+.scout-scroll {
+  border-top: 1px solid var(--neon-line-strong);
+}
+
+.table-scroll .scout-table th,
+.table-scroll .scout-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table-scroll .scout-table th:first-child,
+.table-scroll .scout-table .scout-team {
+  text-align: left;
+}
+
+.scout-table td.scout-team {
+  min-width: 8rem;
+  max-width: 11rem;
+  white-space: normal;
+}
+
+.scout-table thead th {
+  vertical-align: bottom;
+  white-space: normal;
+  min-width: 6.5rem;
+  max-width: 10rem;
+}
+
+.scout-sort {
+  display: flex;
+  flex-direction: column;
+  align-items: inherit;
+  gap: 0;
+  width: 100%;
+  min-height: 0;
+  padding: var(--space-1) 0;
+  border: 0;
+  background: none;
+  color: var(--fg-strong);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-align: inherit;
+  text-transform: none;
+}
+
+.scout-sort:hover:not(:disabled) {
+  color: var(--neon);
+}
+
+.scout-sort-sub {
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+.scout-sort-mark {
+  color: var(--neon);
+}
+
+[aria-sort] > .scout-sort .scout-sort-label {
+  color: var(--neon);
+}
+
+/* The player stays in view while the metrics scroll sideways. */
+.scout-table .scout-player {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bg);
+  box-shadow: 1px 0 0 var(--rule-strong);
+  text-align: left;
+}
+
+.scout-player-in {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.scout-picks {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.scout-pick {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  min-height: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border-color: var(--control-line);
+  color: var(--fg-muted);
+  letter-spacing: 0;
+}
+
+.scout-pick[aria-pressed="true"] {
+  border-color: var(--neon);
+  background: var(--neon);
+  color: var(--neon-bg);
+}
+
+.scout-pick[data-slot="b"][aria-pressed="true"] {
+  border-color: var(--neon-alt);
+  background: var(--neon-alt);
+  color: var(--neon-bg);
+}
+
+.scout-name {
+  min-width: 6rem;
+  max-width: 7.5rem;
+  font-weight: 600;
+  white-space: normal;
+  color: var(--fg-strong);
+}
+
+@media (min-width: 900px) {
+  .scout-name {
+    max-width: 13rem;
+  }
+}
+
+.scout-tag {
+  display: block;
+  width: fit-content;
+  margin-top: var(--space-1);
+  padding: 0 var(--space-1);
+  font-family: var(--font-neon);
+  font-weight: 400;
+  white-space: nowrap;
+  color: var(--tag);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+}
+
+.scout-table tr[data-picked="a"] > .scout-player {
+  box-shadow: inset 4px 0 0 var(--neon), 1px 0 0 var(--rule-strong);
+}
+
+.scout-table tr[data-picked="b"] > .scout-player {
+  box-shadow: inset 4px 0 0 var(--neon-alt), 1px 0 0 var(--rule-strong);
+}
+
+.scout-table tbody tr:not(.scout-pool):hover > td:not([data-step]),
+.scout-table tbody tr:not(.scout-pool):hover > .scout-player {
+  background: var(--raised);
+}
+
+.scout-cell {
+  min-width: 5rem;
+  font-family: var(--font-neon);
+  font-variant-numeric: tabular-nums;
+  border-bottom-color: transparent;
+  box-shadow: inset 0 0 0 1px var(--bg);
+}
+
+/* A pool's head: who is in it, and a metric's n where it is smaller. */
+.scout-pool > th,
+.scout-pool > td {
+  background: var(--raised);
+  border-top: 1px solid var(--neon-line-strong);
+  color: var(--fg-muted);
+  font-family: var(--font-neon);
+}
+
+.scout-pool > th {
+  font-family: var(--font-body);
+  font-weight: 400;
+  white-space: normal;
+}
+
+.scout-pool-text {
+  position: sticky;
+  left: var(--space-3);
+  display: inline-block;
+  max-width: min(80vw, 40rem);
+}
+
+.scout-pool strong {
+  font-family: var(--font-neon);
+  color: var(--tag);
+}
+
+/* ---- What the engine fetched ---- */
+.scout-bytes {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+  color: var(--fg-muted);
+}
+
+.scout-bytes p {
+  overflow-wrap: anywhere;
+}
+
+.scout-bytes-label {
+  font-family: var(--font-neon);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tag);
+}
+
+.scouting-page li,
+.scouting-page p {
+  overflow-wrap: anywhere;
+}

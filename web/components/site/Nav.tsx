@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { isCurrent, NAV } from "../../lib/sections";
 
 // The header's six entries, a row that wraps on a phone (no menu to open; the brackets around each
-// link are CSS, from 640 px up), and under Tracking or Engineering a second row with the pages of
-// that group (P15). Client-side only for `aria-current`; no prefetch, so a page's byte budget does
+// link are CSS, from 640 px up), and under Tracking, Engineering or Warehouse a second row with the
+// pages of that group (P15, P17). Client-side only for `aria-current`; no prefetch, so a page's byte budget does
 // not pay for the others.
 export function Nav() {
   const path = usePathname();

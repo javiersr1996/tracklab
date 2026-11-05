@@ -156,3 +156,19 @@ export function columnCell(column: Vector, index: number): string {
   }
   return "NULL";
 }
+
+// Arrow type ids whose `get()` is already the value: Int, Float, Utf8, Bool, LargeUtf8.
+const PLAIN = new Set([2, 3, 5, 6, 20]);
+
+export type RawValue = number | string | boolean | null;
+
+// The value itself, not its text (task 135): NULL is `null`, a number a number (a BIGINT beyond
+// 2^53 its digits), and every type whose `get()` is not the value (decimal, date, time,
+// timestamp, interval, nested) the same text `columnCell` writes.
+export function columnValue(column: Vector, index: number): RawValue {
+  const value = column.get(index);
+  if (value === null || value === undefined) return null;
+  if (!PLAIN.has(column.type.typeId)) return columnCell(column, index);
+  if (typeof value === "bigint") return Number.isSafeInteger(Number(value)) ? Number(value) : value.toString();
+  return value as RawValue;
+}

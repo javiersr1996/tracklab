@@ -19,21 +19,23 @@ test("the /tracking hub lists replay, runs and pose as cards that open them", as
   await expect(page.locator("h1")).toHaveText("The run that moves nobody");
 });
 
-// The header (Javier's option 1): six entries, and under Tracking or Engineering a second row
-// with the group's pages, the one on show marked current.
+// The header (Javier's option 1): six entries, and under Tracking, Engineering or Warehouse (P17)
+// a second row with the group's pages, the one on show marked current.
 const SIX = ["Tracking", "Engineering", "Warehouse", "Learn", "SQL", "EuroLeague"];
 const GROUPS = [
   { path: "/tracking/pose", group: "Tracking", pages: ["Replay", "Runs", "Pose"], current: "Pose" },
   { path: "/engineering/quality", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Quality" },
   { path: "/engineering", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Platform" },
   { path: "/engineering/history", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "History" },
+  { path: "/warehouse", group: "Warehouse", pages: ["Console", "Scouting"], current: "Console" },
+  { path: "/warehouse/scouting", group: "Warehouse", pages: ["Console", "Scouting"], current: "Scouting" },
 ];
 
 test("the header has the six entries, and a group's pages only under that group", async ({ page }) => {
-  await page.goto("/warehouse");
+  await page.goto("/learn");
   const nav = page.getByRole("navigation", { name: "Sections" });
   await expect(nav.getByRole("link")).toHaveText(SIX);
-  await expect(nav.locator("[aria-current]")).toHaveText(["Warehouse"]);
+  await expect(nav.locator("[aria-current]")).toHaveText(["Learn"]);
   await expect(page.locator(".site-subnav")).toHaveCount(0);
 
   for (const g of GROUPS) {
@@ -54,8 +56,16 @@ test("the header has the six entries, and a group's pages only under that group"
 for (const width of [390, 1440]) {
   test(`at ${width} px the header's two rows neither overlap nor overflow, text 16 px or more`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    // The wordmark and the six, then the group's row: three under Tracking, four under Engineering.
-    const LINKS: Record<string, number> = { "/": 7, "/tracking/runs": 10, "/engineering/bulletin": 11, "/engineering/history": 11 };
+    // The wordmark and the six, then the group's row: three under Tracking, four under Engineering,
+    // two under Warehouse.
+    const LINKS: Record<string, number> = {
+      "/": 7,
+      "/tracking/runs": 10,
+      "/engineering/bulletin": 11,
+      "/engineering/history": 11,
+      "/warehouse": 9,
+      "/warehouse/scouting": 9,
+    };
     for (const path of Object.keys(LINKS)) {
       await page.goto(path);
       const sideways = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

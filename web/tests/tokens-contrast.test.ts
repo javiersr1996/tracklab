@@ -20,6 +20,7 @@ import { COLORS, DIM_ALPHA } from "../lib/replay/render";
 // - `COLORS.ball` back at #f5c518: "the tokens they name" fails on the replay's ball.
 // - `--neon-band` back at #0b1220: "the alternate band reads as a band" fails (1.08:1).
 // - `--el-down: #8a2a5c`: "the shot atlas of /euroleague" fails (2.5:1 on the canvas).
+// - `--pct-1: #0d6e86`: "the scouting table's percentile steps" fails (2.80:1 on the band).
 
 const css = readFileSync(join(process.cwd(), "app", "globals.css"), "utf-8").replace(/\/\*[\s\S]*?\*\//g, "");
 
@@ -189,6 +190,22 @@ describe("the colour tokens", () => {
       pairs.push(measure(`bar ${seg} on a page card`, resolve(page, seg), resolve(page, "--raised"), 3));
       pairs.push(measure(`--canvas-ink on the bar ${seg}`, resolve(page, "--canvas-ink"), resolve(page, seg), 4.5));
     }
+    expect(low(pairs)).toEqual([]);
+  });
+
+  it("the scouting table's percentile steps, its paired bars and its head panel (task 136)", () => {
+    const onBand = resolve(band, "--bg");
+    const pairs: Pair[] = [];
+    // A cell's fill is a mark on the band; its number is text on the fill.
+    for (const step of [1, 2, 3, 4]) {
+      const fill = resolve(band, `--pct-${step}`);
+      pairs.push(measure(`percentile step ${step} on the band`, fill, onBand, 3));
+      pairs.push(measure(`--pct-ink-${step} on step ${step}`, resolve(band, `--pct-ink-${step}`), fill, 4.5));
+    }
+    // The comparison's bars on the band (A cyan, B magenta) and the head panel's on a page card.
+    pairs.push(measure("bar A (--neon) on the band", resolve(band, "--neon"), onBand, 3));
+    pairs.push(measure("bar B (--neon-alt) on the band", resolve(band, "--neon-alt"), onBand, 3));
+    pairs.push(measure("the head panel's bar (--neon) on a page card", resolve(page, "--neon"), resolve(page, "--raised"), 3));
     expect(low(pairs)).toEqual([]);
   });
 
