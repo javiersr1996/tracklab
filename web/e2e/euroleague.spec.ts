@@ -1,5 +1,6 @@
 import { expect, type Page, type Request, test } from "@playwright/test";
 import type { League, Team } from "../lib/euroleague/atlas";
+import type { Pair, Runs } from "../lib/euroleague/runs";
 
 // /euroleague (task 116): every figure against the published aggregates, the one file a team
 // asks for, nothing of euroleague.net, a phone, reduced motion and the attribution.
@@ -125,6 +126,111 @@ test("the season under way says how far it is, and the strip lights the team cho
       await expect(card.locator(`[data-bar="${c.season}"] [data-zone="${zone}"]`)).toHaveText(wholePct(c[zone].share));
     }
   }
+});
+
+// "Runs and comebacks" (task 118): the lists and the cards against runs.json, in each season, for the
+// team chosen, on a phone. The expectations are built here from the file, not from the page's helpers.
+const runsFile = async (page: Page) => (await (await page.request.get("/data/euroleague/runs.json")).json()) as Runs;
+const dash = ([own, rival]: Pair) => `${own}–${rival}`;
+
+async function streaksMatch(page: Page, file: Runs, data: League, season: string) {
+  const block = file.seasons.find((s) => s.season === season)!;
+  const names = Object.fromEntries(data.seasons.flatMap((s) => s.teams.map((t) => [t.code, t.name])));
+  const strip = page.locator(`[data-streaks="${season}"]`);
+  await expect(strip).toContainText(`${block.games_read} games read, through ${block.cutoff}`);
+  await expect(strip).toContainText(`top ${file.top} of the season`);
+  const rows = [
+    { id: "runs", list: block.runs.map((r) => ({ ...r, size: r.size, text: `from ${dash(r.from)} to ${dash(r.to)}` })) },
+    {
+      id: "comebacks",
+      list: block.comebacks.map((c) => ({ ...c, size: c.deficit, text: `trailed ${dash(c.at)}, won ${dash(c.final)}` })),
+    },
+  ];
+  for (const { id, list } of rows) {
+    const items = strip.locator(`[data-ranking="${id}"] > li`);
+    await expect(items).toHaveCount(list.length);
+    for (const [i, r] of list.entries()) {
+      const item = items.nth(i);
+      const place = 1 + list.filter((o) => o.size > r.size).length;
+      await expect(item).toHaveAttribute("data-rank-team", r.team);
+      await expect(item.locator(".el-rank-place")).toHaveText(String(place));
+      await expect(item.locator("[data-rank-size]")).toContainText(String(r.size));
+      await expect(item.locator(".el-rank-who")).toHaveText(`${names[r.team]} against ${names[r.opp]}`);
+      await expect(item.locator(".el-rank-meta")).toHaveText(`${r.date}, ${r.text}`);
+    }
+  }
+  await expect(strip.locator("[data-streak-team]")).toHaveCount(block.teams.length);
+  for (const t of block.teams) {
+    const card = strip.locator(`[data-streak-team="${t.code}"]`);
+    await expect(card.locator(".el-streak-name")).toHaveText(names[t.code]);
+    for (const key of ["best_run", "runs_n", "comeback_for", "comeback_against", "wins_from_n"] as const) {
+      await expect(card.locator(`[data-stat="${key}"]`)).toHaveText(String(t[key]));
+    }
+  }
+  return block;
+}
+
+test("runs and comebacks: the lists and the cards are runs.json's, in each season", async ({ page }) => {
+  await page.goto("/euroleague");
+  const [file, data] = await Promise.all([runsFile(page), league(page)]);
+  const strip = page.locator(".el-streaks-band");
+  await expect(strip).toContainText(`from ${file.run_min} points in a row`);
+  await expect(strip).toContainText(`from ${file.deficit_min} points behind`);
+  const first = await streaksMatch(page, file, data, data.seasons[0].season);
+  expect(first.runs.length, "the top 10 and its ties").toBeGreaterThanOrEqual(file.top);
+  await page.getByRole("button", { name: "2026-27" }).click();
+  await streaksMatch(page, file, data, "E2026");
+});
+
+test("runs and comebacks: the team chosen comes first, lit, and so do its rows", async ({ page }) => {
+  await page.goto("/euroleague");
+  const [file, data] = await Promise.all([runsFile(page), league(page)]);
+  await page.locator("#el-team").selectOption("OLY");
+  const block = file.seasons.find((s) => s.season === data.seasons[0].season)!;
+  const card = page.locator('[data-streak-team="OLY"]');
+  await expect(card).toHaveAttribute("data-selected", "true");
+  await expect(page.locator(".el-streak-team").first()).toHaveAttribute("data-streak-team", "OLY");
+  await expect(page.locator(".el-streak-team[data-selected]")).toHaveCount(1);
+  const oly = block.teams.find((t) => t.code === "OLY")!;
+  await expect(card.locator('[data-stat="best_run"]')).toHaveText(String(oly.best_run));
+  const lit = block.runs.filter((r) => r.team === "OLY").length + block.comebacks.filter((c) => c.team === "OLY").length;
+  expect(lit, "OLY is in a top list, so the rows can be lit").toBeGreaterThan(0);
+  await expect(page.locator(".el-rank-row[data-selected]")).toHaveCount(lit);
+  const litBy = await page.locator(".el-rank-row[data-selected]").evaluateAll((els) => els.map((e) => e.getAttribute("data-rank-team")));
+  expect(litBy, "a row is lit by the team that did it, not by its rival").toEqual(Array(lit).fill("OLY"));
+  // Another team, and no team: nothing stays lit.
+  await page.locator("#el-team").selectOption("BAR");
+  await expect(page.locator(".el-streak-team").first()).toHaveAttribute("data-streak-team", "BAR");
+  await page.locator("#el-team").selectOption("");
+  await expect(page.locator(".el-streak-team[data-selected]")).toHaveCount(0);
+  await expect(page.locator(".el-rank-row[data-selected]")).toHaveCount(0);
+  // Without a team the cards go by the biggest run, the greatest first.
+  const best = await page.locator('[data-stat="best_run"]').allTextContents();
+  expect(best.map(Number)).toEqual([...best.map(Number)].sort((a, b) => b - a));
+});
+
+test("runs and comebacks on a phone: no sideways scroll, text of 16 px or more, ties kept", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/euroleague");
+  const strip = page.locator(".el-streaks-band");
+  await strip.scrollIntoViewIfNeeded();
+  const m = await page.evaluate(() => {
+    const band = document.querySelector(".el-streaks-band")!;
+    const small = [...band.querySelectorAll("*")]
+      .filter((e) => [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim() !== ""))
+      .filter((e) => parseFloat(getComputedStyle(e).fontSize) < 16)
+      .map((e) => e.className || e.tagName);
+    const wide = [...band.querySelectorAll("*")].filter((e) => e.getBoundingClientRect().right > innerWidth + 0.5);
+    return {
+      page: document.documentElement.scrollWidth,
+      width: innerWidth,
+      small,
+      wide: wide.map((e) => e.className || e.tagName),
+    };
+  });
+  expect(m.page).toBeLessThanOrEqual(m.width);
+  expect(m.small).toEqual([]);
+  expect(m.wide).toEqual([]);
 });
 
 test("the keyboard steps through the hexagons with a visible focus", async ({ page }) => {
