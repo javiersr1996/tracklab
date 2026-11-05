@@ -22,52 +22,56 @@ function Table({ s, d }: { s: ExpectedSeason; d: number }) {
     <line x1={sx(0)} x2={sx(v)} y1={y} y2={y} stroke={color} strokeWidth={6} vectorEffect="non-scaling-stroke" />
   );
   const cell = (t: TeamRow, field: string) => <Fig name={xpName(s.season, `teams.${t.code}.${field}`)}>{String(t[field as keyof TeamRow])}</Fig>;
+  // The title sits outside the scroller, so it wraps on a phone instead of scrolling with the table.
+  const title = `xp-teams-${s.season}`;
   return (
-    <div className="table-scroll">
-      <table className="per-match learn-matches xp-teams" data-season={s.season}>
-        <caption>
-          {seasonLabel(s.season)}, league <Fig name={xpName(s.season, "mean")}>{String(s.mean)}</Fig> points per shot
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">team</th>
-            <th scope="col" className="per-match-strip" aria-label="mix and making, points per shot against the league's">
-              <span className="per-match-axis" aria-hidden="true">
-                {ticks(-d, d, 0.1).map((v) => (
-                  <span key={v} style={{ left: `${(sx(v) / STRIP_W) * 100}%` }}>
-                    {signed(v, 1)}
-                  </span>
-                ))}
-              </span>
-            </th>
-            <th scope="col">points per shot</th>
-            <th scope="col">expected</th>
-            <th scope="col">mix</th>
-            <th scope="col">making</th>
-            <th scope="col">name</th>
-          </tr>
-        </thead>
-        <tbody>
-          {byPoints(s.teams).map((t) => (
-            <tr key={t.code} data-team={t.code}>
-              <td>{t.code}</td>
-              <td className="per-match-strip">
-                <svg viewBox={`0 0 ${STRIP_W} ${STRIP_H}`} preserveAspectRatio="none" aria-hidden="true">
-                  <line x1={sx(0)} x2={sx(0)} y1={0} y2={STRIP_H} stroke={INK.axis} strokeWidth={1} vectorEffect="non-scaling-stroke" />
-                  {bar(t.mix, 7, INK.data)}
-                  {bar(t.making, 17, INK.standard)}
-                  <line x1={sx(t.pps - s.mean)} x2={sx(t.pps - s.mean)} y1={1} y2={STRIP_H - 1} stroke={INK.probe} strokeWidth={3} vectorEffect="non-scaling-stroke" />
-                </svg>
-              </td>
-              {FIELDS.map((f) => (
-                <td key={f}>{cell(t, f)}</td>
-              ))}
-              <td>{t.name}</td>
+    <>
+      <p id={title} className="xp-teams-title">
+        {seasonLabel(s.season)}, league <Fig name={xpName(s.season, "mean")}>{String(s.mean)}</Fig> points per shot
+      </p>
+      <div className="table-scroll">
+        <table className="per-match learn-matches xp-teams" data-season={s.season} aria-labelledby={title}>
+          <thead>
+            <tr>
+              <th scope="col">team</th>
+              <th scope="col" className="per-match-strip" aria-label="mix and making, points per shot against the league's">
+                <span className="per-match-axis" aria-hidden="true">
+                  {ticks(-d, d, 0.1).map((v) => (
+                    <span key={v} style={{ left: `${(sx(v) / STRIP_W) * 100}%` }}>
+                      {signed(v, 1)}
+                    </span>
+                  ))}
+                </span>
+              </th>
+              <th scope="col">points per shot</th>
+              <th scope="col">expected</th>
+              <th scope="col">mix</th>
+              <th scope="col">making</th>
+              <th scope="col">name</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {byPoints(s.teams).map((t) => (
+              <tr key={t.code} data-team={t.code}>
+                <td>{t.code}</td>
+                <td className="per-match-strip">
+                  <svg viewBox={`0 0 ${STRIP_W} ${STRIP_H}`} preserveAspectRatio="none" aria-hidden="true">
+                    <line x1={sx(0)} x2={sx(0)} y1={0} y2={STRIP_H} stroke={INK.axis} strokeWidth={1} vectorEffect="non-scaling-stroke" />
+                    {bar(t.mix, 7, INK.data)}
+                    {bar(t.making, 17, INK.standard)}
+                    <line x1={sx(t.pps - s.mean)} x2={sx(t.pps - s.mean)} y1={1} y2={STRIP_H - 1} stroke={INK.probe} strokeWidth={3} vectorEffect="non-scaling-stroke" />
+                  </svg>
+                </td>
+                {FIELDS.map((f) => (
+                  <td key={f}>{cell(t, f)}</td>
+                ))}
+                <td>{t.name}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
