@@ -330,6 +330,8 @@ export interface ComparedTable {
   below: boolean;
   pool: ScoutingPool | null;
   cells: Cell[];
+  // Per metric, the rows of the player's pool with a value, counted by the comparison's query.
+  n: (number | null)[];
 }
 
 export interface Compared {
@@ -360,6 +362,7 @@ export function comparedOf(sport: Sport, r: QueryResult): Compared[] {
           table: t,
           below,
           pool: t.pools.find((p) => p.group === (key.position_group ?? null)) ?? null,
+          n: t.metrics.map((m) => (below ? null : num(get(row, `${t.table}__${m.id}_n`)))),
           cells: t.metrics.map((m) =>
             below
               ? { value: null, pctl: null }

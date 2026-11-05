@@ -93,12 +93,23 @@ function pick(t: ScoutingTable, ids: readonly string[] | undefined): ScoutingMet
 }
 
 // `<out>` holds the value and `<out>_pctl` its percentile (NULL when the value is).
-function metricColumns(t: ScoutingTable, metrics: ScoutingMetric[], out: (id: string) => string): string[] {
+// With `counts`, `<out>_n` is the rows of the pool with a value for the metric.
+function metricColumns(
+  t: ScoutingTable,
+  metrics: ScoutingMetric[],
+  out: (id: string) => string,
+  counts = false,
+): string[] {
   return metrics.flatMap((m) => {
     const e = exprSql(m);
     const part = [...(t.partition ? [name(t.partition, "partition")] : []), `((${e}) IS NULL)`].join(", ");
     const rank = `floor(percent_rank() OVER (PARTITION BY ${part} ORDER BY (${e})) * 1000 + 0.5 + 1e-6) / 10`;
-    return [`(${e}) AS ${out(m.id)}`, `CASE WHEN (${e}) IS NULL THEN NULL ELSE ${rank} END AS ${out(m.id)}_pctl`];
+    const columns = [`(${e}) AS ${out(m.id)}`, `CASE WHEN (${e}) IS NULL THEN NULL ELSE ${rank} END AS ${out(m.id)}_pctl`];
+    if (counts) {
+      const by = t.partition ? `PARTITION BY ${name(t.partition, "partition")}` : "";
+      columns.push(`count(${e}) OVER (${by}) AS ${out(m.id)}_n`);
+    }
+    return columns;
   });
 }
 
@@ -114,9 +125,10 @@ function poolSelect(
   metrics: ScoutingMetric[],
   head: string[],
   out: (id: string) => string,
+  counts = false,
 ): string {
   const key = t.key.map((k) => name(k, "key column"));
-  return `SELECT ${[...key, ...head, ...metricColumns(t, metrics, out)].join(", ")} FROM ${t.table} WHERE ${floorSql(t)}`;
+  return `SELECT ${[...key, ...head, ...metricColumns(t, metrics, out, counts)].join(", ")} FROM ${t.table} WHERE ${floorSql(t)}`;
 }
 
 // The table of one catalog table: one row per key that passes the floor, in the order of the
@@ -136,7 +148,7 @@ export function tableSql(catalog: ScoutingCatalog, table: string, metricIds?: re
 // intersection of the pools. A player under a table's floor keeps NULL for its metrics and
 // `<table>_below_floor` true. Columns: `slot` (0 the first player, 1 the second), the key,
 // `player_name`, `team_name`, `age` in football, then per table `<table>_below_floor`,
-// `<table>__<id>` and `<table>__<id>_pctl`.
+// `<table>__<id>`, `<table>__<id>_pctl` and `<table>__<id>_n` (the metric's pool, counted by the engine).
 export function compareSql(
   catalog: ScoutingCatalog,
   sport: string,
@@ -173,12 +185,12 @@ export function compareSql(
   tables.forEach((t, i) => {
     const alias = `c${i}`;
     const out = (id: string) => `${name(t.table, "table")}__${id}`;
-    const inner = poolSelect(t, t.metrics, [], out);
+    const inner = poolSelect(t, t.metrics, [], out, true);
     const only = key.map((c) => `${c} IN (SELECT ${c} FROM k)`).join(" AND ");
     ctes.push(`${alias} AS (SELECT * FROM (${inner}) WHERE ${only})`);
     joins.push(`LEFT JOIN ${alias} ON ${on(alias)}`);
     select.push(`(${alias}.${key[0]} IS NULL) AS ${t.table}_below_floor`);
-    for (const m of t.metrics) select.push(`${alias}.${out(m.id)}`, `${alias}.${out(m.id)}_pctl`);
+    for (const m of t.metrics) select.push(`${alias}.${out(m.id)}`, `${alias}.${out(m.id)}_pctl`, `${alias}.${out(m.id)}_n`);
   });
   const sql = `WITH ${ctes.join(", ")} SELECT ${select.join(", ")} FROM k ${joins.join(" ")} ORDER BY k.slot`;
   return gate(sql, catalog);

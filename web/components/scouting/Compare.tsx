@@ -89,7 +89,7 @@ export function Compare({ players, who, current }: { players: Compared[]; who: W
                     </p>
                     {[ta, tb].map((side, s) => {
                       const c = side.cells[i];
-                      const n = side.pool?.n[i];
+                      const n = side.n[i];
                       return (
                         <div
                           key={SLOTS[s]}

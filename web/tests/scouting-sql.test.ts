@@ -124,6 +124,10 @@ describe("compareSql", () => {
     expect(sql).toContain("k(slot, player_id, team_id, position_group) AS (VALUES (0, 1, 2, 'Midfield'), (1, 3, 4, 'Full Back'))");
     expect(sql).toContain("(c0.player_id IS NULL) AS fb_a_below_floor");
     expect(sql).toContain("c1.fb_b__passes_pctl");
+    // The pool size per metric, counted by the engine over the same window as the percentile.
+    expect(sql).toContain("count(dist) OVER (PARTITION BY position_group) AS fb_a__dist_n");
+    expect(sql).toContain("c1.fb_b__passes_n");
+    expect(tableSql(toy, "fb_a")).not.toMatch(/_n\b/);
     expect(sql).toContain("ORDER BY k.slot");
   });
 
