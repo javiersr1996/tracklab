@@ -9,8 +9,8 @@ import { ZoneBars } from "../components/learn/expected/ZoneBars";
 import { INK } from "../components/learn/gravity/Plot";
 import { display } from "../lib/learn/display";
 import { CLASSES, EXPECTED, type ExpectedFile, type ExpectedSeason, type TeamRow, type Zones, xpFigure } from "../lib/learn/expected-data";
-import { lessonExpectedFigures, seasonFigures } from "../lib/learn/expected-figures";
-import { plainMean, shares, split, weightedMean } from "../lib/learn/expected";
+import { excludesZero, lessonExpectedFigures, seasonFigures } from "../lib/learn/expected-figures";
+import { intervals, plainMean, shares, split, weightedMean } from "../lib/learn/expected";
 import { shown } from "../lib/learn/expose";
 
 // Lesson 12 (task 117). The arithmetic is checked on counts worked out by hand (the same season as
@@ -22,6 +22,8 @@ import { shown } from "../lib/learn/expose";
 // - `weightedMean` as the plain mean of the classes: "the league's mean" and "every row" fail.
 // - xpps as the plain mean of the league's classes (not weighted by the team's attempts):
 //   "a team against the league" and "every row" fail.
+// Task 117b, the intervals: centred on the league (0) instead of the team, z typed instead of the
+// file's, making's centre with its sign flipped, and `>=` for "excludes zero": see todo.md.
 
 const T = (n: number, made: number, pts: number) => ({ n, made, pts });
 // AAA, BBB and the league (CCC's shots included) of the pipeline's hand-made season.
@@ -47,6 +49,20 @@ describe("expected points on counts worked out by hand", () => {
   it("shares of attempts", () => {
     expect(shares(AAA)).toEqual({ rim: 0.5, mid: 0.25, three: 0.25 });
   });
+
+  // pipeline/tests/unit/test_euroleague_expected.py works these out by hand in its docstring.
+  it("the intervals of mix and making, plus and minus 1.96 standard errors", () => {
+    const a = intervals(AAA, LEAGUE, 1.96);
+    expect([...a.mix, ...a.making].map(r3)).toEqual([-0.07, 0.148, -0.57, 0.42]);
+    const b = intervals(BBB, LEAGUE, 1.96);
+    expect([...b.mix, ...b.making].map(r3)).toEqual([-0.141, 0.07, -0.383, 0.503]);
+    // Centred on the team's own figure: 0.0394068 for AAA's mix, -0.075 for its making.
+    expect((a.mix[0] + a.mix[1]) / 2).toBeCloseTo(1.175 - 67 / 59, 12);
+    expect((a.making[0] + a.making[1]) / 2).toBeCloseTo(-0.075, 12);
+    // Half as wide at half the z.
+    const half = intervals(AAA, LEAGUE, 0.98);
+    expect(half.making[1] - half.making[0]).toBeCloseTo((a.making[1] - a.making[0]) / 2, 12);
+  });
 });
 
 describe("expected-points.json", () => {
@@ -64,6 +80,28 @@ describe("expected-points.json", () => {
     expect(rows).toBeGreaterThanOrEqual(40);
   });
 
+  it("every interval the pipeline wrote is what this arithmetic gives from the counts and the file's z", () => {
+    expect([EXPECTED.level, EXPECTED.z]).toEqual([0.95, 1.96]);
+    let rows = 0;
+    for (const s of EXPECTED.seasons) {
+      for (const t of s.teams) {
+        const got = intervals(t, s.league, EXPECTED.z);
+        expect([...got.mix, ...got.making].map(r3), `${s.season} ${t.code}`).toEqual([...t.mix_ci, ...t.making_ci]);
+        rows++;
+      }
+    }
+    expect(rows).toBeGreaterThanOrEqual(40);
+  });
+
+  it("the claims the text makes about the first season hold in the file", () => {
+    const f = seasonFigures(EXPECTED.seasons[0], EXPECTED.level);
+    // More making intervals exclude zero than chance alone would give; most mix ones do, most making ones do not.
+    expect(f.excl_making).toBeGreaterThan(f.chance);
+    expect(f.excl_mix).toBeGreaterThan(f.teams / 2);
+    expect(f.excl_making).toBeLessThan(f.teams / 2);
+    expect(f.width_ratio).toBeGreaterThan(f.ratio);
+  });
+
   it("resolves a figure's name to the file's value", () => {
     const [a] = EXPECTED.seasons;
     const t = a.teams[0];
@@ -78,7 +116,18 @@ describe("expected-points.json", () => {
 });
 
 // A season of three teams with figures chosen to tie and to cross zero.
-const row = (code: string, pps: number, mix: number, making: number): TeamRow => ({ code, name: code, ...AAA, pps, xpps: 0, mix, making });
+const row = (code: string, pps: number, mix: number, making: number, mix_ci: [number, number], making_ci: [number, number]): TeamRow => ({
+  code,
+  name: code,
+  ...AAA,
+  pps,
+  xpps: 0,
+  mix,
+  making,
+  mix_ci,
+  making_ci,
+});
+const spread = (median: number) => ({ median, min: median, max: median });
 const SEASON: ExpectedSeason = {
   season: "E2025",
   cutoff: "2026-05-24",
@@ -86,13 +135,19 @@ const SEASON: ExpectedSeason = {
   league: { ...LEAGUE, unclassified: 0 },
   pps: { rim: 1.2, mid: 0.8, three: 1.5 },
   mean: 1.136,
-  teams: [row("AAA", 1.1, 0.02, -0.03), row("BBB", 1.2, -0.01, 0.07), row("CCC", 1.2, 0.02, 0.0)],
+  // AAA's mix interval starts at 0: it does not exclude zero.
+  games_ratio: { mix: spread(1.2), making: spread(1) },
+  teams: [
+    row("AAA", 1.1, 0.02, -0.03, [0, 0.04], [-0.1, 0.04]),
+    row("BBB", 1.2, -0.01, 0.07, [-0.02, -0.001], [0.01, 0.13]),
+    row("CCC", 1.2, 0.02, 0.0, [0.005, 0.035], [-0.08, 0.08]),
+  ],
   teams_left_out: 0,
 };
 
 describe("the figures the text computes", () => {
   it("extremes with their teams (the first on a tie), ranges and their ratio", () => {
-    expect(seasonFigures(SEASON)).toEqual({
+    expect(seasonFigures(SEASON, 0.9)).toEqual({
       pct: { rim: 60, mid: 40, three: 50 },
       value: { rim: 2, mid: 2, three: 3 },
       attempts: 59,
@@ -110,12 +165,29 @@ describe("the figures the text computes", () => {
       making_range: 0.1,
       ratio: 3.3,
       making_pos: 1, // zero is not above
+      excl_mix: 2, // BBB and CCC; AAA's starts at 0
+      excl_making: 1,
+      chance: 0.3, // (1 - 0.9) * 3
+      width_ratio: 4.7, // making's median width 0.14 over mix's 0.03
+      wide_mix: 1, // at 1.2 times as wide, only CCC's (0.02 > 1.2 * 0.015); BBB's would at 1
     });
+  });
+
+  it("an interval excludes zero only with both bounds on one side of it", () => {
+    expect([[0.001, 0.2], [-0.2, -0.001], [0, 0.2], [-0.2, 0], [-0.1, 0.1]].map((ci) => excludesZero(ci as [number, number]))).toEqual([
+      true,
+      true,
+      false,
+      false,
+      false,
+    ]);
+    expect(seasonFigures({ ...SEASON, games_ratio: { mix: spread(1), making: spread(1) } }, 0.9).wide_mix).toBe(2);
   });
 
   it("the example is the team with the most points per shot of the first season", () => {
     const file: ExpectedFile = { ...EXPECTED, seasons: [SEASON] };
     expect(lessonExpectedFigures(file).ex).toEqual({ season: "E2025", code: "BBB", share: { rim: 50, mid: 25, three: 25 } });
+    expect(lessonExpectedFigures(file).level_pct).toBe(95);
   });
 });
 
@@ -123,6 +195,7 @@ describe("the figures the text computes", () => {
 const SQL = readFileSync(join(process.cwd(), "..", "pipeline", "src", "tracklab", "learn", "expected-points.sql"), "utf-8");
 const HTML = renderToStaticMarkup(createElement(Lesson, { sql: SQL }));
 const F = lessonExpectedFigures(EXPECTED);
+const LEVEL = { z: EXPECTED.z, pct: F.level_pct };
 const entities = (s: string) =>
   s.replace(/&#x27;|&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 const get = (root: unknown, path: string) =>
@@ -157,13 +230,13 @@ describe("the text of lesson 12", () => {
 
 describe("the figures", () => {
   it("draw every mark in a colour of the lessons' palette", () => {
-    const markup = [renderToStaticMarkup(createElement(ZoneBars, { seasons: EXPECTED.seasons })), renderToStaticMarkup(createElement(PerTeam, { seasons: EXPECTED.seasons }))].join("");
+    const markup = [renderToStaticMarkup(createElement(ZoneBars, { seasons: EXPECTED.seasons })), renderToStaticMarkup(createElement(PerTeam, { seasons: EXPECTED.seasons, level: LEVEL }))].join("");
     const colours = new Set([...markup.matchAll(/(?:stroke|fill)="([^"]+)"/g)].map((m) => m[1]).filter((c) => c !== "none"));
     expect([...colours].filter((c) => !Object.values(INK).includes(c as (typeof INK)[keyof typeof INK]))).toEqual([]);
   });
 
   it("list every team of each season, the most points per shot first", () => {
-    const markup = renderToStaticMarkup(createElement(PerTeam, { seasons: EXPECTED.seasons }));
+    const markup = renderToStaticMarkup(createElement(PerTeam, { seasons: EXPECTED.seasons, level: LEVEL }));
     for (const s of EXPECTED.seasons) {
       const table = markup.match(new RegExp(`<table[^>]*data-season="${s.season}"[\\s\\S]*?</table>`))![0];
       const order = [...table.matchAll(/data-team="([A-Z0-9]+)"/g)].map((m) => m[1]);

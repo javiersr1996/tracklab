@@ -61,6 +61,26 @@ const ebar = (
     <mo>¯</mo>
   </mover>
 );
+const sumI = (body: ReactNode) => (
+  <>
+    <msub>
+      <mo>∑</mo>
+      <mi>i</mi>
+    </msub>
+    <mo>(</mo>
+    {body}
+    <mo>)</mo>
+  </>
+);
+const ezi = (
+  <msub>
+    <mi>e</mi>
+    <msub>
+      <mi>z</mi>
+      <mi>i</mi>
+    </msub>
+  </msub>
+);
 const tz = (
   <>
     <mi>t</mi>
@@ -201,24 +221,113 @@ export function Lesson({ sql }: { sql: string }) {
 
         <section aria-labelledby="teams-h">
           <h2 id="teams-h">Every team, both seasons</h2>
+          <h3 id="teams-question-h">The question</h3>
           <p>
-            The tables do the same for every team, one row each, the most points per shot first. In <Season code={A} />, mix
-            runs from {s(A, "mix_lo")} ({s(A, "mix_lo_code")}) to {s(A, "mix_hi")} ({s(A, "mix_hi_code")}), a range of{" "}
-            {s(A, "mix_range")}; making runs from {s(A, "making_lo")} ({s(A, "making_lo_code")}) to {s(A, "making_hi")} (
-            {s(A, "making_hi_code")}), a range of {s(A, "making_range")}, {s(A, "ratio")} times as wide. {s(A, "making_pos")} of
-            the {s(A, "teams")} teams scored more per shot than their mix was worth.
+            The tables below split every team the same way. But a season is a sample: had a team taken the same kind of shots
+            again, it would have made a few more or a few fewer, from a slightly different mix. Is a team&apos;s mix, or its
+            making, more than that chance alone would give?
+          </p>
+          <h3 id="teams-method-h">The method</h3>
+          <p>
+            Both parts are means over the team&apos;s <M>{sub("n", <mi>t</mi>)}</M> attempts. An attempt <M><mi>i</mi></M>, in
+            class <M>{sub("z", <mi>i</mi>)}</M> and scoring <M>{sub("y", <mi>i</mi>)}</M> points, adds to the mix the
+            league&apos;s value of its class minus the league&apos;s points per shot, and to the making the points it scored minus
+            that value:
+          </p>
+          <Formula label="Mix, a mean over the team's attempts">
+            <mrow>
+              {sub("x", <mi>t</mi>)}
+              <mo>−</mo>
+              {ebar}
+              <mo>=</mo>
+              {frac(<mn>1</mn>, sub("n", <mi>t</mi>))}
+              {sumI(
+                <>
+                  {ezi}
+                  <mo>−</mo>
+                  {ebar}
+                </>,
+              )}
+            </mrow>
+          </Formula>
+          <Formula label="Making, a mean over the team's attempts">
+            <mrow>
+              {sub("p", <mi>t</mi>)}
+              <mo>−</mo>
+              {sub("x", <mi>t</mi>)}
+              <mo>=</mo>
+              {frac(<mn>1</mn>, sub("n", <mi>t</mi>))}
+              {sumI(
+                <>
+                  {sub("y", <mi>i</mi>)}
+                  <mo>−</mo>
+                  {ezi}
+                </>,
+              )}
+            </mrow>
+          </Formula>
+          <p>
+            If the attempts were independent draws, each from the team&apos;s own mix of classes and made at its own rate in the
+            class, such a mean would vary from one season to another by its standard error: the spread <M><mi>s</mi></M> of what
+            one attempt adds, over the square root of the attempts. The interval of each part is the part plus and minus{" "}
+            {r("z")} standard errors; under that model, an interval built this way holds the team&apos;s underlying figure{" "}
+            {l("level_pct")}&nbsp;% of the time:
+          </p>
+          <Formula label="The interval of mix or making">
+            <mrow>
+              <mi>m</mi>
+              <mo>±</mo>
+              <mi>z</mi>
+              {frac(<mi>s</mi>, <msqrt>{sub("n", <mi>t</mi>)}</msqrt>)}
+            </mrow>
+          </Formula>
+          <p>
+            The counts are enough. In a class, every attempt adds the same to the mix, every make the same to the making and
+            every miss the same, so the spread comes from the attempts and makes of each class; the query under Reproduce it
+            computes it.
+          </p>
+          <h3 id="teams-result-h">The result</h3>
+          <p>
+            In <Season code={A} />, mix runs from {s(A, "mix_lo")} ({s(A, "mix_lo_code")}) to {s(A, "mix_hi")} (
+            {s(A, "mix_hi_code")}), a range of {s(A, "mix_range")}; making runs from {s(A, "making_lo")} ({s(A, "making_lo_code")}
+            ) to {s(A, "making_hi")} ({s(A, "making_hi_code")}), a range of {s(A, "making_range")}, {s(A, "ratio")} times as wide.{" "}
+            {s(A, "making_pos")} of the {s(A, "teams")} teams scored more per shot than their mix was worth.
           </p>
           <p>
-            In <Season code={B} />, mix runs from {s(B, "mix_lo")} to {s(B, "mix_hi")} and making from {s(B, "making_lo")} to{" "}
-            {s(B, "making_hi")}, {s(B, "ratio")} times as wide; {s(B, "making_pos")} of {s(B, "teams")} teams are above their
-            mix.
+            The intervals turn that round. The interval of making excludes zero for {s(A, "excl_making")} of the{" "}
+            {s(A, "teams")} teams; that of mix, for {s(A, "excl_mix")}. Making spreads the teams {s(A, "ratio")} times as wide as
+            mix does, but its median interval is {s(A, "width_ratio")} times as wide as mix&apos;s: most teams&apos; making is
+            within what a season of attempts varies by, and most teams&apos; mix is not.
           </p>
-          <PerTeam seasons={FILE.seasons} />
           <p>
-            The lesson stops at the split. A team&apos;s making says it scored more or less from its zone classes than the league
-            did from the same ones; it does not say whether its shooters, the defences it met or chance over a season of attempts
-            explain it, and a few games of a season under way are less than that.
+            In <Season code={B} />, after {x(B, "games_played")} games, mix runs from {s(B, "mix_lo")} to {s(B, "mix_hi")} and
+            making from {s(B, "making_lo")} to {s(B, "making_hi")}, {s(B, "ratio")} times as wide; {s(B, "making_pos")} of{" "}
+            {s(B, "teams")} teams are above their mix. Its making intervals are {s(B, "width_ratio")} times as wide as its mix
+            intervals, and {s(B, "excl_making")} making and {s(B, "excl_mix")} mix intervals exclude zero.
           </p>
+          <PerTeam seasons={FILE.seasons} level={{ z: FILE.z, pct: F.level_pct }} />
+          <h3 id="teams-limits-h">The limits</h3>
+          <ul>
+            <li>
+              An interval that excludes zero reports a number, not a verdict. A making above zero is not better shooting and a
+              mix below zero is not worse shot selection: the league&apos;s values price each class, and say nothing of the
+              players, the plays or the defences behind a team&apos;s figure.
+            </li>
+            <li>
+              With {s(A, "teams")} teams and intervals at {l("level_pct")}&nbsp;%, about {s(A, "chance")} would exclude zero by
+              chance alone if no team differed from the league. The {s(A, "excl_making")} making intervals of <Season code={A} />{" "}
+              that do are more than that, but the intervals cannot say which of them chance put there.
+            </li>
+            <li>
+              The intervals take every attempt as independent, and where a team shoots from changes from game to game more than
+              that allows (see the limitations below). Widened by the median factor found there, {s(A, "wide_mix")} mix intervals
+              of <Season code={A} /> still exclude zero, and {s(B, "wide_mix")} of <Season code={B} />.
+            </li>
+            <li>
+              The lesson stops at the split. Whether a team&apos;s shooters, the defences it met or chance explain its making, the
+              counts cannot say, and the games of a season under way are fewer still.
+            </li>
+          </ul>
         </section>
 
         <section aria-labelledby="matters-h">
@@ -245,7 +354,17 @@ export function Lesson({ sql }: { sql: string }) {
               Three classes are coarse. A corner three and one from the top of the arc are one class, and so are a dunk and a shot
               from the edge of the zones near the hoop; the hexagons of the <a href="/euroleague">shot atlas</a> show the spots.
             </li>
-            <li>The league&apos;s values include the team&apos;s own attempts.</li>
+            <li>The league&apos;s values include the team&apos;s own attempts, and the intervals take them as fixed.</li>
+            <li>
+              The intervals take every attempt as independent. Resampling each team&apos;s whole games instead, from the shots of
+              each game (which this site does not publish; seed {r("games_bootstrap.seed")}, {r("games_bootstrap.replicates")}{" "}
+              draws), the mix intervals of <Season code={A} /> come out a median {x(A, "games_ratio.mix.median")} times as wide
+              (from {x(A, "games_ratio.mix.min")} to {x(A, "games_ratio.mix.max")} by team): where a team shoots from changes from
+              game to game more than independent attempts allow. The making intervals come out {x(A, "games_ratio.making.median")}{" "}
+              times as wide (from {x(A, "games_ratio.making.min")} to {x(A, "games_ratio.making.max")}), so for making the model
+              holds. In <Season code={B} />, on the few games played, the two medians are {x(B, "games_ratio.mix.median")} and{" "}
+              {x(B, "games_ratio.making.median")}.
+            </li>
             <li>
               Twos the feed gives no zone are in no class: {x(A, "league.unclassified")} in <Season code={A} /> and{" "}
               {x(B, "league.unclassified")} in <Season code={B} />.
@@ -293,7 +412,8 @@ export function Lesson({ sql }: { sql: string }) {
           </ol>
           <p>
             It returns one row per team and season, {l(`season.${A}.teams`)} for <Season code={A} /> and{" "}
-            {l(`season.${B}.teams`)} for <Season code={B} />, with the four figures of the tables.
+            {l(`season.${B}.teams`)} for <Season code={B} />, with the four figures of the tables and the bounds of the two
+            intervals: the spread of each part from the counts by class, and <M><mi>z</mi></M> from the file.
           </p>
         </Reproduce>
 

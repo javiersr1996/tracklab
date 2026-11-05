@@ -31,6 +31,29 @@ export function split(team: Zones, league: Zones) {
   return { pps, xpps, mix: xpps - mean, making: pps - xpps };
 }
 
+// What a make in each class scores: a three 3, a two 2.
+const VALUE: Record<ZoneClass, number> = { rim: 2, mid: 2, three: 3 };
+
+// The intervals of mix and making if the team's attempts were independent draws, each from its own
+// mix of classes and made at its own rate there (task 117b). Both parts are means over the attempts,
+// of e_z − ē for mix and of the attempt's points − e_z for making, so each standard error is the
+// spread of those over √n, and the interval is the part ∓ z of them. Unrounded.
+export function intervals(team: Zones, league: Zones, z: number) {
+  const e = perShotByClass(league);
+  const mean = weightedMean(league);
+  const n = attempts(team);
+  const { mix, making } = split(team, league);
+  let mixSq = 0;
+  let makingSq = 0;
+  for (const c of CLASSES) {
+    mixSq += team[c].n * (e[c] - mean) ** 2;
+    makingSq += team[c].made * (VALUE[c] - e[c]) ** 2 + (team[c].n - team[c].made) * e[c] ** 2;
+  }
+  const seMix = Math.sqrt((mixSq / n - mix ** 2) / n);
+  const seMaking = Math.sqrt((makingSq / n - making ** 2) / n);
+  return { mix: [mix - z * seMix, mix + z * seMix], making: [making - z * seMaking, making + z * seMaking] };
+}
+
 // A team's share of its attempts in each class.
 export const shares = (z: Zones): Record<ZoneClass, number> =>
   Object.fromEntries(CLASSES.map((c) => [c, z[c].n / attempts(z)])) as Record<ZoneClass, number>;

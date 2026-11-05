@@ -21,6 +21,16 @@ export interface TeamRow extends Zones {
   xpps: number;
   mix: number;
   making: number;
+  mix_ci: [number, number];
+  making_ci: [number, number];
+}
+
+// How many times as wide a bootstrap over whole games makes a season's intervals (task 117b):
+// median, min and max over its teams.
+export interface Spread {
+  median: number;
+  min: number;
+  max: number;
 }
 
 export interface ExpectedSeason {
@@ -30,6 +40,7 @@ export interface ExpectedSeason {
   league: Zones & { unclassified: number };
   pps: Record<ZoneClass, number>;
   mean: number;
+  games_ratio: { mix: Spread; making: Spread } | null;
   teams: TeamRow[];
   teams_left_out: number;
 }
@@ -38,6 +49,9 @@ export interface ExpectedFile {
   version: number;
   source: string;
   k: number;
+  level: number;
+  z: number;
+  games_bootstrap: { seed: number; replicates: number };
   classes: string[];
   rim_zones: string[];
   seasons: ExpectedSeason[];

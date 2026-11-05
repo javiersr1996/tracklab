@@ -17,7 +17,33 @@ function extremes(teams: readonly TeamRow[], field: Field) {
   return { lo: lo[field], lo_code: lo.code, hi: hi[field], hi_code: hi.code, range: shown(hi[field] - lo[field], 3) };
 }
 
-export function seasonFigures(s: ExpectedSeason) {
+const median = (xs: readonly number[]) => {
+  const s = [...xs].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+};
+
+// An interval, as the file prints it, excludes 0 when both bounds are on one side of it: a bound
+// at 0 does not.
+export const excludesZero = ([lo, hi]: readonly [number, number]) => lo > 0 || hi < 0;
+const width = ([lo, hi]: readonly [number, number]) => hi - lo;
+
+// The conclusion of the intervals (task 117b): how many teams' mix and making exclude 0, how many
+// would by chance alone at the file's level if no team differed from the league, how many times as
+// wide making's intervals are as mix's (medians), and how many mix intervals still exclude 0 when
+// widened, about the figure, by the median ratio of the bootstrap over games.
+function intervalFigures(s: ExpectedSeason, level: number) {
+  const factor = s.games_ratio?.mix.median ?? 1;
+  return {
+    excl_mix: s.teams.filter((t) => excludesZero(t.mix_ci)).length,
+    excl_making: s.teams.filter((t) => excludesZero(t.making_ci)).length,
+    chance: shown((1 - level) * s.teams.length, 1),
+    width_ratio: shown(median(s.teams.map((t) => width(t.making_ci))) / median(s.teams.map((t) => width(t.mix_ci))), 1),
+    wide_mix: s.teams.filter((t) => Math.abs(t.mix) > (factor * width(t.mix_ci)) / 2).length,
+  };
+}
+
+export function seasonFigures(s: ExpectedSeason, level: number) {
   const mix = extremes(s.teams, "mix");
   const making = extremes(s.teams, "making");
   return {
@@ -38,6 +64,7 @@ export function seasonFigures(s: ExpectedSeason) {
     making_range: making.range,
     ratio: shown(making.range / mix.range, 1),
     making_pos: s.teams.filter((t) => t.making > 0).length,
+    ...intervalFigures(s, level),
   };
 }
 
@@ -49,11 +76,12 @@ export function exampleTeam(s: ExpectedSeason) {
   return { season: s.season, code: t.code, share: byClass((c) => shown(100 * sh[c], 1)) };
 }
 
-// `learn.season.<season>.<key>` and `learn.ex.<key>`.
+// `learn.season.<season>.<key>`, `learn.ex.<key>` and `learn.level_pct`.
 export function lessonExpectedFigures(file: ExpectedFile) {
   return {
-    season: Object.fromEntries(file.seasons.map((s) => [s.season, seasonFigures(s)])) as Record<string, ReturnType<typeof seasonFigures>>,
+    season: Object.fromEntries(file.seasons.map((s) => [s.season, seasonFigures(s, file.level)])) as Record<string, ReturnType<typeof seasonFigures>>,
     ex: exampleTeam(file.seasons[0]),
+    level_pct: shown(100 * file.level, 0),
   };
 }
 

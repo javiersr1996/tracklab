@@ -267,6 +267,9 @@ def _expected_points(public: Path) -> Expected:
         for team in s["teams"]:
             for field in ("pps", "xpps", "mix", "making"):
                 out[f"xp.{season}.teams.{team['code']}.{field}"] = (team[field], 1e-9)
+            for field in ("mix_ci", "making_ci"):  # task 117b
+                for i, bound in enumerate(team[field]):
+                    out[f"xp.{season}.teams.{team['code']}.{field}.{i}"] = (bound, 1e-9)
     return out
 
 
