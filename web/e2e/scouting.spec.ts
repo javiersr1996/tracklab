@@ -32,6 +32,7 @@ interface Table {
   table: string;
   sport: "football" | "basketball";
   metrics: Metric[];
+  rows_total: number;
   pools: Pool[];
   probes: Probe[];
 }
@@ -46,6 +47,10 @@ const tablesOf = (sport: string) => SCOUTING.tables.filter((t) => t.sport === sp
 const keyText = (k: Key) => [k.player_id, k.team_id, ...(k.position_group ? [k.position_group] : [])].join("-");
 const poolOf = (t: Table, k: Key) => t.pools.find((p) => p.group === (k.position_group ?? null))!;
 const probeOf = (t: Table, k: Key) => t.probes.find((p) => keyText(p) === keyText(k))!;
+
+const WAREHOUSE = JSON.parse(readFileSync(path.join(process.cwd(), "public", "data", "warehouse.json"), "utf-8")) as {
+  tables: { table: string; rows: number }[];
+};
 
 const VALUE_TOLERANCE = 6e-5; // the JSON's 4 decimals, rounded
 const PCTL_TOLERANCE = 1e-4;
@@ -138,6 +143,16 @@ async function expectTable(page: Page, t: Table) {
     // The head prints `n` only where a metric's pool is smaller than the group's.
     expect(d.headN, `${what} head n`).toEqual(p.n);
   }
+  // The rows under the floor: the Parquet's rows (warehouse.json, a third source) minus the pool's
+  // (counted from the rows on the page), and the line the page prints about them.
+  const parquetRows = WAREHOUSE.tables.find((w) => w.table === t.table)!.rows;
+  expect(t.rows_total, `${t.table} rows_total in scouting.json equals warehouse.json`).toBe(parquetRows);
+  const listed = dom.reduce((sum, d) => sum + d.rows, 0);
+  const under = parquetRows - listed;
+  expect(under, `${t.table} rows under the floor`).toBeGreaterThan(0);
+  const count = page.locator("p.scout-count");
+  await expect(count, `${t.table} rows under the floor, on the page`).toHaveAttribute("data-under-floor", String(under));
+  await expect(count).toContainText(`${parquetRows} rows in the table's Parquet file: ${listed} pass the sample floor and are listed, ${under} fall under it`);
   for (const probe of t.probes) {
     expect(probe.in_pool, `${t.table} probe ${keyText(probe)} is in the pool`).toBe(true);
     const group = dom.find((d) => d.pool === (probe.position_group ?? "league"))!;

@@ -40,7 +40,8 @@ export default function ScoutingPage() {
       <PageHead eyebrow="Season aggregates" aside={<ProbePanel probe={probeView()} />}>
         <h1>Scouting</h1>
         <p>
-          Every player of the two season aggregates in one table you can sort by any metric. Each value comes with
+          Every player who passes a table&apos;s sample floor, from the two season aggregates, in one table you can sort by
+          any metric; the page says how many rows of the table fall under the floor and are left out. Each value comes with
           its percentile inside its pool: the players who pass the table&apos;s sample floor, within their position
           group in football and across the league in basketball, counted at the head of each group. Pick two
           players, A and B, and their percentiles in every table of their sport stand side by side.

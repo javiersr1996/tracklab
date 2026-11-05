@@ -432,6 +432,7 @@ def build(
                 "key": list(spec.key),
                 "sample": spec.sample,
                 "floor": spec.floor_text,
+                "rows_total": len(rows[spec.table]),
                 "partition": spec.partition,
                 "metrics": [
                     {"id": m.id, "expr": m.expr, "label": m.label, "scale": m.scale, "unit": m.unit}

@@ -41,7 +41,7 @@ export function ScoutingProse() {
           <Link href="/warehouse/scouting" prefetch={false}>
             the scouting table
           </Link>
-          : each player&apos;s percentile in each pool, sortable by any metric, and two players side by side.
+          : the percentile of each player who passes the sample floor in each pool, sortable by any metric, and two players side by side.
         </p>
       </section>
     </>

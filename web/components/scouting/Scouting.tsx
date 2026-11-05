@@ -309,11 +309,12 @@ function Explorer({ query }: { query: string }) {
           <h3 className="scout-table-h">
             {TABLE_LABEL[t.table]}, {p.group ?? (football ? "every position group" : "the league")}
           </h3>
-          <p className="scout-count" data-shown={shown.length} data-in-view={inView}>
+          <p className="scout-count" data-shown={shown.length} data-in-view={inView} data-under-floor={t.rows_total - rows.length}>
             {shown.length === inView
               ? `${inView} rows.`
               : `${shown.length} of ${inView} rows match the search${football && u23 ? " and the age" : ""}.`}{" "}
-            Pick A and B on any row to compare them; sort by any column. The table scrolls sideways.
+            {t.rows_total} rows in the table&apos;s Parquet file: {rows.length} pass the sample floor and are listed,{" "}
+            {t.rows_total - rows.length} fall under it and are not. Pick A and B on any row to compare them; sort by any column. The table scrolls sideways.
           </p>
           <ScoutTable
             table={t}

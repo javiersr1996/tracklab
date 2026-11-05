@@ -296,6 +296,10 @@ def test_the_published_file_names_the_parquet_it_read_and_carries_no_birthdate(
     assert len(fb["sha256"]) == 64 and fb["file"] == "fb_toy.aaaa.parquet"
     assert fb["floor"] == "count_match >= 5"
     assert bb["floor"] == "NOT is_season_total AND games_played >= 10"
+    # Every row of the Parquet, so the page can say how many are under the floor: the pools hold
+    # 5 of football's 7 (p3 has 4 matches, p7 has 2) and 5 of basketball's 7 (p5, the total of p6).
+    assert (fb["rows_total"], bb["rows_total"]) == (7, 7)
+    assert sum(p["rows"] for p in fb["pools"]) == 5 and sum(p["rows"] for p in bb["pools"]) == 5
     assert payload["aliases"] == [{"player_id": 2, "canonical_player_id": 1}]
     # Default pair of football: the group with most players is A; the most matches are p4 (8)
     # then p1 (6); p4 was born in 1990 (35), p1 on the reference day in 2002 (23).

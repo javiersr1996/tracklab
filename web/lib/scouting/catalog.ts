@@ -29,6 +29,8 @@ export interface ScoutingProbe extends PlayerKey {
 export interface CatalogTable extends ScoutingTable {
   sport: Sport;
   file: string;
+  // Every row of the Parquet; the pools hold only those that pass the floor.
+  rows_total: number;
   pools: ScoutingPool[];
   probes: ScoutingProbe[];
 }
