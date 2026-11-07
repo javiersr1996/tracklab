@@ -32,7 +32,6 @@ INTERVALS = ("mix_ci", "making_ci")  # task 117b: the only lists of numbers it m
 RUNS = "runs.json"  # task 118: the biggest run and comeback, a ranking and a summary by team
 RUNS_CAP = 16_000
 RUNS_SCORES = (".from", ".to", ".at", ".final")  # the only lists of numbers: a score, two each
-RUNS_ROWS = 25  # a ranking is 10 and whoever ties with the 10th; a row per game would be 400
 RUNS_KEYS = {
     "run": {"team", "opp", "date", "size", "from", "to"},
     "comeback": {"team", "opp", "date", "deficit", "at", "final"},
@@ -122,8 +121,8 @@ def _runs_problems(doc: dict[str, Any]) -> list[str]:
             out.append(f"{label}: games_read {read!r} is not within games_played {played!r}")
         for kind, field in (("run", "runs"), ("comeback", "comebacks")):
             rows = block.get(field)
-            if not isinstance(rows, list) or not 0 < len(rows) <= RUNS_ROWS:
-                out.append(f"{label}: {field} is not a ranking of at most {RUNS_ROWS}")
+            if not isinstance(rows, list) or not rows:
+                out.append(f"{label}: {field} is not a ranking")
                 continue
             sizes = []
             for i, row in enumerate(rows):
@@ -152,6 +151,14 @@ def _runs_problems(doc: dict[str, Any]) -> list[str]:
                     out.append(f"{where}: date or teams")
             if sizes != sorted(sizes, reverse=True):
                 out.append(f"{label}: {field} is not in order")
+            top = doc.get("top")
+            if _is_int(top) and top > 0 and any(size != sizes[top - 1] for size in sizes[top:]):
+                out.append(
+                    f"{label}: {field} has a row past the top {top} that does not tie with it"
+                )
+            games = [(r.get("team"), r.get("date")) for r in rows if isinstance(r, dict)]
+            if len(games) != len(set(games)):
+                out.append(f"{label}: {field} has a game twice")
         teams = block.get("teams")
         if not isinstance(teams, list) or not 0 < len(teams) <= 30:
             out.append(f"{label}: teams is not a list of at most 30")
@@ -410,6 +417,11 @@ def _row_per_game(doc: dict[str, Any]) -> None:
     block["runs"] = [dict(block["runs"][-1]) for _ in range(100)]
 
 
+def _row_past_the_ties(doc: dict[str, Any]) -> None:
+    rows = doc["seasons"][0]["runs"]
+    rows.append({**rows[-1], "date": "2000-01-01", "size": rows[-1]["size"] - 1})
+
+
 def _run_wrong_size(doc: dict[str, Any]) -> None:
     doc["seasons"][0]["runs"][0]["size"] += 1
 
@@ -423,7 +435,8 @@ RUNS_MUTATIONS: dict[str, tuple[Callable[[dict[str, Any]], None], str]] = {
     "an event id": (lambda d: d["seasons"][0]["runs"][0].update(NUM_ANOT=412), "keys are not"),
     "a NUMBEROFPLAY key": (lambda d: d["seasons"][0].update(NUMBEROFPLAY=3), "raw key"),
     "a game id": (lambda d: d["seasons"][0]["comebacks"][0].update(gamecode=7), "keys are not"),
-    "a row per game": (_row_per_game, "not a ranking of at most"),
+    "a row per game": (_row_per_game, "has a game twice"),
+    "an 11th row that does not tie": (_row_past_the_ties, "does not tie with it"),
     "a run that is not its size": (_run_wrong_size, "not size points in a row"),
     "a ranking out of order": (_runs_out_of_order, "is not in order"),
     "a clock in a row": (
