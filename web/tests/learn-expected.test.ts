@@ -186,8 +186,19 @@ describe("the figures the text computes", () => {
 
   it("the example is the team with the most points per shot of the first season", () => {
     const file: ExpectedFile = { ...EXPECTED, seasons: [SEASON] };
-    expect(lessonExpectedFigures(file).ex).toEqual({ season: "E2025", code: "BBB", share: { rim: 50, mid: 25, three: 25 } });
+    expect(lessonExpectedFigures(file).ex).toMatchObject({ season: "E2025", code: "BBB", share: { rim: 50, mid: 25, three: 25 } });
     expect(lessonExpectedFigures(file).level_pct).toBe(95);
+  });
+
+  // The guided sentence subtracts the figures it prints, so its sum adds up even where the file's
+  // mix, which subtracts before it rounds, is a thousandth off. Mutation checked by hand: taking
+  // the file's mix and making for the example's (as before) fails the second test, on HTA.
+  it("the example's mix and making are the subtraction of the figures the text prints", () => {
+    const [first] = EXPECTED.seasons;
+    const ex = lessonExpectedFigures(EXPECTED).ex;
+    const t = first.teams.find((x) => x.code === ex.code)!;
+    expect(ex.mix).toBe(shown(t.xpps - first.mean, 3));
+    expect(ex.making).toBe(shown(t.pps - t.xpps, 3));
   });
 });
 
@@ -220,6 +231,15 @@ describe("the text of lesson 12", () => {
         .replace(/<[^>]+>/g, " "),
     );
     expect(prose.match(/.{0,30}\d+.{0,30}/g) ?? []).toEqual([]);
+  });
+
+  it("shows a mix and a making that add up from the figures printed beside them", () => {
+    const [first] = EXPECTED.seasons;
+    const t = first.teams.find((x) => x.code === F.ex.code)!;
+    const text = entities(HTML.replace(/<[^>]+>/g, ""));
+    const m = (v: number) => display(String(v), "learn.ex.mix");
+    expect(text).toContain(`${t.xpps} minus ${first.mean}, is ${m(F.ex.mix)}`);
+    expect(Math.abs(t.xpps - first.mean - F.ex.mix)).toBeLessThan(1e-9);
   });
 
   it("names its source and says it is not affiliated", () => {

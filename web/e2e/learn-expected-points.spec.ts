@@ -103,7 +103,7 @@ function computed(): Record<string, unknown> {
   const n = CLASSES.reduce((a, c) => a + ex[c].n, 0);
   return {
     season,
-    ex: { season: first.season, code: ex.code, share: Object.fromEntries(CLASSES.map((c) => [c, round((100 * ex[c].n) / n, 1)])) },
+    ex: { season: first.season, code: ex.code, share: Object.fromEntries(CLASSES.map((c) => [c, round((100 * ex[c].n) / n, 1)])), mix: round(ex.xpps - first.mean, 3), making: round(ex.pps - ex.xpps, 3) },
     level_pct: round(100 * FILE.level, 0),
   };
 }

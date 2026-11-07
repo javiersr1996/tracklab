@@ -69,11 +69,19 @@ export function seasonFigures(s: ExpectedSeason, level: number) {
 }
 
 // The example of the text: the team with the most points per shot in the first season (the
-// first in the file's order on a tie), and its share of attempts in each class.
+// first in the file's order on a tie), its share of attempts in each class, and its mix and making
+// as the text subtracts them: the printed figures, so the sum on the page adds up. The file's rows
+// subtract before rounding, so theirs can differ by 0.001.
 export function exampleTeam(s: ExpectedSeason) {
   const t = s.teams.reduce((a, x) => (x.pps > a.pps ? x : a), s.teams[0]);
   const sh = shares(t);
-  return { season: s.season, code: t.code, share: byClass((c) => shown(100 * sh[c], 1)) };
+  return {
+    season: s.season,
+    code: t.code,
+    share: byClass((c) => shown(100 * sh[c], 1)),
+    mix: shown(t.xpps - s.mean, 3),
+    making: shown(t.pps - t.xpps, 3),
+  };
 }
 
 // `learn.season.<season>.<key>`, `learn.ex.<key>` and `learn.level_pct`.
@@ -85,4 +93,3 @@ export function lessonExpectedFigures(file: ExpectedFile) {
   };
 }
 
-export type ExpectedLessonFigures = ReturnType<typeof lessonExpectedFigures>;

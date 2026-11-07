@@ -215,7 +215,13 @@ export function Lesson({ sql }: { sql: string }) {
             shot in <Season code={A} />, {team("name")}. It took {l("ex.share.rim")}&nbsp;% of its attempts at the rim,{" "}
             {l("ex.share.mid")}&nbsp;% from mid-range and {l("ex.share.three")}&nbsp;% from three. At the league&apos;s values
             those attempts were worth {team("xpps")} per shot, so its mix, {team("xpps")} minus {x(A, "mean")}, is{" "}
-            {team("mix")}. It scored {team("pps")}, so its making, {team("pps")} minus {team("xpps")}, is {team("making")}.
+            {l("ex.mix")}. It scored {team("pps")}, so its making, {team("pps")} minus {team("xpps")}, is {l("ex.making")}.
+            {F.ex.mix !== xpFigure(FILE, xpName(A, `teams.${EX}.mix`)) && (
+              <>
+                {" "}
+                The table, which subtracts before it rounds, has its mix at {team("mix")}.
+              </>
+            )}
           </p>
         </section>
 
