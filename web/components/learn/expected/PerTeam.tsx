@@ -126,7 +126,8 @@ export function PerTeam({ seasons, level }: { seasons: readonly ExpectedSeason[]
         One row per team and season, as expected-points.json has it, field goals only. Expected is the team&apos;s own attempts,
         each at the league&apos;s points per attempt for its zone class. Each interval is the part plus and minus{" "}
         <Fig name="xp.z">{String(level.z)}</Fig> standard errors, at <Fig name="learn.level_pct">{String(level.pct)}</Fig>
-        &nbsp;%. The current season counts the games played so far. Every figure is rounded on its own, so a part can differ by one in
+        &nbsp;%. The current season counts the games played so far. An interval counts as excluding zero on its unrounded bounds, so one printed
+        with a bound of zero can exclude it. Every figure is rounded on its own, so a part can differ by one in
         the last place from the difference of the figures beside it.
       </figcaption>
     </figure>

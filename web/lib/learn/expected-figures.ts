@@ -2,7 +2,7 @@
 // `data-fig="learn.<key>"` and the browser puts the same object in `window.__learn`. The inputs are
 // expected-points.json's counts and its per-team rows; every other figure is the file's own.
 import { CLASSES, type ExpectedFile, type ExpectedSeason, type TeamRow, type ZoneClass } from "./expected-data";
-import { plainMean, shares } from "./expected";
+import { intervals, plainMean, shares } from "./expected";
 import { shown } from "./expose";
 
 type Field = "mix" | "making";
@@ -23,8 +23,9 @@ const median = (xs: readonly number[]) => {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 };
 
-// An interval, as the file prints it, excludes 0 when both bounds are on one side of it: a bound
-// at 0 does not.
+// An interval excludes 0 when both bounds are on one side of it: a bound at 0 does not. The text
+// counts it on the unrounded bounds (`intervals`, from the counts), not on the three decimals the
+// file prints: a printed 0.0 can be a bound just above 0.
 export const excludesZero = ([lo, hi]: readonly [number, number]) => lo > 0 || hi < 0;
 const width = ([lo, hi]: readonly [number, number]) => hi - lo;
 
@@ -32,18 +33,19 @@ const width = ([lo, hi]: readonly [number, number]) => hi - lo;
 // would by chance alone at the file's level if no team differed from the league, how many times as
 // wide making's intervals are as mix's (medians), and how many mix intervals still exclude 0 when
 // widened, about the figure, by the median ratio of the bootstrap over games.
-function intervalFigures(s: ExpectedSeason, level: number) {
+function intervalFigures(s: ExpectedSeason, level: number, z: number) {
   const factor = s.games_ratio?.mix.median ?? 1;
+  const exact = s.teams.map((t) => intervals(t, s.league, z));
   return {
-    excl_mix: s.teams.filter((t) => excludesZero(t.mix_ci)).length,
-    excl_making: s.teams.filter((t) => excludesZero(t.making_ci)).length,
+    excl_mix: exact.filter((e) => excludesZero(e.mix as [number, number])).length,
+    excl_making: exact.filter((e) => excludesZero(e.making as [number, number])).length,
     chance: shown((1 - level) * s.teams.length, 1),
     width_ratio: shown(median(s.teams.map((t) => width(t.making_ci))) / median(s.teams.map((t) => width(t.mix_ci))), 1),
     wide_mix: s.teams.filter((t) => Math.abs(t.mix) > (factor * width(t.mix_ci)) / 2).length,
   };
 }
 
-export function seasonFigures(s: ExpectedSeason, level: number) {
+export function seasonFigures(s: ExpectedSeason, level: number, z: number) {
   const mix = extremes(s.teams, "mix");
   const making = extremes(s.teams, "making");
   return {
@@ -64,7 +66,7 @@ export function seasonFigures(s: ExpectedSeason, level: number) {
     making_range: making.range,
     ratio: shown(making.range / mix.range, 1),
     making_pos: s.teams.filter((t) => t.making > 0).length,
-    ...intervalFigures(s, level),
+    ...intervalFigures(s, level, z),
   };
 }
 
@@ -87,7 +89,7 @@ export function exampleTeam(s: ExpectedSeason) {
 // `learn.season.<season>.<key>`, `learn.ex.<key>` and `learn.level_pct`.
 export function lessonExpectedFigures(file: ExpectedFile) {
   return {
-    season: Object.fromEntries(file.seasons.map((s) => [s.season, seasonFigures(s, file.level)])) as Record<string, ReturnType<typeof seasonFigures>>,
+    season: Object.fromEntries(file.seasons.map((s) => [s.season, seasonFigures(s, file.level, file.z)])) as Record<string, ReturnType<typeof seasonFigures>>,
     ex: exampleTeam(file.seasons[0]),
     level_pct: shown(100 * file.level, 0),
   };

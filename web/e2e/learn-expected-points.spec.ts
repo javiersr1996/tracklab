@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { expect as baseExpect, type Page, test } from "@playwright/test";
 import { display } from "../lib/learn/display";
+import { intervals } from "../lib/learn/expected";
 
 // Lesson 12 (task 117) in the browser. Every figure is read back from expected-points.json on
 // disk, and the ones the page computes are computed again here from its counts, never typed:
@@ -61,7 +62,7 @@ function inFile(name: string): unknown {
 // The figures the text computes, worked out again from the file: `learn.season.<season>.<key>`
 // and `learn.ex.<key>`.
 const round = (x: number, d: number) => Number(x.toFixed(d));
-// An interval excludes zero when both bounds are on one side of it, as the file prints them.
+// An interval excludes zero when both bounds are on one side of it, unrounded (from the counts).
 const excludes = ([lo, hi]: [number, number]) => lo > 0 || hi < 0;
 const width = ([lo, hi]: [number, number]) => hi - lo;
 const median = (xs: number[]) => {
@@ -91,8 +92,8 @@ function computed(): Record<string, unknown> {
       making_range: range("making"),
       ratio: round(range("making") / range("mix"), 1),
       making_pos: s.teams.filter((t) => t.making > 0).length,
-      excl_mix: s.teams.filter((t) => excludes(t.mix_ci)).length,
-      excl_making: s.teams.filter((t) => excludes(t.making_ci)).length,
+      excl_mix: s.teams.filter((t) => excludes(intervals(t, s.league, FILE.z).mix as [number, number])).length,
+      excl_making: s.teams.filter((t) => excludes(intervals(t, s.league, FILE.z).making as [number, number])).length,
       chance: round((1 - FILE.level) * s.teams.length, 1),
       width_ratio: round(median(s.teams.map((t) => width(t.making_ci))) / median(s.teams.map((t) => width(t.mix_ci))), 1),
       wide_mix: s.teams.filter((t) => Math.abs(t.mix) > (s.games_ratio.mix.median * width(t.mix_ci)) / 2).length,
@@ -209,7 +210,7 @@ test.describe(ROUTE, () => {
       }
     }
     expect(rows).toBe(FILE.seasons.reduce((a, s) => a + s.teams.length, 0));
-    const counts = FILE.seasons.map((s) => `${s.season}: making ${s.teams.filter((t) => excludes(t.making_ci)).length}, mix ${s.teams.filter((t) => excludes(t.mix_ci)).length} of ${s.teams.length}`);
+    const counts = FILE.seasons.map((s) => `${s.season}: making ${pick(LEARN, `season.${s.season}.excl_making`)}, mix ${pick(LEARN, `season.${s.season}.excl_mix`)} of ${s.teams.length}`);
     console.log(`${ROUTE}: ${rows} rows with their intervals; exclude zero ${counts.join("; ")}`);
     for (const s of FILE.seasons) {
       for (const key of ["excl_making", "excl_mix"]) {

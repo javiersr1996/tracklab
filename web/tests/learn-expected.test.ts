@@ -94,12 +94,28 @@ describe("expected-points.json", () => {
   });
 
   it("the claims the text makes about the first season hold in the file", () => {
-    const f = seasonFigures(EXPECTED.seasons[0], EXPECTED.level);
+    const f = seasonFigures(EXPECTED.seasons[0], EXPECTED.level, EXPECTED.z);
     // More making intervals exclude zero than chance alone would give; most mix ones do, most making ones do not.
     expect(f.excl_making).toBeGreaterThan(f.chance);
     expect(f.excl_mix).toBeGreaterThan(f.teams / 2);
     expect(f.excl_making).toBeLessThan(f.teams / 2);
     expect(f.width_ratio).toBeGreaterThan(f.ratio);
+  });
+
+  // Task B3 of the P14b review: the count is on the unrounded bounds, and the printed ones give a
+  // different count in a season (a bound printed 0 that is just above it). Mutation checked by
+  // hand: counting on `mix_ci` and `making_ci` again fails this.
+  it("counts the intervals that exclude zero on their unrounded bounds, not the printed ones", () => {
+    let differ = 0;
+    for (const s of EXPECTED.seasons) {
+      const f = seasonFigures(s, EXPECTED.level, EXPECTED.z);
+      const exact = s.teams.map((t) => intervals(t, s.league, EXPECTED.z));
+      const side = ([lo, hi]: number[]) => lo > 0 || hi < 0;
+      expect([f.excl_mix, f.excl_making]).toEqual([exact.filter((e) => side(e.mix)).length, exact.filter((e) => side(e.making)).length]);
+      const printed = [s.teams.filter((t) => side(t.mix_ci)).length, s.teams.filter((t) => side(t.making_ci)).length];
+      if (printed[0] !== f.excl_mix || printed[1] !== f.excl_making) differ++;
+    }
+    expect(differ).toBeGreaterThan(0);
   });
 
   it("resolves a figure's name to the file's value", () => {
@@ -147,7 +163,7 @@ const SEASON: ExpectedSeason = {
 
 describe("the figures the text computes", () => {
   it("extremes with their teams (the first on a tie), ranges and their ratio", () => {
-    expect(seasonFigures(SEASON, 0.9)).toEqual({
+    expect(seasonFigures(SEASON, 0.9, 1.645)).toEqual({
       pct: { rim: 60, mid: 40, three: 50 },
       value: { rim: 2, mid: 2, three: 3 },
       attempts: 59,
@@ -165,8 +181,8 @@ describe("the figures the text computes", () => {
       making_range: 0.1,
       ratio: 3.3,
       making_pos: 1, // zero is not above
-      excl_mix: 2, // BBB and CCC; AAA's starts at 0
-      excl_making: 1,
+      excl_mix: 0, // the three teams have AAA's counts: the bounds are from them, not the rows' intervals
+      excl_making: 0,
       chance: 0.3, // (1 - 0.9) * 3
       width_ratio: 4.7, // making's median width 0.14 over mix's 0.03
       wide_mix: 1, // at 1.2 times as wide, only CCC's (0.02 > 1.2 * 0.015); BBB's would at 1
@@ -181,7 +197,7 @@ describe("the figures the text computes", () => {
       false,
       false,
     ]);
-    expect(seasonFigures({ ...SEASON, games_ratio: { mix: spread(1), making: spread(1) } }, 0.9).wide_mix).toBe(2);
+    expect(seasonFigures({ ...SEASON, games_ratio: { mix: spread(1), making: spread(1) } }, 0.9, 1.645).wide_mix).toBe(2);
   });
 
   it("the example is the team with the most points per shot of the first season", () => {
