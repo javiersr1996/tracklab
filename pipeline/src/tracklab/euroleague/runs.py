@@ -81,6 +81,12 @@ def score_path(pbp: dict[str, Any], periods: tuple[str, ...] = QUARTERS) -> list
 
 
 def read_game(path: list[Score]) -> Game:
+    """The biggest run of each side and the winner's deepest deficit, from the scoreboards.
+
+    A step in which both sides score is nobody's run and ends the open one, but it still counts
+    for the deficit: a winner that scores in it can cut its own deficit, so the deepest point is
+    read from the scoreboard after every step, not only after one-sided ones.
+    """
     best: list[Run | None] = [None, None]
     open_side: int | None = None
     open_start: Score = (0, 0)
