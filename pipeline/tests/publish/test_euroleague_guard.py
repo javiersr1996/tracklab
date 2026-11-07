@@ -31,6 +31,7 @@ EXPECTED_CAP = 16_000
 INTERVALS = ("mix_ci", "making_ci")  # task 117b: the only lists of numbers it may hold, two each
 RUNS = "runs.json"  # task 118: the biggest run and comeback, a ranking and a summary by team
 RUNS_CAP = 16_000
+RUNS_SCORES = (".from", ".to", ".at", ".final")  # the only lists of numbers: a score, two each
 RUNS_ROWS = 25  # a ranking is 10 and whoever ties with the 10th; a row per game would be 400
 RUNS_KEYS = {
     "run": {"team", "opp", "date", "size", "from", "to"},
@@ -163,6 +164,9 @@ def _runs_problems(doc: dict[str, Any]) -> list[str]:
             if not ok:
                 who = team.get("code") if isinstance(team, dict) else team
                 out.append(f"{label} {who}: not a team")
+        codes = [t.get("code") for t in teams if isinstance(t, dict)]
+        if len(codes) != len(set(codes)):
+            out.append(f"{label}: a team code repeated in teams")
     return out
 
 
@@ -198,6 +202,11 @@ def _payload_problems(name: str, doc: Any, size: int) -> list[str]:
                     for key in value
                     if key in RAW_KEYS or key.lower() in ROW_KEYS
                 )
+            elif isinstance(value, list) and any(isinstance(item, list) for item in value):
+                out.append(f"{name}{where}: a list of lists, rows of scores or plays")
+            elif isinstance(value, list) and value and all(map(_is_num, value)):
+                if not where.endswith(RUNS_SCORES):
+                    out.append(f"{name}{where}: a list of values outside a score")
         return out
     k: Any = doc.get("k") if name == EXPECTED else doc.get("hex", {}).get("k")
     if not _is_int(k) or k < K_MIN:
@@ -432,6 +441,18 @@ RUNS_MUTATIONS: dict[str, tuple[Callable[[dict[str, Any]], None], str]] = {
         "not a team",
     ),
     "no run_min": (lambda d: d.pop("run_min"), "run_min is None"),
+    "a list of scores under any key": (
+        lambda d: d["seasons"][0].update(marks=[[1, 2], [3, 4]]),
+        "a list of lists",
+    ),
+    "a list of values under any key": (
+        lambda d: d["seasons"][0].update(marks=[1, 2]),
+        "a list of values outside a score",
+    ),
+    "a team code twice": (
+        lambda d: d["seasons"][0]["teams"].append(dict(d["seasons"][0]["teams"][0])),
+        "a team code repeated",
+    ),
     "over the cap": (lambda d: d.update(pad="x" * RUNS_CAP), "over its cap"),
 }
 
