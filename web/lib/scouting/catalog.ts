@@ -123,6 +123,8 @@ export const SMALL_POOL = 50;
 export const placeStep = (n: number) => 100 / (n - 1);
 
 export function smallPoolNote(n: number): string {
+  // percent_rank has no step below two players.
+  if (n < 2) return `Small pool (${n} ${n === 1 ? "player" : "players"}, under ${SMALL_POOL}): too few for a ranking.`;
   return `Small pool (${n} players, under ${SMALL_POOL}): one place in the ranking is ${placeStep(n).toFixed(1)} points of percentile.`;
 }
 

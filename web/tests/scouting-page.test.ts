@@ -104,6 +104,9 @@ describe("the percentile as printed, and small pools", () => {
 
   it("says what a place in the ranking is worth, from the pool's size", () => {
     expect(placeStep(14)).toBeCloseTo(100 / 13);
+    expect(smallPoolNote(1)).toBe("Small pool (1 player, under 50): too few for a ranking.");
+    expect(smallPoolNote(0)).toBe("Small pool (0 players, under 50): too few for a ranking.");
+    expect(smallPoolNote(2)).toContain("100.0 points");
     expect(smallPoolNote(33)).toBe(
       "Small pool (33 players, under 50): one place in the ranking is 3.1 points of percentile.",
     );
