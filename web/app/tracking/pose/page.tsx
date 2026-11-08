@@ -3,11 +3,13 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { Pose } from "../../../components/pose/Pose";
 import { Band, PageHead } from "../../../components/site/Band";
+import { formatBytes } from "../../../lib/format";
 import type { PoseClip, PoseSummary } from "../../../lib/pose/types";
 
 // `/tracking/pose` (tasks 56 and 63): the Body Pose of two matches in a viewer with its own projection,
-// and what the project found. `pose.json` is fetched, then the clip on show, like the
-// possessions the replay plays. Every figure is an element `data-fig="path"` whose text is
+// and what the project found. `pose.json` is fetched on load; the clip on show (megabytes) only
+// when the reader asks for it, with the button or by choosing a clip, like the possessions the
+// replay plays. Every figure is an element `data-fig="path"` whose text is
 // `String(value at path)` in `pose.json`, or `data-clip-fig` for a path in the clip on show;
 // the e2e reads the same files and compares. No figure is typed here.
 const SUMMARY = "/data/pose.json";
@@ -351,17 +353,23 @@ function Protocol({ doc }: { doc: PoseSummary }) {
   );
 }
 
+// The size of a clip file as pose.json records it (the sample is the project's own, not a hook).
+const bytesOf = (doc: PoseSummary, file: string) =>
+  file === SAMPLE ? doc.phase406.bytes : (doc.clips.find((c) => c.file === file)?.bytes ?? 0);
+
 function View({
   doc,
   clip,
   clipFile,
   failed,
+  asked,
   onClip,
 }: {
   doc: PoseSummary;
   clip: PoseClip | null;
   clipFile: string;
   failed: boolean;
+  asked: boolean;
   onClip: (file: string) => void;
 }) {
   const mae = "coverage.p90_mae_cm";
@@ -391,6 +399,12 @@ function View({
               <Pose key={clipFile} clip={clip} />
             ) : failed ? (
               <p role="alert">The clip could not be loaded.</p>
+            ) : !asked ? (
+              <p>
+                <button type="button" className="hero-action hero-action-primary" onClick={() => onClip(clipFile)}>
+                  Load the clip, {formatBytes(bytesOf(doc, clipFile))}
+                </button>
+              </p>
             ) : (
               <p role="status">Loading the clip.</p>
             )}
@@ -485,6 +499,7 @@ function View({
 export default function PosePage() {
   const [doc, setDoc] = useState<PoseSummary | "failed" | null>(null);
   const [file, setFile] = useState(SAMPLE);
+  const [asked, setAsked] = useState(false);
   const [loaded, setLoaded] = useState<{ file: string; clip: PoseClip } | "failed" | null>(null);
 
   useEffect(() => {
@@ -505,7 +520,7 @@ export default function PosePage() {
         : `/data/${file}`
       : null;
   useEffect(() => {
-    if (url === null) return;
+    if (url === null || !asked) return;
     let live = true;
     fetch(url)
       .then((r) => r.json() as Promise<PoseClip>)
@@ -514,14 +529,20 @@ export default function PosePage() {
     return () => {
       live = false;
     };
-  }, [url, file]);
+  }, [url, file, asked]);
 
   const clip = typeof loaded === "object" && loaded !== null && loaded.file === file ? loaded.clip : null;
   const ready = typeof doc === "object" && doc !== null;
   return (
     <main id="main" className="page pose" data-loaded={ready && clip !== null ? "true" : "false"}>
       {ready ? (
-        <View doc={doc} clip={clip} clipFile={file} failed={loaded === "failed"} onClip={setFile} />
+        <View doc={doc} clip={clip} clipFile={file} failed={loaded === "failed"}
+          asked={asked}
+          onClip={(next) => {
+            setFile(next);
+            setAsked(true);
+          }}
+        />
       ) : (
         <PageHead eyebrow="Body pose">
           <h1>Body pose</h1>

@@ -30,6 +30,7 @@ async function open(page: Page) {
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/tracking/pose");
+  await page.getByRole("button", { name: /Load the clip/ }).click();
   await expect(page.locator("main.pose")).toHaveAttribute("data-loaded", "true");
   await expect(page.locator("figure.pose-viewer")).toBeVisible();
   return errors;
@@ -614,11 +615,32 @@ test("the bytes /tracking/pose transfers, printed with no verdict, the clip apar
   expect(clip).toBeGreaterThan(0);
 });
 
+test("the clip is fetched when asked for, not at load (task 158)", async ({ page }) => {
+  const asked: string[] = [];
+  page.on("request", (r: Request) => asked.push(new URL(r.url()).pathname));
+  await page.goto("/tracking/pose");
+  await page.waitForLoadState("networkidle");
+  const summary = (await (await page.request.get(SUMMARY)).json()) as PoseSummary;
+  const button = page.getByRole("button", { name: /Load the clip/ });
+  await expect(button).toBeVisible();
+  // The button says what the clip weighs: pose.json's bytes, 1 decimal, SI.
+  await expect(button).toContainText(`${(summary.phase406.bytes / 1e6).toFixed(1)} MB`);
+  await expect(page.locator("main.pose")).toHaveAttribute("data-loaded", "false");
+  expect(asked.filter((u) => u.startsWith("/data/pose/")), "no clip before the ask").toEqual([]);
+  expect(asked).toContain(SUMMARY);
+
+  await button.click();
+  await expect(page.locator("main.pose")).toHaveAttribute("data-loaded", "true");
+  expect(asked.filter((u) => u.startsWith("/data/pose/"))).toEqual([CLIP]);
+  await expect(button).toHaveCount(0);
+});
+
 test("the home page links to /tracking/pose", async ({ page }) => {
   await page.goto("/");
   const link = page.getByRole("link", { name: "Body pose" });
   await expect(link).toHaveAttribute("href", "/tracking/pose");
   await link.click();
   await expect(page).toHaveURL(/\/tracking\/pose$/);
+  await page.getByRole("button", { name: /Load the clip/ }).click();
   await expect(page.locator("main.pose")).toHaveAttribute("data-loaded", "true");
 });
