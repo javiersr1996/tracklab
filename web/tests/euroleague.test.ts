@@ -209,29 +209,35 @@ describe("how sure a hexagon's colour is", () => {
     expect(pointsSe(0, 0, 20)).toBeCloseTo(2 * shotSe(0, 20), 12);
   });
 
-  it("fades with the error, between a floor and the full colour", () => {
-    expect(fade(0.01, "fg")).toBe(1);
-    expect(fade(0.05, "fg")).toBe(1); // half the 10 pp cut: still full
-    expect(fade(0.0625, "fg")).toBeCloseTo(0.8);
-    expect(fade(0.5, "fg")).toBe(MIN_FADE);
-    expect(fade(0.1, "pps")).toBe(1);
-    expect(fade(0.4, "pps")).toBe(MIN_FADE);
-    expect(fade(0, "fg")).toBe(1);
+  it("fades with the shots: the floor at k, full from 10, a ramp between", () => {
+    expect(fade(5, 5)).toBe(MIN_FADE);
+    expect(fade(3, 5)).toBe(MIN_FADE);
+    expect(fade(10, 5)).toBe(1);
+    expect(fade(400, 5)).toBe(1);
+    expect(fade(7.5, 5)).toBeCloseTo((MIN_FADE + 1) / 2);
+    expect(fade(8, 5)).toBeGreaterThan(fade(7, 5));
+    expect(fade(9, 5)).toBeLessThan(1);
   });
 
-  it("the files' cells of fewer than 10 shots that reach full colour fade", () => {
+  it("the files' cells fade exactly when they have fewer than 10 shots", () => {
     let faded = 0;
+    let full = 0;
     for (const code of readdirSync(join(DATA, "teams")).map((f) => f.replace(".json", ""))) {
       for (const s of team(code).seasons) {
         const lg = league.seasons.find((x) => x.season === s.season)!;
         for (const c of teamDrawn(s.cells, lg.cells)) {
-          if (c.n < 10 && toneOf(c.diff, "fg") !== "mid") {
-            expect(fade(c.se, "fg")).toBeLessThan(1);
+          const f = fade(c.n, league.hex.k);
+          if (c.n < 10) {
+            expect(f).toBeLessThan(1);
             faded += 1;
+          } else {
+            expect(f).toBe(1);
+            full += 1;
           }
         }
       }
     }
     expect(faded).toBeGreaterThan(0);
+    expect(full).toBeGreaterThan(0);
   });
 });

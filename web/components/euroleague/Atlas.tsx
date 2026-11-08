@@ -4,6 +4,7 @@ import { type CSSProperties, type KeyboardEvent, type PointerEvent, useState } f
 import {
   CUTS,
   fade,
+  FULL_FADE_N,
   cellAt,
   courtPaths,
   CURRENT_SEASON,
@@ -291,7 +292,7 @@ export function Atlas({
                         data-tone={toneOf(c.diff, mode)}
                         data-q={c.q}
                         data-r={c.r}
-                        style={{ "--i": Math.round(Math.hypot(x, y) / 50), "--fade": fade(c.se, mode) } as CSSProperties}
+                        style={{ "--i": Math.round(Math.hypot(x, y) / 50), "--fade": fade(c.n, league.hex.k) } as CSSProperties}
                       />
                     );
                   })}
@@ -352,8 +353,8 @@ export function Atlas({
                   : "field-goal % against the league's in the same hexagon (pp, percentage points):"}
               </p>
               <p>
-                <span className="el-legend-label">Fade</span> a hexagon is drawn paler the less sure its colour is: full
-                while its standard error is under half of {mode === "fg" ? `${Math.round(CUTS.fg.well * 100)} pp` : CUTS.pps.well.toFixed(2)}, paler above it. The readout prints
+                <span className="el-legend-label">Fade</span> a hexagon is drawn paler the fewer shots it has: full colour from {FULL_FADE_N}{" "}
+                shots, palest at {league.hex.k}, a straight ramp between. The readout prints
                 the error (±).
                 {mode === "fg" ? " The league here is the league without the selection's own shots." : ""}
               </p>

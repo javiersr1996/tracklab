@@ -226,14 +226,16 @@ export function toneOf(diff: number, mode: Mode): Tone {
   return "lo";
 }
 
-// How much of the colour a cell keeps. A cell's colour is only as sure as its standard error: full
-// while the error is under half the full-colour cut (`well`), paler as it grows, never under
-// MIN_FADE (the 65% keeps the second tone at 3:1 on the canvas).
+// How much of the colour a cell keeps. A cell with FULL_FADE_N shots or more keeps all of it; one
+// with only the fewest the files publish (`k`) keeps MIN_FADE (the 65% keeps the second tone at 3:1
+// on the canvas); in between it is a straight ramp on the shots.
 export const MIN_FADE = 0.65;
+export const FULL_FADE_N = 10;
 
-export function fade(se: number, mode: Mode): number {
-  if (se <= 0) return 1;
-  return Math.min(1, Math.max(MIN_FADE, CUTS[mode].well / se / 2));
+export function fade(n: number, k: number): number {
+  if (n >= FULL_FADE_N) return 1;
+  if (n <= k) return MIN_FADE;
+  return MIN_FADE + ((1 - MIN_FADE) * (n - k)) / (FULL_FADE_N - k);
 }
 
 // --- What a selection draws ---
