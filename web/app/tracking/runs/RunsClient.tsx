@@ -32,7 +32,7 @@ export function RunsClient({ initial }: { initial: Runs }) {
   }, []);
 
   return (
-    <main className="page runs" data-loaded={loaded ? "true" : "false"}>
+    <main id="main" className="page runs" data-loaded={loaded ? "true" : "false"}>
       {runs === "failed" ? (
         <PageHead eyebrow="Off-ball runs">
           <h1>The run that moves nobody</h1>

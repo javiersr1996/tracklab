@@ -519,7 +519,7 @@ export default function PosePage() {
   const clip = typeof loaded === "object" && loaded !== null && loaded.file === file ? loaded.clip : null;
   const ready = typeof doc === "object" && doc !== null;
   return (
-    <main className="page pose" data-loaded={ready && clip !== null ? "true" : "false"}>
+    <main id="main" className="page pose" data-loaded={ready && clip !== null ? "true" : "false"}>
       {ready ? (
         <View doc={doc} clip={clip} clipFile={file} failed={loaded === "failed"} onClip={setFile} />
       ) : (

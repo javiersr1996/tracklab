@@ -22,7 +22,7 @@ export default function EuroleaguePage() {
   const summary = teamsSummary();
   const k = LEAGUE.hex.k;
   return (
-    <main className="page euroleague">
+    <main id="main" className="page euroleague">
       <PageHead eyebrow="EuroLeague" aside={<LeaguePanel league={LEAGUE} />}>
         <h1>{SECTION.title}</h1>
         <p className="lede">

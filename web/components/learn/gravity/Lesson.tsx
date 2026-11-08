@@ -63,7 +63,7 @@ const sumU = (k: number) =>
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson">
+    <main id="main" className="page lesson">
       <LessonHead
         n={1}
         title="Does the ball obey gravity?"

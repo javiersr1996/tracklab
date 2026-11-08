@@ -43,7 +43,7 @@ const frac = (num: ReactNode, den: ReactNode) => (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-possession">
+    <main id="main" className="page lesson learn-possession">
       <LessonHead
         n={10}
         title="How often does possession change hands?"

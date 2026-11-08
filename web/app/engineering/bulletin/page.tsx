@@ -51,7 +51,7 @@ export default function BulletinPage() {
     .map((b) => b.trim())
     .filter(Boolean);
   return (
-    <main className="page">
+    <main id="main" className="page">
       <PageHead eyebrow="Data quality">{title ? <h1>{title}</h1> : null}</PageHead>
       <Band>
         <div className="bulletin">{blocks.map(block)}</div>

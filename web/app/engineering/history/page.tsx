@@ -91,7 +91,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <main className="page">
+    <main id="main" className="page">
       <PageHead eyebrow="Every build, kept">
         <h1>Build history</h1>
         <p className="lede" data-history-lede>

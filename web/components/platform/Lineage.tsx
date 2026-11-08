@@ -20,9 +20,9 @@ const CHAR_WIDTH = 6.2;
 const MIN_COL_WIDTH = 120;
 const PAD_X = 16;
 const PAD_TOP = 28;
-// The SVG is drawn in the units above and shown 1.5 times larger, so the 8-unit node
-// labels and badges render at 12 px.
-const SCALE = 1.5;
+// The SVG is drawn in the units above and shown twice as large, so the 8-unit node
+// labels and badges render at 16 px (P19, task 152).
+const SCALE = 2;
 
 // The four schema kinds in neon (P13): cyan and magenta as everywhere (code took the orange's
 // place, frozen the blue's), lime a third neon, the neutral --neon-muted. At the resting opacity

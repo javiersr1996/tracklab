@@ -56,7 +56,7 @@ const sum = (body: ReactNode) => (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-clock">
+    <main id="main" className="page lesson learn-clock">
       <LessonHead
         n={6}
         title="Does the game clock keep the video's time?"

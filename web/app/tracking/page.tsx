@@ -15,7 +15,7 @@ const PAGES = SECTIONS.filter((s) => s.href.startsWith("/tracking/"));
 
 export default function TrackingPage() {
   return (
-    <main className="page">
+    <main id="main" className="page">
       <PageHead eyebrow="Open tracking data">
         <h1>Tracking</h1>
         <p className="lede">

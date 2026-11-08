@@ -84,7 +84,7 @@ function PerMatchText({ match }: { match: string }) {
 
 export function Lesson({ script }: { script: string }) {
   return (
-    <main className="page lesson learn-cadence">
+    <main id="main" className="page lesson learn-cadence">
       <LessonHead
         n={5}
         title="How many steps per second?"

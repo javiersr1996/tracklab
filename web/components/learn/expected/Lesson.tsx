@@ -91,7 +91,7 @@ const tz = (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-expected">
+    <main id="main" className="page lesson learn-expected">
       <LessonHead
         n={12}
         title="How many points is a shot worth?"

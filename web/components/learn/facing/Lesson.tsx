@@ -88,7 +88,7 @@ function ClipText({ c, q }: { c: (path: string) => ReactNode; q: (key: string) =
 
 export function Lesson({ script }: { script: string }) {
   return (
-    <main className="page lesson learn-facing">
+    <main id="main" className="page lesson learn-facing">
       <LessonHead
         n={11}
         title="Which way is a player facing?"

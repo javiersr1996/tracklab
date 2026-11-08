@@ -73,7 +73,7 @@ const xn = (shift: ReactNode) => (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-speed">
+    <main id="main" className="page lesson learn-speed">
       <LessonHead
         n={2}
         title="Where does the provider's speed come from?"

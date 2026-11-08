@@ -20,7 +20,7 @@ export function Lesson({ slug }: { slug: SqlSlug }) {
   const answer = `${exampleCell(first[0])} · ${exampleCell(first[first.length - 1])}`;
   const note = `${columns[0]} · ${columns[columns.length - 1]}, row 1 of ${rows.length.toLocaleString("en-US")}`;
   return (
-    <main className={`page lesson sql-lesson sql-${slug}`}>
+    <main id="main" className={`page lesson sql-lesson sql-${slug}`}>
       <PageHead eyebrow="Learn SQL" aside={<QueryPanel sql={lesson.example.sql} answer={answer} note={note} />}>
         <p className="lesson-meta">
           Lesson <span data-series-n={meta.n}>{meta.n}</span> of {SQL_LESSONS.length} · {meta.concept}

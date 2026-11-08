@@ -3178,3 +3178,28 @@ figure.run-here {
 .runs-fold[open] > summary {
   margin-bottom: var(--space-4);
 }
+
+/* "Skip to content" (P19, task 152): off screen until it takes the focus, then a neon button over
+   the header, the first stop of the tab order. */
+.skip-link {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--neon);
+  border-radius: var(--radius);
+  background: var(--neon-bg);
+  color: var(--neon);
+  font-family: var(--font-neon);
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-300%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}

@@ -1,3 +1,4 @@
+import { GANTT_SCALE } from "../../lib/figure-scale";
 import { axisTicks, placedInTime, stepGroups, type PlatformData } from "../../lib/platform";
 
 // Every step of `platform.json` as one bar on a shared seconds axis (task 123), server-rendered SVG,
@@ -40,8 +41,8 @@ export function StepGantt({ platform }: { platform: PlatformData }) {
       aria-label="Step durations chart, scrollable"
     >
       <svg
-        width={width}
-        height={height}
+        width={width * GANTT_SCALE}
+        height={height * GANTT_SCALE}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
         aria-label={`${placed ? "When each" : "Duration of each"} of the ${platform.steps.length} steps ran, in seconds, on an axis up to the run's ${wall} second wall clock`}

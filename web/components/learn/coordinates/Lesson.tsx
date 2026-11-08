@@ -83,7 +83,7 @@ export function Lesson({ sql }: { sql: string }) {
   // The highlighted player's jersey, as the possession file has it.
   const jersey = (stem: string, k: number) => pf(stem, `entities.${possession(stem).entities.findIndex((e) => e.i === views[k].highlight)}.jersey`);
   return (
-    <main className="page lesson learn-coordinates">
+    <main id="main" className="page lesson learn-coordinates">
       <LessonHead
         n={3}
         title="Can a court and a pitch share one table?"

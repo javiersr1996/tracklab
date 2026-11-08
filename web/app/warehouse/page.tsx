@@ -18,7 +18,7 @@ export default function WarehousePage() {
   const shooting = aliases.basketball_percentile;
   const total = WAREHOUSE.tables.reduce((sum, t) => sum + t.bytes, 0);
   return (
-    <main className="page warehouse-page">
+    <main id="main" className="page warehouse-page">
       <PageHead eyebrow="Season aggregates">
         <h1>Warehouse</h1>
         <p>

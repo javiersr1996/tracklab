@@ -40,7 +40,7 @@ function probeView(): ProbeView {
 
 export default function ScoutingPage() {
   return (
-    <main className="page scouting-page">
+    <main id="main" className="page scouting-page">
       <PageHead eyebrow="Season aggregates" aside={<ProbePanel probe={probeView()} />}>
         <h1>Scouting</h1>
         <p>

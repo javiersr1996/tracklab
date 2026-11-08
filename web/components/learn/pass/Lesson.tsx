@@ -56,7 +56,7 @@ const norm = (inner: ReactNode) => (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-pass">
+    <main id="main" className="page lesson learn-pass">
       <LessonHead
         n={7}
         title="How fast does a pass travel?"

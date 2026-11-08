@@ -8,7 +8,7 @@ export const metadata = sectionMetadata("/engineering/quality");
 export default function QualityPage() {
   const rows = matchRows();
   return (
-    <main className="page">
+    <main id="main" className="page">
       <PageHead eyebrow="One figure per match">
         <h1>Data quality</h1>
         <p className="lede">

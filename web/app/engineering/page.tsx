@@ -53,7 +53,7 @@ export default function PlatformPage() {
   const viewCount = modelRows.filter((r) => r.rows === null && !r.key.startsWith("seed_")).length;
 
   return (
-    <main className="page">
+    <main id="main" className="page">
       <PageHead eyebrow="How this was built">
         <h1>{PLATFORM.title}</h1>
         <p className="platform-subtitle lede" data-subtitle>

@@ -17,7 +17,7 @@ const SHOWCASE = SPORTS.map((sport) => POSSESSIONS.find((p) => p.sport === sport
 
 export default function HomePage() {
   return (
-    <main className="home surface-neon">
+    <main id="main" className="home surface-neon">
       {/* The replay fills the first screen, the header over its top and the headline over its
           foot, with the two actions (task 108); the pause button is the player's own. */}
       <Hero entries={SHOWCASE}>

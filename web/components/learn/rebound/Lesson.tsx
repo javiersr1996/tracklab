@@ -74,7 +74,7 @@ const norm = (inner: ReactNode) => (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-rebound">
+    <main id="main" className="page lesson learn-rebound">
       <LessonHead
         n={4}
         title="Who gets to the rebound first?"

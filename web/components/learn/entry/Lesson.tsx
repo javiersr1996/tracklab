@@ -50,7 +50,7 @@ const sq = (x: ReactNode) => (
 
 export function Lesson({ script }: { script: string }) {
   return (
-    <main className="page lesson learn-entry">
+    <main id="main" className="page lesson learn-entry">
       <LessonHead
         n={8}
         title="At what angle does the ball reach the rim?"

@@ -40,7 +40,7 @@ const frac = (num: ReactNode, den: ReactNode) => (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-dribble">
+    <main id="main" className="page lesson learn-dribble">
       <LessonHead
         n={9}
         title="How many bounces per second?"

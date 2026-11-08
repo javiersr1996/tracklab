@@ -29,6 +29,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={mono.variable}>
       <body>
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
         <header className="site-header surface-neon">
           <div className="wrap site-header-row">
             <Link href="/" className="wordmark">
