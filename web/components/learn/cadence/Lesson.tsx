@@ -476,9 +476,10 @@ export function Lesson({ script }: { script: string }) {
             <PerMatchText match={String(A.match_id)} /> <PerMatchText match={String(B.match_id)} />
           </p>
           <p>
-            In both matches the spread between players is many times the error any one of them carries, so the error
-            the joints carry does not hide the difference between players. That is the sd of the joints&apos; predicted error
-            only, not the variation of one player between windows (see Limitations). It does not say why they differ, and this lesson does not ask. /tracking/pose shows the
+            In both matches the spread between players is many times the error any one of them carries, so that error alone
+            cannot hide a difference between them. It does not show that the players differ: one player&apos;s cadence also
+            moves from window to window, and the sd here is the joints&apos; predicted error only (see Limitations). Why
+            players would differ is a question this lesson does not ask. /tracking/pose shows the
             rule the protocol froze around this comparison before the second match was read, and how that match met it.
           </p>
         </section>
