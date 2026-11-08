@@ -115,6 +115,15 @@ export const LESSONS: readonly Lesson[] = [
     status: "published",
     about: "A direction from two shoulders and a nose, set against the direction of travel, and a mean and a variance that know the circle closes.",
   },
+  {
+    n: 12,
+    slug: "expected-points",
+    title: "How many points is a shot worth?",
+    level: "Foundations",
+    sport: "Basketball",
+    status: "published",
+    about: "Expected value by zone on the EuroLeague's shot counts, a mean weighted by attempts, and a team's points per shot split into its mix and its making.",
+  },
 ];
 
 export const lessonHref = (l: Lesson) => `/learn/${l.slug}`;

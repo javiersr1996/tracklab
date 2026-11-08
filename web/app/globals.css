@@ -3032,6 +3032,33 @@ body:has(.home) .site-header::after {
   min-width: 5rem;
 }
 
+/* Lesson 12: the per-team strip is the figure, so it gets more room; the team's name reads left. */
+.per-match.xp-teams .per-match-strip {
+  min-width: 18rem;
+}
+
+.table-scroll .xp-teams th:last-child,
+.table-scroll .xp-teams td:last-child {
+  text-align: left;
+}
+
+.xp-teams-title {
+  margin: var(--space-4) 0 0;
+}
+
+/* Task 117b: with its two interval columns the per-team table outgrows a lesson figure's 960 px, so
+   on a wide screen its card takes the band's width; below that it scrolls inside the card. */
+.learn-expected .learn-fig[data-figure="per-team"] {
+  max-width: none;
+}
+
+/* Task 117b: an interval in the legend, a line with its caps. */
+.learn-swatch-interval {
+  height: 0.75rem;
+  background: linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat;
+  border-inline: 2px solid currentColor;
+}
+
 /* Lesson 7: the pass from above keeps the court's proportions. */
 .learn-pass-top svg {
   display: block;
