@@ -198,7 +198,7 @@ def _cmd_possessions(args: argparse.Namespace) -> int:
 
 
 def _cmd_publish_possessions(args: argparse.Namespace) -> int:
-    return run_publish_possessions(data_dir=args.data_dir, out_dir=args.out_dir)
+    return run_publish_possessions(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
 
 
 def _cmd_publish_lineage(args: argparse.Namespace) -> int:
@@ -206,7 +206,7 @@ def _cmd_publish_lineage(args: argparse.Namespace) -> int:
 
 
 def _cmd_publish_stats(args: argparse.Namespace) -> int:
-    return run_publish_stats(data_dir=args.data_dir, out_dir=args.out_dir)
+    return run_publish_stats(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
 
 
 def _cmd_publish_platform(args: argparse.Namespace) -> int:
@@ -297,6 +297,7 @@ def _cmd_publish_quality(args: argparse.Namespace) -> int:
         reports_dir=args.reports_dir,
         out_dir=args.out_dir,
         docs_dir=args.docs_dir,
+        check=args.check,
     )
 
 
@@ -581,6 +582,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("../web/public/data"),
         help="Where possessions/*.json and index.json go (default: ../web/public/data).",
     )
+    publish_possessions.add_argument(
+        "--check",
+        action="store_true",
+        help="Recompute in memory and compare bytes with the versioned file(s); write nothing. "
+        "Says PARTIAL: when the data it recomputes from is not at hand.",
+    )
     publish_possessions.set_defaults(func=_cmd_publish_possessions)
 
     publish_lineage = publish_sub.add_parser(
@@ -615,6 +622,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("../web/public/data"),
         help="Where stats.json goes (default: ../web/public/data).",
+    )
+    publish_stats.add_argument(
+        "--check",
+        action="store_true",
+        help="Recompute in memory and compare bytes with the versioned file(s); write nothing. "
+        "Says PARTIAL: when the data it recomputes from is not at hand.",
     )
     publish_stats.set_defaults(func=_cmd_publish_stats)
 
@@ -908,6 +921,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("../docs"),
         help="Where bulletin.md goes (default: ../docs, the repo's docs from pipeline/).",
+    )
+    publish_quality.add_argument(
+        "--check",
+        action="store_true",
+        help="Recompute in memory and compare bytes with the versioned file(s); write nothing. "
+        "Says PARTIAL: when the data it recomputes from is not at hand.",
     )
     publish_quality.set_defaults(func=_cmd_publish_quality)
 
