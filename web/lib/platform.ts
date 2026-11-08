@@ -126,6 +126,9 @@ export interface PlatformData {
 // Via unknown: the JSON's inferred `steps` type is a union of the steps' own `dbt_seconds` keys.
 export const PLATFORM = platformJson as unknown as PlatformData;
 
+// The DuckDB the pipeline ran with, which the lessons name as the one their queries were checked on.
+export const DUCKDB_VERSION = PLATFORM.run.versions.duckdb;
+
 export const POSE_SOURCE_ID = "opendata-bodypose";
 
 // What the P6 body-pose zips add to "in": their files and bytes, and the bytes of every other

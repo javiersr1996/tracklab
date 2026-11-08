@@ -1,6 +1,6 @@
 import { HookAnimation } from "../../../components/quality/Hook";
 import { Band, PageHead } from "../../../components/site/Band";
-import { cellKey, HOOK, matchRows, TABLE_METRICS } from "../../../lib/quality";
+import { cellKey, HOOK, matchRows, tabulatedChecks, TABLE_METRICS } from "../../../lib/quality";
 import { sectionMetadata } from "../../../lib/page-metadata";
 
 export const metadata = sectionMetadata("/engineering/quality");
@@ -12,7 +12,7 @@ export default function QualityPage() {
       <PageHead eyebrow="One figure per match">
         <h1>Data quality</h1>
         <p className="lede">
-          A calibration kit for anyone building on the two bundles: five checks, one figure per
+          A calibration kit for anyone building on the two bundles: {tabulatedChecks().length} checks, one figure per
           match, read from the same reports as <a href="/engineering/bulletin">the bulletin</a>.
         </p>
       </PageHead>

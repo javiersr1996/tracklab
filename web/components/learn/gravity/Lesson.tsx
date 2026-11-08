@@ -1,3 +1,4 @@
+import { DUCKDB_VERSION } from "../../../lib/platform";
 import type { ReactNode } from "react";
 import { GRAVITY_HOOK, GRAVITY_MATCHES, qualityFigure } from "../../../lib/learn/gravity-data";
 import { HYPOTHESES, hypothesesFigure } from "../../../lib/learn/hypotheses-data";
@@ -554,7 +555,7 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             It returns {q("checks.gravity.bb:114086.flights")} flights and a median g of{" "}
             {q("checks.gravity.bb:114086.g_median")}, that match&apos;s row in the table above. The same query, with
-            only the id changed, gives every row of it; it was checked that way with DuckDB <code>1.5.5</code>.
+            only the id changed, gives every row of it; it was checked that way with DuckDB <code>{DUCKDB_VERSION}</code>.
           </p>
         </Reproduce>
 

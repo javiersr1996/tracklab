@@ -1,3 +1,4 @@
+import { DUCKDB_VERSION } from "../../../lib/platform";
 import type { ReactNode } from "react";
 import { REBOUND, reboundFig, reboundFigure } from "../../../lib/learn/rebound-data";
 import { raceAt, reboundFigures, type ReboundFigures } from "../../../lib/learn/rebound-figures";
@@ -408,7 +409,7 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             It returns {m("n")} rebounds, {m("model")} where the model&apos;s first took the rebound and {m("nearest")} where the
             nearest player did, that match&apos;s row in the table above. The same query, with only the id changed, gives those
-            three counts for every row; it was checked that way with DuckDB <code>1.5.5</code>.
+            three counts for every row; it was checked that way with DuckDB <code>{DUCKDB_VERSION}</code>.
           </p>
         </Reproduce>
 

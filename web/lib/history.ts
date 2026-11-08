@@ -250,3 +250,13 @@ export function ageUnit(maxSeconds: number): { unit: string; per: number } {
   if (maxSeconds < 2 * 86400) return { unit: "h", per: 3600 };
   return { unit: "d", per: 86400 };
 }
+
+// The newest record whose contract tests were run (a partial build does not run them), with the
+// count that passed: what `/engineering` says its contract files add up to.
+export function latestContractRun(entries: HistoryEntry[] = HISTORY.entries): { id: string; passed: number } | null {
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const c = entries[i].quality.contracts;
+    if (c.executed === true && c.passed !== null) return { id: entries[i].id, passed: c.passed };
+  }
+  return null;
+}

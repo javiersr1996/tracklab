@@ -8,6 +8,7 @@ import { firstBeforeBars, firstEvents, LINEAGE, PLATFORM, poseShare, silverModel
 import { DATA_SOURCES, EUROLEAGUE } from "../../lib/sections";
 import pgJson from "../../public/data/warehouse_pg.json";
 import { sectionMetadata } from "../../lib/page-metadata";
+import { latestContractRun, runLabel } from "../../lib/history";
 
 export const metadata = sectionMetadata("/engineering");
 
@@ -45,6 +46,7 @@ function formatMatchField(field: (typeof MATCH_FIELDS)[number], value: string | 
 
 export default function PlatformPage() {
   const { run, matches, season_files: seasonFiles, guarantees: g } = PLATFORM;
+  const contractRun = latestContractRun();
   const pose = poseShare();
   const stepSeconds = PLATFORM.steps.reduce((s, st) => s + st.duration_ms / 1000, 0);
   const first = firstEvents();
@@ -214,12 +216,20 @@ export default function PlatformPage() {
           </li>
           <li data-guarantee="contracts">
             <h3>
-              <span data-field="contracts.files">{g.contracts.files}</span> contract tests
+              <span data-field="contracts.files">{g.contracts.files}</span> contract files
             </h3>
             <p>
               Each file reads the Parquet built from the real bundles and asserts what the next
               layer relies on. <code>test_frames</code> rebuilds the row count of every match from
               bronze with its own SQL and compares it with silver.
+              {contractRun && (
+                <>
+                  {" "}
+                  The last build that ran them, on{" "}
+                  <span data-field="contracts.run_date">{runLabel(contractRun.id).slice(0, 10)}</span>, passed{" "}
+                  <span data-field="contracts.passed">{contractRun.passed}</span> tests in these files.
+                </>
+              )}
             </p>
             <details>
               <summary>The contract files</summary>

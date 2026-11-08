@@ -1,3 +1,4 @@
+import { DUCKDB_VERSION } from "../../../lib/platform";
 import type { ReactNode } from "react";
 import { figureAt } from "../../../lib/learn/json-figure";
 import { POSSESSION } from "../../../lib/learn/possession-data";
@@ -271,7 +272,7 @@ export function Lesson({ sql }: { sql: string }) {
             ninetieth percentile of {fbRow("run_p90_s")}&nbsp;s and {fbRow("multi_phase_pct")}&nbsp;% of runs over more than one
             phase; the second, {bbRow("possessions")} possessions, a median of {bbRow("median_s")}&nbsp;s and a ninetieth
             percentile of {bbRow("p90_s")}&nbsp;s: those matches&apos; rows in the tables above. The same queries, with only the
-            ids changed, give every row; they were checked that way with DuckDB <code>1.5.5</code>.
+            ids changed, give every row; they were checked that way with DuckDB <code>{DUCKDB_VERSION}</code>.
           </p>
         </Reproduce>
 
