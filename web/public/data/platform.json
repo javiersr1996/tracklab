@@ -1453,7 +1453,7 @@
   },
   "guarantees": {
     "dbt": {
-      "total": 171,
+      "total": 172,
       "generic": 163,
       "by_kind": {
         "accepted_values": 18,
@@ -1465,6 +1465,7 @@
       "singular": [
         "assert_attack_signs_opposite",
         "assert_events_carry_a_rotation_or_no_coordinates",
+        "assert_every_bronze_match_in_dim_match",
         "assert_football_possessions_do_not_overlap",
         "assert_frames_entities_in_dim_entity",
         "assert_frames_t_ms_increases",
@@ -1530,7 +1531,7 @@
     }
   },
   "freshness": {
-    "published_utc": "2026-11-08T13:41:24+00:00",
+    "published_utc": "2026-11-08T14:32:26+00:00",
     "partitions": [
       {
         "layer": "silver",
