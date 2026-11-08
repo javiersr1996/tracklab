@@ -9,7 +9,9 @@ reordered share, at every decimal.
 
 Mutations (a test that cannot fail protects nothing): v_h over 4 samples instead of 8; the rim at
 3.05 m instead of 3.048; the arrival rounded with `int` instead of `round`; and the script's
-selection without the blocked rule. Each moves a figure away from P3's.
+selection without the blocked rule. Each moves a figure away from P3's. The sweep of v_h's window
+(task 162) was mutated by hand: `_variant` without putting the constants back, then with window
+and offset swapped; each time `test_the_sweep_reruns_entry_py_and_puts_its_constants_back` failed.
 """
 
 from __future__ import annotations
@@ -98,9 +100,22 @@ def write_raw(folder: Path) -> None:
 
 def write_bronze(root: Path) -> None:
     bronze = root / "bronze" / "basketball"
-    for table in ("tracking_objects", "tracking_frames"):
+    for table in ("tracking_objects", "tracking_frames", "events_shots"):
         (bronze / table).mkdir(parents=True, exist_ok=True)
     con = duckdb.connect()
+    con.execute(
+        "CREATE TABLE s (match_id BIGINT, startFrame BIGINT, endFrame BIGINT, distance DOUBLE, "
+        "outcome BOOLEAN, blocked BOOLEAN)"
+    )
+    con.executemany(
+        "INSERT INTO s VALUES (?, ?, ?, ?, ?, ?)",
+        [
+            (MATCH, s["startFrame"], s["endFrame"], s["distance"], s["outcome"], s["blocked"])
+            for s in _shots()
+        ],
+    )
+    path = (bronze / "events_shots" / f"{MATCH}.parquet").as_posix()
+    con.execute(f"COPY s TO '{path}' (FORMAT parquet)")
     con.execute("CREATE TABLE o (frameIdx BIGINT, side VARCHAR, x DOUBLE, y DOUBLE, z DOUBLE)")
     con.executemany(
         "INSERT INTO o VALUES (?, 'ball', ?, ?, ?)",
@@ -262,6 +277,36 @@ def test_the_example_reaches_the_rim_and_its_angles_follow_from_its_samples(tmp_
     assert len(ex["z"]) > ex["published"]["k"] + script.SEARCH_OFFSET
     assert ex["z"][-1] <= script.RIM_HEIGHT < max(ex["z"])
     assert ex["published"]["required"] == pytest.approx(ex["full_precision"]["required"], abs=0.01)
+
+
+def test_the_sweep_reruns_entry_py_and_puts_its_constants_back(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _root(tmp_path, raw=False)
+    quality = tmp_path / "quality.json"
+    sweep = el.v_h_sweep(root, quality, json.loads(quality.read_text(encoding="utf-8"))["hook"])
+    own = (script.V_H_FRAMES, script.SEARCH_OFFSET, script.MIN_CONTIG)
+    assert own == (8, 2, 12)
+    gaps = {(w, o): g for w, o, g in sweep["example_gaps"]}
+    assert list(gaps) == [(w, o) for w in el.SWEEP_WINDOWS for o in el.SWEEP_OFFSETS]
+    assert (sweep["example_gap_lo"], sweep["example_gap_hi"]) == (
+        min(gaps.values()),
+        max(gaps.values()),
+    )
+    samples = script.load(tmp_path / "scratch" / str(MATCH))[1]
+    for window, offset in [(8, 2), (12, 0)]:
+        # entry.py with its constants set by hand: the sweep's gap at that window and offset.
+        monkeypatch.setattr(script, "V_H_FRAMES", window)
+        monkeypatch.setattr(script, "SEARCH_OFFSET", offset)
+        monkeypatch.setattr(script, "MIN_CONTIG", window + 4)
+        got = el.gaps(samples, [FLIGHTS[0][0]])
+        assert got == [pytest.approx(gaps[(window, offset)], abs=5e-5)]
+        monkeypatch.undo()
+    # The ball slows: a window further along the flight reads a lower v_h and moves the gap.
+    assert gaps[(12, 0)] != gaps[(8, 2)]
+    # One match: at entry.py's own constants its median gap is quality.json's, both ends.
+    gap = el.published_rows(quality)[f"bb:{MATCH}"]["gap"]
+    assert [8, 2, gap, gap] in sweep["match_gap_medians"]
 
 
 def test_the_file_is_lf_and_checks_full_then_partial_then_fails_on_a_change(

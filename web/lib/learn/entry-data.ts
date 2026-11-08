@@ -17,11 +17,26 @@ export interface EntryExample {
   full_precision: { reported: number; required: number };
 }
 
+// The gap with v_h measured another way: entry.py rerun at each window (samples) and search
+// offset (frames after startFrame). Rows are [window, offset, gap] for the example shot and
+// [window, offset, lowest, highest] median gap of a match; each `_lo`/`_hi` is the span of its rows.
+export interface VhSweep {
+  windows: number[];
+  offsets: number[];
+  example_gaps: number[][];
+  example_gap_lo: number;
+  example_gap_hi: number;
+  match_gap_medians: number[][];
+  match_gap_median_lo: number;
+  match_gap_median_hi: number;
+}
+
 export interface EntryFile extends EntryConstants {
   schema_version: number;
   search_offset: number;
   digits: number;
   example: EntryExample;
+  v_h_sweep: VhSweep;
 }
 
 export const ENTRY = entryJson as EntryFile;

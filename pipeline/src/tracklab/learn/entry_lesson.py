@@ -9,6 +9,14 @@ decimals, from bronze (feet, to metres; time the frame / 25 s, as silver keeps i
 gives the check's constants and the shot's v_h, D, T, k and two angles computed from the published
 samples, and the two angles at full precision.
 
+`v_h_sweep` is how far the gap moves with the way v_h is measured: entry.py's arithmetic rerun
+with v_h's window at each of `SWEEP_WINDOWS` samples and the search starting each of
+`SWEEP_OFFSETS` frames after `startFrame` (entry.py's own 8 and 2 among them; a run needs the
+window and as many samples more as entry.py asks). For the example shot, its gap (required minus
+reported, at full precision) at each; for every match of `quality.json`, the lowest and the
+highest median gap of a match at each, and the range over all. At entry.py's own window and
+offset the median of every match must be `quality.json`'s, or the build stops.
+
 The arithmetic is `entry.py`'s, the script "Reproduce it" shows, which reruns the check from the
 public raw files alone. `--check` rebuilds the file from bronze and compares its bytes, and runs
 `entry.py` on the raw files of every match of `quality.json`, comparing its five figures with
@@ -19,6 +27,9 @@ it checked.
 from __future__ import annotations
 
 import json
+import statistics
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +37,7 @@ import duckdb
 
 from tracklab.bronze.common import raw_root_for
 from tracklab.learn import entry as script
+from tracklab.quality.entry_angle import _made_shots
 
 SOURCE_ID = "opendata-basketball"
 SCRIPT_PATH = Path(script.__file__)
@@ -37,6 +49,9 @@ METRICS = {
     "gap": "gap_median_deg",
     "reordered_pct": "pairs_reordered_pct",
 }
+SWEEP_WINDOWS = (8, 12)  # samples v_h is the median over: entry.py's and a wider one
+SWEEP_OFFSETS = (0, 1, 2)  # frames after startFrame the search for the flight begins
+RUN_EXTRA = script.MIN_CONTIG - script.V_H_FRAMES  # samples a run needs beyond the window
 
 
 def read_samples(bronze: Path, match: int) -> list[script.Sample]:
@@ -112,6 +127,69 @@ def example(bronze: Path, hook: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+@contextmanager
+def _variant(window: int, offset: int) -> Iterator[None]:
+    """entry.py's arithmetic with another v_h window and search offset: its module constants,
+    set for the block and put back after, so the public script itself is what runs."""
+    saved = script.V_H_FRAMES, script.SEARCH_OFFSET, script.MIN_CONTIG
+    script.V_H_FRAMES, script.SEARCH_OFFSET = window, offset
+    script.MIN_CONTIG = window + RUN_EXTRA
+    try:
+        yield
+    finally:
+        script.V_H_FRAMES, script.SEARCH_OFFSET, script.MIN_CONTIG = saved
+
+
+def gaps(samples: list[script.Sample], starts: list[int]) -> list[float]:
+    """Required minus reported (degrees) of every shot the check keeps, as `entry.summary`."""
+    out = []
+    for start in starts:
+        run = script.run_of(samples, start)
+        got = script.flight(run) if not isinstance(run, str) else run
+        if not isinstance(got, str):
+            out.append(got["required"] - got["reported"])
+    return out
+
+
+def v_h_sweep(data_dir: Path, quality: Path, hook: dict[str, Any]) -> dict[str, Any]:
+    bronze = data_dir / "bronze" / "basketball"
+    rows = published_rows(quality)
+    shots = _made_shots(data_dir)
+    example: list[list[float]] = []
+    matches: list[list[float]] = []
+    medians: dict[tuple[int, int], list[float]] = {}
+    for match_id in sorted(rows):
+        native = int(match_id.removeprefix("bb:"))
+        if not (bronze / "tracking_objects" / f"{native}.parquet").is_file():
+            raise ValueError(f"no bronze ball for {match_id}")
+        samples = read_samples(bronze, native)
+        for window in SWEEP_WINDOWS:
+            for offset in SWEEP_OFFSETS:
+                with _variant(window, offset):
+                    median = round(statistics.median(gaps(samples, shots[native])), DIGITS)
+                    if match_id == hook["match_id"]:
+                        one = gaps(samples, [int(hook["start_frame"])])
+                        if not one:
+                            raise ValueError(f"the example is dropped at {window}, {offset}")
+                        example.append([window, offset, round(one[0], DIGITS)])
+                own = (window, offset) == (script.V_H_FRAMES, script.SEARCH_OFFSET)
+                if own and median != rows[match_id]["gap"]:
+                    raise ValueError(f"{match_id}: median gap {median}, quality.json's differs")
+                medians.setdefault((window, offset), []).append(median)
+    for (window, offset), ms in medians.items():
+        matches.append([window, offset, min(ms), max(ms)])
+    return {
+        "windows": list(SWEEP_WINDOWS),
+        "offsets": list(SWEEP_OFFSETS),
+        "example_gaps": example,
+        "example_gap_lo": min(g for *_, g in example),
+        "example_gap_hi": max(g for *_, g in example),
+        "match_gap_medians": matches,
+        "match_gap_median_lo": min(lo for _, _, lo, _ in matches),
+        "match_gap_median_hi": max(hi for *_, hi in matches),
+    }
+
+
 def build(data_dir: Path, quality: Path) -> dict[str, Any]:
     hook = json.loads(quality.read_text(encoding="utf-8"))["hook"]
     return {
@@ -125,6 +203,7 @@ def build(data_dir: Path, quality: Path) -> dict[str, Any]:
         "tail_min_index": script.TAIL_MIN_INDEX,
         "digits": DIGITS,
         "example": example(data_dir / "bronze" / "basketball", hook),
+        "v_h_sweep": v_h_sweep(data_dir, quality, hook),
     }
 
 
@@ -171,8 +250,8 @@ def run_learn_entry(data_dir: Path, out: Path, quality: Path, *, check: bool = F
     if (bronze / "tracking_objects" / f"{native}.parquet").is_file():
         try:
             fresh = render(build(data_dir, quality)).encode("utf-8")
-        except ValueError as e:  # a slice without the hook's flight
-            print(f"learn entry --check: the bronze at hand has no example ({e})")
+        except ValueError as e:  # a slice without the hook's flight or the sweep's matches
+            print(f"learn entry --check: the bronze at hand cannot rebuild the file ({e})")
         else:
             if fresh != raw_bytes:
                 print(f"learn entry --check: {out.name} differs from what bronze gives")
@@ -207,7 +286,7 @@ def run_learn_entry(data_dir: Path, out: Path, quality: Path, *, check: bool = F
         return 1
     done.append(
         f"{out.name}'s constants are entry.py's, and its example's angles follow from its "
-        "published samples"
+        "published samples; its sweep's ranges are its rows'"
     )
     if rebuilt and compared == total:
         print(f"learn entry --check: FULL {total}/{total}: " + "; ".join(done))
@@ -241,4 +320,17 @@ def _shape_problems(payload: dict[str, Any]) -> str:
     got = script.flight(samples[payload["search_offset"] :])
     if isinstance(got, str) or _angles(got) != ex["published"]:
         return "the example's angles do not follow from its published samples"
+    sw = payload["v_h_sweep"]
+    if script.V_H_FRAMES not in sw["windows"] or script.SEARCH_OFFSET not in sw["offsets"]:
+        return "the sweep leaves out entry.py's own window or offset"
+    spans = (
+        (sw["example_gap_lo"], sw["example_gap_hi"], [g for *_, g in sw["example_gaps"]]),
+        (
+            sw["match_gap_median_lo"],
+            sw["match_gap_median_hi"],
+            [x for _, _, lo, hi in sw["match_gap_medians"] for x in (lo, hi)],
+        ),
+    )
+    if any((lo, hi) != (min(xs), max(xs)) for lo, hi, xs in spans):
+        return "a range of the sweep is not its rows'"
     return ""
