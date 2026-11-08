@@ -22,6 +22,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
+from tracklab.bronze.common import LINEAGE_FIELDS
 from tracklab.formats.basketball import load_family
 from tracklab.formats.basketball import pa_schema as family_pa_schema
 from tracklab.formats.csvschema import (
@@ -57,11 +58,22 @@ def test_every_frozen_schema_translates_to_pyarrow(path: Path) -> None:
     raw = json.loads(path.read_text(encoding="utf-8"))
     if "family" in raw:
         schema = family_pa_schema(load_family(path))
+        # Lineage first, then every frozen column in provider order, a POINT2D opened
+        # into `<name>_x` and `<name>_y`: a column dropped, reordered or left unopened
+        # by the translation changes this list.
+        frozen = [
+            [f"{c['name']}_x", f"{c['name']}_y"] if c["type"] == "POINT2D" else [c["name"]]
+            for c in raw["columns"]
+        ]
+        expected = [f.name for f in LINEAGE_FIELDS] + [n for names in frozen for n in names]
     else:
         schema = csv_pa_schema(load_schema(path))
+        assert len(raw["columns"]) == raw["n_columns"]
+        expected = [c["name"] for c in raw["columns"]]
     types = sorted({str(f.type) for f in schema})
     print(f"{path.parent.name}/{path.stem}: {len(schema)} columns, types {types}")
-    assert len(schema) > 0
+    assert schema.names == expected
+    assert len(set(schema.names)) == len(schema.names)
 
 
 def test_an_unknown_frozen_type_names_the_table_the_column_and_the_type() -> None:
