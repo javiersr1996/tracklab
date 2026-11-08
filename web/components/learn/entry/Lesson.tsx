@@ -239,6 +239,14 @@ export function Lesson({ script }: { script: string }) {
               the arrival sample can fall before the ball reaches the rim, as it does in the example.
             </li>
             <li>
+              The gap also depends on how the horizontal speed is measured. The check takes it over {e("v_h_frames")} samples
+              from {e("search_offset")} frames after <code>startFrame</code>. Rerun with {e("v_h_sweep.windows.0")} or{" "}
+              {e("v_h_sweep.windows.1")} samples, from {e("v_h_sweep.offsets.0")} to {e("v_h_sweep.offsets.2")} frames after it,
+              this shot&apos;s gap goes from {e("v_h_sweep.example_gap_lo")} to {e("v_h_sweep.example_gap_hi")}°, and the
+              median gap of a match from {e("v_h_sweep.match_gap_median_lo")} to {e("v_h_sweep.match_gap_median_hi")}°,
+              against {l("gap_lo")} to {l("gap_hi")}° in the table.
+            </li>
+            <li>
               The method&apos;s own gap is measured here on one shot. The table&apos;s gaps include it, shot by shot, and the
               lesson does not separate it from the rest.
             </li>

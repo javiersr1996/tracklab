@@ -18,6 +18,11 @@ export interface BasketballMatch {
   possessions: number;
   median_s: number;
   p90_s: number;
+  // The same possessions on the game clock, start minus end, those with a clock at both ends.
+  clock_possessions: number;
+  clock_median_s: number;
+  clock_p90_s: number;
+  clock_p90_over_median: number;
 }
 
 export interface Timeline {
@@ -32,7 +37,8 @@ export interface PossessionFile {
   football_hz: number;
   basketball_fps: number;
   football: { matches: FootballMatch[]; timeline: Timeline };
-  basketball: { matches: BasketballMatch[]; timeline: Timeline };
+  // `clock_above_exp`: the matches whose clock ratio is above the exponential's, log2 10.
+  basketball: { matches: BasketballMatch[]; exp_p90_over_median: number; clock_above_exp: number; timeline: Timeline };
 }
 
 export const POSSESSION = possessionJson as PossessionFile;

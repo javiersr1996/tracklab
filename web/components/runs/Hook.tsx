@@ -106,6 +106,16 @@ function Leg({ runs, k, possession }: { runs: Runs; k: number; possession: Posse
 export function RunsHook({ runs }: { runs: Runs }) {
   const [clips, setClips] = useState<Possession[] | "failed" | null>(null);
   const { hook } = runs;
+  // The marker of each clip: the pair's figure is the run's minus the placebo's, two players.
+  const marker = (role: Clip["role"]) => {
+    const j = hook.clips.findIndex((c) => c.role === role);
+    return (
+      <>
+        <code data-fig={`hook.clips.${j}.marker_entity_id`}>{hook.clips[j].marker_entity_id}</code> shifts{" "}
+        <span data-fig={`hook.clips.${j}.marker_displacement_m`}>{String(hook.clips[j].marker_displacement_m)}</span> m
+      </>
+    );
+  };
 
   useEffect(() => {
     let live = true;
@@ -132,7 +142,10 @@ export function RunsHook({ runs }: { runs: Runs }) {
         m on the marker, the pair closest to the median of the subtype&apos;s{" "}
         <span data-fig="hook.subtype_pairs">{String(hook.subtype_pairs)}</span> calibration pairs (
         <span data-fig="hook.subtype_median_marker_m">{String(hook.subtype_median_marker_m)}</span>{" "}
-        m). Arrows: each opponent&apos;s displacement along the run&apos;s direction (
+        m). Its <span data-fig="hook.pair.marker_effect_m">{String(hook.pair.marker_effect_m)}</span> m
+        is the run&apos;s marker minus the placebo&apos;s, and they are two players: in the run,{" "}
+        {marker("run")} along the run&apos;s direction; in the placebo, {marker("placebo")}. Only
+        the first is the run&apos;s. Arrows: each opponent&apos;s displacement along the run&apos;s direction (
         <span data-fig="hook.pair.direction.0">{String(hook.pair.direction[0])}</span>,{" "}
         <span data-fig="hook.pair.direction.1">{String(hook.pair.direction[1])}</span> in the attack
         frame) over the next{" "}

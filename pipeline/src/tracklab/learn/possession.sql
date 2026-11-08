@@ -25,11 +25,14 @@ SELECT (SELECT count(*) FROM phase) AS phases, count(*) AS runs,
 FROM runs;
 
 -- 2. Basketball, one match: every possession with a start and an end frame, at 25 frames per
---    second.
+--    second; then the same possessions on the game clock, which counts down, for those with a
+--    clock at both ends.
 SELECT count(*) AS possessions,
-       round(quantile_cont(s, 0.5), 4) AS median_s, round(quantile_cont(s, 0.9), 4) AS p90_s
+       round(quantile_cont(s, 0.5), 4) AS median_s, round(quantile_cont(s, 0.9), 4) AS p90_s,
+       count(c) AS clock_possessions,
+       round(quantile_cont(c, 0.5), 4) AS clock_median_s, round(quantile_cont(c, 0.9), 4) AS clock_p90_s
 FROM (
-  SELECT (p.endFrame - p.startFrame) / 25 AS s
+  SELECT (p.endFrame - p.startFrame) / 25 AS s, p.startGameClock - p.endGameClock AS c
   FROM (SELECT unnest(possessions) AS p
         FROM read_json('opendata-basketball/data/matches/114086/114086_dynamic_events.json'))
   WHERE p.startFrame IS NOT NULL AND p.endFrame IS NOT NULL

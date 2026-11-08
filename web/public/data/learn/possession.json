@@ -305,63 +305,105 @@
         "match_id": "bb:114086",
         "possessions": 151,
         "median_s": 20.24,
-        "p90_s": 65.04
+        "p90_s": 65.04,
+        "clock_possessions": 151,
+        "clock_median_s": 15.7233,
+        "clock_p90_s": 24.1622,
+        "clock_p90_over_median": 1.54
       },
       {
         "match_id": "bb:114099",
         "possessions": 157,
         "median_s": 19.4,
-        "p90_s": 81.536
+        "p90_s": 81.536,
+        "clock_possessions": 157,
+        "clock_median_s": 15.3608,
+        "clock_p90_s": 24.8983,
+        "clock_p90_over_median": 1.62
       },
       {
         "match_id": "bb:114169",
         "possessions": 152,
         "median_s": 21.24,
-        "p90_s": 111.784
+        "p90_s": 111.784,
+        "clock_possessions": 152,
+        "clock_median_s": 15.3839,
+        "clock_p90_s": 26.0448,
+        "clock_p90_over_median": 1.69
       },
       {
         "match_id": "bb:114234",
         "possessions": 166,
         "median_s": 19.36,
-        "p90_s": 80.4
+        "p90_s": 80.4,
+        "clock_possessions": 166,
+        "clock_median_s": 13.9156,
+        "clock_p90_s": 23.7656,
+        "clock_p90_over_median": 1.71
       },
       {
         "match_id": "bb:114243",
         "possessions": 157,
         "median_s": 19.96,
-        "p90_s": 95.576
+        "p90_s": 95.576,
+        "clock_possessions": 157,
+        "clock_median_s": 15.122,
+        "clock_p90_s": 22.6514,
+        "clock_p90_over_median": 1.5
       },
       {
         "match_id": "bb:178442",
         "possessions": 173,
         "median_s": 20.44,
-        "p90_s": 83.88
+        "p90_s": 83.88,
+        "clock_possessions": 172,
+        "clock_median_s": 14.46,
+        "clock_p90_s": 25.756,
+        "clock_p90_over_median": 1.78
       },
       {
         "match_id": "bb:179612",
         "possessions": 153,
         "median_s": 18.56,
-        "p90_s": 82.328
+        "p90_s": 82.328,
+        "clock_possessions": 153,
+        "clock_median_s": 15.2,
+        "clock_p90_s": 25.152,
+        "clock_p90_over_median": 1.65
       },
       {
         "match_id": "bb:184439",
         "possessions": 159,
         "median_s": 20.64,
-        "p90_s": 101.608
+        "p90_s": 101.608,
+        "clock_possessions": 159,
+        "clock_median_s": 14.0,
+        "clock_p90_s": 25.496,
+        "clock_p90_over_median": 1.82
       },
       {
         "match_id": "bb:188630",
         "possessions": 143,
         "median_s": 20.4,
-        "p90_s": 73.112
+        "p90_s": 73.112,
+        "clock_possessions": 143,
+        "clock_median_s": 16.88,
+        "clock_p90_s": 24.64,
+        "clock_p90_over_median": 1.46
       },
       {
         "match_id": "bb:191313",
         "possessions": 153,
         "median_s": 22.4,
-        "p90_s": 82.712
+        "p90_s": 82.712,
+        "clock_possessions": 153,
+        "clock_median_s": 15.12,
+        "clock_p90_s": 24.752,
+        "clock_p90_over_median": 1.64
       }
     ],
+    "exp_p90_over_median": 3.3219,
+    "clock_above_exp": 0,
     "timeline": {
       "match_id": "bb:114086",
       "teams": [1326, 1328],

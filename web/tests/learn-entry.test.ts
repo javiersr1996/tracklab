@@ -27,6 +27,8 @@ import { HOOK, QUALITY } from "../lib/quality";
 // - The tail without its first sample (`k - tail_back + 1`): "gives the pipeline's angles" and "the
 //   line through a parabola is its tangent at the middle sample" fail.
 // - An angle typed in the text for its `data-fig`: "has no digit typed in the prose" fails.
+// - The sweep's match range printed from its first row only: "the sweep of v_h's window" fails
+//   (task 162).
 
 const F: Record<string, unknown> = entryFigures(ENTRY, ENTRY_RUN, ENTRY_MATCHES, HOOK.g_data);
 const html = <P extends object>(c: FunctionComponent<P>, props: P) => renderToStaticMarkup(createElement(c, props));
@@ -83,6 +85,19 @@ describe("the example against entry.json", () => {
     expect(f.low_g_gap).toBeGreaterThan(0);
     expect(f.scaled_gap).toBeGreaterThan(0);
     expect(f.ex_closest_after).toBeGreaterThan(0);
+  });
+
+  it("the sweep of v_h's window: its ranges are its rows', and at the check's own window it is the table", () => {
+    const s = ENTRY.v_h_sweep;
+    const ex = s.example_gaps.map((r) => r[2]);
+    expect([s.example_gap_lo, s.example_gap_hi]).toEqual([Math.min(...ex), Math.max(...ex)]);
+    const ends = s.match_gap_medians.flatMap((r) => [r[2], r[3]]);
+    expect([s.match_gap_median_lo, s.match_gap_median_hi]).toEqual([Math.min(...ends), Math.max(...ends)]);
+    const own = s.match_gap_medians.find((r) => r[0] === ENTRY.v_h_frames && r[1] === ENTRY.search_offset);
+    expect(own?.slice(2)).toEqual([F.gap_lo, F.gap_hi]);
+    const shown = (name: string) => HTML.match(new RegExp(`data-fig="${name}">([^<]*)<`))?.[1];
+    expect(shown("entry.v_h_sweep.match_gap_median_lo")).toBe(String(s.match_gap_median_lo));
+    expect(shown("entry.v_h_sweep.match_gap_median_hi")).toBe(String(s.match_gap_median_hi));
   });
 
   it("the figure opens at standard gravity and the file's heights", () => {

@@ -94,8 +94,8 @@ export function Lesson({ script }: { script: string }) {
         title="Which way is a player facing?"
         level="Advanced"
         result={[
-          { label: "Chest against run, median angle", values: [F.hook[A.match_id].median_abs], unit: "°" },
-          { label: "Frames side on or further", values: [F.hook[A.match_id].off_pct], unit: "%" },
+          { label: "Chest against run, median angle, per player, one clip", values: [F.clip[A.match_id].median_lo, F.clip[A.match_id].median_hi], unit: "°" },
+          { label: "Frames side on or further, per player, one clip", values: [F.clip[A.match_id].off_lo, F.clip[A.match_id].off_hi], unit: "%" },
         ]}
       >
         <p className="lede">

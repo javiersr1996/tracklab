@@ -51,14 +51,16 @@ export function Lesson({ sql }: { sql: string }) {
         level="Intermediate"
         result={[
           { label: "Football: median spell, per match", values: [F.fb_med_lo, F.fb_med_hi], unit: "s" },
-          { label: "Basketball", values: [F.bb_med_lo, F.bb_med_hi], unit: "s" },
+          { label: "Basketball, on the video", values: [F.bb_med_lo, F.bb_med_hi], unit: "s" },
+          { label: "Basketball, on the game clock", values: [F.bb_clk_med_lo, F.bb_clk_med_hi], unit: "s" },
         ]}
       >
         <p className="lede">
-          A football team keeps the ball for a median of {l("fb_med_lo")} to {l("fb_med_hi")}&nbsp;s at a time, match by match,
-          and a basketball team for {l("bb_med_lo")} to {l("bb_med_hi")}&nbsp;s. The median is half the story. The other half is
-          the tail: how many spells last far longer, set against the one distribution in which the ball is as likely to change
-          hands in any second as in the next.
+          A football team keeps the ball for a median of {l("fb_med_lo")} to {l("fb_med_hi")}&nbsp;s at a time, match by match.
+          A basketball team keeps it for {l("bb_med_lo")} to {l("bb_med_hi")}&nbsp;s of video, or {l("bb_clk_med_lo")} to{" "}
+          {l("bb_clk_med_hi")}&nbsp;s on the game clock, which leaves out the seconds it stands still. The median is half the
+          story. The other half is the tail: how many spells last far longer, set against the one distribution in which the ball
+          is as likely to change hands in any second as in the next. In basketball the two clocks give opposite answers.
         </p>
       </LessonHead>
       <Band>
@@ -69,15 +71,22 @@ export function Lesson({ sql }: { sql: string }) {
             <Quote id="skillcorner-possessions" /> (<Cite id="skillcorner-possessions" />
             ). Each one starts at a <code>startFrame</code>, <Quote id="skillcorner-possession-start" /> (
             <Cite id="skillcorner-possession-start" />
-            ), and ends at an <code>endFrame</code>.
+            ), and ends at an <code>endFrame</code>. It also carries the game clock at both ends: <code>startGameClock</code>,{" "}
+            <Quote id="skillcorner-possession-clock-start" /> (<Cite id="skillcorner-possession-clock-start" />
+            ), and <code>endGameClock</code>, the same at its end. That clock can stand still while the video runs on: the
+            tracking marks each frame with <code>gameClockStopped</code>, <Quote id="skillcorner-gameclock-stopped" /> (
+            <Cite id="skillcorner-gameclock-stopped" />
+            ).
           </p>
           <p>
             The football files have no such table. They cut the match into phases of play instead: <Quote id="skillcorner-fb-phases" />{" "}
             (<Cite id="skillcorner-fb-phases" />
             ), and <Quote id="skillcorner-fb-phases-in-play" /> (<Cite id="skillcorner-fb-phases-in-play" />
             ). Their frames are those of the tracking: <Quote id="skillcorner-fb-frame" /> (<Cite id="skillcorner-fb-frame" />
-            ). How long does a team keep the ball before it changes hands, and does that time behave like a coin tossed every
-            second?
+            ). Their one time is a frame&apos;s <code>timestamp</code>, <Quote id="skillcorner-fb-timestamp" /> (
+            <Cite id="skillcorner-fb-timestamp" />
+            ), and no field says when that clock stops. How long does a team keep the ball before it changes hands, and does
+            that time behave like a coin tossed every second?
           </p>
         </section>
 
@@ -90,6 +99,13 @@ export function Lesson({ sql }: { sql: string }) {
             ball to the moment it loses it. Basketball&apos;s possessions are that largest unit. In football the lesson builds it:
             a run is a stretch of consecutive phases of one period with the same team in possession, from the first frame of its
             first phase to the last frame of its last.
+          </p>
+          <p>
+            A basketball possession has two durations, one per clock. On the video it runs from its first frame to its last. On
+            the game clock it is the clock at its start minus the clock at its end, since that clock counts down:{" "}
+            <Quote id="skillcorner-gameclock" /> (<Cite id="skillcorner-gameclock" />
+            ). The video&apos;s duration counts every second the clock stands still inside the possession; the game clock&apos;s
+            counts none. The lesson measures both. Football has the video&apos;s only.
           </p>
           <p>
             A run&apos;s duration <M>{sub("d", <mi>i</mi>)}</M> varies from one to the next, so the lesson treats the durations
@@ -167,8 +183,11 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             Basketball match {p("basketball.timeline.match_id")} has {bb("n")} possessions over {bb("periods")} periods, with a
             median of {bb("median")}&nbsp;s and a ninetieth percentile of {bb("p90")}&nbsp;s, {bb("ratio")} times the median.{" "}
-            {bb("beyond2_pct")}&nbsp;% outlast twice the median and {bb("beyond4_pct")}&nbsp;% four times: in this match the curve
-            and the exponential nearly meet. In the football match the curve sits above the exponential in its tail.
+            {bb("beyond2_pct")}&nbsp;% outlast twice the median and {bb("beyond4_pct")}&nbsp;% four times: on the video&apos;s time
+            the curve and the exponential nearly meet. On the game clock the same possessions have a median of{" "}
+            {bbRow("clock_median_s")}&nbsp;s and a ninetieth percentile of {bbRow("clock_p90_s")}&nbsp;s,{" "}
+            {bbRow("clock_p90_over_median")} times the median, far short of the exponential&apos;s {l("exp_ratio")}: the near
+            meeting is the video&apos;s. In the football match the curve sits above the exponential in its tail.
           </p>
         </section>
 
@@ -188,15 +207,26 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             In basketball, {l("bb_n_lo")} to {l("bb_n_hi")} possessions per match, {l("bb_possessions")} in all, last a median of{" "}
             {l("bb_med_lo")} to {l("bb_med_hi")}&nbsp;s, with the ninetieth percentile at {l("bb_p90_lo")} to {l("bb_p90_hi")}
-            &nbsp;s.
+            &nbsp;s. On the game clock the median is {l("bb_clk_med_lo")} to {l("bb_clk_med_hi")}&nbsp;s and the ninetieth
+            percentile {l("bb_clk_p90_lo")} to {l("bb_clk_p90_hi")}&nbsp;s.
           </p>
           <p>
             The ninetieth percentile over the median is {l("fb_ratio_lo")} to {l("fb_ratio_hi")} in football and{" "}
             {l("bb_ratio_lo")} to {l("bb_ratio_hi")} in basketball, against the exponential&apos;s {l("exp_ratio")}. It is above
             the exponential&apos;s in {l("fb_above")} of the {l("fb_matches")} football matches and in {l("bb_above")} of the{" "}
-            {l("bb_matches")} basketball ones. The lesson stops at the comparison. A longer tail says the chance of the ball
-            changing hands is not the same in every second of every spell; it does not say why, and ten matches of each sport,
-            measured on the video&apos;s time, are not where to say it.
+            {l("bb_matches")} basketball ones.
+          </p>
+          <p>
+            On the game clock basketball&apos;s answer turns over. Its ratio is {l("bb_clk_ratio_lo")} to {l("bb_clk_ratio_hi")},
+            above the exponential&apos;s in {p("basketball.clock_above_exp")} of the {l("bb_matches")} matches: on the clock few
+            possessions run far past their median, fewer than a constant chance per second would give. While it runs, the game
+            clock keeps close to the video&apos;s time, as the <a href="/learn/clock">sixth lesson</a> measures, so the two part
+            where the clock stands still. The video counts those stoppages, and they make its long tail.
+          </p>
+          <p>
+            The lesson stops at the comparison. A tail longer or shorter than the exponential&apos;s says the chance of the ball
+            changing hands is not the same in every second of every spell; it does not say why, and ten matches of each sport
+            are not where to say it.
           </p>
         </section>
 
@@ -204,7 +234,8 @@ export function Lesson({ sql }: { sql: string }) {
           <h2 id="matters-h">Why it matters</h2>
           <p>
             The unit decides the figure. In football a phase, a run and one player&apos;s touch are all possession, and each
-            gives its own median; a figure for possession that does not name its unit cannot be compared with another.
+            gives its own median; a figure for possession that does not name its unit cannot be compared with another. So does
+            the clock: the same basketball possessions have a long tail on the video and a short one on the game clock.
           </p>
           <p>
             And a median is not a distribution. The exponential of the reference has the same median as the data by
@@ -216,15 +247,19 @@ export function Lesson({ sql }: { sql: string }) {
         <Limitations>
           <ul>
             <li>
-              Every time is the video&apos;s, from a unit&apos;s first frame to its last. A stoppage inside a spell counts, and in
-              football so does the dead ball between two phases of one run. The game clock, which the{" "}
-              <a href="/learn/clock">sixth lesson</a> reads, would give other figures.
+              Football&apos;s times are the video&apos;s, from a unit&apos;s first frame to its last: no field of its files says
+              when the clock stops, so a stoppage inside a run counts, and so does the dead ball between two of its phases. Basketball&apos;s are
+              measured on both clocks, and the figure&apos;s curves are the video&apos;s only.
             </li>
             <li>
               The phases, their frames and the team in possession of each are the provider&apos;s; so are the basketball
               possessions. The lesson joins phases into runs and adds nothing else.
             </li>
             <li>A phase with no team in possession ends the run before it and starts none.</li>
+            <li>
+              The game clock&apos;s figures leave out the basketball possessions without a clock at one end:{" "}
+              {l("bb_clk_missing")} of the {l("bb_possessions")}.
+            </li>
             <li>Football uses ten public matches, the ones in the tables; this lesson never reads the others.</li>
             <li>
               The exponential is a reference fitted by its median alone. The lesson fits no model, tests none and says nothing of
@@ -271,7 +306,9 @@ export function Lesson({ sql }: { sql: string }) {
             The first returns {fbRow("phases")} phases and {fbRow("runs")} runs, a median of {fbRow("run_median_s")}&nbsp;s, a
             ninetieth percentile of {fbRow("run_p90_s")}&nbsp;s and {fbRow("multi_phase_pct")}&nbsp;% of runs over more than one
             phase; the second, {bbRow("possessions")} possessions, a median of {bbRow("median_s")}&nbsp;s and a ninetieth
-            percentile of {bbRow("p90_s")}&nbsp;s: those matches&apos; rows in the tables above. The same queries, with only the
+            percentile of {bbRow("p90_s")}&nbsp;s on the video, then {bbRow("clock_possessions")} with a game clock at both
+            ends, a median of {bbRow("clock_median_s")}&nbsp;s and a ninetieth percentile of {bbRow("clock_p90_s")}&nbsp;s on
+            it: those matches&apos; rows in the tables above. The same queries, with only the
             ids changed, give every row; they were checked that way with DuckDB <code>{DUCKDB_VERSION}</code>.
           </p>
         </Reproduce>

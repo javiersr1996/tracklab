@@ -502,18 +502,13 @@ def build_payload(con: duckdb.DuckDBPyConnection, candidate: Candidate) -> dict[
     return payload
 
 
-def run_publish_possessions(data_dir: Path, out_dir: Path) -> int:
-    con = duckdb.connect()
-    register_views(con, data_dir)
-
-    bb_candidates, bb_funnel = basketball_candidates(con)
-    fb_candidates, fb_funnel = football_candidates(con)
-
+def _select_all(con: duckdb.DuckDBPyConnection) -> dict[str, list[Candidate]] | None:
+    """The six possessions of each sport, or None (after saying why) if a sport falls short."""
     ok = True
     chosen: dict[str, list[Candidate]] = {}
     for sport, candidates, funnel in (
-        ("basketball", bb_candidates, bb_funnel),
-        ("football", fb_candidates, fb_funnel),
+        ("basketball", *basketball_candidates(con)),
+        ("football", *football_candidates(con)),
     ):
         print(
             f"publish possessions {sport}: {funnel.quality} pass the quality filter, "
@@ -530,17 +525,16 @@ def run_publish_possessions(data_dir: Path, out_dir: Path) -> int:
             )
             ok = False
         chosen[sport] = picked
+    return chosen if ok else None
 
-    if not ok:
-        return 1
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    possessions_dir = out_dir / "possessions"
-    possessions_dir.mkdir(parents=True, exist_ok=True)
-    # A previous selection's files would otherwise ship, and count in stats.json.
-    for stale in possessions_dir.glob("*.json"):
-        stale.unlink()
-
+def _render_all(
+    con: duckdb.DuckDBPyConnection, chosen: dict[str, list[Candidate]]
+) -> tuple[dict[str, str], bool]:
+    """Every file of the publication as text, keyed by its path under the output directory
+    (`possessions/<file>` and `index.json`), and whether each one is under the size cap."""
+    ok = True
+    files: dict[str, str] = {}
     index_entries: list[dict[str, Any]] = []
     total_bytes = 0
     for sport in ("basketball", "football"):
@@ -548,9 +542,8 @@ def run_publish_possessions(data_dir: Path, out_dir: Path) -> int:
             payload = build_payload(con, candidate)
             text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
             filename = safe_filename(candidate.possession_id)
-            path = possessions_dir / filename
-            path.write_text(text, encoding="utf-8", newline="\n")
-            size = path.stat().st_size
+            files[f"possessions/{filename}"] = text
+            size = len(text.encode("utf-8"))
             total_bytes += size
             status = "OK" if size < MAX_BYTES else "FAIL"
             print(f"publish possessions: {filename} {size} bytes ({status} < {MAX_BYTES})")
@@ -572,10 +565,56 @@ def run_publish_possessions(data_dir: Path, out_dir: Path) -> int:
                     "bytes": size,
                 }
             )
-
     index = {"schema_version": SCHEMA_VERSION, "possessions": index_entries}
-    (out_dir / "index.json").write_text(
-        json.dumps(index, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
-    )
+    files["index.json"] = json.dumps(index, ensure_ascii=False, indent=2) + "\n"
     print(f"publish possessions: {len(index_entries)} files, {total_bytes} bytes total")
+    return files, ok
+
+
+def _check_possessions(files: dict[str, str], out_dir: Path) -> int:
+    problems: list[str] = []
+    for name, text in sorted(files.items()):
+        path = out_dir / name
+        if not path.is_file():
+            problems.append(f"{name} is missing")
+        elif path.read_bytes() != text.encode("utf-8"):
+            problems.append(f"{name} differs from what the code writes")
+    wanted = {Path(name).name for name in files if name.startswith("possessions/")}
+    extra = sorted(p.name for p in (out_dir / "possessions").glob("*.json") if p.name not in wanted)
+    if extra:
+        problems.append(f"possessions/ holds files the selection does not name: {extra}")
+    if problems:
+        print(
+            f"publish possessions --check: {len(problems)} problem(s):\n  " + "\n  ".join(problems)
+        )
+        return 1
+    print(f"publish possessions --check: {len(files)} files match what the code writes")
+    return 0
+
+
+def run_publish_possessions(data_dir: Path, out_dir: Path, *, check: bool = False) -> int:
+    con = duckdb.connect()
+    try:
+        register_views(con, data_dir)
+        chosen = _select_all(con)
+        if chosen is None:
+            return 1
+        files, ok = _render_all(con, chosen)
+    except (FileNotFoundError, duckdb.IOException) as error:
+        if not check:
+            raise
+        print(f"publish possessions --check: PARTIAL: silver or bronze not at hand ({error})")
+        return 0
+
+    if check:
+        return _check_possessions(files, out_dir) if ok else 1
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    possessions_dir = out_dir / "possessions"
+    possessions_dir.mkdir(parents=True, exist_ok=True)
+    # A previous selection's files would otherwise ship, and count in stats.json.
+    for stale in possessions_dir.glob("*.json"):
+        stale.unlink()
+    for name, text in files.items():
+        (out_dir / name).write_text(text, encoding="utf-8", newline="\n")
     return 0 if ok else 1

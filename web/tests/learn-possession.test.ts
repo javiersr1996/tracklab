@@ -25,6 +25,7 @@ import { lessonPossessionFigures } from "../lib/learn/possession-figures";
 // - `spells` reading the team's column as the phases: "each timeline gives its match's row"
 //   fails (the share over more than one phase).
 // - A median typed in the text for its `data-fig`: "has no digit typed in the prose" fails.
+// - `bb_clk_ratio_lo` read from the video's ratios: "the game clock's figures" fails (task 162).
 
 const F = lessonPossessionFigures(POSSESSION);
 const html = <P extends object>(c: FunctionComponent<P>, props: P) => renderToStaticMarkup(createElement(c, props));
@@ -68,6 +69,19 @@ describe("the timelines against possession.json", () => {
     expect(e).toHaveLength(bb.possessions);
     expect(Math.abs(quantile(e, 0.5) - bb.median_s)).toBeLessThan(5e-5);
     expect(Math.abs(quantile(e, 0.9) - bb.p90_s)).toBeLessThan(5e-5);
+  });
+
+  it("the game clock's figures: each ratio is its row's, the count above the exponential is the rows'", () => {
+    const bb = POSSESSION.basketball;
+    for (const m of bb.matches) {
+      expect(m.clock_possessions).toBeLessThanOrEqual(m.possessions);
+      expect(m.clock_p90_over_median).toBe(Number((m.clock_p90_s / m.clock_median_s).toFixed(2)));
+    }
+    expect(bb.exp_p90_over_median).toBeCloseTo(expRatio(0.9), 4);
+    expect(bb.clock_above_exp).toBe(bb.matches.filter((m) => m.clock_p90_over_median > expRatio(0.9)).length);
+    const ratios = bb.matches.map((m) => m.clock_p90_over_median);
+    expect([F.bb_clk_ratio_lo, F.bb_clk_ratio_hi]).toEqual([Math.min(...ratios), Math.max(...ratios)]);
+    expect(F.bb_clk_missing).toBe(bb.matches.reduce((s, m) => s + m.possessions - m.clock_possessions, 0));
   });
 
   it("the runs of a period follow one another and alternate teams", () => {

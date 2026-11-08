@@ -6,7 +6,8 @@ import { Fig } from "../Fig";
 // Two tables, one row per match. Football: the provider's phases, the runs of same-team phases,
 // their median and 90th percentile, and the share that spans more than one phase. Basketball: the
 // provider's possessions, their median and 90th percentile. In both, the 90th percentile over the
-// median, computed from the row (`*_ratio` of `lessonPossessionFigures`). Nothing is typed here.
+// median, computed from the row (`*_ratio` of `lessonPossessionFigures`). Basketball also has the
+// same three on the game clock, all three the row's own. Nothing is typed here.
 const fbCell = (m: FootballMatch, field: keyof FootballMatch) => <Fig name={`possession.football.matches.${m.match_id}.${field}`}>{String(m[field])}</Fig>;
 const bbCell = (m: BasketballMatch, field: keyof BasketballMatch) => <Fig name={`possession.basketball.matches.${m.match_id}.${field}`}>{String(m[field])}</Fig>;
 
@@ -62,6 +63,9 @@ export function PerMatch({
               <th scope="col">median (s)</th>
               <th scope="col">90th percentile (s)</th>
               <th scope="col">over the median</th>
+              <th scope="col">game clock: median (s)</th>
+              <th scope="col">game clock: 90th percentile (s)</th>
+              <th scope="col">game clock: over the median</th>
             </tr>
           </thead>
           <tbody>
@@ -74,6 +78,9 @@ export function PerMatch({
                 <td>
                   <Fig name={`learn.bb_ratio.${m.match_id}`}>{String(ratios.bb_ratio[m.match_id])}</Fig>
                 </td>
+                <td>{bbCell(m, "clock_median_s")}</td>
+                <td>{bbCell(m, "clock_p90_s")}</td>
+                <td>{bbCell(m, "clock_p90_over_median")}</td>
               </tr>
             ))}
           </tbody>
@@ -81,8 +88,9 @@ export function PerMatch({
       </div>
       <figcaption>
         A football run is a stretch of consecutive phases of one period with the same team in possession; a basketball possession
-        is the provider&apos;s own. Times are the video&apos;s, from the first frame to the last. The football matches are the ten
-        the lesson may use; the others are not read.
+        is the provider&apos;s own. Times are the video&apos;s, from the first frame to the last, except in the three game-clock
+        columns: the clock at the start minus the clock at the end. The football matches are the ten the lesson may use; the
+        others are not read.
       </figcaption>
     </figure>
   );
