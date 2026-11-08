@@ -3,8 +3,9 @@
 // per shot they give; no shot. Only the server imports this file.
 import expectedJson from "../../public/data/euroleague/expected-points.json";
 
-export const CLASSES = ["rim", "mid", "three"] as const;
-export type ZoneClass = (typeof CLASSES)[number];
+import { CLASSES, type ZoneClass } from "./expected-classes";
+
+export { CLASSES, type ZoneClass };
 
 export interface Tally {
   n: number;

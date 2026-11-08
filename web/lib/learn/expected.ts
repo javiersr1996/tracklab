@@ -1,7 +1,8 @@
 // Lesson 12's arithmetic on counts by zone class (task 117), written again here, apart from the
 // pipeline's: vitest sets it against every row of expected-points.json and against figures worked
 // out by hand.
-import { CLASSES, type Tally, type ZoneClass, type Zones } from "./expected-data";
+import { CLASSES, type ZoneClass } from "./expected-classes";
+import type { Tally, Zones } from "./expected-data";
 
 // A class's points per attempt: its value times the share made, which is its points over its
 // attempts.
