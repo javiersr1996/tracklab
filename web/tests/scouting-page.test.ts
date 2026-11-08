@@ -81,7 +81,14 @@ describe("the URL's state", () => {
 
 describe("the percentile's step", () => {
   it("is the fifth of the pool, with no fill under 20", () => {
-    expect([0, 19.9, 20, 39.9, 40, 59.9, 60, 79.9, 80, 100].map(pctlStep)).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4]);
+    expect([0, 19.4, 20, 39.4, 40, 59.4, 60, 79.4, 80, 100].map(pctlStep)).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4]);
+  });
+
+  it("follows the number printed: 79.6 reads 80 and is filled as 80", () => {
+    for (const p of [19.5, 39.5, 59.5, 79.6, 99.9]) {
+      expect(pctlStep(p)).toBe(pctlStep(Number(formatPctl(p))));
+    }
+    expect(pctlStep(79.6)).toBe(4);
   });
 });
 

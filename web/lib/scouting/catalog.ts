@@ -128,8 +128,12 @@ export function smallPoolNote(n: number): string {
   return `Small pool (${n} players, under ${SMALL_POOL}): one place in the ranking is ${placeStep(n).toFixed(1)} points of percentile.`;
 }
 
-// The cyan step of a percentile cell, by fifth: 0 (under 20) has no fill, 4 is 80 or more.
-export const pctlStep = (p: number) => (p >= 80 ? 4 : p >= 60 ? 3 : p >= 40 ? 2 : p >= 20 ? 1 : 0);
+// The cyan step of a percentile cell, by fifth of the number the page prints (formatPctl), so a 79.6
+// that reads "80" is filled as 80: 0 (under 20) has no fill, 4 is 80 or more.
+export const pctlStep = (p: number) => {
+  const r = Math.round(p);
+  return r >= 80 ? 4 : r >= 60 ? 3 : r >= 40 ? 2 : r >= 20 ? 1 : 0;
+};
 
 // ---- The URL: ?sport&table&group&a&b ------------------------------------------------------------
 
