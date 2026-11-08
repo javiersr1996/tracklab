@@ -41,6 +41,12 @@ export type QueryState = "idle" | "running" | "done" | "error";
 // Rows kept from a result; `rowCount` is the full count.
 export const ROW_LIMIT = 1000;
 
+// What the engine may allocate (P19, task 153). Without it DuckDB-WASM grows toward its 4 GiB
+// address space before it gives up, a tab-sized allocation for one careless query (a list() of a
+// huge range); with the limit the query fails earlier with DuckDB's own "Out of Memory Error" and
+// the engine stays usable. The site's queries read a few MB of Parquet.
+export const MEMORY_LIMIT = "1GB";
+
 export interface QueryResult {
   sql: string;
   columns: string[];
@@ -281,6 +287,7 @@ export function createEngine(spec: EngineSpec): Engine {
     // other URL, no extension, no attach, no copy), and no setting can be changed back.
     await conn.query(`SET allowed_paths = [${files.map((f) => `'${f.file}'`).join(", ")}]`);
     await conn.query("SET enable_external_access = false");
+    await conn.query(`SET memory_limit = '${MEMORY_LIMIT}'`);
     await conn.query("SET lock_configuration = true");
 
     const { engine: engineFiles } = await report();

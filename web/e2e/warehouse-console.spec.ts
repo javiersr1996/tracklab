@@ -359,3 +359,18 @@ for (const width of [320, 390, 1440]) {
     await check("after listing 686 columns");
   });
 }
+
+// P19, task 153: the engine has a memory limit (MEMORY_LIMIT), so a query that wants gigabytes
+// fails early with DuckDB's own message, in MiB (the 4 GiB address space gave "GiB"), and the
+// same engine runs the next query. A long but small query still finishes.
+test("a query that wants gigabytes fails with a readable error and the engine survives", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto("/warehouse");
+  const big = await runSql(page, "SELECT length(list(range)) FROM range(300000000)");
+  expect(big.query).toBe("error");
+  expect(big.error).toMatch(/^Out of Memory Error: .*MiB\/\d+\.\d MiB used/);
+  expect(big.engine).toBe("ready");
+  const sum = await runSql(page, "SELECT sum(range) AS s FROM range(100000000)");
+  expect(sum.query, sum.error).toBe("done");
+  expect((await resultTable(page)).rows).toEqual([["4999999950000000"]]);
+});
