@@ -162,7 +162,7 @@ def fmt(value: object) -> str:
 def write_report_csv(rows: Sequence[Row], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(fh, fieldnames=list(rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({k: "" if v is None else v for k, v in row.items()})
@@ -686,6 +686,7 @@ def freeze_football(
         target.write_text(
             schema.to_json(sport="football", source_id=SOURCE_ID, commit=source.commit),
             encoding="utf-8",
+            newline="\n",
         )
         if table.startswith("aggregates_"):
             row = con.execute(
@@ -703,7 +704,9 @@ def freeze_football(
     write_report_csv(rows, report_path)
     doc_path = docs_dir / DOC_NAME
     doc_path.parent.mkdir(parents=True, exist_ok=True)
-    doc_path.write_text(render_doc(rows, source, schemas, aggregate_rows), encoding="utf-8")
+    doc_path.write_text(
+        render_doc(rows, source, schemas, aggregate_rows), encoding="utf-8", newline="\n"
+    )
 
     uniform, _ = split_uniform(rows)
     log("")

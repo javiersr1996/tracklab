@@ -69,7 +69,9 @@ def report() -> Iterator[dict[str, Any]]:
     figures: dict[str, Any] = {}
     yield figures
     REPORT.parent.mkdir(parents=True, exist_ok=True)
-    REPORT.write_text(json.dumps(figures, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    REPORT.write_text(
+        json.dumps(figures, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+    )
 
 
 def _rows(con: duckdb.DuckDBPyConnection, sql: str) -> list[tuple[Any, ...]]:
