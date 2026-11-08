@@ -12,7 +12,7 @@ const EURO = LESSONS.find((l) => l.slug === "expected-points");
 
 export default function LearnPage() {
   return (
-    <main className="page">
+    <main id="main" className="page">
       <PageHead eyebrow="Learn" aside={<SketchPanel href="/learn" label="A flight of the ball" />}>
         <h1>Learn from the tracking data</h1>
         <p className="lede">

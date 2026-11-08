@@ -81,3 +81,10 @@ export function matchRows(): MatchRow[] {
     a.sport === b.sport ? a.match_id.localeCompare(b.match_id) : a.sport.localeCompare(b.sport),
   );
 }
+
+// The checks the per-match table has a column for and the report has rows of: what the page
+// counts when it says how many checks it shows.
+export function tabulatedChecks(): string[] {
+  const kept = new Set(Object.entries(CHECKS).flatMap(([check, rows]) => (rows.length ? [check] : [])));
+  return [...new Set(TABLE_METRICS.map((m) => m.check))].filter((c) => kept.has(c));
+}

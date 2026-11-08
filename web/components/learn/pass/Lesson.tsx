@@ -1,3 +1,4 @@
+import { DUCKDB_VERSION } from "../../../lib/platform";
 import type { ReactNode } from "react";
 import { figureAt, matchFig } from "../../../lib/learn/json-figure";
 import { PASS, PASS_EXAMPLES } from "../../../lib/learn/pass-data";
@@ -56,7 +57,7 @@ const norm = (inner: ReactNode) => (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-pass">
+    <main id="main" className="page lesson learn-pass">
       <LessonHead
         n={7}
         title="How fast does a pass travel?"
@@ -303,7 +304,7 @@ export function Lesson({ sql }: { sql: string }) {
             {m("chord_speed_p90")}, a median path over chord of {m("path_over_chord")}, the provider&apos;s distance over time at{" "}
             {m("distance_speed_median")}&nbsp;m/s and a median chord over distance of {m("chord_over_distance")}: that match&apos;s
             row in the table above. The same query, with only the id changed, gives every row; it was checked that way with DuckDB{" "}
-            <code>1.5.5</code>.
+            <code>{DUCKDB_VERSION}</code>.
           </p>
         </Reproduce>
 

@@ -92,6 +92,15 @@ jobs:
       - run: uv run tracklab publish examples --check
       # Task 134 (P17): scouting.json is what the published warehouse Parquet give (their sha256 inside).
       - run: uv run tracklab publish scouting --check
+      # Task 164 (P19): the three publications that had no check. Each recomputes from the silver
+      # and bronze this job built (FULL, never PARTIAL) and compares bytes with the versioned
+      # files: possessions/*.json and index.json, stats.json (its row counts and byte totals) and
+      # quality.json with docs/bulletin.md. `publish history --check` has no step here on purpose:
+      # it compares the build records under data/build with history.json, and a runner holds only
+      # its own record, which history.json cannot contain; it is a check of the local machine.
+      - run: uv run tracklab publish possessions --check
+      - run: uv run tracklab publish stats --check
+      - run: uv run tracklab publish quality --check
       # Task 54: P5's reports and runs.json recomputed from the whole warehouse this job built
       # (FULL 20/20 and 10/10, never PARTIAL) and compared byte for byte with the versioned
       # ones: what the code writes on Linux is what Windows wrote. Nothing here writes a report.

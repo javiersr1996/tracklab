@@ -534,7 +534,9 @@ def write_bulletin(docs_dir: Path, summary: dict[str, Any], hook: dict[str, Any]
     return path
 
 
-def run_publish_quality(data_dir: Path, reports_dir: Path, out_dir: Path, docs_dir: Path) -> int:
+def run_publish_quality(
+    data_dir: Path, reports_dir: Path, out_dir: Path, docs_dir: Path, *, check: bool = False
+) -> int:
     missing = [c for c in sorted(CHECKS) if not report_path(reports_dir, c).is_file()]
     if missing:
         print(
@@ -545,15 +547,36 @@ def run_publish_quality(data_dir: Path, reports_dir: Path, out_dir: Path, docs_d
 
     checks = quality_rows(reports_dir)
     summary = build_summary(reports_dir)
-    hook = build_hook(data_dir)
+    try:
+        hook = build_hook(data_dir)
+    except (FileNotFoundError, duckdb.IOException) as error:
+        if not check:
+            raise
+        print(f"publish quality --check: PARTIAL: bronze or silver not at hand ({error})")
+        return 0
     payload = {"schema_version": 1, "checks": checks, "summary": summary, "hook": hook}
+    text = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    bulletin_text = render_bulletin(summary, hook)
+
+    path = quality_path(out_dir)
+    bulletin = bulletin_path(docs_dir)
+    if check:
+        problems = [
+            f"{target} is missing"
+            if not target.is_file()
+            else f"{target} differs from what the code writes"
+            for target, wanted in ((path, text), (bulletin, bulletin_text))
+            if not target.is_file() or target.read_bytes() != wanted.encode("utf-8")
+        ]
+        if problems:
+            print("publish quality --check: " + "; ".join(problems))
+            return 1
+        print(f"publish quality --check: {path} and {bulletin} match what the code writes")
+        return 0
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = quality_path(out_dir)
-    path.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
-    )
-    bulletin = write_bulletin(docs_dir, summary, hook)
+    path.write_text(text, encoding="utf-8", newline="\n")
+    write_bulletin(docs_dir, summary, hook)
 
     n_rows = sum(len(v) for v in checks.values())
     print(f"publish quality: {n_rows} rows across {len(checks)} checks, {path}")

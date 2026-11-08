@@ -469,6 +469,6 @@ test("with reduced motion the head panel's bars are at their final width at the 
     const pctl = probe.values![b.metric][1]!;
     expect(b.animation, `${b.metric} animation`).toBe("none");
     expect(Math.abs(b.ratio * 100 - pctl), `${b.metric}: bar ${(b.ratio * 100).toFixed(2)} %, JSON ${pctl}`).toBeLessThan(0.5);
-    expect(b.text, `${b.metric} figure`).toBe(pctl.toFixed(1));
+    expect(b.text, `${b.metric} figure`).toBe(String(Math.round(pctl)));
   }
 });

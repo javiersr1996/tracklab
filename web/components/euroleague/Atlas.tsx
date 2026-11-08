@@ -3,6 +3,8 @@
 import { type CSSProperties, type KeyboardEvent, type PointerEvent, useState } from "react";
 import {
   CUTS,
+  fade,
+  FULL_FADE_N,
   cellAt,
   courtPaths,
   CURRENT_SEASON,
@@ -290,7 +292,7 @@ export function Atlas({
                         data-tone={toneOf(c.diff, mode)}
                         data-q={c.q}
                         data-r={c.r}
-                        style={{ "--i": Math.round(Math.hypot(x, y) / 50) } as CSSProperties}
+                        style={{ "--i": Math.round(Math.hypot(x, y) / 50), "--fade": fade(c.n, league.hex.k) } as CSSProperties}
                       />
                     );
                   })}
@@ -324,11 +326,11 @@ export function Atlas({
                   </span>
                   {mode === "fg" ? (
                     <span data-readout-diff>
-                      {signedPp(cell.diff)} against the league&apos;s {leagueCellPct(cell)} here
+                      {signedPp(cell.diff)} (±{(cell.se * 100).toFixed(1)} pp) against the league&apos;s {leagueCellPct(cell)} here
                     </span>
                   ) : (
                     <span data-readout-diff>
-                      {perShot(cell.pts, cell.n)} points a shot, {signedPts(cell.diff)} against the league&apos;s{" "}
+                      {perShot(cell.pts, cell.n)} points a shot, {signedPts(cell.diff)} (±{cell.se.toFixed(2)}) against the league&apos;s{" "}
                       {average.toFixed(2)}
                     </span>
                   )}
@@ -349,6 +351,12 @@ export function Atlas({
                 {mode === "pps"
                   ? `points a shot against the league's average, ${average.toFixed(2)}:`
                   : "field-goal % against the league's in the same hexagon (pp, percentage points):"}
+              </p>
+              <p>
+                <span className="el-legend-label">Fade</span> a hexagon is drawn paler the fewer shots it has: full colour from {FULL_FADE_N}{" "}
+                shots, palest at {league.hex.k}, a straight ramp between. The readout prints
+                the error (±).
+                {mode === "fg" ? " The league here is the league without the selection's own shots." : ""}
               </p>
               <ul className="el-legend-tones">
                 {TONES.map((t) => (

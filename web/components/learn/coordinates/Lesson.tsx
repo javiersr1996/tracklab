@@ -1,3 +1,4 @@
+import { DUCKDB_VERSION } from "../../../lib/platform";
 import type { ReactNode } from "react";
 import {
   CLOCK_WINDOW_MS,
@@ -83,7 +84,7 @@ export function Lesson({ sql }: { sql: string }) {
   // The highlighted player's jersey, as the possession file has it.
   const jersey = (stem: string, k: number) => pf(stem, `entities.${possession(stem).entities.findIndex((e) => e.i === views[k].highlight)}.jersey`);
   return (
-    <main className="page lesson learn-coordinates">
+    <main id="main" className="page lesson learn-coordinates">
       <LessonHead
         n={3}
         title="Can a court and a pitch share one table?"
@@ -510,7 +511,7 @@ export function Lesson({ sql }: { sql: string }) {
             result&apos;s metres are that possession&apos;s first frame, every entity to the centimetre. The third gives
             team {pf(FB, "team_in_possession")} the sign {pf(FB, "attack_sign")} in the first period, on a pitch of{" "}
             {pf(FB, "surface.length_m")} by {pf(FB, "surface.width_m")}&nbsp;m. It was checked that way with DuckDB{" "}
-            <code>1.5.5</code>.
+            <code>{DUCKDB_VERSION}</code>.
           </p>
         </Reproduce>
 

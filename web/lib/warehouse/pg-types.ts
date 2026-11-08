@@ -24,5 +24,5 @@ export interface PgSnapshotSummary {
 // (400): a browser logs every other non-2xx response as a console error, and a deployment
 // without a database is a normal state, not a failure.
 export type PgRouteAnswer =
-  | { status: "live"; id: string; columns: string[]; rows: PgCell[][]; ms: number }
+  | { status: "live"; id: string; columns: string[]; rows: PgCell[][]; truncated: boolean; ms: number }
   | { status: "absent" | "timeout" | "unavailable" };

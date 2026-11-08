@@ -111,11 +111,29 @@ export function formatValue(m: ScoutingMetric, value: number): string {
   return value.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 
-// The percentile as the SQL rounds it, one decimal.
-export const formatPctl = (p: number) => p.toFixed(1);
+// The percentile as the page prints it: a whole number. The SQL keeps one decimal (the columns and
+// the data-pctl attributes do), but in a pool of 14 to 47 players one place in the ranking is
+// 2 to 8 points, so a decimal would claim a precision the pool does not have.
+export const formatPctl = (p: number) => String(Math.round(p));
 
-// The cyan step of a percentile cell, by fifth: 0 (under 20) has no fill, 4 is 80 or more.
-export const pctlStep = (p: number) => (p >= 80 ? 4 : p >= 60 ? 3 : p >= 40 ? 2 : p >= 20 ? 1 : 0);
+// Under this many players with a value, a pool is small: the page says so beside its percentiles.
+export const SMALL_POOL = 50;
+
+// What one place in the ranking is worth in a pool of n players: percent_rank steps by 100 / (n - 1).
+export const placeStep = (n: number) => 100 / (n - 1);
+
+export function smallPoolNote(n: number): string {
+  // percent_rank has no step below two players.
+  if (n < 2) return `Small pool (${n} ${n === 1 ? "player" : "players"}, under ${SMALL_POOL}): too few for a ranking.`;
+  return `Small pool (${n} players, under ${SMALL_POOL}): one place in the ranking is ${placeStep(n).toFixed(1)} points of percentile.`;
+}
+
+// The cyan step of a percentile cell, by fifth of the number the page prints (formatPctl), so a 79.6
+// that reads "80" is filled as 80: 0 (under 20) has no fill, 4 is 80 or more.
+export const pctlStep = (p: number) => {
+  const r = Math.round(p);
+  return r >= 80 ? 4 : r >= 60 ? 3 : r >= 40 ? 2 : r >= 20 ? 1 : 0;
+};
 
 // ---- The URL: ?sport&table&group&a&b ------------------------------------------------------------
 

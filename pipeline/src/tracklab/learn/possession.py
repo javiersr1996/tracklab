@@ -12,7 +12,13 @@ the same team in possession; a phase with no team breaks it and is no run. It sp
 runs that span more than one phase.
 
 Basketball: bronze `events_possessions`, one row per possession from `startFrame` to `endFrame` at
-`BASKETBALL_FPS`. Per match: possessions, the median and the 90th percentile (s).
+`BASKETBALL_FPS`. Per match: possessions, the median and the 90th percentile (s). The same
+possessions on the game clock too, `startGameClock - endGameClock` (the clock counts down), for
+those with both values: how many, their median and 90th percentile (s), and the 90th percentile
+over the median at `RATIO_DIGITS`, from the two rounded figures as the lesson computes the video's.
+`clock_above_exp` counts the matches whose clock ratio is above an exponential's, log2 10
+(`exp_p90_over_median`). No field of the football files says when the clock stops (the README
+lists a frame's `timestamp` only), so football has the video's time alone.
 
 The timelines are the runs of one football match and the possessions of one basketball match, in
 order, for the figure.
@@ -26,6 +32,7 @@ checked.
 from __future__ import annotations
 
 import json
+import math
 import re
 from pathlib import Path
 from typing import Any
@@ -47,6 +54,8 @@ FOOTBALL_HZ = 10  # the provider's README: "the frame of the video the data come
 BASKETBALL_FPS = 25  # the provider's dictionary: `startFrame`, "Frame (at 25fps)"
 SECONDS_DIGITS = 4
 PCT_DIGITS = 2
+RATIO_DIGITS = 2  # as the lesson prints the video's ratio
+EXP_P90_OVER_MEDIAN = math.log2(10)  # an exponential's: S(t) = 2^(-t/m) is 0.1 at t = m log2 10
 PHASE_COLUMNS = "index, frame_start, frame_end, period, team_in_possession_id"
 
 
@@ -131,13 +140,52 @@ def read_possessions(bronze: Path, match: int) -> list[tuple[int, int, int, int]
     return [(int(p), int(a), int(b), int(t)) for p, a, b, t in rows]
 
 
-def basketball_figures(possessions: list[tuple[int, int, int, int]]) -> dict[str, Any]:
+def read_clock(bronze: Path, match: int) -> list[float]:
+    """The game clock's seconds of every possession `read_possessions` keeps that has a clock at
+    both ends: its value at the start minus its value at the end, since it counts down."""
+    rows = (
+        duckdb.connect()
+        .execute(
+            "SELECT startGameClock - endGameClock FROM read_parquet(?) "
+            "WHERE startFrame IS NOT NULL AND endFrame IS NOT NULL "
+            "AND startGameClock IS NOT NULL AND endGameClock IS NOT NULL ORDER BY startFrame, id",
+            [(bronze / "events_possessions" / f"{match}.parquet").as_posix()],
+        )
+        .fetchall()
+    )
+    return [float(s) for (s,) in rows]
+
+
+def basketball_figures(
+    possessions: list[tuple[int, int, int, int]], clock: list[float]
+) -> dict[str, Any]:
     seconds = [(b - a) / BASKETBALL_FPS for _, a, b, _ in possessions]
+    clock_median, clock_p90 = _q(clock, 0.5), _q(clock, 0.9)
     return {
         "possessions": len(possessions),
         "median_s": _q(seconds, 0.5),
         "p90_s": _q(seconds, 0.9),
+        "clock_possessions": len(clock),
+        "clock_median_s": clock_median,
+        "clock_p90_s": clock_p90,
+        "clock_p90_over_median": round(clock_p90 / clock_median, RATIO_DIGITS)
+        if clock_median and clock_p90 is not None
+        else None,
     }
+
+
+def basketball_row(bronze: Path, match: int) -> dict[str, Any]:
+    return basketball_figures(read_possessions(bronze, match), read_clock(bronze, match))
+
+
+def clock_above_exp(rows: list[dict[str, Any]]) -> int:
+    """How many matches' clock ratio is above the exponential's."""
+    return sum(
+        1
+        for m in rows
+        if m["clock_p90_over_median"] is not None
+        and m["clock_p90_over_median"] > EXP_P90_OVER_MEDIAN
+    )
 
 
 def basketball_matches(bronze: Path) -> list[int]:
@@ -165,6 +213,7 @@ def build(data_dir: Path) -> dict[str, Any]:
     fb_teams = _teams([t for *_, t, _ in runs])
     poss = read_possessions(bb, bb_example)
     bb_teams = _teams([t for *_, t in poss])
+    bb_rows = [{"match_id": f"bb:{m}", **basketball_row(bb, m)} for m in bb_matches]
     return {
         "schema_version": 1,
         "football_hz": FOOTBALL_HZ,
@@ -184,10 +233,9 @@ def build(data_dir: Path) -> dict[str, Any]:
             },
         },
         "basketball": {
-            "matches": [
-                {"match_id": f"bb:{m}", **basketball_figures(read_possessions(bb, m))}
-                for m in bb_matches
-            ],
+            "matches": bb_rows,
+            "exp_p90_over_median": round(EXP_P90_OVER_MEDIAN, SECONDS_DIGITS),
+            "clock_above_exp": clock_above_exp(bb_rows),
             "timeline": {
                 "match_id": f"bb:{bb_example}",
                 "teams": bb_teams,
@@ -216,8 +264,15 @@ def render(payload: dict[str, Any]) -> str:
 # The public SQL, run on the raw files.
 
 FOOTBALL_FIELDS = ("phases", "runs", "run_median_s", "run_p90_s", "multi_phase_pct")
-BASKETBALL_FIELDS = ("possessions", "median_s", "p90_s")
-COUNTS = {"phases", "runs", "possessions"}
+BASKETBALL_FIELDS = (
+    "possessions",
+    "median_s",
+    "p90_s",
+    "clock_possessions",
+    "clock_median_s",
+    "clock_p90_s",
+)
+COUNTS = {"phases", "runs", "possessions", "clock_possessions"}
 
 
 def read_sql() -> tuple[str, str]:
@@ -301,7 +356,7 @@ def run_learn_possession(data_dir: Path, out: Path, *, check: bool = False) -> i
             print(football_figures(read_phases(fb, m)))
         for m in basketball_matches(bb) if have["basketball"] else []:
             print(f"learn possession bb:{m} (bronze slice, not compared): ", end="")
-            print(basketball_figures(read_possessions(bb, m)))
+            print(basketball_row(bb, m))
         n = len(have["football"]) + len(have["basketball"])
         done.append(f"the code ran on the bronze of {n} match(es) not compared")
 
@@ -360,12 +415,20 @@ def _shape_problems(payload: dict[str, Any]) -> str:
     """What the file must hold whatever data is at hand."""
     want = {
         "football": {"match_id", *FOOTBALL_FIELDS},
-        "basketball": {"match_id", *BASKETBALL_FIELDS},
+        "basketball": {"match_id", *BASKETBALL_FIELDS, "clock_p90_over_median"},
     }
     for sport, fields in want.items():
         for m in payload[sport]["matches"]:
             if set(m) != fields:
                 return f"{m.get('match_id')}: fields {sorted(set(m) ^ fields)}"
+    bb = payload["basketball"]
+    for m in bb["matches"]:
+        has_ratio = m["clock_median_s"] and m["clock_p90_s"] is not None
+        ratio = round(m["clock_p90_s"] / m["clock_median_s"], RATIO_DIGITS) if has_ratio else None
+        if m["clock_p90_over_median"] != ratio:
+            return f"{m['match_id']}: the clock's ratio is not its p90 over its median"
+    if bb["clock_above_exp"] != clock_above_exp(bb["matches"]):
+        return "clock_above_exp does not count the rows' clock ratios above the exponential's"
     tl = payload["football"]["timeline"]
     row = {m["match_id"]: m for m in payload["football"]["matches"]}.get(tl["match_id"])
     if row is None or len(tl["rows"]) != row["runs"]:

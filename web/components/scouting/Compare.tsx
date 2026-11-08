@@ -8,6 +8,8 @@ import {
   keyText,
   sampleNoun,
   scaleText,
+  SMALL_POOL,
+  smallPoolNote,
   TABLE_LABEL,
 } from "../../lib/scouting/catalog";
 
@@ -80,6 +82,11 @@ export function Compare({ players, who, current }: { players: Compared[]; who: W
                   </>
                 )}
               </p>
+              {[ta, tb].some((x) => !x.below && x.pool && x.pool.players < SMALL_POOL) ? (
+                <p className="scout-pools" data-small-pool>
+                  {smallPoolNote(Math.min(...[ta, tb].flatMap((x) => (!x.below && x.pool ? [x.pool.players] : []))))}
+                </p>
+              ) : null}
               <ul className="scout-metrics">
                 {t.metrics.map((m, i) => (
                   <li key={m.id} data-metric={m.id}>

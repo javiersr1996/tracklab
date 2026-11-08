@@ -7,6 +7,7 @@ import {
   CORNER_TOP,
   COURT,
   courtPaths,
+  fade,
   fullAt,
   hexCenter,
   hexPath,
@@ -15,12 +16,15 @@ import {
   leagueAverage,
   leagueDrawn,
   MAX_SCALE,
+  MIN_FADE,
   MIN_SCALE,
   metresFromHoop,
   pct,
   playerDrawn,
   readingOrder,
   seasonLabel,
+  shotSe,
+  pointsSe,
   signedPp,
   signedPts,
   type Team,
@@ -33,6 +37,8 @@ import {
 // aggregates. Mutations checked by hand, each restored byte for byte:
 // - `hexCenter` with `q + r` in place of `q + r / 2`: "inverts it" fails.
 // - `playerDrawn` subtracting the other way (league minus player): "a player's diff" fails.
+// - `teamDrawn` against the whole league (no leave-one-out): "a team's diff" fails.
+// - `fade` returning 1 always, or without the floor: "fades" tests fail.
 // - `toneOf` without the three-decimal grid: "a cut point belongs to the side away from 0" fails.
 
 const DATA = join(process.cwd(), "public", "data", "euroleague");
@@ -127,27 +133,37 @@ describe("against the league", () => {
     expect(rim.diff).toBeCloseTo(cell[4] / cell[2] - avg, 3);
   });
 
-  it("a team's diff is the JSON's, beside the league's % in the same cell", () => {
+  it("a team's diff is its % minus the rest of the league's, not the league's with the team in it", () => {
     const mad = team("MAD").seasons.find((s) => s.season === season.season)!;
     const drawn = teamDrawn(mad.cells, season.cells);
+    let moved = 0;
     for (const [i, c] of mad.cells.entries()) {
       const l = season.cells.find((x) => x[0] === c[0] && x[1] === c[1])!;
-      expect(drawn[i].diff).toBe(c[5]);
-      expect(drawn[i].league).toBe(l[3] / l[2]);
-      // The pipeline's diff is the same subtraction, to three decimals.
-      expect(Math.abs(c[3] / c[2] - l[3] / l[2] - c[5])).toBeLessThanOrEqual(0.0005 + 1e-9);
+      const rest = (l[3] - c[3]) / (l[2] - c[2]);
+      expect(drawn[i].league).toBeCloseTo(rest, 12);
+      expect(Math.abs(drawn[i].diff - (c[3] / c[2] - rest))).toBeLessThanOrEqual(0.0005 + 1e-9);
+      if (drawn[i].diff !== c[5]) moved += 1;
     }
+    // The JSON's diff still compares with the whole league, as the pipeline wrote it.
+    expect(moved).toBeGreaterThan(0);
   });
 
-  it("a player's diff: his % minus the league's in the same cell, every cell kept", () => {
+  it("when nothing is left of the league's cell, the whole league's % stands", () => {
+    const [d] = teamDrawn([[0, 0, 10, 5, 10, 0.1]], [[0, 0, 10, 4, 8]]);
+    expect(d.league).toBeCloseTo(0.4);
+    expect(d.diff).toBe(0.1);
+  });
+
+  it("a player's diff: his % minus the rest of the league's in the same cell, every cell kept", () => {
     const mad = team("MAD").seasons.find((s) => s.season === season.season)!;
     const p = mad.players[0];
     const drawn = playerDrawn(p.cells, season.cells);
     expect(drawn).toHaveLength(p.cells.length);
     const c = p.cells[0];
     const l = season.cells.find((x) => x[0] === c[0] && x[1] === c[1])!;
-    expect(drawn[0].diff).toBeCloseTo(c[3] / c[2] - l[3] / l[2], 3);
-    expect(Math.sign(drawn[0].diff)).toBe(Math.sign(c[3] / c[2] - l[3] / l[2]));
+    const rest = (l[3] - c[3]) / (l[2] - c[2]);
+    expect(drawn[0].diff).toBeCloseTo(c[3] / c[2] - rest, 3);
+    expect(Math.sign(drawn[0].diff)).toBe(Math.sign(c[3] / c[2] - rest));
   });
 
   it("a cut point belongs to the side away from 0", () => {
@@ -179,5 +195,49 @@ describe("the printed figures", () => {
     expect(metresFromHoop(0, 0, 100)).toBe("0.0");
     // (-2, 4) sits straight up the middle, 4 rows of 1.5 m.
     expect(metresFromHoop(-2, 4, 100)).toBe("6.0");
+  });
+});
+
+describe("how sure a hexagon's colour is", () => {
+  it("the error of a % shrinks with the shots and is never 0", () => {
+    expect(shotSe(0, 5)).toBeGreaterThan(0);
+    expect(shotSe(5, 5)).toBeGreaterThan(0);
+    expect(shotSe(50, 100)).toBeCloseTo(Math.sqrt((51 / 102) * (51 / 102) / 102), 12);
+    expect(shotSe(5, 10)).toBeGreaterThan(shotSe(50, 100));
+    // Points a shot: a make is worth pts/made.
+    expect(pointsSe(10, 30, 20)).toBeCloseTo(3 * shotSe(10, 20), 12);
+    expect(pointsSe(0, 0, 20)).toBeCloseTo(2 * shotSe(0, 20), 12);
+  });
+
+  it("fades with the shots: the floor at k, full from 10, a ramp between", () => {
+    expect(fade(5, 5)).toBe(MIN_FADE);
+    expect(fade(3, 5)).toBe(MIN_FADE);
+    expect(fade(10, 5)).toBe(1);
+    expect(fade(400, 5)).toBe(1);
+    expect(fade(7.5, 5)).toBeCloseTo((MIN_FADE + 1) / 2);
+    expect(fade(8, 5)).toBeGreaterThan(fade(7, 5));
+    expect(fade(9, 5)).toBeLessThan(1);
+  });
+
+  it("the files' cells fade exactly when they have fewer than 10 shots", () => {
+    let faded = 0;
+    let full = 0;
+    for (const code of readdirSync(join(DATA, "teams")).map((f) => f.replace(".json", ""))) {
+      for (const s of team(code).seasons) {
+        const lg = league.seasons.find((x) => x.season === s.season)!;
+        for (const c of teamDrawn(s.cells, lg.cells)) {
+          const f = fade(c.n, league.hex.k);
+          if (c.n < 10) {
+            expect(f).toBeLessThan(1);
+            faded += 1;
+          } else {
+            expect(f).toBe(1);
+            full += 1;
+          }
+        }
+      }
+    }
+    expect(faded).toBeGreaterThan(0);
+    expect(full).toBeGreaterThan(0);
   });
 });

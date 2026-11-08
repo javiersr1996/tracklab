@@ -22,7 +22,7 @@ const TABLES: Record<string, string> = {
 
 export default function SqlPage() {
   return (
-    <main className="page sql-index">
+    <main id="main" className="page sql-index">
       <PageHead eyebrow="Learn SQL" aside={<SketchPanel href="/sql" label="A query, typed" />}>
         <h1>Learn SQL on the warehouse</h1>
         <p className="lede">

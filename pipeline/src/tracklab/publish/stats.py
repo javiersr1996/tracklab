@@ -48,11 +48,25 @@ def stats_path(out_dir: Path) -> Path:
     return out_dir / "stats.json"
 
 
+def _render(payload: dict[str, Any]) -> str:
+    return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+
+
 def run_publish_stats(
-    data_dir: Path, out_dir: Path, manifest_path: Path = Path("manifest/sources.json")
+    data_dir: Path,
+    out_dir: Path,
+    manifest_path: Path = Path("manifest/sources.json"),
+    *,
+    check: bool = False,
 ) -> int:
     present = silver_tables(data_dir)
     if not present:
+        if check:
+            print(
+                f"publish stats --check: PARTIAL: no silver table under {silver_dir(data_dir)}, "
+                "nothing to count"
+            )
+            return 0
         print(f"publish stats: no silver table under {silver_dir(data_dir)}; run dbt build first")
         return 1
 
@@ -78,12 +92,21 @@ def run_publish_stats(
             "published": published_bytes(out_dir),
         },
     }
+    text = _render(payload)
+
+    path = stats_path(out_dir)
+    if check:
+        if not path.is_file():
+            print(f"publish stats --check: {path} is missing")
+            return 1
+        if path.read_bytes() != text.encode("utf-8"):
+            print(f"publish stats --check: {path} differs from what the code writes")
+            return 1
+        print(f"publish stats --check: {path} matches ({len(tables)} rows, {len(present)} tables)")
+        return 0
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = stats_path(out_dir)
-    path.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
-    )
+    path.write_text(text, encoding="utf-8", newline="\n")
     print(f"publish stats: {len(tables)} rows across {len(present)} tables, {path}")
     print(f"publish stats: {path} ({path.stat().st_size} bytes)")
     return 0

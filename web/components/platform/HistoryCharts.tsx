@@ -1,3 +1,4 @@
+import { GANTT_SCALE } from "../../lib/figure-scale";
 import {
   ageUnit,
   runLabel,
@@ -56,7 +57,7 @@ export function StepStrips({ series, id }: { series: Series; id: string }) {
       role="region"
       aria-label={`Seconds of each step in the ${series.runs.length} runs of this selection, scrollable`}
     >
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img"
+      <svg width={width * GANTT_SCALE} height={height * GANTT_SCALE} viewBox={`0 0 ${width} ${height}`} role="img"
         aria-label={`Seconds of each of ${series.steps.length} steps in each of ${series.runs.length} runs, on a logarithmic axis, with the median and threshold of the earlier runs of the same mode`}>
         {ticks.map((t) => (
           <g key={t}>
@@ -224,7 +225,7 @@ export function QualityTimeline({ entries }: { entries: HistoryEntry[] }) {
   const w = (n: number) => (n / max) * Q_BAR_W;
   return (
     <div className="gantt-scroll history-scroll" data-quality tabIndex={0} role="region" aria-label="dbt tests and contract tests of every run, scrollable">
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img"
+      <svg width={width * GANTT_SCALE} height={height * GANTT_SCALE} viewBox={`0 0 ${width} ${height}`} role="img"
         aria-label={`dbt tests and contract tests of each of the ${entries.length} build records, oldest first`}>
         {[["run", 0], ["selection", Q_RUN_W], ["dbt tests", x0], ["contract tests", x0 + Q_BAR_W + Q_BAR_LABEL_W]].map(([h, hx]) => (
           <text key={h} className="gantt-tick" x={hx} y={16}>
@@ -334,7 +335,7 @@ export function FreshnessStrip({ rows }: { rows: FreshnessRow[] }) {
   const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step);
   return (
     <div className="gantt-scroll history-scroll" data-freshness tabIndex={0} role="region" aria-label="Age at publish of silver, gold and the run, scrollable">
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img"
+      <svg width={width * GANTT_SCALE} height={height * GANTT_SCALE} viewBox={`0 0 ${width} ${height}`} role="img"
         aria-label={`Age, in ${unit}, of each silver partition, gold table and the run when platform.json was published`}>
         {ticks.map((t) => (
           <g key={t}>

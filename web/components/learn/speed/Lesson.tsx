@@ -1,3 +1,4 @@
+import { DUCKDB_VERSION } from "../../../lib/platform";
 import type { ReactNode } from "react";
 import { qualityFigure } from "../../../lib/learn/gravity-data";
 import { SPEED, SPEED_EXAMPLE, speedFig, speedFigure } from "../../../lib/learn/speed-data";
@@ -73,7 +74,7 @@ const xn = (shift: ReactNode) => (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-speed">
+    <main id="main" className="page lesson learn-speed">
       <LessonHead
         n={2}
         title="Where does the provider's speed come from?"
@@ -558,7 +559,7 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             It returns {m(REPRO, "triples")} triples, a correlation of {m(REPRO, "r")} and a median gap of{" "}
             {m(REPRO, "median_gap")}&nbsp;m/s, that match&apos;s row in the table above. The same query, with only the id
-            changed, gives the first three figures of every row; it was checked that way with DuckDB <code>1.5.5</code>.
+            changed, gives the first three figures of every row; it was checked that way with DuckDB <code>{DUCKDB_VERSION}</code>.
           </p>
         </Reproduce>
 

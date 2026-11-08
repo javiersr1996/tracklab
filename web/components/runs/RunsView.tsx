@@ -110,6 +110,29 @@ function Status({ runs }: { runs: Runs }) {
   );
 }
 
+// Under the status: the title is the protocol's, fixed before any outcome (decision 7 of P5), not
+// a finding. When M2 passed and M3 ruled every subtype out, it says so with M2's figures.
+function TitleNote({ runs }: { runs: Runs }) {
+  const i = "stages.M2.figures.instrument";
+  const m2 = runs.stages.M2.state === "passed" && "instrument" in runs.stages.M2.figures;
+  const m3 = runs.stages.M3.state === "all_subtypes_leave";
+  return (
+    <p data-title-note>
+      The title was set before any outcome; it is not a finding.
+      {m2 && m3 ? (
+        <>
+          {" "}
+          Against its placebo, all runs together, the marker (the nearest opponent) shifts{" "}
+          <F runs={runs} p={`${i}.mean_m`} /> m along the run, the same sign in{" "}
+          <F runs={runs} p={`${i}.same_sign_matches`} /> of <F runs={runs} p={`${i}.of_matches`} />{" "}
+          matches: M2 passed. What failed is telling that shift from the runner&apos;s own
+          acceleration: at M3 every subtype left.
+        </>
+      ) : null}
+    </p>
+  );
+}
+
 function Stages({ runs }: { runs: Runs }) {
   return (
     <section data-section="stages">
@@ -702,6 +725,7 @@ export function RunsView({ runs }: { runs: Runs }) {
       <PageHead eyebrow="Off-ball runs">
         <h1>The run that moves nobody</h1>
         <Status runs={runs} />
+        <TitleNote runs={runs} />
       </PageHead>
       <Band dark>
         <RunsHook runs={runs} />

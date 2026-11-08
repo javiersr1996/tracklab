@@ -14,7 +14,7 @@ type Cell = string | number | boolean | null;
 const QUALITY = read("quality.json") as { hook: { g_data: number; g_real: number } };
 const POSSESSION = read("learn", "possession.json") as {
   football: { matches: { run_median_s: number }[] };
-  basketball: { matches: { median_s: number }[] };
+  basketball: { matches: { median_s: number; clock_median_s: number }[] };
 };
 const COURSE = read("sql", "course.json") as {
   lessons: { slug: string; example: { sql: string; columns: string[]; rows: Cell[][] } }[];
@@ -28,6 +28,7 @@ const LEARN: Record<string, string[][]> = {
   "/learn/possession": [
     span(POSSESSION.football.matches.map((m) => m.run_median_s)),
     span(POSSESSION.basketball.matches.map((m) => m.median_s)),
+    span(POSSESSION.basketball.matches.map((m) => m.clock_median_s)),
   ],
 };
 

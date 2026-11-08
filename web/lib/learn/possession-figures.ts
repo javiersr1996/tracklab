@@ -1,6 +1,7 @@
 // Every figure the text of lesson 10 computes, rounded as it is printed: the page shows each as
 // `data-fig="learn.<key>"` and the browser puts the same object in `window.__learn`. The inputs
-// are possession.json's per-match rows and its two timelines.
+// are possession.json's per-match rows and its two timelines; basketball's game-clock figures are
+// the rows' own, read as they are.
 import { shown } from "./expose";
 import { expRatio, expSurvival, quantile, survival } from "./possession";
 import { durations, spells, type PossessionFile, type Timeline } from "./possession-data";
@@ -47,6 +48,9 @@ export function lessonPossessionFigures(file: PossessionFile) {
   const [bbNLo, bbNHi] = range(bb.map((m) => m.possessions));
   const [fbRLo, fbRHi] = range(Object.values(fbRatio));
   const [bbRLo, bbRHi] = range(Object.values(bbRatio));
+  const [clkMedLo, clkMedHi] = range(bb.map((m) => m.clock_median_s));
+  const [clkP90Lo, clkP90Hi] = range(bb.map((m) => m.clock_p90_s));
+  const [clkRLo, clkRHi] = range(bb.map((m) => m.clock_p90_over_median));
   return {
     fb: timelineFigures(file.football.timeline),
     bb: timelineFigures(file.basketball.timeline),
@@ -80,6 +84,15 @@ export function lessonPossessionFigures(file: PossessionFile) {
     bb_ratio_lo: bbRLo,
     bb_ratio_hi: bbRHi,
     bb_above: bb.filter((m) => bbRatio[m.match_id] > exp).length,
+    // The matches in which the two clocks part: the video's ratio above the exponential's, the game clock's below it.
+    bb_opposite: bb.filter((m) => bbRatio[m.match_id] > exp && m.clock_p90_over_median < exp).length,
+    bb_clk_med_lo: clkMedLo,
+    bb_clk_med_hi: clkMedHi,
+    bb_clk_p90_lo: clkP90Lo,
+    bb_clk_p90_hi: clkP90Hi,
+    bb_clk_ratio_lo: clkRLo,
+    bb_clk_ratio_hi: clkRHi,
+    bb_clk_missing: bb.reduce((s, m) => s + m.possessions - m.clock_possessions, 0),
   };
 }
 

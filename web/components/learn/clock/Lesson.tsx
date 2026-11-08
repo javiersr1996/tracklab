@@ -1,3 +1,4 @@
+import { DUCKDB_VERSION } from "../../../lib/platform";
 import type { ReactNode } from "react";
 import { CLOCK, CLOCK_EXAMPLES } from "../../../lib/learn/clock-data";
 import { clockFigures, type ClockFigures } from "../../../lib/learn/clock-figures";
@@ -56,7 +57,7 @@ const sum = (body: ReactNode) => (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-clock">
+    <main id="main" className="page lesson learn-clock">
       <LessonHead
         n={6}
         title="Does the game clock keep the video's time?"
@@ -294,7 +295,7 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             It returns {m("segments")} segments, {m("frames")} frames, {m("held")} held steps and a median slope of{" "}
             {m("slope_median")}, between {m("slope_q1")} and {m("slope_q3")}: that match&apos;s row in the table above. The same
-            query, with only the id changed, gives every row; it was checked that way with DuckDB <code>1.5.5</code>.
+            query, with only the id changed, gives every row; it was checked that way with DuckDB <code>{DUCKDB_VERSION}</code>.
           </p>
         </Reproduce>
 

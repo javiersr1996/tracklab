@@ -1,3 +1,4 @@
+import { DUCKDB_VERSION } from "../../../lib/platform";
 import type { ReactNode } from "react";
 import { DRIBBLE, TOUCH } from "../../../lib/learn/dribble-data";
 import { lessonDribbleFigures, type DribbleLessonFigures } from "../../../lib/learn/dribble-figures";
@@ -40,7 +41,7 @@ const frac = (num: ReactNode, den: ReactNode) => (
 
 export function Lesson({ sql }: { sql: string }) {
   return (
-    <main className="page lesson learn-dribble">
+    <main id="main" className="page lesson learn-dribble">
       <LessonHead
         n={9}
         title="How many bounces per second?"
@@ -309,7 +310,7 @@ export function Lesson({ sql }: { sql: string }) {
             {m("offset_abs_median")}, {m("near_pct")}&nbsp;% near the event and {m("edge_pct")}&nbsp;% at the edge; a median lowest
             height of {m("low_z_median")}&nbsp;m; and {m("shared_low")} of {m("pairs")} pairs on one low point: that match&apos;s
             row in the table above. The same query, with only the id changed, gives every row; it was checked that way with DuckDB{" "}
-            <code>1.5.5</code>.
+            <code>{DUCKDB_VERSION}</code>.
           </p>
         </Reproduce>
 

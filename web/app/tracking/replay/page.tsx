@@ -77,7 +77,7 @@ function Picker() {
 
 export default function ReplayPage() {
   return (
-    <main className="page">
+    <main id="main" className="page">
       <PageHead eyebrow="One renderer">
         <h1>Replay any possession</h1>
       </PageHead>

@@ -226,6 +226,18 @@ export function toneOf(diff: number, mode: Mode): Tone {
   return "lo";
 }
 
+// How much of the colour a cell keeps. A cell with FULL_FADE_N shots or more keeps all of it; one
+// with only the fewest the files publish (`k`) keeps MIN_FADE (the 65% keeps the second tone at 3:1
+// on the canvas); in between it is a straight ramp on the shots.
+export const MIN_FADE = 0.65;
+export const FULL_FADE_N = 10;
+
+export function fade(n: number, k: number): number {
+  if (n >= FULL_FADE_N) return 1;
+  if (n <= k) return MIN_FADE;
+  return MIN_FADE + ((1 - MIN_FADE) * (n - k)) / (FULL_FADE_N - k);
+}
+
 // --- What a selection draws ---
 
 export interface Drawn {
@@ -236,11 +248,27 @@ export interface Drawn {
   pts: number;
   // fg: this cell's % minus the league's in it; pps: points per shot minus the league average.
   diff: number;
-  // fg only: the league's % in the same cell.
+  // fg only: the league's % in the same cell, without the team's or the player's own shots.
   league?: number;
+  // The standard error of the cell's own value: of its field-goal % (fg) or of its points a shot (pps).
+  se: number;
 }
 
 const r3 = (v: number) => Math.round(v * 1000) / 1000 || 0;
+
+// The standard error of a cell's field-goal % (a fraction), from a proportion nudged by one made
+// and one missed shot (the "plus-two" rule), so a cell that made all or none of its shots does not
+// claim an error of 0.
+export function shotSe(made: number, n: number): number {
+  const p = (made + 1) / (n + 2);
+  return Math.sqrt((p * (1 - p)) / (n + 2));
+}
+
+// The standard error of a cell's points a shot: every make in a cell is worth the same, pts/made,
+// so the points a shot are that value times a make-or-miss with the field-goal % above.
+export function pointsSe(made: number, pts: number, n: number): number {
+  return (made === 0 ? 2 : pts / made) * shotSe(made, n);
+}
 
 // The league's average points per shot over the cells it shows.
 export function leagueAverage(cells: readonly Cell[]): number {
@@ -251,30 +279,56 @@ export function leagueAverage(cells: readonly Cell[]): number {
 
 export function leagueDrawn(cells: readonly Cell[]): Drawn[] {
   const avg = leagueAverage(cells);
-  return cells.map(([q, r, n, made, pts]) => ({ q, r, n, made, pts, diff: r3(pts / n - avg) }));
+  return cells.map(([q, r, n, made, pts]) => ({
+    q,
+    r,
+    n,
+    made,
+    pts,
+    diff: r3(pts / n - avg),
+    se: pointsSe(made, pts, n),
+  }));
 }
 
 const key = (q: number, r: number) => `${q},${r}`;
 
-// A team's cells carry their diff; the league's % in each comes from league.json.
+// A team's or a player's cell against the league's in the same hexagon *without their own shots*:
+// the league's cells include them, so against the whole league a team that takes many shots there
+// is compared with itself. The league's % there is what is left once their made and shots are taken
+// out. If nothing is left (it does not happen in the files), the whole league's % stands.
+function againstRest(l: Cell | undefined, made: number, n: number): number | undefined {
+  if (!l) return undefined;
+  return l[2] > n ? (l[3] - made) / (l[2] - n) : l[3] / l[2];
+}
+
+// A team's cells carry a diff against the whole league (league.json's cells include the team): the
+// one drawn here is the cell's % minus the rest of the league's, to the same three decimals.
 export function teamDrawn(cells: readonly TeamCell[], league: readonly Cell[]): Drawn[] {
   const byKey = new Map(league.map((c) => [key(c[0], c[1]), c]));
   return cells.map(([q, r, n, made, pts, diff]) => {
-    const l = byKey.get(key(q, r));
-    return { q, r, n, made, pts, diff, league: l ? l[3] / l[2] : undefined };
+    const rest = againstRest(byKey.get(key(q, r)), made, n);
+    return {
+      q,
+      r,
+      n,
+      made,
+      pts,
+      diff: rest === undefined ? diff : r3(made / n - rest),
+      league: rest,
+      se: shotSe(made, n),
+    };
   });
 }
 
-// A player's cells carry no diff: it is computed as the pipeline computes a team's, the cell's %
-// minus the league's in the same cell, to three decimals. A player's cell of k shots or more lies
-// in a league cell of k or more, so the league cell is always there.
+// A player's cells carry no diff: it is computed as a team's is here, the cell's % minus the rest of
+// the league's in the same cell, to three decimals. A player's cell of k shots or more lies in a
+// league cell of k or more, so the league cell is always there.
 export function playerDrawn(cells: readonly Cell[], league: readonly Cell[]): Drawn[] {
   const byKey = new Map(league.map((c) => [key(c[0], c[1]), c]));
   return cells.flatMap(([q, r, n, made, pts]) => {
-    const l = byKey.get(key(q, r));
-    if (!l) return [];
-    const lp = l[3] / l[2];
-    return [{ q, r, n, made, pts, diff: r3(made / n - lp), league: lp }];
+    const rest = againstRest(byKey.get(key(q, r)), made, n);
+    if (rest === undefined) return [];
+    return [{ q, r, n, made, pts, diff: r3(made / n - rest), league: rest, se: shotSe(made, n) }];
   });
 }
 

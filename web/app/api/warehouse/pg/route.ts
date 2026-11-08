@@ -13,7 +13,13 @@ export const runtime = "nodejs";
 
 const NO_STORE = { "Cache-Control": "no-store" };
 
-const answer = (body: PgRouteAnswer) => Response.json(body, { headers: NO_STORE });
+// A live answer is fixed by the id (the SQL is the snapshot's, the data changes only when the
+// warehouse is rebuilt), so the CDN keeps it for five minutes and may serve it stale for an hour
+// while it refreshes (P19, task 154). Every other answer is a state that can change at once (the
+// database arriving, a timeout) and is never cached.
+const LIVE = { "Cache-Control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600" };
+
+const answer = (body: PgRouteAnswer) => Response.json(body, { headers: body.status === "live" ? LIVE : NO_STORE });
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;

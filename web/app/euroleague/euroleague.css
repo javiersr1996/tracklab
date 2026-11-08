@@ -157,6 +157,8 @@
 .el-hex {
   transform-box: fill-box;
   transform-origin: center;
+  /* Few shots, a pale hexagon (fade() in lib/euroleague/atlas.ts). */
+  opacity: var(--fade, 1);
 }
 
 .el-tone[data-tone="hi"] {

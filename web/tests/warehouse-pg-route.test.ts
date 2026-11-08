@@ -7,6 +7,7 @@ const connections = vi.hoisted(() => ({
   sent: [] as string[],
   fail: null as Error | null,
   role: "warehouse_reader",
+  rows: [[1]] as unknown[][],
 }));
 vi.mock("pg", () => {
   class Client {
@@ -20,7 +21,7 @@ vi.mock("pg", () => {
       if (connections.fail) throw connections.fail;
       // The header is three statements: pg answers a list of results, the last one is the role.
       if (connections.sent.at(-1)?.startsWith("BEGIN")) return [{}, {}, { rows: [[connections.role]] }];
-      return { fields: [{ name: "x" }], rows: [[1]] };
+      return { fields: [{ name: "x" }], rows: connections.rows };
     }
     async end() {}
   }
@@ -30,7 +31,7 @@ vi.mock("pg", () => {
 import * as route from "../app/api/warehouse/pg/route";
 import { EXAMPLES } from "../lib/warehouse/examples";
 import { exampleIds, sqlOf, summary } from "../lib/warehouse/pg";
-import { STATEMENT_TIMEOUT_MS } from "../lib/warehouse/pg-run";
+import { MAX_ROWS, STATEMENT_TIMEOUT_MS } from "../lib/warehouse/pg-run";
 
 const ask = (query: string) => route.GET(new Request(`http://localhost/api/warehouse/pg${query}`));
 
@@ -39,6 +40,7 @@ beforeEach(() => {
   connections.sent = [];
   connections.fail = null;
   connections.role = "warehouse_reader";
+  connections.rows = [[1]];
   vi.stubEnv("DATABASE_URL", "postgresql://reader@db.invalid/db");
 });
 afterEach(() => {
@@ -75,9 +77,33 @@ describe("an example id", () => {
   it("runs the SQL of warehouse_pg.json and answers live", async () => {
     const res = await ask("?id=profile");
     expect(res.status).toBe(200);
-    expect(res.headers.get("cache-control")).toBe("no-store");
-    expect(await res.json()).toMatchObject({ status: "live", id: "profile", columns: ["x"], rows: [[1]] });
+    expect(await res.json()).toMatchObject({ status: "live", id: "profile", columns: ["x"], rows: [[1]], truncated: false });
     expect(connections.opened).toBe(1);
+  });
+
+  // P19, task 154: a live answer is fixed by the id and cacheable; every state that can change at
+  // once is not.
+  it("caches a live answer at the CDN and nothing else", async () => {
+    const live = await ask("?id=profile");
+    expect(live.headers.get("cache-control")).toMatch(/^public, max-age=0, s-maxage=[0-9]+, stale-while-revalidate=[0-9]+$/);
+
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    connections.fail = new Error("boom");
+    expect((await ask("?id=profile")).headers.get("cache-control")).toBe("no-store");
+    connections.fail = null;
+    vi.stubEnv("DATABASE_URL", "");
+    const absent = await ask("?id=profile");
+    expect(await absent.json()).toEqual({ status: "absent" });
+    expect(absent.headers.get("cache-control")).toBe("no-store");
+    expect((await ask("?id=nope")).headers.get("cache-control")).toBe("no-store");
+  });
+
+  it("hands back at most MAX_ROWS rows and says when it cut", async () => {
+    connections.rows = Array.from({ length: MAX_ROWS + 5 }, (_, i) => [i]);
+    const body = await (await ask("?id=profile")).json();
+    expect(body.rows).toHaveLength(MAX_ROWS);
+    expect(body.truncated).toBe(true);
+    expect(body.rows.at(-1)).toEqual([MAX_ROWS - 1]);
   });
 
   it("runs it inside a read-only transaction with its own statement_timeout", async () => {
