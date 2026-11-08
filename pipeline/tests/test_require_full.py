@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from tracklab import cli
@@ -46,3 +48,32 @@ def test_full_passes_when_full_is_required(monkeypatch: pytest.MonkeyPatch) -> N
     )
     monkeypatch.setenv(cli.REQUIRE_FULL, "1")
     assert cli.main(["learn", "speed", "--check"]) == 0
+
+
+@pytest.mark.parametrize("value", ["", "0", "false", "False", " FALSE "])
+def test_an_empty_zero_or_false_value_is_off(value: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """full-build sets the variable to "" for the pytest step, and "0" or "false" mean the same."""
+    _says("PARTIAL 0/10: raw files not at hand", monkeypatch)
+    monkeypatch.setenv(cli.REQUIRE_FULL, value)
+    assert not cli.require_full()
+    assert cli.main(["learn", "speed", "--check"]) == 0
+
+
+@pytest.mark.parametrize("value", ["1", "true", "yes"])
+def test_any_other_value_is_on(value: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    _says("PARTIAL 0/10: raw files not at hand", monkeypatch)
+    monkeypatch.setenv(cli.REQUIRE_FULL, value)
+    assert cli.require_full()
+    assert cli.main(["learn", "speed", "--check"]) == 1
+
+
+def test_only_require_full_reads_the_variable() -> None:
+    """The Dagster assets and the CLI must agree on what "on" is: one function reads it."""
+    src = Path(cli.__file__).parent
+    readers = [
+        path.relative_to(src).as_posix()
+        for path in sorted(src.rglob("*.py"))
+        if "environ.get(REQUIRE_FULL" in path.read_text(encoding="utf-8")
+        or 'environ.get("TRACKLAB_REQUIRE_FULL"' in path.read_text(encoding="utf-8")
+    ]
+    assert readers == ["cli.py"]

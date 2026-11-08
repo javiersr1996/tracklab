@@ -19,6 +19,7 @@ from typing import Any
 
 import pytest
 
+from tracklab import cli
 from tracklab.publish.platform import (
     freshness,
     guarantees,
@@ -852,7 +853,28 @@ def test_check_does_not_compare_freshness_against_another_runs_record(
     fresh_path.write_text(json.dumps(fresh), encoding="utf-8")
 
     assert run_publish_platform(**{**kwargs, "record_path": fresh_path}, check=True) == 0
-    assert "freshness not compared" in capsys.readouterr().out
+    out = capsys.readouterr().out
+    assert "PARTIAL: freshness not compared" in out
+
+
+def test_check_that_skips_freshness_fails_under_require_full_through_the_cli(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    kwargs = _published(tmp_path)
+    _parquet_at(tmp_path / "gold" / "dim_player" / "data.parquet", T0 + 900)
+    fresh = {**_as_v2(_record()), "started_utc": "2026-09-25T09:00:00+00:00"}
+    fresh_path = kwargs["record_dir"] / "20260925T090000Z_abc1234.json"
+    fresh_path.write_text(json.dumps(fresh), encoding="utf-8")
+    argv = [
+        "publish", "platform", "--check", "--run", str(fresh_path),
+        "--record-dir", str(kwargs["record_dir"]), "--out-dir", str(kwargs["out_dir"]),
+    ]  # fmt: skip
+
+    monkeypatch.delenv("TRACKLAB_REQUIRE_FULL", raising=False)
+    assert cli.main(argv) == 0
+    monkeypatch.setenv("TRACKLAB_REQUIRE_FULL", "1")
+    assert cli.main(argv) == 1
+    assert "PARTIAL" in capsys.readouterr().err
 
 
 # --- guarantees: counted from the dbt manifest, the contract files and the argparse tree -----

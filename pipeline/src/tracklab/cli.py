@@ -1668,6 +1668,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 # full-build sets this: a `--check` that says PARTIAL there found data missing; green hides it.
 REQUIRE_FULL = "TRACKLAB_REQUIRE_FULL"
+
+
+def require_full() -> bool:
+    """`TRACKLAB_REQUIRE_FULL` is on unless unset, empty, "0" or "false" (full-build sets it to ""
+    for the pytest step, which is off)."""
+    return os.environ.get(REQUIRE_FULL, "").strip().lower() not in {"", "0", "false"}
+
+
 _PARTIAL = re.compile(r"\bPARTIAL(?: \d+/\d+|:)")
 
 
@@ -1690,7 +1698,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     func: _Handler = args.func
-    if not (os.environ.get(REQUIRE_FULL) and getattr(args, "check", False)):
+    if not (require_full() and getattr(args, "check", False)):
         return func(args)
     seen: list[str] = []
     with (
