@@ -198,6 +198,15 @@ def test_the_default_pair_breaks_a_tie_in_the_sample_by_the_whole_key() -> None:
     assert [(k[0], k[1]) for k in pair] == [(1, 100), (1, 101)]
 
 
+def test_the_default_pair_is_the_two_with_most_sample_in_the_biggest_group() -> None:
+    # Group A has three players in the pool (p1 6, p2 5, p4 8), group B two (p5 9, p6 5): the group
+    # with most players wins even though B holds the biggest sample, and inside it the most
+    # sample first: p4 (8), then p1 (6). Mutated: sample ignored or ascending, and the smaller
+    # group, each fail here (the tie test above passes with a tie in the sample whichever way).
+    pair = scouting._default_pair([FB], {FB.table: fb_rows()})
+    assert [(k[0], k[2]) for k in pair] == [(4, "A"), (1, "A")]
+
+
 def test_expression_per_game_divides_by_games_played() -> None:
     (p3,) = table_block(BB, bb_rows(), [(3, 200)])["probes"]
     assert p3["values"]["pts_per_game"] == [5.0, 75.0]  # 60 / 12; [2, 5, 5, 1, 3] has 3 below a 5

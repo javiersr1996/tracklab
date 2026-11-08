@@ -44,6 +44,29 @@ export function ScoutingProse() {
           : the percentile of each player who passes the sample floor in each pool, sortable by any metric, and two players side by side.
         </p>
       </section>
+
+      <section aria-labelledby="limits-h">
+        <h2 id="limits-h">What the shortlist does not say</h2>
+        <ul>
+          <li>
+            It is a cut on two ranks, not a verdict. The pools are small, so one place in the ranking moves a
+            percentile by several points, and a player just under 70 is not worse than one just over it.
+          </li>
+          <li>
+            It only holds players who pass both sample floors. A player missing from it may be missing because a
+            pool left them out, not because they are slow or inaccurate.
+          </li>
+          <li>
+            Fast and accurate are measured against the same position group, so they say nothing across positions,
+            and two metrics leave out what the other tables measure: defending, carrying the ball, what the team
+            asks of the player.
+          </li>
+          <li>
+            It is one season of aggregates. It says nothing about age, form, fitness, price or how a player would
+            fit another team, and a high percentile is a high value, not a prediction.
+          </li>
+        </ul>
+      </section>
     </>
   );
 }

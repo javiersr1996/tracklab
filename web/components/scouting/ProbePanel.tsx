@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "../../lib/motion";
+import { SMALL_POOL, smallPoolNote } from "../../lib/scouting/catalog";
 import { Count } from "../home/Count";
 
 // The head panel of /warehouse/scouting (task 136): one player's percentiles in one table, read
@@ -67,7 +68,7 @@ export function ProbePanel({ probe }: { probe: ProbeView }) {
               <span className="scout-fill" style={{ width: `${m.pctl}%` }} />
             </span>
             <span className="scout-probe-pct">
-              <Count value={m.pctl} kind="pct" />
+              <Count value={m.pctl} kind="int" />
             </span>
           </li>
         ))}
@@ -75,6 +76,7 @@ export function ProbePanel({ probe }: { probe: ProbeView }) {
       <p className="scout-probe-pool" data-probe-pool>
         Pool: {probe.group}, {probe.pool.players} players, {probe.pool.sample.toLocaleString("en-US")}{" "}
         {probe.pool.noun} between them. A high percentile is a high value, not a verdict.
+        {probe.pool.players < SMALL_POOL ? ` ${smallPoolNote(probe.pool.players)}` : null}
       </p>
     </figure>
   );

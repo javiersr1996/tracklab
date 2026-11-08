@@ -4,6 +4,8 @@ import {
   comparedOf,
   defaultPair,
   filterRows,
+  formatPctl,
+  placeStep,
   keyText,
   paramsQuery,
   pctlStep,
@@ -12,6 +14,8 @@ import {
   readParams,
   rowsOf,
   SCOUTING,
+  SMALL_POOL,
+  smallPoolNote,
   sortRows,
   tableOf,
 } from "../lib/scouting/catalog";
@@ -78,6 +82,31 @@ describe("the URL's state", () => {
 describe("the percentile's step", () => {
   it("is the fifth of the pool, with no fill under 20", () => {
     expect([0, 19.9, 20, 39.9, 40, 59.9, 60, 79.9, 80, 100].map(pctlStep)).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4]);
+  });
+});
+
+describe("the percentile as printed, and small pools", () => {
+  it("prints a whole number: the pool cannot tell one decimal", () => {
+    expect([0, 3.7, 63.75, 63.8, 99.4, 100].map(formatPctl)).toEqual(["0", "4", "64", "64", "99", "100"]);
+  });
+
+  it("the football pools are the small ones, 14 to 47 players with a value; basketball's are not", () => {
+    const small = (sport: string) =>
+      SCOUTING.tables
+        .filter((t) => t.sport === sport)
+        .flatMap((t) => t.pools.flatMap((p) => p.n));
+    const fb = small("football");
+    expect(Math.min(...fb)).toBe(14);
+    expect(Math.max(...fb)).toBe(47);
+    expect(fb.every((n) => n < SMALL_POOL)).toBe(true);
+    expect(Math.min(...small("basketball"))).toBeGreaterThanOrEqual(SMALL_POOL);
+  });
+
+  it("says what a place in the ranking is worth, from the pool's size", () => {
+    expect(placeStep(14)).toBeCloseTo(100 / 13);
+    expect(smallPoolNote(33)).toBe(
+      "Small pool (33 players, under 50): one place in the ranking is 3.1 points of percentile.",
+    );
   });
 });
 

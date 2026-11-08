@@ -9,18 +9,16 @@ import { usePrefersReducedMotion } from "../../lib/motion";
 // (the server, a page without JS and `prefers-reduced-motion` all show it and nothing moves),
 // so the figure on the page is always the JSON's. `data-count` says where it is: still (reduced
 // motion), idle (not seen yet), counting, done; the e2e read it. A "num" (task 112) is printed
-// as `String(value)`, the way a lesson prints its figures, and counts with that many decimals; a
-// "pct" (task 136) always with one, the way /warehouse/scouting prints a percentile.
+// as `String(value)`, the way a lesson prints its figures, and counts with that many decimals.
 const DURATION_MS = 1800;
 
 type Phase = "idle" | "counting" | "done";
 
 const decimals = (value: number) => (String(value).split(".")[1] ?? "").length;
 
-type Kind = "int" | "bytes" | "num" | "pct";
+type Kind = "int" | "bytes" | "num";
 
 function format(n: number, value: number, kind: Kind, final: boolean): string {
-  if (kind === "pct") return n.toFixed(1);
   if (kind === "num") return final ? String(value) : n.toFixed(decimals(value));
   const whole = Math.round(n);
   return kind === "bytes" ? formatBytes(whole) : whole.toLocaleString("en-US");

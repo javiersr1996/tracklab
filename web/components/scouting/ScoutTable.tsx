@@ -9,6 +9,8 @@ import {
   pctlStep,
   sameKey,
   sampleNoun,
+  SMALL_POOL,
+  smallPoolNote,
   scaleText,
   type ScoutRow,
   type Sort,
@@ -101,6 +103,12 @@ export function ScoutTable({
                     {pool.sample.toLocaleString("en-US")} {sampleNoun(table, pool.sample)} between them
                     {pool.rows !== pool.players ? ` (${pool.rows} rows)` : ""}
                     {inPool.length !== pool.rows ? `; ${inPool.length} shown` : ""}
+                    {pool.players < SMALL_POOL ? (
+                      <>
+                        {". "}
+                        <span data-small-pool>{smallPoolNote(pool.players)}</span>
+                      </>
+                    ) : null}
                   </span>
                 </th>
                 {table.metrics.map((m, i) => (
