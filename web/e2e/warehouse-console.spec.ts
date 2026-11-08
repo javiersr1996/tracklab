@@ -158,7 +158,7 @@ test("results are text: a value that looks like HTML is not parsed", async ({ pa
 
 // Arrow hands back a DECIMAL as its unscaled integer and a DATE or TIMESTAMP as milliseconds
 // since 1970: before `lib/warehouse/cell.ts` this row read 15, 25, -5, 982108800000 and
-// 1735787045000. The three football tables each have a DATE column (`player_birthdate`).
+// 1735787045000. The warehouse files carry no DATE column since P18 (they publish `player_age`), so the DATE comes from a literal.
 test("values are written by their type: decimals at their scale, dates as dates, integers whole", async ({ page }) => {
   test.setTimeout(180_000);
   await page.goto("/warehouse");
@@ -185,9 +185,10 @@ test("intervals and nested values are written as DuckDB prints them", async ({ p
 
   attrs = await runSql(
     page,
-    "SELECT age(DATE '2025-01-01', player_birthdate) AS a, list(player_birthdate) AS l, " +
-      "{'name': player_name, 'born': player_birthdate} AS s, [1.5, 2.5] AS d, MAP {'k': 1.5} AS m, " +
-      "union_value(k := 1.5) AS u FROM fb_physical WHERE player_name = 'Jay Barnett' GROUP BY player_name, player_birthdate",
+    "SELECT age(DATE '2025-01-01', born) AS a, list(born) AS l, " +
+      "{'name': player_name, 'born': born} AS s, [1.5, 2.5] AS d, MAP {'k': 1.5} AS m, " +
+      "union_value(k := 1.5) AS u FROM (SELECT player_name, DATE '2001-02-14' AS born FROM fb_physical " +
+      "WHERE player_name = 'Jay Barnett') GROUP BY player_name, born",
   );
   expect(attrs.query, attrs.error).toBe("done");
   expect((await resultTable(page)).rows).toEqual([
@@ -284,7 +285,7 @@ test("EXPLAIN ANALYZE shows that it runs and Cancel stops it", async ({ page }) 
 // throws on a TIMESTAMP that does not fit in 2^53 ms). The file is still held.
 test("a query that fails while its rows are written still marks the file as read", async ({ page }) => {
   test.setTimeout(180_000);
-  const good = "SELECT player_name, team_name, psv99, player_birthdate FROM fb_physical WHERE NOT is_season_total";
+  const good = "SELECT player_name, team_name, psv99, player_age FROM fb_physical WHERE NOT is_season_total";
   await page.goto("/warehouse");
   const bad = await runSql(page, "SELECT player_name, TIMESTAMP 'infinity' AS t FROM fb_physical LIMIT 1");
   expect(bad.query).toBe("error");

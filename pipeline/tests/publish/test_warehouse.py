@@ -11,6 +11,7 @@ Linux runner, which is the one proof that pyarrow writes the same bytes there).
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import re
 from collections.abc import Callable
@@ -60,8 +61,9 @@ def _write_gold(root: Path) -> Path:
             position = "'Forward'" if football else "NULL::VARCHAR"
             select = (
                 f"SELECT '{sport}' AS sport, ((i * 37) % 60) AS player_id, "
-                f"10 + i % 3 AS team_id, {position} AS position_group, i AS attempts "
-                "FROM range(60) t(i)"
+                f"10 + i % 3 AS team_id, {position} AS position_group, i AS attempts"
+                + (", DATE '1990-01-01' + (i * 100)::INTEGER AS player_birthdate" if football else "")
+                + " FROM range(60) t(i)"
             )
         path = (directory / "data.parquet").as_posix()
         con.execute(f"COPY ({select}) TO '{path}' (FORMAT parquet)")
@@ -293,3 +295,27 @@ def test_rows_in_the_manifest_equal_the_gold_rows_counted_by_duckdb() -> None:
 def test_gold_rebuilt_from_scratch_regenerates_the_committed_bytes() -> None:
     """What the clean clone runs after `tracklab build`: the files in git are what gold gives."""
     assert run_publish_warehouse(data_root(), WEB_DATA, check=True) == 0
+
+
+def test_the_age_replaces_the_birthdate_in_its_column_position(tmp_path: Path) -> None:
+    """Completed years at the reference day: the birthday on it counts, the day after does not."""
+    gold = tmp_path / "gold.parquet"
+    con = duckdb.connect()
+    con.execute(
+        "COPY (SELECT * FROM (VALUES (1, DATE '2002-06-30', 1.5), (2, DATE '2002-07-01', 2.5), "
+        "(3, DATE '1990-01-01', 3.5), (4, NULL::DATE, 4.5)) t(player_id, player_birthdate, x)) "
+        f"TO '{gold.as_posix()}' (FORMAT parquet)"
+    )
+    built = warehouse.build_table(con, gold, "fb_toy", "football")
+    table = pq.read_table(io.BytesIO(built.data))
+    assert table.column_names == ["player_id", "player_age", "x"]
+    assert str(table.schema.field("player_age").type) == "int32"
+    assert table.column("player_age").to_pylist() == [23, 22, 35, None]
+
+
+def test_no_published_warehouse_file_carries_a_date_of_birth() -> None:
+    for path in sorted((WEB_DATA / "warehouse").glob("*.parquet")):
+        schema = pq.read_schema(path)
+        born = [f.name for f in schema if "birth" in f.name.lower()]
+        dates = [f.name for f in schema if str(f.type).startswith("date")]
+        assert not born and not dates, f"{path.name}: {born + dates}"

@@ -20,6 +20,7 @@ import io
 import json
 import re
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -29,6 +30,12 @@ import pyarrow.parquet as pq
 
 WAREHOUSE_JSON = "warehouse.json"
 WAREHOUSE_DIR = "warehouse"
+
+# P18, task 143 (Javier, 2026-11-08): the football tables publish `player_age`, never the date of
+# birth. Completed years at this date, the one place it is defined (scouting.json names it too).
+AGE_REFERENCE = date(2025, 6, 30)
+BIRTHDATE = "player_birthdate"
+AGE = "player_age"
 
 # The wide tables the visitor queries (gold `agg_*`) and the long fact table. `table` is the
 # short name the page will register (`bb_shots`, `fact`, ...); `model` is the gold model.
@@ -98,7 +105,10 @@ def build_table(con: duckdb.DuckDBPyConnection, gold_file: Path, table: str, spo
     columns = [r[0] for r in con.execute(f"DESCRIBE SELECT * FROM '{source}'").fetchall()]
     order = _order_for(table, columns)
     ordering = ", ".join(f'"{c}" NULLS LAST' for c in order)
-    arrow = con.execute(f"SELECT * FROM '{source}' ORDER BY {ordering}").to_arrow_table()
+    # The age takes the birthdate's column position; the date itself is not written anywhere.
+    age = f"date_sub('year', \"{BIRTHDATE}\", DATE '{AGE_REFERENCE.isoformat()}')::INTEGER AS \"{AGE}\""
+    select = ", ".join(age if c == BIRTHDATE else f'"{c}"' for c in columns)
+    arrow = con.execute(f"SELECT {select} FROM '{source}' ORDER BY {ordering}").to_arrow_table()
 
     sink = io.BytesIO()
     pq.write_table(

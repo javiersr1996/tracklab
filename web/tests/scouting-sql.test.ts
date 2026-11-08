@@ -68,11 +68,11 @@ describe("tableSql", () => {
     expect(sql).toContain("ORDER BY player_name, player_id, team_id, position_group");
   });
 
-  it("gives age in completed years at the reference date, never the birthdate, in football only", () => {
+  it("reads the published player_age, never a birthdate, in football only", () => {
     const sql = tableSql(toy, "fb_a");
-    expect(sql).toContain("date_sub('year', player_birthdate, DATE '2025-06-30') AS age");
-    expect(sql.replace("player_birthdate, DATE", "")).not.toContain("player_birthdate");
-    expect(tableSql(toy, "bb_a")).not.toContain("player_birthdate");
+    expect(sql).toContain("player_age AS age");
+    expect(sql).not.toContain("birth");
+    expect(tableSql(toy, "bb_a")).not.toContain("player_age");
   });
 
   it("ranks the league as a whole in basketball and keeps the floor's season-total clause", () => {
@@ -106,7 +106,6 @@ describe("tableSql", () => {
     expect(names((c) => (c.tables[0].key[0] = "player_id, 1"))).toThrow(/plain name/);
     expect(names((c) => (c.tables[0].floor = "count_match >= 5 OR 1 = 1"))).toThrow(/floor/);
     expect(names((c) => (c.tables[0].floor = "other >= 5"))).toThrow(/floor/);
-    expect(names((c) => (c.age_reference = "2025-06-30') --"))).toThrow(/date/);
   });
 });
 
