@@ -84,7 +84,10 @@ if TYPE_CHECKING:
 MANIFEST = Path("manifest/sources.json")
 REPORTS_DIR = Path("reports")
 WEB_DATA_DIR = Path("../web/public/data")
+DBT_DIR = Path("dbt")
 DBT_MANIFEST = Path("dbt/target/manifest.json")
+# What dbt writes while it runs; a file there is never an input of the project.
+DBT_OUTPUT_DIRS = frozenset({"target", "logs", "dbt_packages"})
 DBT_DURATION_KEY = "Execution Duration"
 SCHEMA_VERSION = 2
 CONTRACTS_DIR = Path("tests/contracts")
@@ -680,6 +683,35 @@ def _print_steps(steps: Sequence[StepRecord]) -> None:
             print(f"{'':<{width}}  {'':<8}  {secs:>8.1f}  {model}")
 
 
+def manifest_is_stale(dbt_dir: Path, manifest: Path) -> bool:
+    """True when the manifest is missing or something under `dbt_dir` (not dbt's own output) is
+    newer than it. The silver and gold fingerprints read the manifest, so a stale one hides a
+    changed model."""
+    if not manifest.is_file():
+        return True
+    built = manifest.stat().st_mtime
+    for folder, dirs, files in os.walk(dbt_dir):
+        if Path(folder) == dbt_dir:
+            dirs[:] = [d for d in dirs if d not in DBT_OUTPUT_DIRS]
+        if any((Path(folder) / name).stat().st_mtime > built for name in files):
+            return True
+    return False
+
+
+def refresh_dbt_manifest(dbt_dir: Path = DBT_DIR, manifest: Path = DBT_MANIFEST) -> bool:
+    """`dbt parse` (in process, the way dagster-dbt runs dbt) when the manifest is stale; False
+    only when that parse failed."""
+    if not manifest_is_stale(dbt_dir, manifest):
+        return True
+    print(f"build: {manifest} is older than {dbt_dir}/; running dbt parse")
+    from dbt.cli.main import dbtRunner
+
+    result = dbtRunner().invoke(
+        ["parse", "--project-dir", str(dbt_dir), "--profiles-dir", str(dbt_dir)]
+    )
+    return bool(result.success)
+
+
 def run_build(
     select: str | None,
     record_dir: Path,
@@ -698,6 +730,9 @@ def run_build(
     succeed. `execute` is what runs the job; the tests hand in a fake. `full` makes the
     incremental silver step rebuild every match (`FULL_ENV`, inherited by the step's process).
     `run_contracts` is what runs `tests/contracts` after a full build (the tests hand in a fake)."""
+    if not refresh_dbt_manifest():
+        print("build: dbt parse failed; the manifest is not up to date")
+        return 1
     keys: Sequence[AssetKey] | None = None
     if select is not None:
         if not DBT_MANIFEST.is_file():
