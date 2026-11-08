@@ -300,3 +300,20 @@ def test_the_check_fails_on_a_held_out_match_in_the_file(
     out.write_text(ps.render(data), encoding="utf-8", newline="\n")
     assert _run(root, out, "--check") == 1
     assert "holds held-out matches" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("median", [None, 0.0])
+def test_the_shape_check_warns_and_does_not_crash_on_a_match_without_a_clock(
+    tmp_path: Path, median: float | None
+) -> None:
+    root = _root(tmp_path, raw=False)
+    out = tmp_path / "possession.json"
+    assert _run(root, out) == 0
+    data: dict[str, Any] = json.loads(out.read_text(encoding="utf-8"))
+    assert ps._shape_problems(data) == ""
+    row = data["basketball"]["matches"][0]
+    row.update(clock_median_s=median, clock_p90_s=None if median is None else 0.0)
+    row["clock_p90_over_median"] = None
+    assert ps._shape_problems(data) == ""
+    row["clock_p90_over_median"] = 1.0
+    assert "the clock's ratio" in ps._shape_problems(data)

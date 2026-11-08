@@ -423,7 +423,8 @@ def _shape_problems(payload: dict[str, Any]) -> str:
                 return f"{m.get('match_id')}: fields {sorted(set(m) ^ fields)}"
     bb = payload["basketball"]
     for m in bb["matches"]:
-        ratio = round(m["clock_p90_s"] / m["clock_median_s"], RATIO_DIGITS)
+        has_ratio = m["clock_median_s"] and m["clock_p90_s"] is not None
+        ratio = round(m["clock_p90_s"] / m["clock_median_s"], RATIO_DIGITS) if has_ratio else None
         if m["clock_p90_over_median"] != ratio:
             return f"{m['match_id']}: the clock's ratio is not its p90 over its median"
     if bb["clock_above_exp"] != clock_above_exp(bb["matches"]):
