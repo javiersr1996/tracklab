@@ -10,13 +10,17 @@ Football, the match the public SQL names, seven phases (frames at 10 per second)
 So 7 phases, 5 runs, median 8 s, 90th percentile 13 s, 20 % of runs over more than one phase.
 A second football match, held out by the fence, sits in the same bronze with other figures: it
 must never be read. Basketball: three possessions of 10, 6 and 20 s and one with no end frame, so
-3 possessions, median 10 s, 90th percentile 18 s.
+3 possessions, median 10 s, 90th percentile 18 s. On the game clock, which counts down, the first
+two last 6 and 4 s; the third has no clock at its end and the fourth no end frame, so 2
+possessions, median 5 s, 90th percentile 5.8 s, ratio 1.16, under the exponential's log2 10.
 
 Mutations (a test that cannot fail protects nothing): the fence's list emptied (the held-out
 match enters and the fence test fails), the football frame rate at 25; on the SQL: runs across
-periods, a phase with no team joined to its neighbours, possessions at 10 frames per second.
-In Python, runs across periods were run by hand (`last == (period, team)` as `last[1] == team`):
-the run count drops to 4 and the first test fails.
+periods, a phase with no team joined to its neighbours, possessions at 10 frames per second, the
+clock read end minus start. In Python, runs across periods were run by hand (`last == (period,
+team)` as `last[1] == team`): the run count drops to 4 and the first test fails. The clock was too
+(task 162): `read_clock` without its `IS NOT NULL` on the clocks, and then with its subtraction
+turned around; each time `test_the_clock` failed.
 """
 
 from __future__ import annotations
@@ -46,9 +50,22 @@ PHASES: list[tuple[int, int, int, int, int | None]] = [
     (6, 1100, 1180, 2, A),
 ]
 HELD_PHASES = [(0, 0, 50, 1, A), (1, 50, 900, 1, B)]
-POSSESSIONS = [(1, 0, 250, 7), (1, 250, 400, 8), (2, 1000, 1500, 7), (2, 1600, None, 8)]
+# period, startFrame, endFrame, offTeamId, startGameClock, endGameClock
+POSSESSIONS = [
+    (1, 0, 250, 7, 600.0, 594.0),
+    (1, 250, 400, 8, 594.0, 590.0),
+    (2, 1000, 1500, 7, 600.0, None),
+    (2, 1600, None, 8, 580.0, 570.0),
+]
 FOOTBALL = {"phases": 7, "runs": 5, "run_median_s": 8.0, "run_p90_s": 13.0, "multi_phase_pct": 20.0}
-BASKETBALL = {"possessions": 3, "median_s": 10.0, "p90_s": 18.0}
+BASKETBALL = {
+    "possessions": 3,
+    "median_s": 10.0,
+    "p90_s": 18.0,
+    "clock_possessions": 2,
+    "clock_median_s": 5.0,
+    "clock_p90_s": 5.8,
+}
 
 
 def write_bronze(root: Path) -> None:
@@ -66,10 +83,10 @@ def write_bronze(root: Path) -> None:
         con.execute(f"COPY p TO '{(fb / f'{match}.parquet').as_posix()}' (FORMAT parquet)")
     con.execute(
         "CREATE TABLE q (id VARCHAR, period BIGINT, startFrame BIGINT, endFrame BIGINT, "
-        "offTeamId BIGINT)"
+        "offTeamId BIGINT, startGameClock DOUBLE, endGameClock DOUBLE)"
     )
     con.executemany(
-        "INSERT INTO q VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO q VALUES (?, ?, ?, ?, ?, ?, ?)",
         [(f"p{i}", *row) for i, row in enumerate(POSSESSIONS)],
     )
     con.execute(f"COPY q TO '{(bb / f'{BB}.parquet').as_posix()}' (FORMAT parquet)")
@@ -88,8 +105,16 @@ def write_raw(root: Path) -> dict[str, Path]:
     folder.mkdir(parents=True)
     events = {
         "possessions": [
-            {"id": f"p{i}", "period": p, "startFrame": a, "endFrame": b, "offTeamId": t}
-            for i, (p, a, b, t) in enumerate(POSSESSIONS)
+            {
+                "id": f"p{i}",
+                "period": p,
+                "startFrame": a,
+                "endFrame": b,
+                "offTeamId": t,
+                "startGameClock": c0,
+                "endGameClock": c1,
+            }
+            for i, (p, a, b, t, c0, c1) in enumerate(POSSESSIONS)
         ]
     }
     (folder / f"{BB}_dynamic_events.json").write_text(json.dumps(events), encoding="utf-8")
@@ -101,7 +126,19 @@ def test_the_figures(tmp_path: Path) -> None:
     fb = tmp_path / "bronze" / "football"
     bb = tmp_path / "bronze" / "basketball"
     assert ps.football_figures(ps.read_phases(fb, FB)) == FOOTBALL
-    assert ps.basketball_figures(ps.read_possessions(bb, BB)) == BASKETBALL
+    row = ps.basketball_row(bb, BB)
+    assert {k: row[k] for k in BASKETBALL} == BASKETBALL
+
+
+def test_the_clock(tmp_path: Path) -> None:
+    """Start minus end, only possessions with both frames and both clocks, and the ratio."""
+    write_bronze(tmp_path)
+    bb = tmp_path / "bronze" / "basketball"
+    assert ps.read_clock(bb, BB) == [6.0, 4.0]
+    row = ps.basketball_row(bb, BB)
+    assert row["clock_p90_over_median"] == 1.16
+    assert ps.clock_above_exp([row]) == 0
+    assert ps.clock_above_exp([{**row, "clock_p90_over_median": 3.33}]) == 1
 
 
 def test_a_held_out_match_is_never_read(tmp_path: Path) -> None:
@@ -172,6 +209,10 @@ SQL_MUTATIONS: dict[str, tuple[int, list[tuple[str, str]]]] = {
         ],
     ),
     "possessions at 10 frames per second": (1, [("p.startFrame) / 25", "p.startFrame) / 10")]),
+    "the clock read end minus start": (
+        1,
+        [("p.startGameClock - p.endGameClock", "p.endGameClock - p.startGameClock")],
+    ),
 }
 
 

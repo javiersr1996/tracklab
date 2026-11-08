@@ -393,6 +393,20 @@ export const SOURCES: Readonly<Record<string, Source>> = {
     read: "2026-10-24",
     quote: "Frame (at 25fps) since the start of the video of the start of the possession.",
   },
+  "skillcorner-possession-clock-start": {
+    label: "SkillCorner, opendata-basketball at 4bbed2e, docs/data_dictionary/possessions.md, line 17",
+    short: "SkillCorner, possessions.md",
+    url: "https://github.com/SkillCorner/opendata-basketball/blob/4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66/docs/data_dictionary/possessions.md#L17",
+    read: "2026-11-08",
+    quote: "Game clock in seconds at the start of the possession.",
+  },
+  "skillcorner-fb-timestamp": {
+    label: "SkillCorner, opendata at 4340d27, README.md, line 46",
+    short: "SkillCorner, opendata README",
+    url: "https://github.com/SkillCorner/opendata/blob/4340d274572876239c154c90bc507a9b3250a656/README.md#L46",
+    read: "2026-11-08",
+    quote: "timestamp: the timestamp in the match time with a precision of 1/10s.",
+  },
   "skillcorner-fb-phases": {
     label: "SkillCorner, opendata at 4340d27, README.md, line 128",
     short: "SkillCorner, opendata README",
