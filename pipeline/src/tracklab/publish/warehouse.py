@@ -106,7 +106,8 @@ def build_table(con: duckdb.DuckDBPyConnection, gold_file: Path, table: str, spo
     order = _order_for(table, columns)
     ordering = ", ".join(f'"{c}" NULLS LAST' for c in order)
     # The age takes the birthdate's column position; the date itself is not written anywhere.
-    age = f"date_sub('year', \"{BIRTHDATE}\", DATE '{AGE_REFERENCE.isoformat()}')::INTEGER AS \"{AGE}\""
+    ref = AGE_REFERENCE.isoformat()
+    age = f"date_sub('year', \"{BIRTHDATE}\", DATE '{ref}')::INTEGER AS \"{AGE}\""
     select = ", ".join(age if c == BIRTHDATE else f'"{c}"' for c in columns)
     arrow = con.execute(f"SELECT {select} FROM '{source}' ORDER BY {ordering}").to_arrow_table()
 

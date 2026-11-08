@@ -62,7 +62,11 @@ def _write_gold(root: Path) -> Path:
             select = (
                 f"SELECT '{sport}' AS sport, ((i * 37) % 60) AS player_id, "
                 f"10 + i % 3 AS team_id, {position} AS position_group, i AS attempts"
-                + (", DATE '1990-01-01' + (i * 100)::INTEGER AS player_birthdate" if football else "")
+                + (
+                    ", DATE '1990-01-01' + (i * 100)::INTEGER AS player_birthdate"
+                    if football
+                    else ""
+                )
                 + " FROM range(60) t(i)"
             )
         path = (directory / "data.parquet").as_posix()

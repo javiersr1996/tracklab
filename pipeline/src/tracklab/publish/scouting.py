@@ -13,7 +13,8 @@ one decimal with ROUND_HALF_UP (what DuckDB's `round` does on an exact tie; Pyth
 not). A high percentile is a high value, not a verdict. A null value has no percentile and leaves
 the pool of its metric.
 
-Age (football) is the Parquet's `player_age`, completed years at `AGE_REFERENCE` (the warehouse publisher's); no date of birth is published.
+Age (football) is the Parquet's `player_age`: completed years at `AGE_REFERENCE`, which the
+warehouse publisher defines. No date of birth is published.
 """
 
 from __future__ import annotations
