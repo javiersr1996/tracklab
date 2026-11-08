@@ -4,7 +4,8 @@
 --
 -- The name is read once per team and not per match: both bundles are stable,
 -- 0 teams carry two different names across their matches (checked before
--- writing this model, and the `unique` test on team_id keeps it checked).
+-- writing this model; `assert_one_name_per_team` keeps it checked, because the
+-- GROUP BY below would hide a rename and `unique` on team_id cannot see it).
 -- Basketball publishes no short name, so short_name is NULL there rather than a
 -- copy of `name` that would look like a measurement.
 
