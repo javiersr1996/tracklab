@@ -50,7 +50,7 @@ export function ScoutingProse() {
         <ul>
           <li>
             It is a cut on two ranks, not a verdict. The pools are small, so one place in the ranking moves a
-            percentile by several points, and a player just under 70 is not worse than one just over it.
+            percentile by several points, and a player just under the threshold is not worse than one just over it.
           </li>
           <li>
             It only holds players who pass both sample floors. A player missing from it may be missing because a
