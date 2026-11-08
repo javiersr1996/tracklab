@@ -54,17 +54,21 @@ test("the head panel and a hexagon's readout are league.json's", async ({ page }
     `${first.shots_shown.toLocaleString("en-US")} of ${first.shots_total.toLocaleString("en-US")} field goals`,
   );
 
-  // A team: its cell's diff from its own file, the league's % in that cell beside it.
+  // A team: its cell's % against the rest of the league's in that cell (the league's without the
+  // team's own shots), with the error beside it.
   await page.locator("#el-team").selectOption("MAD");
   await expect(page.locator(".el-atlas")).toHaveAttribute("data-view", `${first.season}|MAD|`);
   const mad = (await team(page, "MAD")).seasons.find((s) => s.season === first.season)!;
   await expect(page.locator(".el-hex")).toHaveCount(mad.cells.length);
   const cell = mad.cells.find((c) => c[0] === 0 && c[1] === 1)!;
   const lc = first.cells.find((c) => c[0] === 0 && c[1] === 1)!;
+  const rest = (lc[3] - cell[3]) / (lc[2] - cell[2]);
+  const p1 = (cell[3] + 1) / (cell[2] + 2);
+  const se = Math.sqrt((p1 * (1 - p1)) / (cell[2] + 2));
   await hover(page, cell[0], cell[1]);
   await expect(page.locator("[data-readout-n]")).toHaveText(`${cell[2].toLocaleString("en-US")} shots`);
   await expect(page.locator("[data-readout-diff]")).toHaveText(
-    `${signedPp(cell[5])} against the league's ${pct(lc[3], lc[2])} here`,
+    `${signedPp(Math.round((cell[3] / cell[2] - rest) * 1000) / 1000)} (±${(se * 100).toFixed(1)} pp) against the league's ${(rest * 100).toFixed(1)}% here`,
   );
 });
 
