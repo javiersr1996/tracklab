@@ -25,6 +25,7 @@ import { lessonPossessionFigures } from "../lib/learn/possession-figures";
 // - `spells` reading the team's column as the phases: "each timeline gives its match's row"
 //   fails (the share over more than one phase).
 // - A median typed in the text for its `data-fig`: "has no digit typed in the prose" fails.
+// - `bb_opposite` with either side of the comparison flipped: "the matches where the clocks part" fails.
 // - `bb_clk_ratio_lo` read from the video's ratios: "the game clock's figures" fails (task 162).
 
 const F = lessonPossessionFigures(POSSESSION);
@@ -82,6 +83,16 @@ describe("the timelines against possession.json", () => {
     const ratios = bb.matches.map((m) => m.clock_p90_over_median);
     expect([F.bb_clk_ratio_lo, F.bb_clk_ratio_hi]).toEqual([Math.min(...ratios), Math.max(...ratios)]);
     expect(F.bb_clk_missing).toBe(bb.matches.reduce((s, m) => s + m.possessions - m.clock_possessions, 0));
+  });
+
+  it("the matches where the clocks part: video above the exponential, game clock below, from the rows", () => {
+    const bb = POSSESSION.basketball;
+    const exp = expRatio(0.9);
+    const rows = bb.matches.filter((m) => m.p90_s / m.median_s > exp && m.clock_p90_s / m.clock_median_s < exp);
+    expect(F.bb_opposite).toBe(rows.length);
+    expect(F.bb_opposite).toBeGreaterThan(0);
+    expect(F.bb_opposite).toBeLessThan(bb.matches.length);
+    expect(html(Lesson, { sql: "" })).toContain(`data-fig="learn.bb_opposite"`);
   });
 
   it("the runs of a period follow one another and alternate teams", () => {

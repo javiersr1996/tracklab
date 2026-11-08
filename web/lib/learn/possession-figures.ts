@@ -84,6 +84,8 @@ export function lessonPossessionFigures(file: PossessionFile) {
     bb_ratio_lo: bbRLo,
     bb_ratio_hi: bbRHi,
     bb_above: bb.filter((m) => bbRatio[m.match_id] > exp).length,
+    // The matches in which the two clocks part: the video's ratio above the exponential's, the game clock's below it.
+    bb_opposite: bb.filter((m) => bbRatio[m.match_id] > exp && m.clock_p90_over_median < exp).length,
     bb_clk_med_lo: clkMedLo,
     bb_clk_med_hi: clkMedHi,
     bb_clk_p90_lo: clkP90Lo,

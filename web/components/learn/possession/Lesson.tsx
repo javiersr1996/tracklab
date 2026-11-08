@@ -60,7 +60,8 @@ export function Lesson({ sql }: { sql: string }) {
           A basketball team keeps it for {l("bb_med_lo")} to {l("bb_med_hi")}&nbsp;s of video, or {l("bb_clk_med_lo")} to{" "}
           {l("bb_clk_med_hi")}&nbsp;s on the game clock, which leaves out the seconds it stands still. The median is half the
           story. The other half is the tail: how many spells last far longer, set against the one distribution in which the ball
-          is as likely to change hands in any second as in the next. In basketball the two clocks give opposite answers.
+          is as likely to change hands in any second as in the next. In basketball the two clocks give opposite
+          answers in {l("bb_opposite")} of the {l("bb_matches")} matches.
         </p>
       </LessonHead>
       <Band>
