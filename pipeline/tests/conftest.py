@@ -6,12 +6,20 @@ and, since task 44, a database connection string (URI or key=value form).
 
 from __future__ import annotations
 
+import os
 import platform
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
+
+# Folders whose tests read the built data and skip when it is not there (a clone, a laptop). With
+# TRACKLAB_REQUIRE_DATA set, as in full-build, such a skip is a failure: green would hide a
+# contract that never ran. Other skips (postgres without a DSN) are not about the data.
+REQUIRE_DATA = "TRACKLAB_REQUIRE_DATA"
+DATA_TEST_FOLDERS = frozenset({"contracts", "publish"})
 
 _DRIVE = re.compile(r"\b[A-Za-z]:[\\/]")
 _DSN = re.compile(r"postgres(?:ql)?://|\b(?:host|hostaddr|password|user|dbname)\s*=", re.IGNORECASE)
@@ -48,3 +56,17 @@ def assert_no_local_traces() -> Callable[[object], None]:
         assert local_traces(payload) == []
 
     return check
+
+
+def _data_required() -> bool:
+    return os.environ.get(REQUIRE_DATA, "").strip().lower() not in {"", "0", "false"}
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]) -> Iterator[None]:
+    outcome: Any = yield
+    report = outcome.get_result()
+    if report.skipped and _data_required() and item.path.parent.name in DATA_TEST_FOLDERS:
+        reason = report.longrepr[2] if isinstance(report.longrepr, tuple) else str(report.longrepr)
+        report.outcome = "failed"
+        report.longrepr = f"{REQUIRE_DATA} is set and this test was skipped: {reason}"

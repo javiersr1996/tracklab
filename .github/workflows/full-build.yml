@@ -115,9 +115,12 @@ jobs:
       - run: uv run tracklab pose protocol --check
       - run: uv run tracklab pose metric --check
       - run: uv run tracklab publish pose --check
-      - run: uv run pytest -q
+      # Task 146 (P18): every contract and publish test ran on the data this job built; a skip for
+      # missing data (the -rs list) is a failure, never a green.
+      - run: uv run pytest -q -rs
         env:
           TRACKLAB_REQUIRE_FULL: ""
+          TRACKLAB_REQUIRE_DATA: "1"
       - run: uv run tracklab stats
       - uses: actions/upload-artifact@v4
         if: always()
