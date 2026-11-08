@@ -18,6 +18,9 @@ import type { PgCell } from "./pg-types";
 export const STATEMENT_TIMEOUT_MS = 2000;
 export const CONNECT_MS = 2000;
 export const DEADLINE_MS = 3000;
+// Rows the route hands back (P19, task 154). The five examples are fixed aggregates of a few rows;
+// the cap is a guard for the day one of them changes, and `truncated` says when it cut.
+export const MAX_ROWS = 1000;
 
 // the role the route expects its connection to log in as (pipeline/sql/001). Any other role, an
 // owner that someone pasted by mistake included, gets no query (review V of P4, S4).
@@ -39,6 +42,7 @@ const asNumbers = {
 export interface PgRun {
   columns: string[];
   rows: PgCell[][];
+  truncated: boolean;
   // The query alone, measured here; the connection is not in it.
   ms: number;
 }
@@ -89,7 +93,13 @@ async function work(client: Client, sql: string): Promise<PgRun> {
   if (who?.rows[0]?.[0] !== READER_ROLE) throw new WrongRole("not the read-only role");
   const started = performance.now();
   const res = await client.query({ text: sql, rowMode: "array" });
-  return { columns: res.fields.map((f) => f.name), rows: res.rows as PgCell[][], ms: performance.now() - started };
+  const rows = res.rows as PgCell[][];
+  return {
+    columns: res.fields.map((f) => f.name),
+    rows: rows.slice(0, MAX_ROWS),
+    truncated: rows.length > MAX_ROWS,
+    ms: performance.now() - started,
+  };
 }
 
 // `57014` is query_canceled, what the statement_timeout raises.
