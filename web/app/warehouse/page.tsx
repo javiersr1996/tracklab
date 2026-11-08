@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import { sectionMetadata } from "../../lib/page-metadata";
 import Link from "next/link";
 import { Band, PageHead } from "../../components/site/Band";
 import { Console } from "../../components/warehouse/Console";
@@ -9,7 +9,7 @@ import { BASKETBALL_README, FOOTBALL_README } from "../../lib/warehouse/readmes"
 import { WAREHOUSE } from "../../lib/warehouse/registry";
 import { formatBytes } from "../../lib/format";
 
-export const metadata: Metadata = { title: "Warehouse | Track Lab" };
+export const metadata = sectionMetadata("/warehouse");
 
 const fixed = (value: number) => value.toFixed(1);
 

@@ -3,7 +3,11 @@ import { Band, PageHead } from "../../components/site/Band";
 import { SectionCards } from "../../components/site/SectionCards";
 import { SECTIONS } from "../../lib/sections";
 
-export const metadata: Metadata = { title: "Tracking | Track Lab" };
+export const metadata: Metadata = {
+  title: "Tracking | Track Lab",
+  description:
+    "The tracking data itself, drawn in your browser: replay a possession, see the run that moves nobody, follow each player's body pose.",
+};
 
 // The hub of the tracking itself (P15, task 121): the three pages under it, as the home page's
 // cards, with no figure of its own.

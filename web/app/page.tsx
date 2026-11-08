@@ -5,6 +5,12 @@ import { SectionCards } from "../components/site/SectionCards";
 import { POSSESSIONS, rowsOf, SPORTS } from "../lib/data";
 import { PLATFORM } from "../lib/platform";
 import { SECTIONS } from "../lib/sections";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  description:
+    "Replays, SQL and data quality for football and basketball tracking, in your browser: SkillCorner's open data conformed into one schema with DuckDB and dbt.",
+};
 
 // One possession of each sport, alternating: the first published of each.
 const SHOWCASE = SPORTS.map((sport) => POSSESSIONS.find((p) => p.sport === sport)!);

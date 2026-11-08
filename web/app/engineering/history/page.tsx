@@ -11,7 +11,11 @@ import { Band, PageHead } from "../../../components/site/Band";
 import { freshnessRows, HISTORY, MIN_EARLIER, modeSummary, runLabel, sameTestCount, seriesOf, stepMode } from "../../../lib/history";
 import { PLATFORM } from "../../../lib/platform";
 
-export const metadata: Metadata = { title: "Build history | Track Lab" };
+export const metadata: Metadata = {
+  title: "Build history | Track Lab",
+  description:
+    "Every tracklab build the project has recorded, compared only with builds of the same selection, from the history file the publish step keeps.",
+};
 
 const s1 = (v: number) => v.toFixed(1);
 const day = (id: string) => runLabel(id).slice(0, 10);

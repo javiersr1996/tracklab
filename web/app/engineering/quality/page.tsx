@@ -1,6 +1,9 @@
 import { HookAnimation } from "../../../components/quality/Hook";
 import { Band, PageHead } from "../../../components/site/Band";
 import { cellKey, HOOK, matchRows, TABLE_METRICS } from "../../../lib/quality";
+import { sectionMetadata } from "../../../lib/page-metadata";
+
+export const metadata = sectionMetadata("/engineering/quality");
 
 export default function QualityPage() {
   const rows = matchRows();

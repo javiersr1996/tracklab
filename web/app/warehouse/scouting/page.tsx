@@ -8,7 +8,11 @@ import { probeMetrics, SCOUTING, sameKey, sampleNoun, TABLE_LABEL } from "../../
 import { BASKETBALL_README, FOOTBALL_README } from "../../../lib/warehouse/readmes";
 import "./scouting.css";
 
-export const metadata: Metadata = { title: "Scouting | Track Lab" };
+export const metadata: Metadata = {
+  title: "Scouting | Track Lab",
+  description:
+    "Every player who passes a sample floor in the season aggregates, sortable by any metric, with percentiles inside their pool and a side-by-side comparison of two players.",
+};
 
 // /warehouse/scouting (P17, task 136): the season aggregates of the warehouse as a scouting
 // table, sortable by any metric, with each percentile beside its pool, and two players side by

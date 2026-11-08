@@ -7,6 +7,9 @@ import { LEAGUE } from "../../lib/euroleague/data";
 import { firstBeforeBars, firstEvents, LINEAGE, PLATFORM, poseShare, silverModelRows } from "../../lib/platform";
 import { DATA_SOURCES, EUROLEAGUE } from "../../lib/sections";
 import pgJson from "../../public/data/warehouse_pg.json";
+import { sectionMetadata } from "../../lib/page-metadata";
+
+export const metadata = sectionMetadata("/engineering");
 
 // `raw_sources[].source_id` (the manifest's) to the name `DATA_SOURCES` gives the same repository.
 const skillcorner = (id: string) =>

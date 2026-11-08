@@ -2,6 +2,13 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { ReactNode } from "react";
 import { Band, PageHead } from "../../../components/site/Band";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Data quality bulletin | Track Lab",
+  description:
+    "The data quality bulletin: what the checks on the two tracking bundles found, written from the quality tables at each build.",
+};
 
 // `docs/bulletin.md`, one directory up from `web/` (`tracklab publish quality`
 // writes it there from the CSVs), read at build time like `quality.json` in
