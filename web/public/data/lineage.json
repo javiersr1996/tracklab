@@ -778,7 +778,7 @@
       "step": "silver",
       "sport": null,
       "schema": "dbt",
-      "dbt_tests": 3,
+      "dbt_tests": 4,
       "dbt_columns": [
         "event_type",
         "native_family",
@@ -892,7 +892,7 @@
       "step": "silver",
       "sport": null,
       "schema": "dbt",
-      "dbt_tests": 6,
+      "dbt_tests": 7,
       "dbt_columns": [
         "name",
         "native_team_id",

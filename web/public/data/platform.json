@@ -69,11 +69,11 @@
       "layer": "publish",
       "files": 42,
       "rows": null,
-      "bytes": 7582241,
+      "bytes": 7584757,
       "seconds": 14.9,
       "seconds_sum": 23.9,
       "watch_files": 32,
-      "watch_bytes": 5530714,
+      "watch_bytes": 5533230,
       "query_files": 10,
       "query_bytes": 2051527,
       "note": "split by use: to watch, the possessions and the JSON the other pages are built from; to query, what only /warehouse uses, the Parquet and the warehouse*.json that describe them; as `tracklab build` measured them, without lineage.json and platform.json (counting platform.json would make the title depend on its own previous value, decision 1); the query engine is not data and is not counted, nor is euroleague/, whose source is not in the pipeline's raw layer"
@@ -1453,7 +1453,7 @@
   },
   "guarantees": {
     "dbt": {
-      "total": 172,
+      "total": 174,
       "generic": 163,
       "by_kind": {
         "accepted_values": 18,
@@ -1464,6 +1464,7 @@
       },
       "singular": [
         "assert_attack_signs_opposite",
+        "assert_event_type_map_one_row_per_pattern",
         "assert_events_carry_a_rotation_or_no_coordinates",
         "assert_every_bronze_match_in_dim_match",
         "assert_football_possessions_do_not_overlap",
@@ -1471,7 +1472,8 @@
         "assert_frames_t_ms_increases",
         "assert_frames_z_only_on_the_ball",
         "assert_gold_fact_joins_its_dimensions",
-        "assert_one_ball_per_match"
+        "assert_one_ball_per_match",
+        "assert_one_name_per_team"
       ]
     },
     "contracts": {
@@ -1495,7 +1497,7 @@
       ]
     },
     "checks": {
-      "count": 30,
+      "count": 33,
       "commands": [
         "euroleague publish",
         "learn browser",
@@ -1519,8 +1521,11 @@
         "publish lineage",
         "publish platform",
         "publish pose",
+        "publish possessions",
+        "publish quality",
         "publish runs",
         "publish scouting",
+        "publish stats",
         "publish warehouse",
         "runs coverage",
         "runs effect",
@@ -1531,7 +1536,7 @@
     }
   },
   "freshness": {
-    "published_utc": "2026-11-08T14:32:26+00:00",
+    "published_utc": "2026-11-08T18:35:28+00:00",
     "partitions": [
       {
         "layer": "silver",
