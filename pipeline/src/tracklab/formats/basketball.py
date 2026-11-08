@@ -366,7 +366,7 @@ REPORT_COLUMNS: tuple[str, ...] = (
 def write_report_csv(rows: Sequence[Row], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(REPORT_COLUMNS))
+        writer = csv.DictWriter(fh, fieldnames=list(REPORT_COLUMNS), lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow(row)
@@ -412,6 +412,7 @@ def freeze_aggregates(
         target.write_text(
             schema.to_json(sport=SPORT, source_id=SOURCE_ID, commit=source.commit),
             encoding="utf-8",
+            newline="\n",
         )
         schemas[table] = schema
     return schemas
@@ -589,7 +590,7 @@ def freeze_basketball(
             changed |= previous.keys_sha256 != frozen.keys_sha256 or previous.columns != (
                 frozen.columns
             )
-        target.write_text(frozen.to_json(), encoding="utf-8")
+        target.write_text(frozen.to_json(), encoding="utf-8", newline="\n")
         families[family] = frozen
         log(f"frozen events_{family}: {frozen.n_keys} keys, {frozen.rows_read} rows -> {target}")
 
@@ -617,7 +618,7 @@ def freeze_basketball(
     body = render_doc(
         rows, families, aggregate_schemas, source, matches_json, aliases_rows, aliases_columns
     )
-    doc_path.write_text(merge_doc(existing, body), encoding="utf-8")
+    doc_path.write_text(merge_doc(existing, body), encoding="utf-8", newline="\n")
 
     log("")
     log(text_table(rows))

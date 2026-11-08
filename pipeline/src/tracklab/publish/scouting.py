@@ -13,7 +13,8 @@ one decimal with ROUND_HALF_UP (what DuckDB's `round` does on an exact tie; Pyth
 not). A high percentile is a high value, not a verdict. A null value has no percentile and leaves
 the pool of its metric.
 
-Age (football) is in completed years at `AGE_REFERENCE`; no date of birth reaches the JSON.
+Age (football) is the Parquet's `player_age`: completed years at `AGE_REFERENCE`, which the
+warehouse publisher defines. No date of birth is published.
 """
 
 from __future__ import annotations
@@ -22,7 +23,6 @@ import hashlib
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 from typing import Any
@@ -30,10 +30,10 @@ from typing import Any
 import duckdb
 
 from tracklab.publish.examples import MIN_GAMES, MIN_MATCHES
+from tracklab.publish.warehouse import AGE, AGE_REFERENCE
 
 SCOUTING_JSON = "scouting.json"
 SCHEMA_VERSION = 1
-AGE_REFERENCE = date(2025, 6, 30)
 PER_GAME = " / games_played"
 
 # Scales: per_one (a share, 0 to 1), per_hundred (0 to 100), per_match, per_action,
@@ -251,13 +251,6 @@ def _round_value(value: float) -> float:
     return float(Decimal(repr(float(value))).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
 
-def age_at(born: date | None, reference: date = AGE_REFERENCE) -> int | None:
-    """Completed years at `reference`."""
-    if born is None:
-        return None
-    return reference.year - born.year - ((reference.month, reference.day) < (born.month, born.day))
-
-
 def _value(row: dict[str, Any], metric: Metric) -> float | None:
     raw = row[metric.column]
     if raw is None:
@@ -279,7 +272,7 @@ def _needed(spec: TableSpec) -> set[str]:
     if spec.drop_season_total:
         cols |= {"is_season_total", "games_played"}
     if spec.sport == "football":
-        cols.add("player_birthdate")
+        cols.add(AGE)
     return cols
 
 
@@ -416,7 +409,7 @@ def build(
             p["player_name"] = r["player_name"]
             p["team_name"] = r["team_name"]
             if sport == "football":
-                p["age"] = age_at(r["player_birthdate"])
+                p["age"] = r[AGE]
             players.append(p)
         pairs[sport] = players
 

@@ -699,3 +699,10 @@ def test_full_reaches_the_steps_only_while_the_job_runs(
 
     assert seen == (["1"] if full else [None])
     assert FULL_ENV not in os.environ
+
+
+@pytest.fixture(autouse=True)
+def _no_dbt_parse(monkeypatch: pytest.MonkeyPatch) -> None:
+    """`run_build` parses dbt when the manifest is stale; the tests that hand in a fake job must not
+    depend on the checkout's manifest (test_build_dbt_manifest.py covers the refresh)."""
+    monkeypatch.setattr("tracklab.build.refresh_dbt_manifest", lambda: True)

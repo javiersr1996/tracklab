@@ -873,7 +873,7 @@
       "step": "silver",
       "sport": null,
       "schema": "dbt",
-      "dbt_tests": 14,
+      "dbt_tests": 15,
       "dbt_columns": [
         "clock_kind",
         "id_prefix",

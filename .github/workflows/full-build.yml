@@ -81,7 +81,11 @@ jobs:
         run: echo "path=$(ls -t data/build/*.json | head -n1)" >> "$GITHUB_OUTPUT"
       # Compares the runner's fresh rows against the versioned platform.json and stats.json
       # (task 34); never the runner's seconds or bytes, which are of this one machine (task 37).
+      # Task 148 (P18): against the runner's own record the freshness is not compared (those times
+      # are that run's, and the check says PARTIAL: for it), so REQUIRE_FULL is off for this step.
       - run: uv run tracklab publish platform --check --run "${{ steps.build_record.outputs.path }}"
+        env:
+          TRACKLAB_REQUIRE_FULL: ""
       # Task 46: gold on the real data, through the build above; the committed Parquet and the
       # example answers must be what it wrote.
       - run: uv run tracklab publish warehouse --check
@@ -115,9 +119,12 @@ jobs:
       - run: uv run tracklab pose protocol --check
       - run: uv run tracklab pose metric --check
       - run: uv run tracklab publish pose --check
-      - run: uv run pytest -q
+      # Task 146 (P18): every contract and publish test ran on the data this job built; a skip for
+      # missing data (the -rs list) is a failure, never a green.
+      - run: uv run pytest -q -rs
         env:
           TRACKLAB_REQUIRE_FULL: ""
+          TRACKLAB_REQUIRE_DATA: "1"
       - run: uv run tracklab stats
       - uses: actions/upload-artifact@v4
         if: always()

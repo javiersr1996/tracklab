@@ -27,7 +27,7 @@ from dagster import (
 )
 from dagster_dbt import DagsterDbtTranslator, DbtCliResource, DbtProject, dbt_assets
 
-from tracklab.cli import REQUIRE_FULL
+from tracklab.cli import require_full
 from tracklab.paths import DATA_ROOT_ENV, data_root
 from tracklab.silver import dbt_plugin, incremental
 
@@ -112,7 +112,7 @@ def silver(context: AssetExecutionContext, dbt: DbtCliResource) -> Iterator[Any]
     state = incremental.read_state(root)
     forced = incremental.full_reason(
         full=bool(os.environ.get(incremental.FULL_ENV)),
-        require_full=bool(os.environ.get(REQUIRE_FULL)),
+        require_full=require_full(),
         whole_step=whole_step,
     )
     plan = incremental.make_plan(
@@ -159,7 +159,7 @@ def gold(context: AssetExecutionContext, dbt: DbtCliResource) -> Iterator[Any]:
     fingerprint = incremental.gold_fingerprint(incremental.gold_sources(manifest), inputs)
     forced = incremental.full_reason(
         full=bool(os.environ.get(incremental.FULL_ENV)),
-        require_full=bool(os.environ.get(REQUIRE_FULL)),
+        require_full=require_full(),
         whole_step=whole_step,
         step="gold",
     )

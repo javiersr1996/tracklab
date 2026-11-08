@@ -470,8 +470,8 @@ export function Lesson({ sql }: { sql: string }) {
             few to read any one match by.
           </p>
           <p>
-            Neither result closes the question. The low g is there at every window and at every distance from the hand,
-            and the lesson leaves its cause open.
+            Neither result closes the question. The low g is there at every window, and at every distance from the hand
+            except in the nearest bin of one match, too few flights to read; the lesson leaves its cause open.
           </p>
         </section>
 

@@ -118,8 +118,8 @@ export default function ScoutingPage() {
             <a href="/data/stats.json">stats.json</a>, <code>dim_match</code>); no table here ranks players from them.
           </li>
           <li>
-            Age: whole years completed at {SCOUTING.age_reference}, worked out from a date of birth this page never
-            shows. Basketball has no date of birth.
+            Age: whole years completed at {SCOUTING.age_reference}, the <code>player_age</code> column of the football
+            files. No date of birth is published anywhere on this site. Basketball has no age.
           </li>
           <li data-aliases={SCOUTING.aliases.length}>
             Aliases: the provider changed {SCOUTING.aliases.length} basketball player ids during the season and lists

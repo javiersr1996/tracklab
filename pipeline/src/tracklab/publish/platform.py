@@ -670,8 +670,8 @@ def run_publish_platform(
             )
         else:
             print(
-                f"publish platform --check: freshness not compared: {path.name} is not the run "
-                "platform.json was published from"
+                f"publish platform --check: PARTIAL: freshness not compared: {path.name} is not "
+                "the run platform.json was published from"
             )
         if problems:
             detail = "\n  ".join(problems)

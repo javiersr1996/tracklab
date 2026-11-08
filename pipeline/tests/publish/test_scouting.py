@@ -32,7 +32,6 @@ from tracklab.publish.scouting import (
     CATALOG,
     Metric,
     TableSpec,
-    age_at,
     percentile,
     run_publish_scouting,
     table_block,
@@ -61,15 +60,15 @@ BB = TableSpec(
     (Metric("pts / games_played", "Points", "per_match"), Metric("rate", "Rate", "per_one")),
 )
 
-# (player_id, group, matches, speed, birthdate)
+# (player_id, group, matches, speed, age at the reference date)
 FB_ROWS = [
-    (1, "A", 6, 30.0, date(2002, 6, 30)),
-    (2, "A", 5, 32.0, date(2002, 7, 1)),
+    (1, "A", 6, 30.0, 23),
+    (2, "A", 5, 32.0, 22),
     (3, "A", 4, 40.0, None),
-    (4, "A", 8, 28.0, date(1990, 1, 1)),
-    (5, "B", 9, 35.0, date(2000, 1, 1)),
-    (6, "B", 5, 31.0, date(2000, 1, 1)),
-    (7, "B", 2, 33.0, date(2000, 1, 1)),
+    (4, "A", 8, 28.0, 35),
+    (5, "B", 9, 35.0, 25),
+    (6, "B", 5, 31.0, 25),
+    (7, "B", 2, 33.0, 25),
 ]
 # (player_id, games, is_total, pts, rate)
 BB_ROWS = [
@@ -93,7 +92,7 @@ def fb_rows() -> list[dict[str, Any]]:
             "speed": s,
             "player_name": f"P{p}",
             "team_name": "T",
-            "player_birthdate": b,
+            "player_age": b,
         }
         for p, g, m, s, b in FB_ROWS
     ]
@@ -135,13 +134,6 @@ def test_percentile_rounds_an_exact_tie_half_up() -> None:
     pool = list(range(81))
     assert percentile(pool, 1) == 1.3
     assert percentile(pool, 3) == 3.8
-
-
-def test_age_is_completed_years_at_the_reference_date() -> None:
-    assert age_at(date(2002, 6, 30)) == 23  # birthday on the reference day: already 23
-    assert age_at(date(2002, 7, 1)) == 22  # the day after: still 22
-    assert age_at(date(1990, 1, 1)) == 35
-    assert age_at(None) is None
 
 
 def test_football_pool_is_the_floor_inside_each_position_group() -> None:
@@ -302,7 +294,7 @@ def test_the_published_file_names_the_parquet_it_read_and_carries_no_birthdate(
     assert sum(p["rows"] for p in fb["pools"]) == 5 and sum(p["rows"] for p in bb["pools"]) == 5
     assert payload["aliases"] == [{"player_id": 2, "canonical_player_id": 1}]
     # Default pair of football: the group with most players is A; the most matches are p4 (8)
-    # then p1 (6); p4 was born in 1990 (35), p1 on the reference day in 2002 (23).
+    # then p1 (6); their player_age is 35 and 23.
     pair = payload["default_pairs"]["football"]
     assert [(p["player_id"], p["age"]) for p in pair] == [(4, 35), (1, 23)]
     # Basketball: the most games in the pool are p4 (30) then p1 (20).

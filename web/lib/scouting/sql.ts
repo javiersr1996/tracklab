@@ -49,7 +49,6 @@ export interface PlayerKey {
 const NAME = /^[a-z][a-z0-9_]*$/;
 const EXPR = /^[a-z][a-z0-9_]*( \/ games_played)?$/;
 const FLOOR = /^(NOT is_season_total AND )?([a-z][a-z0-9_]*) >= \d{1,4}$/;
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const GROUP = /^[A-Za-z][A-Za-z ]*$/;
 
 function name(value: string, what: string): string {
@@ -113,12 +112,6 @@ function metricColumns(
   });
 }
 
-// Whole completed years at the catalog's date, never the date of birth itself.
-function ageSql(catalog: ScoutingCatalog): string {
-  if (!DATE.test(catalog.age_reference)) throw new Error("scouting catalog: age_reference is not a date");
-  return `date_sub('year', player_birthdate, DATE '${catalog.age_reference}')`;
-}
-
 // One window per metric over the rows of one table that pass its floor.
 function poolSelect(
   t: ScoutingTable,
@@ -137,7 +130,7 @@ function poolSelect(
 export function tableSql(catalog: ScoutingCatalog, table: string, metricIds?: readonly string[]): string {
   const t = find(catalog, table);
   const head = ["player_name", "team_name", `${name(t.sample, "sample")} AS sample`];
-  if (t.sport === "football") head.push(`${ageSql(catalog)} AS age`);
+  if (t.sport === "football") head.push(`player_age AS age`);
   const inner = poolSelect(t, pick(t, metricIds), head, (id) => id);
   return gate(`SELECT * FROM (${inner}) ORDER BY player_name, ${t.key.join(", ")}`, catalog);
 }
@@ -177,7 +170,7 @@ export function compareSql(
 
   // Name, team and age come from the first table, whether or not the player passes its floor.
   const football = sport === "football";
-  const nameCols = ["player_name", "team_name", ...(football ? [`${ageSql(catalog)} AS age`] : [])];
+  const nameCols = ["player_name", "team_name", ...(football ? [`player_age AS age`] : [])];
   ctes.push(`n AS (SELECT ${[...key, ...nameCols].join(", ")} FROM ${first.table})`);
 
   const select = ["k.slot", ...key.map((c) => `k.${c}`), "n.player_name", "n.team_name", ...(football ? ["n.age"] : [])];
