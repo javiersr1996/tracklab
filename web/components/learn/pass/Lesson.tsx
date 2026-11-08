@@ -144,7 +144,9 @@ export function Lesson({ sql }: { sql: string }) {
             the two players&apos; positions in the possession at the first frame are {x(0, "separation_m")}&nbsp;m apart, to the
             centimetre the possession is written at. The ball&apos;s chord is {x(0, "chord_m")}&nbsp;m. At the first frame the ball
             is {x(0, "from_passer_m")}&nbsp;m from where the tracking puts the passer, and at the last {x(0, "to_receiver_m")}
-            &nbsp;m from the receiver: a player is tracked where they stand, and the ball travels from hands to hands.
+            &nbsp;m from the receiver: a player is tracked where they stand, not where the ball is held. In each of the{" "}
+            {l("example_n")} passes the ball is already moving away from the passer at the first frame and is still closing on
+            the receiver at the last, so the provider&apos;s frames do not mark the ball leaving one player or reaching the other.
           </p>
           <PassArc passes={PASS_EXAMPLES} fps={PASS.fps} />
           <p>
@@ -235,8 +237,9 @@ export function Lesson({ sql }: { sql: string }) {
         <Limitations>
           <ul>
             <li>
-              The release and reception frames are the provider&apos;s. At either one the ball may still be in a player&apos;s
-              hands, and the chord counts whatever the ball does between them.
+              The release and reception frames are the provider&apos;s. In the example the ball has already left the passer&apos;s
+              tracked position at the first and has not yet reached the receiver&apos;s at the last, and the chord counts whatever
+              the ball does between them.
             </li>
             <li>
               The ball&apos;s positions are used as the file gives them, at every frame, with no filter on any flag: they are the
