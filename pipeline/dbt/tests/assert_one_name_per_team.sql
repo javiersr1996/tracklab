@@ -5,6 +5,8 @@
 -- Checked against bronze, not dim_team, because the GROUP BY in dim_team has
 -- already collapsed the evidence.
 
+-- depends_on: {{ ref('dim_team') }}
+
 WITH sides AS (
     SELECT 'basketball' AS sport, home_team_id AS native_team_id,
            trim(home_team_name) AS name, NULL AS short_name
