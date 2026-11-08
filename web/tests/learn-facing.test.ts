@@ -26,6 +26,8 @@ import type { PoseClip } from "../lib/pose/types";
 // - `wrap` into [−180, 180): "brings an angle into the half turn either side of zero" fails at 180.
 // - `circular` averaging the angles instead of their unit vectors: "averages angles on the circle" fails.
 // - "a median of 23.038°" typed in the text: "has no digit typed in the prose" fails.
+// - The head panel back on the hook player's `median_abs`: "the head panel gives the span over
+//   the players of one clip" fails (task 162).
 
 const DEG = 180 / Math.PI;
 // A skeleton facing `deg`: the left shoulder a quarter turn to the left of the facing, the right
@@ -197,6 +199,16 @@ describe("the text of lesson 11", () => {
 
   it("has no digit typed in the prose", () => {
     expect(PROSE.match(/.{0,20}\d+.{0,20}/g)).toBeNull();
+  });
+
+  it("the head panel gives the span over the players of one clip, labelled per player", () => {
+    const panel = HTML.slice(HTML.indexOf('data-head-panel="result"'), HTML.indexOf("</figure>", HTML.indexOf('data-head-panel="result"')));
+    const readout = (i: number) =>
+      [...panel.slice(panel.indexOf(`data-head-readout="${i}"`)).split("</dd>")[0].matchAll(/>(-?[\d.]+)</g)].map((m) => m[1]);
+    const c = facingFigures(FACING).clip[FACING[0].match_id];
+    expect(readout(0)).toEqual([String(c.median_lo), String(c.median_hi)]);
+    expect(readout(1)).toEqual([String(c.off_lo), String(c.off_hi)]);
+    expect(panel.match(/per player, one clip/g)).toHaveLength(2);
   });
 
   it("has none of the fence's forbidden keys outside a quote or a citation, no held-out id, no vetted phrase", () => {
