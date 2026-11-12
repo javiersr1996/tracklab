@@ -9,7 +9,7 @@ import {
   type Snapshot,
   speedOf,
 } from "../../lib/replay/engine";
-import { drawFrame, NEON_COLORS, type View, viewed, viewOf } from "../../lib/replay/render";
+import { drawFrame, NEON_COLORS, PLAYER_COLORS, type View, viewed, viewOf } from "../../lib/replay/render";
 import type { Possession } from "../../lib/replay/types";
 
 // Playwright reads the player's state from here; a production build leaves it out.
@@ -26,7 +26,7 @@ interface ReplayState {
   // Venue metres; in the hero, also where the mark sits on the canvas, in CSS px.
   entities: { i: number; x: number; y: number; px?: number; py?: number }[];
   overlay: number;
-  // Trail samples drawn behind an entity this frame: 0 on every page but the home.
+  // Trail samples drawn behind an entity this frame: 0 without trails (reduced motion, /tracking/runs).
   trail: number;
 }
 
@@ -38,15 +38,23 @@ declare global {
   }
 }
 
-// Drawn on top of each frame, after the players; returns how many marks it drew.
-export type Overlay = (ctx: CanvasRenderingContext2D, view: View, snapshot: Snapshot) => number;
+// Drawn on top of each frame, after the players; returns how many marks it drew. `scale` is the
+// canvas's pixels per CSS pixel of a 960 px drawing, which an overlay's widths and radii follow.
+export type Overlay = (ctx: CanvasRenderingContext2D, view: View, snapshot: Snapshot, scale: number) => number;
 
 const RATES: Rate[] = [0.5, 1, 2];
 
+// How far behind each player and the ball a trail reaches, where one is drawn (the hero, the
+// replay page), unless the reader asked for reduced motion.
+export const TRAIL_MS = 1400;
 // The trail is the entity's position at these fractions of `trailMs` ago, oldest first.
 const TRAIL_STEPS = Array.from({ length: 12 }, (_, k) => 1 - k / 12);
 // A hero canvas is drawn at the device's pixel ratio up to this, so a phone stays fluid.
 const HERO_MAX_DPR = 1.5;
+// The player's canvas: 960 by 560 CSS px of drawing, times the pixel ratio up to this.
+const PLAYER_W = 960;
+const PLAYER_H = 560;
+const PLAYER_MAX_DPR = 2;
 // How close to a player's mark, in CSS px, the pointer has to be to pick him.
 const HIT_PX = 28;
 
@@ -57,8 +65,8 @@ interface Props {
   overlay?: Overlay;
   name?: string;
   // The home's hero (P12): the canvas fills its box and turns the pitch upright on a portrait
-  // screen, in the neon colours with a glow under every mark; the controls shrink to the pause
-  // button and a readout. Without it, P1's player, unchanged.
+  // screen, in the neon colours; the controls shrink to the pause button and a readout. Without
+  // it, P1's player and its controls, drawn with the same neon markings and glow.
   hero?: boolean;
   // Milliseconds of each entity's path drawn fading behind it; 0 (reduced motion) draws none.
   trailMs?: number;
@@ -130,6 +138,11 @@ export function Replay({
       fit();
       observer = new ResizeObserver(fit);
       observer.observe(el);
+    } else if (canvas.current) {
+      // The player keeps its 960 by 560 drawing; a sharper screen gets more pixels for it.
+      const k = Math.min(Math.max(window.devicePixelRatio || 1, 1), PLAYER_MAX_DPR);
+      canvas.current.width = Math.round(PLAYER_W * k);
+      canvas.current.height = Math.round(PLAYER_H * k);
     }
     const loop = (now: number) => {
       if (last !== undefined) engine.tick(now - last);
@@ -146,13 +159,14 @@ export function Replay({
           trailMs > 0
             ? TRAIL_STEPS.map((f) => viewed(engine.frameAt(engine.t - trailMs * f), possession, norm))
             : undefined;
-        const markScale = hero ? Math.max(1, Math.max(ctx.canvas.width, ctx.canvas.height) / 960) : 1;
-        const trailed = drawFrame(
-          ctx,
-          possession,
-          snapshot,
-          hero ? { colors: NEON_COLORS, trail, glow: true, rotate, markScale } : { trail },
-        );
+        const markScale = Math.max(1, Math.max(ctx.canvas.width, ctx.canvas.height) / PLAYER_W);
+        const trailed = drawFrame(ctx, possession, snapshot, {
+          colors: hero ? NEON_COLORS : PLAYER_COLORS,
+          trail,
+          glow: true,
+          rotate,
+          markScale,
+        });
         const view = viewOf(ctx.canvas, possession, norm, rotate);
         // Canvas px to CSS px, for the readout and the exposed positions (hero).
         let toCss: ((x: number, y: number) => [number, number]) | undefined;
@@ -172,7 +186,7 @@ export function Replay({
             if (speedOut.current) speedOut.current.textContent = v === null ? "– m/s" : `${v.toFixed(1)} m/s`;
           }
         }
-        const marks = overlay ? overlay(ctx, view, snapshot) : 0;
+        const marks = overlay ? overlay(ctx, view, snapshot, markScale) : 0;
         exposed = {
           state: engine.state,
           t: engine.t,
@@ -326,7 +340,7 @@ export function Replay({
   }
   return (
     <figure className="replay" data-state={engine.state}>
-      <canvas ref={canvas} width={960} height={560} aria-label="Replay of the possession" />
+      <canvas ref={canvas} width={PLAYER_W} height={PLAYER_H} aria-label="Replay of the possession" />
       <div className="controls">
         {playPause}
         <input

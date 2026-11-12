@@ -473,8 +473,65 @@ a.wordmark:hover {
   color: var(--fg-muted);
 }
 
-/* Bracketed, terminal style, from 640 px; a phone drops the brackets and wraps the six links
-   (P15). */
+/* On a phone (P21) the entries are one line under the wordmark: they, and a group's pages under
+   them, are a strip that scrolls sideways with its scrollbar hidden, faded at an edge where more
+   links wait (Nav.tsx marks the edges; before it runs, the end fades). The focus ring is drawn
+   inside the link, where the strip does not clip it. */
+@media (max-width: 39.98rem) {
+  .site-header-row {
+    gap: var(--space-1) var(--space-4);
+    padding-block: var(--space-2) 0;
+  }
+
+  .site-nav {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
+  .site-nav ul {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    scroll-padding-inline: var(--space-7);
+  }
+
+  .site-nav ul::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-nav li {
+    flex: none;
+  }
+
+  .site-nav a {
+    white-space: nowrap;
+  }
+
+  .site-nav a:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .site-nav ul:not([data-end="true"]) {
+    mask-image: linear-gradient(to right, #000 calc(100% - var(--space-7)), transparent);
+  }
+
+  .site-nav ul[data-start="false"] {
+    mask-image: linear-gradient(to left, #000 calc(100% - var(--space-7)), transparent);
+  }
+
+  .site-nav ul[data-start="false"]:not([data-end="true"]) {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--space-7),
+      #000 calc(100% - var(--space-7)),
+      transparent
+    );
+  }
+}
+
+/* Bracketed, terminal style, from 640 px. */
 @media (min-width: 40rem) {
   .site-nav ul {
     gap: 0 var(--space-5);
@@ -504,8 +561,8 @@ a.wordmark:hover {
   box-shadow: 0 8px 14px -10px var(--neon); /* the underline's glow */
 }
 
-/* Under Tracking, Engineering or Warehouse (P15, P17), the group's pages: a row of their own under a hairline,
-   the same links in mixed case and without brackets, a level below the six. */
+/* Under Tracking, Engineering, Warehouse or Learn (P15, P17, P21), the group's pages: a row of
+   their own under a hairline, the same links in mixed case and without brackets, a level below. */
 .site-subnav {
   flex-basis: 100%;
   border-top: 1px solid var(--rule);
@@ -871,6 +928,7 @@ a.wordmark:hover {
 }
 
 .controls + .replay,
+.controls + .replay-stage,
 .controls + .replay-placeholder {
   margin-top: var(--space-4);
 }
@@ -1960,6 +2018,87 @@ body:has(.home) .site-header::after {
   border-radius: var(--radius);
 }
 
+/* The player outside the hero (/tracking/replay, /tracking/runs): a window onto the hero, its
+   canvas framed by a fine cyan edge with a soft glow. */
+.replay:not(.replay-hero) canvas {
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 32px -10px var(--neon-glow);
+}
+
+/* /tracking/replay: the player, and what is on show under it on a phone, beside it from 1000 px. */
+.replay-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (min-width: 1000px) {
+  .replay-stage {
+    grid-template-columns: minmax(0, 960px) minmax(18rem, 1fr);
+  }
+}
+
+.replay-facts {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.replay-facts > div {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.replay-facts dt {
+  color: var(--fg-muted);
+}
+
+.replay-facts dd {
+  margin: 0;
+  color: var(--fg-strong);
+  overflow-wrap: anywhere;
+}
+
+.replay-legend {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-3) 0 0;
+  border-top: 1px solid var(--rule);
+  list-style: none;
+}
+
+/* The canvas's own colours (lib/replay/render.ts): marks, not text. */
+.replay-swatch {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: var(--space-2);
+  border-radius: 50%;
+}
+
+.replay-swatch-attack {
+  background: var(--neon);
+  box-shadow: 0 0 8px var(--neon);
+}
+
+.replay-swatch-defence {
+  background: var(--neon-alt);
+  box-shadow: 0 0 8px var(--neon-alt);
+}
+
+.replay-swatch-ball {
+  background: var(--canvas-hi);
+}
+
+.replay-context-about {
+  margin: 0;
+  color: var(--fg-muted);
+}
+
 .hook {
   margin: 0 auto;
   max-width: 640px;
@@ -1977,6 +2116,193 @@ body:has(.home) .site-header::after {
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
   margin-top: var(--space-2);
+}
+
+/* /engineering/quality's charts (task 183): a card per check, one column, two from 1000 px. A row
+   per sport: its label and median in text, then a strip whose dots stack where matches share a
+   value. Basketball's dots cyan (12.3:1 on the card), football's magenta (5.8:1), the median a
+   white line (18.9:1), the reference a dashed slate one (7.4:1), the baseline 3.1:1; the labels
+   say which is which. */
+.qcharts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-4);
+  margin: var(--space-5) 0 var(--space-6);
+}
+
+@media (min-width: 1000px) {
+  .qcharts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.qchart {
+  --dot: 0.75rem;
+  --rise: 0.4rem; /* between two stacked dots */
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.qchart h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step-2);
+}
+
+.qchart-unit {
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+
+.qchart p {
+  max-width: none;
+}
+
+.qchart-ref {
+  margin: 0;
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.qchart-ref-swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 0;
+  margin-right: var(--space-1);
+  vertical-align: middle;
+  border-top: 2px dashed var(--neon-muted);
+}
+
+.qrow-label {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.qrow-sport {
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+.qrow-sport::before {
+  content: "";
+  display: inline-block;
+  width: var(--dot);
+  height: var(--dot);
+  margin-right: var(--space-2);
+  border-radius: 50%;
+  vertical-align: -0.05em;
+}
+
+.qrow[data-sport="basketball"] .qrow-sport::before,
+.qrow[data-sport="basketball"] .qdot {
+  background: var(--neon);
+}
+
+.qrow[data-sport="football"] .qrow-sport::before,
+.qrow[data-sport="football"] .qdot {
+  background: var(--neon-alt);
+}
+
+.qrow-label output {
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+.qrow-note {
+  margin: var(--space-1) 0 0;
+  color: var(--fg-muted);
+}
+
+/* The strip and the axis share their inset, so a dot at either end stays inside the card. */
+.qstrip,
+.qaxis {
+  position: relative;
+  margin-inline: calc(var(--dot) / 2);
+}
+
+.qstrip {
+  height: calc(var(--dot) + (var(--levels) - 1) * var(--rise) + var(--space-2));
+  margin-top: var(--space-1);
+  border-bottom: 1px solid var(--canvas-axis);
+}
+
+.qdot {
+  position: absolute;
+  bottom: calc(var(--space-1) + var(--level) * var(--rise));
+  width: var(--dot);
+  height: var(--dot);
+  border: 1px solid var(--raised);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.qstrip-median,
+.qstrip-ref {
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  bottom: 0;
+  transform: translateX(-50%);
+}
+
+.qstrip-median {
+  width: 2px;
+  background: var(--canvas-hi);
+}
+
+.qstrip-ref {
+  border-left: 2px dashed var(--neon-muted);
+}
+
+.qaxis {
+  height: 1.5rem;
+  margin-top: var(--space-2);
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.qaxis span {
+  position: absolute;
+  top: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.qaxis span:first-child {
+  transform: translateX(calc(-1 * var(--dot) / 2));
+}
+
+.qaxis span:last-child {
+  transform: translateX(calc(-100% + var(--dot) / 2));
+}
+
+.qchart-reading {
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+}
+
+.qtable summary {
+  display: list-item;
+  padding-block: var(--space-2);
+  font-family: var(--font-neon);
+  font-weight: 600;
+  color: var(--neon);
+  cursor: pointer;
+}
+
+.qtable summary:hover {
+  color: var(--fg-strong);
+}
+
+.qtable[open] summary {
+  margin-bottom: var(--space-3);
 }
 
 /* The architecture (P20, task 173): a window onto the canvas's near-black on any band, boxes on a
@@ -3093,22 +3419,164 @@ body:has(.home) .site-header::after {
   font-size: var(--step-h2);
 }
 
+/* Each lesson a card (task 182): its drawing beside the number, the title and the line about it,
+   the whole card the link's target. One column, two from 900 px. On a phone the drawing sits beside
+   the number and the title and the line runs under both. */
 .lessons {
   display: grid;
-  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+@media (min-width: 900px) {
+  .lessons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .lessons li {
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--rule);
+  position: relative;
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "thumb meta"
+    "thumb title"
+    "about about";
+  gap: var(--space-2) var(--space-4);
+  max-width: none; /* .band li keeps prose at --measure; a card is not prose */
+  padding: var(--space-4);
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+@media (min-width: 640px) {
+  .lessons li {
+    grid-template-columns: 10rem minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "thumb meta"
+      "thumb title"
+      "thumb about";
+    column-gap: var(--space-5);
+  }
+}
+
+.lessons li:hover {
+  border-color: var(--neon-line-strong);
+  box-shadow: 0 0 24px -8px var(--neon-glow);
+}
+
+.lessons li:has(a:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.lessons .lesson-meta {
+  grid-area: meta;
+  margin: 0;
 }
 
 .lessons h3 {
-  margin: 0 0 var(--space-3);
+  grid-area: title;
+  margin: 0;
   font-size: var(--step-h3);
+}
+
+.lessons h3 a {
+  color: var(--fg-strong);
+  text-decoration: none;
+}
+
+.lessons h3 a:focus-visible {
+  outline: none;
+}
+
+.lessons h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.lessons li:hover h3 a {
+  color: var(--neon);
+}
+
+.lesson-about {
+  grid-area: about;
+  margin: 0;
+  color: var(--fg-muted);
+}
+
+.lessons .lesson-status {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+/* The drawing: marks on the canvas's near-black, in the figures' palette (lib/learn/thumbs.ts):
+   cyan the data 13.1:1, magenta what it is set against 6.2:1, white 20.1:1, slate 3.2:1. */
+.lesson-thumb {
+  grid-area: thumb;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 8 / 5;
+  align-self: start;
+  background: var(--canvas);
+  border: 1px solid var(--canvas-line);
+  border-radius: var(--radius);
+}
+
+.thumb-ink {
+  fill: var(--neon);
+  stroke: var(--neon);
+}
+
+.thumb-alt {
+  fill: var(--neon-alt);
+  stroke: var(--neon-alt);
+}
+
+.thumb-hi {
+  fill: var(--canvas-hi);
+  stroke: var(--canvas-hi);
+}
+
+.thumb-axis {
+  fill: var(--canvas-edge);
+  stroke: var(--canvas-axis);
+}
+
+.thumb-band {
+  fill: var(--neon-line);
+}
+
+.lesson-thumb .thumb-stroke {
+  fill: none;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lesson-thumb .thumb-dashed {
+  stroke-dasharray: 3 2.5;
+}
+
+.lesson-thumb .thumb-stroke.thumb-ink {
+  filter: drop-shadow(0 0 2px var(--neon-glow));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lessons li {
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
 }
 
 .lesson-status {
@@ -3692,6 +4160,33 @@ figure.run-here {
 
 .runs-fold[open] > summary {
   margin-bottom: var(--space-4);
+}
+
+/* A source's own wording folded under the plain sentence it backs (a rule, a published note), one
+   click away and still in the HTML. */
+.runs-rule > summary,
+.pose-note > summary,
+.platform-note > summary {
+  cursor: pointer;
+  width: fit-content;
+  font-family: var(--font-neon);
+  color: var(--link);
+}
+
+.runs-rule[open] > summary,
+.pose-note[open] > summary,
+.platform-note[open] > summary {
+  margin-bottom: var(--space-2);
+}
+
+/* The stage's plain name under its code, and an id after a player's name: secondary text. */
+.runs-stage-name {
+  display: block;
+  color: var(--fg-muted);
+}
+
+.runs-id {
+  color: var(--fg-muted);
 }
 
 /* "Skip to content" (P19, task 152): off screen until it takes the focus, then a neon button over

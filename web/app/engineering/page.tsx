@@ -59,6 +59,11 @@ export default function PlatformPage() {
         <p className="platform-subtitle lede" data-subtitle>
           {PLATFORM.subtitle}
         </p>
+        <p data-lede>
+          How this site is built: a pipeline downloads the raw data, cleans it in stages and publishes
+          the small files every page reads. The title is the latest build&apos;s own measure of what
+          went in and what came out.
+        </p>
         <p>
           One pipeline run, {PLATFORM.layers.length} layers: raw, bronze, silver, gold, quality,
           publish. Each layer&apos;s
@@ -71,7 +76,7 @@ export default function PlatformPage() {
           <p data-pose-share>
             Of the {(pose.bytes + pose.otherBytes).toLocaleString("en-US")} raw bytes,{" "}
             {pose.bytes.toLocaleString("en-US")} come from the{" "}
-            {pluralize(pose.files, "body-pose zip")} of opendata-bodypose that P6 added (see{" "}
+            {pluralize(pose.files, "body-pose zip")} of opendata-bodypose (the body pose on{" "}
             <a href="/tracking/pose">/tracking/pose</a>); the other sources account for{" "}
             {pose.otherBytes.toLocaleString("en-US")}.
           </p>

@@ -53,9 +53,9 @@ export const SECTIONS = [
   },
 ] as const;
 
-// The header's six entries (P15, task 121, Javier's option 1 of 2026-11-01), and About (P20). Tracking,
-// Engineering and Warehouse (P17) group pages, which a second row of the header lists on any page
-// under them.
+// The header's entries (P15, task 121, Javier's option 1 of 2026-11-01), and About (P20). Tracking,
+// Engineering, Warehouse (P17) and Learn group pages, which a second row of the header lists on any
+// page under them; Learn holds the lessons and the SQL course, whose addresses did not move (P21).
 export type NavEntry = { href: string; nav: string; pages?: { href: string; nav: string }[] };
 export const NAV: NavEntry[] = [
   {
@@ -83,10 +83,17 @@ export const NAV: NavEntry[] = [
     pages: [
       { href: "/warehouse", nav: "Console" },
       { href: "/warehouse/scouting", nav: "Scouting" },
+      { href: "/warehouse/positions", nav: "Positions" },
     ],
   },
-  { href: "/learn", nav: "Learn" },
-  { href: "/sql", nav: "SQL" },
+  {
+    href: "/learn",
+    nav: "Learn",
+    pages: [
+      { href: "/learn", nav: "Lessons" },
+      { href: "/sql", nav: "SQL course" },
+    ],
+  },
   { href: "/euroleague", nav: "EuroLeague" },
   // P20, task 171: who made the site, not a section of it.
   { href: "/about", nav: "About" },
@@ -94,6 +101,15 @@ export const NAV: NavEntry[] = [
 
 // The header marks a section current on its own page and on every page under it.
 export const isCurrent = (path: string, href: string) => path === href || path.startsWith(`${href}/`);
+
+// An entry is current under its own address and under any of its pages' (Learn on /sql/joins).
+export const inEntry = (path: string, entry: NavEntry) =>
+  isCurrent(path, entry.href) || (entry.pages ?? []).some((p) => isCurrent(path, p.href));
+
+// Of a group's pages, the one a path is on: the longest address it is under (/engineering is
+// Platform, /engineering/quality Quality, /learn/gravity Lessons); none on a hub like /tracking.
+export const pageOf = (path: string, pages: NonNullable<NavEntry["pages"]>) =>
+  pages.filter((p) => isCurrent(path, p.href)).sort((a, b) => b.href.length - a.href.length)[0];
 
 // Where the site is served, so a relative og:image becomes the absolute URL a link preview needs.
 export const SITE = "https://tracklab-sable.vercel.app";

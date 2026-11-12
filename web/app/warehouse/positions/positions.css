@@ -1,0 +1,287 @@
+/* /warehouse/positions (task 184a). The pitch is a window onto the canvas like the replay's, its
+   markings a cyan hairline (3.7:1); each group a card where it plays. On a phone the pitch stands
+   upright, own goal at the foot, and a card is the group and its median; from 48rem it lies
+   across, own goal to the left, and each card adds n and the group's strip. The strip's dots are
+   cyan at 45% (3.2:1 on the canvas), the middle half a cyan bar (13.1:1), the median a white tick
+   (20.1:1). Every label is HTML at 16 px or more. */
+.pos-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-5);
+}
+
+.pos-switch button[aria-pressed="true"] {
+  border-color: var(--neon);
+  background: var(--neon);
+  color: var(--neon-bg);
+}
+
+.pos-title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--step-h3);
+}
+
+.pos-scale {
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+
+.pos-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5) var(--space-6);
+  align-items: start;
+}
+
+@media (min-width: 75rem) {
+  .pos-grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+}
+
+.pos-pitch,
+.pos-ranked {
+  margin: 0;
+}
+
+.pos-pitch figcaption,
+.pos-ranked figcaption {
+  max-width: var(--measure);
+  color: var(--fg-muted);
+}
+
+.pos-pitch figcaption {
+  margin-top: var(--space-3);
+}
+
+.pos-field {
+  position: relative;
+  max-width: 26rem;
+  margin-inline: auto;
+  aspect-ratio: var(--aspect-tall);
+  background: var(--canvas);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 32px -10px var(--neon-glow);
+}
+
+.pos-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pos-lines path {
+  fill: none;
+  stroke: var(--neon-line-strong);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.pos-lines-wide {
+  display: none;
+}
+
+.pos-cards {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pos-card {
+  position: absolute;
+  left: var(--tx);
+  top: var(--ty);
+  display: grid;
+  width: max-content;
+  max-width: 10rem;
+  padding: var(--space-1) var(--space-2);
+  background: rgba(3, 7, 18, 0.9);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  font-family: var(--font-neon);
+  line-height: 1.25;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.pos-card-name {
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+.pos-card-value output {
+  font-size: var(--step-2);
+  font-weight: 700;
+  color: var(--neon);
+  text-shadow: 0 0 12px var(--neon-glow);
+}
+
+.pos-unit,
+.pos-card-n {
+  color: var(--fg-muted);
+}
+
+.pos-card-n,
+.pos-strip-compact {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .pos-field {
+    max-width: none;
+    aspect-ratio: var(--aspect);
+  }
+
+  .pos-lines-wide {
+    display: block;
+  }
+
+  .pos-lines-tall {
+    display: none;
+  }
+
+  .pos-card {
+    left: var(--x);
+    top: var(--y);
+    width: 11rem;
+    max-width: none;
+    padding: var(--space-2) var(--space-3);
+    text-align: left;
+  }
+
+  .pos-card-n,
+  .pos-strip-compact {
+    display: block;
+  }
+}
+
+/* A pool across the metric's axis. */
+.pos-strip {
+  position: relative;
+  height: 2rem;
+  margin-inline: 0.25rem;
+  border-bottom: 1px solid var(--canvas-axis);
+}
+
+.pos-strip-compact {
+  height: 1.5rem;
+  margin-top: var(--space-1);
+}
+
+.pos-dot {
+  position: absolute;
+  top: calc(50% + var(--jitter) * 60%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--neon);
+  opacity: 0.45;
+  transform: translate(-50%, -50%);
+}
+
+.pos-iqr {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--neon);
+  box-shadow: 0 0 8px var(--neon-glow);
+  transform: translateY(-50%);
+}
+
+.pos-med {
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  width: 3px;
+  background: var(--canvas-hi);
+  transform: translateX(-50%);
+}
+
+.pos-ranked {
+  padding: var(--space-4);
+  background: var(--canvas);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.pos-ranked figcaption {
+  margin-bottom: var(--space-3);
+}
+
+.pos-ranked ol {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pos-ranked li {
+  max-width: none;
+}
+
+.pos-rank-label {
+  margin: 0;
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.pos-rank-name {
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+.pos-rank-label output {
+  font-weight: 700;
+  color: var(--neon);
+}
+
+.pos-axis {
+  position: relative;
+  height: 1.5rem;
+  margin: var(--space-2) 0.25rem 0;
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.pos-axis span {
+  position: absolute;
+  top: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.pos-axis span:first-child {
+  transform: none;
+}
+
+.pos-axis span:last-child {
+  transform: translateX(-100%);
+}
+
+.pos-query {
+  margin-top: var(--space-6);
+}
+
+.pos-limits code,
+.positions-page .page-head code {
+  overflow-wrap: anywhere;
+}
+
+/* A metric change slides each mark to its new place where motion is welcome. */
+@media (prefers-reduced-motion: no-preference) {
+  .pos-dot,
+  .pos-iqr,
+  .pos-med {
+    transition:
+      left 0.4s ease,
+      width 0.4s ease;
+  }
+}

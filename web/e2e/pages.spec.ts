@@ -98,10 +98,62 @@ test("the selector switches sport and restarts the renderer", async ({ page }) =
   if (EXPOSED) {
     const after = await page.evaluate(() => window.__replay!);
     expect([after.sport, after.state, after.frameIndex]).toEqual(["football", "idle", 0]);
-    // The trails are the home's: /tracking/replay draws none.
-    expect(after.trail).toBe(0);
+    // The hero's trails, drawn by the same renderer (P21; until then /tracking/replay drew none).
+    expect(after.trail).toBeGreaterThan(0);
   }
 });
+
+test("/tracking/replay draws no trail under prefers-reduced-motion, and still plays", async ({ page }) => {
+  test.skip(!EXPOSED, "needs window.__replay");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/tracking/replay?p=fb_possession_1899585_123.json");
+  await expect.poll(() => page.evaluate(() => window.__replay?.state)).toBe("idle");
+  await page.getByRole("button", { name: "Play" }).click();
+  await expect.poll(() => page.evaluate(() => window.__replay?.state)).toBe("playing");
+  expect(await page.evaluate(() => window.__replay!.trail)).toBe(0);
+});
+
+interface ContextFile {
+  sport: string;
+  match: { home: string; away: string; kickoff_utc: string };
+  sample_rate_hz: number;
+  entities: { kind: string }[];
+  frames: unknown[];
+  surface: { length_m: number; width_m: number };
+}
+
+// The panel beside the player (P21): the possession file's facts, beside the canvas from 1000 px
+// and filling the row's right side, under it on a phone.
+for (const width of [390, 1440]) {
+  test(`/tracking/replay at ${width} px: the context panel prints the file's facts, beside or under the player`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const file = "bb_possessions_possession-114243-3-79.json";
+    const p = (await (await page.request.get(`/data/possessions/${file}`)).json()) as ContextFile;
+    await page.goto(`/tracking/replay?p=${file}`);
+    const panel = page.locator("[data-replay-context]");
+    await expect(panel).toBeVisible();
+    const fact = (k: string) => panel.locator(`[data-context="${k}"]`);
+    await expect(fact("sport")).toHaveText(p.sport);
+    await expect(fact("match")).toHaveText(`${p.match.home} v ${p.match.away}, ${p.match.kickoff_utc.slice(0, 10)}`);
+    await expect(fact("rate")).toHaveText(`${p.sample_rate_hz} times a second, ${p.frames.length} frames`);
+    await expect(fact("players")).toHaveText(`${p.entities.filter((e) => e.kind === "player").length} players and the ball`);
+    await expect(fact("surface")).toHaveText(`${p.surface.length_m} by ${p.surface.width_m} m`);
+    await expect(panel).toContainText("One Canvas renderer draws both sports from the same frames schema");
+
+    const canvas = (await page.locator("figure.replay canvas").boundingBox())!;
+    const box = (await panel.boundingBox())!;
+    if (width >= 1000) {
+      expect(box.x, "the panel starts right of the canvas").toBeGreaterThanOrEqual(canvas.x + canvas.width);
+      const main = (await page.locator(".replay-stage").boundingBox())!;
+      expect(box.x + box.width, "the panel reaches the row's right edge").toBeGreaterThan(main.x + main.width - 2);
+    } else {
+      expect(box.y, "the panel sits under the player").toBeGreaterThanOrEqual(canvas.y + canvas.height);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  });
+}
 
 test("the hero's actions: Open replay follows the possession playing, Run SQL opens the course", async ({
   page,
@@ -123,7 +175,8 @@ test("the hero's actions: Open replay follows the possession playing, Run SQL op
     const sport = await page.evaluate(() => window.__replay!.sport);
     expect(href).toContain(sport === "basketball" ? "p=bb_" : "p=fb_");
   }
-  // Keyboard: focus and Enter open that very possession on /tracking/replay, idle and without trails.
+  // Keyboard: focus and Enter open that very possession on /tracking/replay, idle, with the
+  // hero's trails (P21).
   await open.focus();
   await expect(open).toBeFocused();
   await page.keyboard.press("Enter");
@@ -131,7 +184,7 @@ test("the hero's actions: Open replay follows the possession playing, Run SQL op
   await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
   if (EXPOSED) {
     await expect.poll(() => page.evaluate(() => window.__replay?.state)).toBe("idle");
-    expect(await page.evaluate(() => window.__replay!.trail)).toBe(0);
+    await expect.poll(() => page.evaluate(() => window.__replay!.trail)).toBeGreaterThan(0);
   }
 });
 
@@ -247,7 +300,7 @@ test("under prefers-reduced-motion the hero is a still frame, no trails, and off
 // P13: a phone must not scroll sideways on the pages the neon theme touched.
 test.describe("no horizontal scroll at 390 px", () => {
   test.use({ viewport: { width: 390, height: 844 } });
-  for (const path of ["/tracking", "/tracking/replay", "/engineering/quality", "/engineering", "/engineering/bulletin", "/engineering/history", "/warehouse", "/warehouse/scouting", "/sql", "/sql/select"]) {
+  for (const path of ["/tracking", "/tracking/replay", "/engineering/quality", "/engineering", "/engineering/bulletin", "/engineering/history", "/warehouse", "/warehouse/scouting", "/warehouse/positions", "/sql", "/sql/select"]) {
     test(path, async ({ page }) => {
       await page.goto(path);
       await page.waitForLoadState("load");

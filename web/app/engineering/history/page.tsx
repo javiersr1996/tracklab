@@ -94,7 +94,12 @@ export default function HistoryPage() {
     <main id="main" className="page">
       <PageHead eyebrow="Every build, kept">
         <h1>Build history</h1>
-        <p className="lede" data-history-lede>
+        <p className="lede" data-lede>
+          Every time the pipeline runs, it records how long each step took and what its tests said.
+          This page keeps all those records and flags a step whose last run was slower than its earlier
+          runs allow.
+        </p>
+        <p data-history-lede>
           {entries.length} <code>tracklab build</code> records, from {day(entries[0].id)} to{" "}
           {day(entries[entries.length - 1].id)}, as <code>tracklab publish history</code> copied them
           into <a href="/data/history.json">history.json</a>, which only ever adds entries. A run is
@@ -116,7 +121,8 @@ export default function HistoryPage() {
         <Legend />
         {p16 && mode("silver", "full") && mode("silver", "skip") && mode("silver", "incremental") && (
           <p data-p16>
-            What P16&apos;s incremental silver changed, in the {p16.runs.length} runs of{" "}
+            What incremental silver (rebuilding only the matches whose input changed) changed, in the{" "}
+            {p16.runs.length} runs of{" "}
             <code>{p16.select}</code>: silver took a median of{" "}
             <span data-field="silver.full">{s1(mode("silver", "full")!.median)}</span>{"\u00a0"}s rebuilding every
             match ({mode("silver", "full")!.runs} runs) and{" "}

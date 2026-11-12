@@ -106,8 +106,10 @@ export function scaleText(m: ScoutingMetric): string {
 
 const DECIMALS: Record<string, number> = { per_one: 3, per_hundred: 1, m_per_min: 1, km_per_h: 2, per_30_tip: 2, per_action: 2 };
 
+export const decimalsOf = (m: ScoutingMetric): number => (m.scale === "per_match" ? (m.unit === "m" ? 0 : 2) : (DECIMALS[m.scale] ?? 2));
+
 export function formatValue(m: ScoutingMetric, value: number): string {
-  const d = m.scale === "per_match" ? (m.unit === "m" ? 0 : 2) : (DECIMALS[m.scale] ?? 2);
+  const d = decimalsOf(m);
   return value.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 

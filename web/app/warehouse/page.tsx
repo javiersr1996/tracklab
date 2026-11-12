@@ -21,6 +21,10 @@ export default function WarehousePage() {
     <main id="main" className="page warehouse-page">
       <PageHead eyebrow="Season aggregates">
         <h1>Warehouse</h1>
+        <p className="lede" data-lede>
+          Ask the season statistics of both leagues your own questions in SQL, run inside your browser.
+          Start from an example or write a query, and the answer comes back as a table.
+        </p>
         <p>
           SQL over the season aggregates of both bundles, run by DuckDB in this browser on Parquet
           files that are read by HTTP range. Nothing of the engine is downloaded until you run a
@@ -36,7 +40,11 @@ export default function WarehousePage() {
             Scout the players
           </Link>
           : every player who passes a table&apos;s sample floor, in a table sorted by any metric, each percentile beside its pool, and two players side
-          by side.
+          by side.{" "}
+          <Link href="/warehouse/positions" prefetch={false}>
+            How football positions differ physically
+          </Link>
+          : the same football pools by position group, on a pitch.
         </p>
       </PageHead>
 

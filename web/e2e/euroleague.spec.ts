@@ -1,4 +1,5 @@
 import { expect, type Page, type Request, test } from "@playwright/test";
+import { headerLinks, whole } from "./header";
 import type { League, Team } from "../lib/euroleague/atlas";
 import type { Pair, Runs } from "../lib/euroleague/runs";
 
@@ -328,24 +329,24 @@ test("the ninth section: in the header, on the home page and in the sitemap", as
 });
 
 for (const width of [390, 1000, 1200, 1440]) {
-  test(`at ${width} px: the seven header links neither overlap nor overflow; no sideways scroll; text 16 px or more`, async ({ page }) => {
+  test(`at ${width} px: the six header links neither overlap nor overflow; no sideways scroll; text 16 px or more`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/euroleague");
     await page.waitForLoadState("networkidle");
     const sideways = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(sideways, "page wider than the window by").toBeLessThanOrEqual(0);
-    const links = await page.locator(".site-nav a").evaluateAll((els) =>
-      els.map((e) => {
-        const r = e.getBoundingClientRect();
-        return { x: r.left, y: r.top, r: r.right, b: r.bottom };
-      }),
-    );
-    expect(links).toHaveLength(7); // the six sections and About (P20)
+    // The five sections and About (P21: Learn holds the SQL course). On a phone they are a strip
+    // that scrolls: its box stays in the window, and a link past its edge is hidden in it.
+    const links = (await headerLinks(page)).slice(1);
+    expect(links).toHaveLength(6);
     for (const [i, a] of links.entries()) {
-      expect(a.x, `link ${i} starts inside the window`).toBeGreaterThanOrEqual(0);
-      expect(a.r, `link ${i} ends inside the window`).toBeLessThanOrEqual(width);
+      expect(a.strip!.x, `link ${i}'s row starts inside the window`).toBeGreaterThanOrEqual(0);
+      expect(a.strip!.r, `link ${i}'s row ends inside the window`).toBeLessThanOrEqual(width);
+      if (!whole(a)) expect(a.strip!.scrolls && width < 640, `link ${i} cut by a row that does not scroll`).toBe(true);
+      if (a.current) expect(whole(a), "EuroLeague in view").toBe(true);
       for (const b of links.slice(i + 1)) {
-        expect(a.x < b.r && b.x < a.r && a.y < b.b && b.y < a.b, `header link ${i} overlaps another`).toBe(false);
+        if (a.shownR <= a.shownX || b.shownR <= b.shownX) continue; // scrolled out of view
+        expect(a.shownX < b.shownR && b.shownX < a.shownR && a.y < b.b && b.y < a.b, `header link ${i} overlaps another`).toBe(false);
       }
     }
     const small = await page.evaluate(() =>

@@ -5,6 +5,7 @@ import { LEAGUE } from "../../lib/euroleague/data";
 import { GRAVITY_HOOK } from "../../lib/learn/gravity-data";
 import { PLATFORM } from "../../lib/platform";
 import { readRuns } from "../../lib/runs/data";
+import { STAGE_NAMES } from "../../lib/runs/types";
 
 // What the site found (P20, task 175): one claim per card, its figure large, in the words of the
 // page the card opens, never stronger. Every figure is read here at build time through the loaders
@@ -70,7 +71,7 @@ function findings(): Finding[] {
       ),
       vs: (
         <>
-          dead at <span data-fig="dead_at">{died}</span>
+          dead at <span data-fig="dead_at">{died}</span>, {STAGE_NAMES[died]}
         </>
       ),
       title: "The project that died, published dead",

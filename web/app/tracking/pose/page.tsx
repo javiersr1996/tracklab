@@ -62,6 +62,15 @@ const REASON: Record<string, string> = {
   m2_precision: "the median propagated sd is larger than the half spread between players frozen as the bar",
 };
 
+// What the page is, before any detail: no figure in it (the e2e reads the prose for digits).
+const LEDE = (
+  <p className="lede" data-lede>
+    Body pose data gives a player&apos;s joints, not just a dot on the pitch, wherever the provider
+    could resolve his body. This page draws those skeletons in your browser and asks them one question: do players take more steps a
+    second when they run fast than when they run slowly?
+  </p>
+);
+
 function Reason({ doc, p }: { doc: PoseSummary; p: string }) {
   const value = String(at(doc, p));
   return (
@@ -78,7 +87,7 @@ function Status({ doc }: { doc: PoseSummary }) {
     body = (
       <>
         Alive. Match <S doc={doc} p="protocol.calibration" /> calibrated the instrument and match{" "}
-        <S doc={doc} p="protocol.confirmation" /> confirmed it once (<code>M4</code>):{" "}
+        <S doc={doc} p="protocol.confirmation" /> confirmed it once, in the replication check:{" "}
         <S doc={doc} p="verdict.confirmation.m4.m2_positive" /> of{" "}
         <S doc={doc} p="verdict.confirmation.m4.m2_players" /> players have a higher cadence in the fast
         band than in the slow one, and the median propagated sd is{" "}
@@ -268,10 +277,16 @@ function Concordance({ doc }: { doc: PoseSummary }) {
     <section data-section="m3">
       <h2>Where the second signal disagrees</h2>
       <p>
-        <code>M3</code> compares the cadence of the ankles&apos; signal along the run with that of their
+        This check compares the cadence of the ankles&apos; signal along the run with that of their
         vertical separation, in the fast band. It is a consistency check, not a verdict, and it carries no
-        propagated error: <S doc={doc} p="tables.m3" />.
+        propagated error.
       </p>
+      <details className="pose-note">
+        <summary>Why it has no error bar</summary>
+        <p>
+          <S doc={doc} p="tables.m3" />.
+        </p>
+      </details>
       {Object.keys(tables.matches).map((match) => (
         <div className="table-scroll" key={match}>
           <table data-table="m3" data-match={match}>
@@ -377,6 +392,7 @@ function View({
     <>
       <PageHead eyebrow="Body pose">
         <h1>{clip ? <><C clip={clip} p="joints.length" /> joints</> : "Body pose"}</h1>
+        {LEDE}
         <Status doc={doc} />
       </PageHead>
       <Band dark>
@@ -484,8 +500,15 @@ function View({
             <p>
               Each value is the median over that player&apos;s windows with a cadence, with the sd propagated
               from the joints&apos; predicted error beside it, and the number of windows it comes from in the
-              same row. The windows of one player are not independent. <S doc={doc} p="tables.note" />.
+              same row. The windows of one player are not independent. The mean speed has no error beside
+              it: the file&apos;s positions carry no predicted error.
             </p>
+            <details className="pose-note">
+              <summary>The note published with the tables</summary>
+              <p>
+                <S doc={doc} p="tables.note" />.
+              </p>
+            </details>
             <MetricTables doc={doc} />
           </section>
         )}
@@ -546,6 +569,7 @@ export default function PosePage() {
       ) : (
         <PageHead eyebrow="Body pose">
           <h1>Body pose</h1>
+          {LEDE}
           {doc === "failed" || loaded === "failed" ? (
             <p role="alert">The pose data could not be loaded.</p>
           ) : null}

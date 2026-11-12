@@ -43,6 +43,11 @@ export default function ScoutingPage() {
     <main id="main" className="page scouting-page">
       <PageHead eyebrow="Season aggregates" aside={<ProbePanel probe={probeView()} />}>
         <h1>Scouting</h1>
+        <p className="lede" data-lede>
+          Find players by the numbers: everyone with a large enough sample, sortable by any statistic,
+          each value with a percentile that says where the player stands among comparable ones. Pick
+          two to see them side by side.
+        </p>
         <p>
           Every player who passes a table&apos;s sample floor, from the two season aggregates, in one table you can sort by
           any metric; the page says how many rows of the table fall under the floor and are left out. Each value comes with

@@ -50,9 +50,13 @@ export const NEON_COLORS: Palette = {
   ballEdge: null,
 };
 
+// The player of `/tracking/replay` and `/tracking/runs`: the hero's neon markings (drawn with its
+// glow), and P13's marks, whose undetected numbers and ball edge keep their contrast on a canvas
+// that is read closely, not glanced at.
+export const PLAYER_COLORS: Palette = { ...COLORS, surface: NEON_COLORS.surface };
+
 // What a frame is drawn with, beyond the frame itself. Every field is optional and `drawFrame`
-// with none is P1's renderer unchanged: `/tracking/replay`, `/tracking/runs` and the lessons pass
-// nothing.
+// with none is P1's renderer unchanged.
 export interface DrawOptions {
   colors?: Palette;
   // Earlier snapshots of the same possession, oldest first: each entity's path through them

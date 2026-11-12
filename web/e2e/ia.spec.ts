@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
+import { headerLinks, whole } from "./header";
 
 // P15, task 121: the information architecture. /tracking is the hub of the three pages that
 // show the tracking itself; each card opens its page.
@@ -19,23 +20,29 @@ test("the /tracking hub lists replay, runs and pose as cards that open them", as
   await expect(page.locator("h1")).toHaveText("The run that moves nobody");
 });
 
-// The header (Javier's option 1): six entries and About (P20), and under Tracking, Engineering or
-// Warehouse (P17) a second row with the group's pages, the one on show marked current.
-const ENTRIES = ["Tracking", "Engineering", "Warehouse", "Learn", "SQL", "EuroLeague", "About"];
+// The header (Javier's option 1): the entries and About (P20), and under Tracking, Engineering,
+// Warehouse (P17) or Learn (P21: the lessons and the SQL course, one idea, one entry) a second row
+// with the group's pages, the one on show marked current.
+const ENTRIES = ["Tracking", "Engineering", "Warehouse", "Learn", "EuroLeague", "About"];
 const GROUPS = [
   { path: "/tracking/pose", group: "Tracking", pages: ["Replay", "Runs", "Pose"], current: "Pose" },
   { path: "/engineering/quality", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Quality" },
   { path: "/engineering", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Platform" },
   { path: "/engineering/history", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "History" },
-  { path: "/warehouse", group: "Warehouse", pages: ["Console", "Scouting"], current: "Console" },
-  { path: "/warehouse/scouting", group: "Warehouse", pages: ["Console", "Scouting"], current: "Scouting" },
+  { path: "/warehouse", group: "Warehouse", pages: ["Console", "Scouting", "Positions"], current: "Console" },
+  { path: "/warehouse/scouting", group: "Warehouse", pages: ["Console", "Scouting", "Positions"], current: "Scouting" },
+  { path: "/warehouse/positions", group: "Warehouse", pages: ["Console", "Scouting", "Positions"], current: "Positions" },
+  { path: "/learn", group: "Learn", pages: ["Lessons", "SQL course"], current: "Lessons" },
+  { path: "/learn/gravity", group: "Learn", pages: ["Lessons", "SQL course"], current: "Lessons" },
+  { path: "/sql", group: "Learn", pages: ["Lessons", "SQL course"], current: "SQL course" },
+  { path: "/sql/joins", group: "Learn", pages: ["Lessons", "SQL course"], current: "SQL course" },
 ];
 
-test("the header has the seven entries, and a group's pages only under that group", async ({ page }) => {
-  await page.goto("/learn");
+test("the header has the six entries, and a group's pages only under that group", async ({ page }) => {
+  await page.goto("/euroleague");
   const nav = page.getByRole("navigation", { name: "Sections" });
   await expect(nav.getByRole("link")).toHaveText(ENTRIES);
-  await expect(nav.locator("[aria-current]")).toHaveText(["Learn"]);
+  await expect(nav.locator("[aria-current]")).toHaveText(["EuroLeague"]);
   await expect(page.locator(".site-subnav")).toHaveCount(0);
 
   for (const g of GROUPS) {
@@ -48,47 +55,88 @@ test("the header has the seven entries, and a group's pages only under that grou
   // The hub itself: its group's row, no page of it current.
   await page.goto("/tracking");
   await expect(page.getByRole("navigation", { name: "Tracking" }).locator("[aria-current]")).toHaveCount(0);
-  // A sub-link opens its page.
+  // A sub-link opens its page; Learn's opens the SQL course at its own address.
   await page.getByRole("navigation", { name: "Tracking" }).getByRole("link", { name: "Replay" }).click();
   await expect(page).toHaveURL(/\/tracking\/replay$/);
+  await page.goto("/learn");
+  await page.getByRole("navigation", { name: "Learn" }).getByRole("link", { name: "SQL course" }).click();
+  await expect(page).toHaveURL(/\/sql$/);
+  await expect(nav.locator("[aria-current]")).toHaveText(["Learn"]);
 });
 
 for (const width of [390, 1440]) {
-  test(`at ${width} px the header's two rows neither overlap nor overflow, text 16 px or more`, async ({ page }) => {
+  test(`at ${width} px the header's rows neither overlap nor overflow, the current links in view, text 16 px or more`, async ({
+    page,
+  }) => {
     await page.setViewportSize({ width, height: 900 });
-    // The wordmark and the seven, then the group's row: three under Tracking, four under
-    // Engineering, two under Warehouse.
+    // The wordmark and the six, then the group's row: three under Tracking and under Warehouse
+    // (Positions, task 184a), four under Engineering, two under Learn.
     const LINKS: Record<string, number> = {
-      "/": 8,
-      "/tracking/runs": 11,
-      "/engineering/bulletin": 12,
-      "/engineering/history": 12,
+      "/": 7,
+      "/tracking/runs": 10,
+      "/engineering/bulletin": 11,
+      "/engineering/history": 11,
       "/warehouse": 10,
       "/warehouse/scouting": 10,
-      "/about": 8,
+      "/warehouse/positions": 10,
+      "/learn/gravity": 9,
+      "/sql/windows": 9,
+      "/about": 7,
     };
     for (const path of Object.keys(LINKS)) {
       await page.goto(path);
       const sideways = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       expect(sideways, `${path} wider than the window by`).toBeLessThanOrEqual(0);
-      const links = await page.locator(".site-header a").evaluateAll((els) =>
-        els.map((e) => {
-          const r = e.getBoundingClientRect();
-          return { x: r.left, y: r.top, r: r.right, b: r.bottom, size: parseFloat(getComputedStyle(e).fontSize) };
-        }),
-      );
+      const links = await headerLinks(page);
       expect(links.length, path).toBe(LINKS[path]);
       for (const [i, a] of links.entries()) {
-        expect(a.x, `${path} link ${i} starts inside the window`).toBeGreaterThanOrEqual(0);
-        expect(a.r, `${path} link ${i} ends inside the window`).toBeLessThanOrEqual(width);
+        const box = a.strip ?? { x: a.x, r: a.r };
+        expect(box.x, `${path} link ${i}'s row starts inside the window`).toBeGreaterThanOrEqual(0);
+        expect(box.r, `${path} link ${i}'s row ends inside the window`).toBeLessThanOrEqual(width);
         expect(a.size, `${path} link ${i} font size`).toBeGreaterThanOrEqual(16);
+        // A link the row cuts is in a strip that scrolls; on a wide screen nothing is cut.
+        if (!whole(a)) expect(a.strip?.scrolls && width < 640, `${path} ${a.text} cut by a row that does not scroll`).toBe(true);
+        if (a.current) expect(whole(a), `${path} current ${a.text} in view`).toBe(true);
         for (const b of links.slice(i + 1)) {
-          expect(a.x < b.r && b.x < a.r && a.y < b.b && b.y < a.b, `${path} header link ${i} overlaps another`).toBe(false);
+          if (a.shownR <= a.shownX || b.shownR <= b.shownX) continue; // scrolled out of view
+          const overlap = a.shownX < b.shownR && b.shownX < a.shownR && a.y < b.b && b.y < a.b;
+          expect(overlap, `${path} header link ${i} overlaps another`).toBe(false);
         }
+      }
+      // The entries are one line, and on a phone the header is short: about 100 px, 140 with a
+      // group's row (it was 143 and 196 px with the entries in two lines).
+      const tops = new Set(links.slice(1, 7).map((l) => Math.round(l.y)));
+      expect(tops.size, `${path}: the entries in one line`).toBe(1);
+      if (width < 640) {
+        const height = (await page.locator(".site-header").boundingBox())!.height;
+        expect(height, `${path} header height`).toBeLessThanOrEqual(LINKS[path] > 7 ? 140 : 100);
       }
     }
   });
 }
+
+// On a phone the strip is still a list of links in the tab order: each one Tab reaches is brought
+// into view inside the strip, so a keyboard reader sees where the focus is.
+test("at 390 px Tab walks the header's strip and each focused link is in view", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/engineering/history");
+  const seen: string[] = [];
+  for (let k = 0; k < 16 && seen.length < 10; k++) {
+    await page.keyboard.press("Tab");
+    const focus = await page.evaluate(() => {
+      const a = document.activeElement as HTMLElement | null;
+      const ul = a?.closest(".site-nav ul");
+      if (!a || !ul) return null;
+      const r = a.getBoundingClientRect();
+      const s = ul.getBoundingClientRect();
+      return { text: a.textContent ?? "", inside: r.left >= s.left - 1 && r.right <= s.right + 1 };
+    });
+    if (!focus) continue;
+    expect(focus.inside, `${focus.text} in view when focused`).toBe(true);
+    seen.push(focus.text);
+  }
+  expect(seen).toEqual([...ENTRIES, "Platform", "Quality", "Bulletin", "History"]);
+});
 
 // The old routes answer with a permanent redirect to the new ones, the query carried over. The
 // list is typed here, not read from next.config.ts, so a redirect dropped there fails here.

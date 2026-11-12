@@ -2,9 +2,11 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { Replay } from "../../../components/replay/Replay";
+import { ReplayContext } from "../../../components/replay/Context";
+import { Replay, TRAIL_MS } from "../../../components/replay/Replay";
 import { Band, PageHead } from "../../../components/site/Band";
 import { POSSESSIONS, SPORTS } from "../../../lib/data";
+import { usePrefersReducedMotion } from "../../../lib/motion";
 import type { Possession, Sport } from "../../../lib/replay/types";
 
 const fileName = (file: string) => file.replace(/^possessions\//, "");
@@ -15,6 +17,8 @@ function Picker() {
   const file = useSearchParams().get("p") ?? fileName(POSSESSIONS[0].file);
   const current = POSSESSIONS.find((p) => fileName(p.file) === file) ?? POSSESSIONS[0];
   const [possession, setPossession] = useState<Possession | null>(null);
+  // Trails behind every mark, as on the home's hero, unless the reader asked for stillness.
+  const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     let live = true;
@@ -59,18 +63,26 @@ function Picker() {
           value={current.possession_id}
           onChange={(e) => choose(inMatch.find((p) => p.possession_id === e.target.value))}
         >
-          {inMatch.map((p) => (
-            <option key={p.possession_id} value={p.possession_id}>
-              {p.possession_id} ({p.duration_s} s)
+          {/* The index has no period or clock: the label is the order in the match and the
+              length, the id stays the value. */}
+          {inMatch.map((p, k) => (
+            <option key={p.possession_id} value={p.possession_id} title={p.possession_id}>
+              Possession {k + 1} of {inMatch.length}, {p.duration_s} s
             </option>
           ))}
         </select>
       </div>
-      {possession?.possession_id === current.possession_id ? (
-        <Replay key={possession.possession_id} possession={possession} />
-      ) : (
-        <div className="replay-placeholder" />
-      )}
+      {/* The player and, beside it from 1000 px (under it on a phone), what is on show. */}
+      <div className="replay-stage">
+        {possession?.possession_id === current.possession_id ? (
+          <>
+            <Replay key={possession.possession_id} possession={possession} trailMs={reduceMotion ? 0 : TRAIL_MS} />
+            <ReplayContext possession={possession} entry={current} />
+          </>
+        ) : (
+          <div className="replay-placeholder" />
+        )}
+      </div>
     </>
   );
 }
@@ -80,6 +92,11 @@ export default function ReplayPage() {
     <main id="main" className="page">
       <PageHead eyebrow="One renderer">
         <h1>Replay any possession</h1>
+        <p className="lede" data-lede>
+          Watch a real possession again from above: every player and the ball, where SkillCorner&apos;s
+          open tracking data puts them, many times a second. Pick a sport, a match and a possession,
+          then play it, scrub through it or slow it down.
+        </p>
       </PageHead>
       <Band dark>
         <Suspense fallback={<div className="replay-placeholder" />}>

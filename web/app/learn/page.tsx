@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Thumb } from "../../components/learn/Thumb";
 import { Band, PageHead } from "../../components/site/Band";
 import { SketchPanel } from "../../components/site/SketchPanel";
 import { learnMetadata } from "../../lib/learn/metadata";
@@ -38,11 +39,12 @@ export default function LearnPage() {
               <ol className="lessons">
                 {lessons.map((l) => (
                   <li key={l.slug} data-lesson={l.slug} data-status={l.status}>
+                    <Thumb slug={l.slug} />
                     <p className="lesson-meta">
                       Lesson <span data-series-n={l.n}>{l.n}</span> · {l.sport}
                     </p>
                     <h3>{l.status === "published" ? <Link href={lessonHref(l)}>{l.title}</Link> : l.title}</h3>
-                    <p>{l.about}</p>
+                    <p className="lesson-about">{l.about}</p>
                     {l.status === "published" ? null : <p className="lesson-status">In preparation</p>}
                   </li>
                 ))}
