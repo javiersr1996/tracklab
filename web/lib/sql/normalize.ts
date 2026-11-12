@@ -1,6 +1,6 @@
 // The fingerprint of a query's result: the one rule Python and the browser both implement, ported
-// line by line from `pipeline/src/tracklab/sqlcourse/normalize.py` (the spec's "Normalization",
-// docs/superpowers/specs/2026-10-26-sql-course-design.md). DuckDB types the values itself: the
+// line by line from `pipeline/src/tracklab/sqlcourse/normalize.py` (the spec's "Normalization").
+// DuckDB types the values itself: the
 // query runs inside `wrap`, whose one column is each row as JSON text. Each number becomes the
 // integer `sign(x) * floor(|x| * 10000 + 0.5)` in IEEE doubles (`-0` is `0`); strings, null and
 // booleans stay as JSON gives them; a list or a struct is normalized inside. Unordered rows are
