@@ -60,6 +60,7 @@ from tracklab.pose.verdict import run_pose_verdict
 from tracklab.publish.examples import run_publish_examples
 from tracklab.publish.history import run_publish_history
 from tracklab.publish.lineage import run_publish_lineage
+from tracklab.publish.occupancy import run_publish_occupancy
 from tracklab.publish.platform import run_publish_platform
 from tracklab.publish.pose import run_publish_pose
 from tracklab.publish.possessions import run_publish_possessions
@@ -231,6 +232,10 @@ def _cmd_publish_examples(args: argparse.Namespace) -> int:
 
 def _cmd_publish_scouting(args: argparse.Namespace) -> int:
     return run_publish_scouting(data_dir=args.data_dir, out_dir=args.out_dir, check=args.check)
+
+
+def _cmd_publish_occupancy(args: argparse.Namespace) -> int:
+    return run_publish_occupancy(args.data_dir, args.out_dir, check=args.check)
 
 
 def _cmd_publish_runs(args: argparse.Namespace) -> int:
@@ -769,6 +774,33 @@ def build_parser() -> argparse.ArgumentParser:
         help="Regenerate in memory and compare byte for byte with the file on disk; write nothing.",
     )
     publish_scouting.set_defaults(func=_cmd_publish_scouting)
+
+    publish_occupancy = publish_sub.add_parser(
+        "occupancy",
+        help="Write occupancy.json: where the players of each football position group are, a "
+        "share per cell of one pitch with every team attacking left to right, pooled over the "
+        "matches outside the Analytics Cup fence.",
+    )
+    publish_occupancy.add_argument(
+        "--data-dir",
+        type=Path,
+        default=data_root(),
+        help="Data root; silver frames and dimensions and the bronze football match_players are "
+        "read from it (default: data).",
+    )
+    publish_occupancy.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path("../web/public/data"),
+        help="Where occupancy.json goes (default: ../web/public/data).",
+    )
+    publish_occupancy.add_argument(
+        "--check",
+        action="store_true",
+        help="Recompute when every match of the file is at hand and compare the bytes (FULL n/n); "
+        "on a slice run the code and say PARTIAL k/n; write nothing.",
+    )
+    publish_occupancy.set_defaults(func=_cmd_publish_occupancy)
 
     publish_runs = publish_sub.add_parser(
         "runs",

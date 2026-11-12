@@ -511,7 +511,7 @@ def render_bulletin(summary: dict[str, Any], hook: dict[str, Any]) -> str:
         "",
         "## On the body pose bundle's own z axis",
         "",
-        "Body pose is not part of this bulletin (P6 in the project plan), and its z "
+        "Body pose is not part of this bulletin, and its z "
         "is a different quantity from the one measured above (a joint's position "
         "relative to the player's own centroid, not a ball or player position on "
         "tracking). Its dataset card documents that axis as a known weak point in "

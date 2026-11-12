@@ -56,7 +56,7 @@ For a consumer: code that assumes one shape across a whole bundle will silently 
 
 ## On the body pose bundle's own z axis
 
-Body pose is not part of this bulletin (P6 in the project plan), and its z is a different quantity from the one measured above (a joint's position relative to the player's own centroid, not a ball or player position on tracking). Its dataset card documents that axis as a known weak point in that other product; cited here as honest context, not as support for this bulletin's own gravity bias:
+Body pose is not part of this bulletin, and its z is a different quantity from the one measured above (a joint's position relative to the player's own centroid, not a ball or player position on tracking). Its dataset card documents that axis as a known weak point in that other product; cited here as honest context, not as support for this bulletin's own gravity bias:
 
 > `z` is not a height above the pitch. It is accurate relative to the player's centroid, but not necessarily in the pitch coordinate system, so it can be negative. Treat it as pose geometry rather than elevation. This will improve with future Body Pose enhancements.
 

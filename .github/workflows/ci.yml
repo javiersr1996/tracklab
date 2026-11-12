@@ -112,6 +112,9 @@ jobs:
       - run: uv run tracklab publish examples --check
       # Task 134 (P17): scouting.json is what the published warehouse Parquet give (their sha256 inside).
       - run: uv run tracklab publish scouting --check
+      # Task 184b (P22): the fixtures hold one possession of one of occupancy.json's matches, so
+      # the code runs on it and the check prints PARTIAL 1/10; full-build.yml compares the bytes.
+      - run: uv run tracklab publish occupancy --check
       # Task 60: the synthetic sweep reads no data, so CI regenerates all of it and compares
       # the bytes of reports/pose_sweep.json (about 1.5 minutes).
       - run: uv run tracklab pose sweep --check

@@ -176,6 +176,16 @@ uv run tracklab pose metric --check             # the metric in both matches (ta
 uv run tracklab publish pose --check            # pose.json and the clips
 ```
 
+## Occupancy
+
+[`/tracking/occupancy`](https://tracklab-sable.vercel.app/tracking/occupancy) is where the players of
+each football position group are, a share per cell of one pitch with every team attacking the same
+way, pooled over the football matches the Analytics Cup fence leaves open.
+
+```
+uv run tracklab publish occupancy --check       # occupancy.json from silver, one match at a time
+```
+
 ## Learn
 
 [`/learn`](https://tracklab-sable.vercel.app/learn) is a series of short lessons that start from one

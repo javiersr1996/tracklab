@@ -33,7 +33,11 @@ export default async function PositionsPage() {
           The pools are the ones <Link href="/warehouse/scouting" prefetch={false}>the scouting table</Link> ranks players
           in: the rows of <code>fb_physical</code> that pass its sample floor, <code data-floor>{view.floor}</code> (at least{" "}
           {view.floorMin} matches), {pools.length} position groups of {Math.min(...sizes)} to {Math.max(...sizes)} players.
-          Pick a metric; the pitch and the ranking beside it follow.
+          Pick a metric; the pitch and the ranking beside it follow. This page shows how much they run;{" "}
+          <Link href="/tracking/occupancy" prefetch={false}>
+            where football positions play
+          </Link>{" "}
+          shows where they are, from the tracking.
         </p>
       </PageHead>
 

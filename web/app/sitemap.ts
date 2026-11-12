@@ -4,13 +4,15 @@ import { SECTIONS, SITE } from "../lib/sections";
 import { SQL_LESSONS, sqlHref } from "../lib/sql/course";
 
 // The home page, the /tracking hub (P15), the nine sections, the bulletin and the build history
-// (P16), the scouting table (P17) and the positions page (task 184a), every published
-// lesson (a lesson in preparation has no page), the SQL lessons (/sql is a section) and /about (P20).
+// (P16), the scouting table (P17), the positions page (task 184a) and the occupancy map (task
+// 184b), every published lesson (a lesson in preparation has no page), the SQL lessons (/sql is a
+// section) and /about (P20).
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [
     "/",
     "/tracking",
     ...SECTIONS.map((s) => s.href),
+    "/tracking/occupancy",
     "/engineering/bulletin",
     "/engineering/history",
     "/warehouse/scouting",

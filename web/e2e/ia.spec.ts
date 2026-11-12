@@ -25,7 +25,8 @@ test("the /tracking hub lists replay, runs and pose as cards that open them", as
 // with the group's pages, the one on show marked current.
 const ENTRIES = ["Tracking", "Engineering", "Warehouse", "Learn", "EuroLeague", "About"];
 const GROUPS = [
-  { path: "/tracking/pose", group: "Tracking", pages: ["Replay", "Runs", "Pose"], current: "Pose" },
+  { path: "/tracking/pose", group: "Tracking", pages: ["Replay", "Runs", "Pose", "Occupancy"], current: "Pose" },
+  { path: "/tracking/occupancy", group: "Tracking", pages: ["Replay", "Runs", "Pose", "Occupancy"], current: "Occupancy" },
   { path: "/engineering/quality", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Quality" },
   { path: "/engineering", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Platform" },
   { path: "/engineering/history", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "History" },
@@ -69,11 +70,12 @@ for (const width of [390, 1440]) {
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    // The wordmark and the six, then the group's row: three under Tracking and under Warehouse
-    // (Positions, task 184a), four under Engineering, two under Learn.
+    // The wordmark and the six, then the group's row: four under Tracking (Occupancy, task 184b)
+    // and under Engineering, three under Warehouse (Positions, task 184a), two under Learn.
     const LINKS: Record<string, number> = {
       "/": 7,
-      "/tracking/runs": 10,
+      "/tracking/runs": 11,
+      "/tracking/occupancy": 11,
       "/engineering/bulletin": 11,
       "/engineering/history": 11,
       "/warehouse": 10,
