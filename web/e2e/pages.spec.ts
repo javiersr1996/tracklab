@@ -300,7 +300,7 @@ test("under prefers-reduced-motion the hero is a still frame, no trails, and off
 // P13: a phone must not scroll sideways on the pages the neon theme touched.
 test.describe("no horizontal scroll at 390 px", () => {
   test.use({ viewport: { width: 390, height: 844 } });
-  for (const path of ["/tracking", "/tracking/replay", "/engineering/quality", "/engineering", "/engineering/bulletin", "/engineering/history", "/warehouse", "/warehouse/scouting", "/warehouse/positions", "/sql", "/sql/select"]) {
+  for (const path of ["/tracking", "/tracking/replay", "/engineering/quality", "/engineering", "/engineering/bulletin", "/engineering/history", "/warehouse", "/warehouse/scouting", "/warehouse/positions", "/tracking/occupancy", "/sql", "/sql/select"]) {
     test(path, async ({ page }) => {
       await page.goto(path);
       await page.waitForLoadState("load");

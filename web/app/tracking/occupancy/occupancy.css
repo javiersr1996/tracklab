@@ -1,0 +1,233 @@
+/* /tracking/occupancy (task 184b). The heat map sits on the canvas like the positions page's pitch,
+   its markings the same cyan hairline over the cells; one ramp from a dark cyan to white for every
+   map. On a phone the large pitch stands upright, attack up; from 48rem it lies across, attack to
+   the right. Every label is HTML at 16 px or more. A switch of group redraws at once: the page has
+   no motion, so a reader who asks for less has nothing to stop. */
+.occ-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.occ-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-5);
+}
+
+.occ-switch button[aria-pressed="true"] {
+  border-color: var(--neon);
+  background: var(--neon);
+  color: var(--neon-bg);
+}
+
+.occ-title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--step-h3);
+}
+
+.occ-n {
+  display: block;
+  color: var(--fg-muted);
+  font-size: var(--step-0);
+  font-weight: 500;
+}
+
+.occ-figure,
+.occ-legend {
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+.occ-figure figcaption {
+  max-width: var(--measure);
+  margin-top: var(--space-3);
+  color: var(--fg-muted);
+}
+
+.occ-direction {
+  display: flex;
+  max-width: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-neon);
+  color: var(--neon);
+}
+
+.occ-arrow {
+  width: 2.5rem;
+  height: 0.75rem;
+}
+
+.occ-arrow-across {
+  display: none;
+}
+
+.occ-arrow-up {
+  width: 0.75rem;
+  height: 1.5rem;
+}
+
+.occ-arrow path,
+.occ-lines {
+  fill: none;
+  stroke: var(--neon-line-strong);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.occ-arrow path {
+  stroke: var(--neon);
+  stroke-width: 2;
+}
+
+.occ-field {
+  position: relative;
+  max-width: 26rem;
+  margin-inline: auto;
+  aspect-ratio: var(--aspect-tall);
+  background: var(--canvas);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 32px -10px var(--neon-glow);
+}
+
+.occ-map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.occ-wide {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .occ-field {
+    max-width: none;
+    aspect-ratio: var(--aspect);
+  }
+
+  .occ-wide {
+    display: block;
+  }
+
+  .occ-tall {
+    display: none;
+  }
+
+  .occ-arrow-across {
+    display: block;
+  }
+
+  .occ-arrow-up {
+    display: none;
+  }
+}
+
+/* The legend: the steps of the one scale, each with the largest share it holds. */
+.occ-legend {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--canvas);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.occ-legend figcaption {
+  max-width: var(--measure);
+  margin-bottom: var(--space-3);
+  color: var(--fg-muted);
+}
+
+.occ-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-neon);
+}
+
+@media (min-width: 48rem) {
+  .occ-steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.occ-steps li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: none;
+}
+
+.occ-swatch {
+  flex: none;
+  width: 2rem;
+  height: 1.25rem;
+  border: 1px solid var(--canvas-axis);
+}
+
+.occ-legend-note {
+  max-width: var(--measure);
+  margin-top: var(--space-3);
+  color: var(--fg-muted);
+}
+
+/* The small multiples: every group on one scale, two across on a phone, three from 48rem. */
+.occ-multiples-title {
+  margin-top: var(--space-6);
+  font-size: var(--step-h3);
+}
+
+.occ-multiples {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 48rem) {
+  .occ-multiples {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.occ-multiples li {
+  max-width: none;
+}
+
+.occ-multiples svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--canvas);
+  border: 1px solid var(--neon-line);
+  border-radius: var(--radius);
+}
+
+.occ-multiple-name {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-neon);
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+.occ-multiple-n {
+  margin: var(--space-1) 0 0;
+  color: var(--fg-muted);
+}
+
+.occ-limits code,
+.occupancy-page .page-head code {
+  overflow-wrap: anywhere;
+}

@@ -15,6 +15,7 @@ const PAGES = [
   "/warehouse",
   "/warehouse/scouting",
   "/warehouse/positions",
+  "/tracking/occupancy",
 ];
 
 // Waits for what the page fetches before it writes its head (pose, runs).

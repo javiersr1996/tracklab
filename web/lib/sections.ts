@@ -65,6 +65,7 @@ export const NAV: NavEntry[] = [
       { href: "/tracking/replay", nav: "Replay" },
       { href: "/tracking/runs", nav: "Runs" },
       { href: "/tracking/pose", nav: "Pose" },
+      { href: "/tracking/occupancy", nav: "Occupancy" },
     ],
   },
   {
