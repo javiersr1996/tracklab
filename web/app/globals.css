@@ -871,6 +871,7 @@ a.wordmark:hover {
 }
 
 .controls + .replay,
+.controls + .replay-stage,
 .controls + .replay-placeholder {
   margin-top: var(--space-4);
 }
@@ -1958,6 +1959,87 @@ body:has(.home) .site-header::after {
   aspect-ratio: 960 / 560;
   background: var(--canvas);
   border-radius: var(--radius);
+}
+
+/* The player outside the hero (/tracking/replay, /tracking/runs): a window onto the hero, its
+   canvas framed by a fine cyan edge with a soft glow. */
+.replay:not(.replay-hero) canvas {
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 32px -10px var(--neon-glow);
+}
+
+/* /tracking/replay: the player, and what is on show under it on a phone, beside it from 1000 px. */
+.replay-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (min-width: 1000px) {
+  .replay-stage {
+    grid-template-columns: minmax(0, 960px) minmax(18rem, 1fr);
+  }
+}
+
+.replay-facts {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.replay-facts > div {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.replay-facts dt {
+  color: var(--fg-muted);
+}
+
+.replay-facts dd {
+  margin: 0;
+  color: var(--fg-strong);
+  overflow-wrap: anywhere;
+}
+
+.replay-legend {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-3) 0 0;
+  border-top: 1px solid var(--rule);
+  list-style: none;
+}
+
+/* The canvas's own colours (lib/replay/render.ts): marks, not text. */
+.replay-swatch {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: var(--space-2);
+  border-radius: 50%;
+}
+
+.replay-swatch-attack {
+  background: var(--neon);
+  box-shadow: 0 0 8px var(--neon);
+}
+
+.replay-swatch-defence {
+  background: var(--neon-alt);
+  box-shadow: 0 0 8px var(--neon-alt);
+}
+
+.replay-swatch-ball {
+  background: var(--canvas-hi);
+}
+
+.replay-context-about {
+  margin: 0;
+  color: var(--fg-muted);
 }
 
 .hook {

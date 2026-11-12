@@ -23,7 +23,7 @@ function arrowOverlay(clip: Clip, possession: Possession, direction: [number, nu
   const anchors = new Map(instant.o.map(([i, x, y]) => [i, [x, y] as const]));
   // The direction is in the attack frame of the leg's period: venue = attack_sign * it.
   const [dx, dy] = direction.map((c) => c * possession.attack_sign);
-  return (ctx, view, snapshot) => {
+  return (ctx, view, snapshot, scale) => {
     if (snapshot.t < instant.t) return 0;
     let drawn = 0;
     for (const d of clip.defence) {
@@ -37,19 +37,19 @@ function arrowOverlay(clip: Clip, possession: Possession, direction: [number, nu
       ctx.save();
       ctx.strokeStyle = d.is_marker ? MARKER_COLOR : OTHER_COLOR;
       ctx.fillStyle = ctx.strokeStyle;
-      ctx.lineWidth = d.is_marker ? 4 : 2;
-      ctx.setLineDash(d.displacement_m < 0 ? [6, 4] : []);
+      ctx.lineWidth = (d.is_marker ? 4 : 2) * scale;
+      ctx.setLineDash(d.displacement_m < 0 ? [6 * scale, 4 * scale] : []);
       ctx.beginPath();
       ctx.moveTo(x0, y0);
       ctx.lineTo(x1, y1);
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.beginPath();
-      ctx.arc(x1, y1, d.is_marker ? 5 : 3, 0, 2 * Math.PI);
+      ctx.arc(x1, y1, (d.is_marker ? 5 : 3) * scale, 0, 2 * Math.PI);
       ctx.fill();
       if (d.is_marker) {
         ctx.beginPath();
-        ctx.arc(x0, y0, 14, 0, 2 * Math.PI);
+        ctx.arc(x0, y0, 14 * scale, 0, 2 * Math.PI);
         ctx.stroke();
       }
       ctx.restore();
@@ -73,7 +73,7 @@ function Who({ clips, id, fig }: { clips: Possession[]; id: string; fig?: string
   const code = <code data-fig={fig}>{id}</code>;
   return person ? (
     <>
-      {person} <span className="runs-id">({code})</span>
+      {person} <span className="runs-id">{code}</span>
     </>
   ) : (
     code

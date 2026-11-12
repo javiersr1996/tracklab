@@ -2,9 +2,11 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { Replay } from "../../../components/replay/Replay";
+import { ReplayContext } from "../../../components/replay/Context";
+import { Replay, TRAIL_MS } from "../../../components/replay/Replay";
 import { Band, PageHead } from "../../../components/site/Band";
 import { POSSESSIONS, SPORTS } from "../../../lib/data";
+import { usePrefersReducedMotion } from "../../../lib/motion";
 import type { Possession, Sport } from "../../../lib/replay/types";
 
 const fileName = (file: string) => file.replace(/^possessions\//, "");
@@ -15,6 +17,8 @@ function Picker() {
   const file = useSearchParams().get("p") ?? fileName(POSSESSIONS[0].file);
   const current = POSSESSIONS.find((p) => fileName(p.file) === file) ?? POSSESSIONS[0];
   const [possession, setPossession] = useState<Possession | null>(null);
+  // Trails behind every mark, as on the home's hero, unless the reader asked for stillness.
+  const reduceMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     let live = true;
@@ -68,11 +72,17 @@ function Picker() {
           ))}
         </select>
       </div>
-      {possession?.possession_id === current.possession_id ? (
-        <Replay key={possession.possession_id} possession={possession} />
-      ) : (
-        <div className="replay-placeholder" />
-      )}
+      {/* The player and, beside it from 1000 px (under it on a phone), what is on show. */}
+      <div className="replay-stage">
+        {possession?.possession_id === current.possession_id ? (
+          <>
+            <Replay key={possession.possession_id} possession={possession} trailMs={reduceMotion ? 0 : TRAIL_MS} />
+            <ReplayContext possession={possession} entry={current} />
+          </>
+        ) : (
+          <div className="replay-placeholder" />
+        )}
+      </div>
     </>
   );
 }

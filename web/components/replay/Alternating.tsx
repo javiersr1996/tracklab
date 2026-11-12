@@ -4,10 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { type IndexEntry, replayHref } from "../../lib/data";
 import { usePrefersReducedMotion } from "../../lib/motion";
 import type { Possession } from "../../lib/replay/types";
-import { Replay } from "./Replay";
-
-// How far behind each player and the ball the hero's trail reaches.
-const HERO_TRAIL_MS = 1400;
+import { Replay, TRAIL_MS } from "./Replay";
 
 // Plays the given possessions one after another, forever, starting on load. As the home's hero
 // (P12) it fills its box with trails; under `prefers-reduced-motion` it shows the first frame,
@@ -50,7 +47,7 @@ export function Alternating({
       autoplay={!reduceMotion}
       onEnded={next}
       hero={hero}
-      trailMs={hero && !reduceMotion ? HERO_TRAIL_MS : 0}
+      trailMs={hero && !reduceMotion ? TRAIL_MS : 0}
       href={hero ? replayHref(entries[k]) : undefined}
     />
   );
