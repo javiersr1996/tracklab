@@ -40,7 +40,11 @@ export default function WarehousePage() {
             Scout the players
           </Link>
           : every player who passes a table&apos;s sample floor, in a table sorted by any metric, each percentile beside its pool, and two players side
-          by side.
+          by side.{" "}
+          <Link href="/warehouse/positions" prefetch={false}>
+            How football positions differ physically
+          </Link>
+          : the same football pools by position group, on a pitch.
         </p>
       </PageHead>
 

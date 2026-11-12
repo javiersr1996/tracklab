@@ -29,8 +29,9 @@ const GROUPS = [
   { path: "/engineering/quality", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Quality" },
   { path: "/engineering", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Platform" },
   { path: "/engineering/history", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "History" },
-  { path: "/warehouse", group: "Warehouse", pages: ["Console", "Scouting"], current: "Console" },
-  { path: "/warehouse/scouting", group: "Warehouse", pages: ["Console", "Scouting"], current: "Scouting" },
+  { path: "/warehouse", group: "Warehouse", pages: ["Console", "Scouting", "Positions"], current: "Console" },
+  { path: "/warehouse/scouting", group: "Warehouse", pages: ["Console", "Scouting", "Positions"], current: "Scouting" },
+  { path: "/warehouse/positions", group: "Warehouse", pages: ["Console", "Scouting", "Positions"], current: "Positions" },
   { path: "/learn", group: "Learn", pages: ["Lessons", "SQL course"], current: "Lessons" },
   { path: "/learn/gravity", group: "Learn", pages: ["Lessons", "SQL course"], current: "Lessons" },
   { path: "/sql", group: "Learn", pages: ["Lessons", "SQL course"], current: "SQL course" },
@@ -68,15 +69,16 @@ for (const width of [390, 1440]) {
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    // The wordmark and the six, then the group's row: three under Tracking, four under
-    // Engineering, two under Warehouse and under Learn.
+    // The wordmark and the six, then the group's row: three under Tracking and under Warehouse
+    // (Positions, task 184a), four under Engineering, two under Learn.
     const LINKS: Record<string, number> = {
       "/": 7,
       "/tracking/runs": 10,
       "/engineering/bulletin": 11,
       "/engineering/history": 11,
-      "/warehouse": 9,
-      "/warehouse/scouting": 9,
+      "/warehouse": 10,
+      "/warehouse/scouting": 10,
+      "/warehouse/positions": 10,
       "/learn/gravity": 9,
       "/sql/windows": 9,
       "/about": 7,

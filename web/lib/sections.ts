@@ -83,6 +83,7 @@ export const NAV: NavEntry[] = [
     pages: [
       { href: "/warehouse", nav: "Console" },
       { href: "/warehouse/scouting", nav: "Scouting" },
+      { href: "/warehouse/positions", nav: "Positions" },
     ],
   },
   {
