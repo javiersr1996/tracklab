@@ -46,10 +46,13 @@ test("the home page starts playing on its own, light, with the figures of stats.
   await expect.poll(() => counters.evaluateAll((els) => els.map((e) => e.getAttribute("data-count")))).toContain(
     "counting",
   );
+  // Landed within 2 s of coming into view (P20, task 174: the /engineering counters' rule).
   await expect.poll(() => counters.evaluateAll((els) => els.every((e) => e.getAttribute("data-count") === "done")), {
-    timeout: 10_000,
+    timeout: 2_000,
   }).toBe(true);
   const stats = (await (await page.request.get("/data/stats.json")).json()) as Stats;
+  // The server's HTML already carries each number, so no reader without JS sees a 0.
+  const html = await (await page.request.get("/")).text();
   for (const sport of ["basketball", "football"]) {
     const expected = stats.tables
       .filter((t) => t.table === "frames" && t.sport === sport)
@@ -57,6 +60,8 @@ test("the home page starts playing on its own, light, with the figures of stats.
     const shown = await page.locator(`[data-rows="${sport}"]`).textContent();
     console.log(`frames rows, ${sport}: page ${shown}, stats.json ${expected}`);
     expect(Number(shown?.replaceAll(",", ""))).toBe(expected);
+    const served = html.match(new RegExp(`data-rows="${sport}"[^>]*><span[^>]*>([^<]*)<`))?.[1];
+    expect(served, `${sport} in the server's HTML`).toBe(expected.toLocaleString("en-US"));
   }
   const platform = (await (await page.request.get("/data/platform.json")).json()) as Platform;
   await expect(page.locator("[data-platform-title]")).toHaveText(platform.title);

@@ -227,22 +227,6 @@ export function counterKey(layer: LayerName, field: CounterField): string {
   return `${layer}.${field}`;
 }
 
-// Per-layer on-screen seconds for the flow animation (task 35): every layer
-// gets at least `minSeconds` of screen time, and the rest of the loop budget
-// is split among layers in proportion to their own slowest step
-// (`layers[].seconds`), so a layer that took longer to build gets more
-// screen time and a layer that took 0s in the record still plays for
-// `minSeconds` instead of flashing by or breaking the scale.
-export function layerDurations(seconds: number[], cycleSeconds = 8, minSeconds = 0.6): number[] {
-  const floor = minSeconds * seconds.length;
-  const extra = Math.max(cycleSeconds - floor, 0);
-  const totalWeight = seconds.reduce((sum, s) => sum + Math.max(s, 0), 0);
-  return seconds.map((s) => {
-    const share = totalWeight > 0 ? Math.max(s, 0) / totalWeight : 1 / seconds.length;
-    return minSeconds + share * extra;
-  });
-}
-
 export interface StepBar {
   step_key: string;
   group: string;
