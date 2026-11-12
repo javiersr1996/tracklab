@@ -139,7 +139,7 @@ for (const width of WIDTHS) {
       const sideways = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       expect(sideways, "page wider than the window by").toBeLessThanOrEqual(0);
 
-      // The header too: seven links wrap on a phone and must not collide.
+      // The header too: its links must not collide.
       const links = await page.locator(".site-nav a").evaluateAll((els) =>
         els.map((e) => {
           const r = e.getBoundingClientRect();

@@ -88,21 +88,23 @@ for (const viewport of [
   });
 }
 
-// About joined the header (P20) without a third row of links on a phone: the six sections took two
-// rows at 390 px before it, and the seven still do.
-test("at 390 px the header's links still take two rows", async ({ page }) => {
+// About joined the header (P20) without a third row of links on a phone; since P21 the entries are
+// one line there, a strip that scrolls sideways, and About, at its end, is scrolled into view.
+test("at 390 px the header's entries are one line and About is in view on /about", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/about");
-  const tops = await page
-    .getByRole("navigation", { name: "Sections" })
-    .getByRole("link")
-    .evaluateAll((as) => as.map((a) => Math.round(a.getBoundingClientRect().top)));
-  expect(tops).toHaveLength(7);
-  expect(new Set(tops).size).toBe(2);
-  await expect(page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name: "About" })).toHaveAttribute(
-    "aria-current",
-    "page",
-  );
+  const nav = page.getByRole("navigation", { name: "Sections" });
+  const tops = await nav.getByRole("link").evaluateAll((as) => as.map((a) => Math.round(a.getBoundingClientRect().top)));
+  expect(tops).toHaveLength(6);
+  expect(new Set(tops).size).toBe(1);
+  const about = nav.getByRole("link", { name: "About" });
+  await expect(about).toHaveAttribute("aria-current", "page");
+  const inView = await about.evaluate((a) => {
+    const r = a.getBoundingClientRect();
+    const s = a.closest("ul")!.getBoundingClientRect();
+    return r.left >= s.left - 0.5 && r.right <= s.right + 0.5;
+  });
+  expect(inView, "About inside the strip's visible part").toBe(true);
 });
 
 test("/about is in the sitemap", async ({ page }) => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LESSONS } from "../lib/learn/series";
 import { SOURCES, sourceProblems } from "../lib/learn/sources";
-import { isCurrent, NAV, SECTIONS } from "../lib/sections";
+import { inEntry, isCurrent, NAV, pageOf, SECTIONS } from "../lib/sections";
 
 describe("the series", () => {
   it("numbers its lessons in order with no gap (P9 renumbers after the lesson Javier dropped)", () => {
@@ -42,9 +42,19 @@ describe("isCurrent", () => {
     expect(SECTIONS.map((s) => s.href).slice(-3)).toEqual(["/learn", "/sql", "/euroleague"]);
   });
 
-  it("gives the header six entries (P15) and About (P20), each group's pages under its href and every section in the menu", () => {
-    expect(NAV.map((n) => n.nav)).toEqual(["Tracking", "Engineering", "Warehouse", "Learn", "SQL", "EuroLeague", "About"]);
-    for (const n of NAV) for (const p of n.pages ?? []) expect(isCurrent(p.href, n.href), p.href).toBe(true);
+  it("gives the header its entries (P15; P21: SQL under Learn) and About (P20), each group current on its pages and every section in the menu", () => {
+    expect(NAV.map((n) => n.nav)).toEqual(["Tracking", "Engineering", "Warehouse", "Learn", "EuroLeague", "About"]);
+    for (const n of NAV) for (const p of n.pages ?? []) expect(inEntry(p.href, n), p.href).toBe(true);
+    const learn = NAV.find((n) => n.nav === "Learn")!;
+    expect(learn.pages!.map((p) => p.href)).toEqual(["/learn", "/sql"]);
+    expect(inEntry("/sql/joins", learn)).toBe(true);
+    expect(inEntry("/sqlx", learn)).toBe(false);
+    expect(pageOf("/sql/joins", learn.pages!)?.nav).toBe("SQL course");
+    expect(pageOf("/learn/gravity", learn.pages!)?.nav).toBe("Lessons");
+    const engineering = NAV.find((n) => n.nav === "Engineering")!;
+    expect(pageOf("/engineering/quality", engineering.pages!)?.nav).toBe("Quality");
+    expect(pageOf("/engineering", engineering.pages!)?.nav).toBe("Platform");
+    expect(pageOf("/tracking", NAV[0].pages!)).toBeUndefined();
     const reachable = NAV.flatMap((n) => [n.href, ...(n.pages ?? []).map((p) => p.href)]);
     for (const s of SECTIONS) expect(reachable, s.href).toContain(s.href);
   });

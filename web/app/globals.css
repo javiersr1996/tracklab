@@ -473,8 +473,65 @@ a.wordmark:hover {
   color: var(--fg-muted);
 }
 
-/* Bracketed, terminal style, from 640 px; a phone drops the brackets and wraps the six links
-   (P15). */
+/* On a phone (P21) the entries are one line under the wordmark: they, and a group's pages under
+   them, are a strip that scrolls sideways with its scrollbar hidden, faded at an edge where more
+   links wait (Nav.tsx marks the edges; before it runs, the end fades). The focus ring is drawn
+   inside the link, where the strip does not clip it. */
+@media (max-width: 39.98rem) {
+  .site-header-row {
+    gap: var(--space-1) var(--space-4);
+    padding-block: var(--space-2) 0;
+  }
+
+  .site-nav {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
+  .site-nav ul {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    scroll-padding-inline: var(--space-7);
+  }
+
+  .site-nav ul::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-nav li {
+    flex: none;
+  }
+
+  .site-nav a {
+    white-space: nowrap;
+  }
+
+  .site-nav a:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .site-nav ul:not([data-end="true"]) {
+    mask-image: linear-gradient(to right, #000 calc(100% - var(--space-7)), transparent);
+  }
+
+  .site-nav ul[data-start="false"] {
+    mask-image: linear-gradient(to left, #000 calc(100% - var(--space-7)), transparent);
+  }
+
+  .site-nav ul[data-start="false"]:not([data-end="true"]) {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 var(--space-7),
+      #000 calc(100% - var(--space-7)),
+      transparent
+    );
+  }
+}
+
+/* Bracketed, terminal style, from 640 px. */
 @media (min-width: 40rem) {
   .site-nav ul {
     gap: 0 var(--space-5);
@@ -504,8 +561,8 @@ a.wordmark:hover {
   box-shadow: 0 8px 14px -10px var(--neon); /* the underline's glow */
 }
 
-/* Under Tracking, Engineering or Warehouse (P15, P17), the group's pages: a row of their own under a hairline,
-   the same links in mixed case and without brackets, a level below the six. */
+/* Under Tracking, Engineering, Warehouse or Learn (P15, P17, P21), the group's pages: a row of
+   their own under a hairline, the same links in mixed case and without brackets, a level below. */
 .site-subnav {
   flex-basis: 100%;
   border-top: 1px solid var(--rule);

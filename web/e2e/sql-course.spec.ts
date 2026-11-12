@@ -135,12 +135,16 @@ test("/warehouse, /learn and / link to /sql", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Learn SQL on these tables" })).toHaveAttribute("href", "/sql");
   await page.goto("/learn");
   await expect(page.getByRole("link", { name: "Learn SQL on the warehouse" })).toHaveAttribute("href", "/sql");
+  await expect(page.getByRole("navigation", { name: "Learn" }).getByRole("link", { name: "SQL course" })).toHaveAttribute(
+    "href",
+    "/sql",
+  );
   await page.goto("/");
-  // Since P12 the page links /sql three times and no more: the hero's [RUN SQL] (task 108) and
-  // the section's card in main, and its link in the header.
+  // Since P12 the page links /sql twice in main: the hero's [RUN SQL] (task 108) and the section's
+  // card. Since P21 the header's entry for it is Learn, whose row lists the course on Learn's pages.
   await expect(page.locator('main a[href="/sql"]')).toHaveCount(2);
   await expect(page.getByRole("link", { name: "Run SQL" })).toHaveAttribute("href", "/sql");
-  await expect(page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name: "SQL" })).toHaveAttribute("href", "/sql");
+  await expect(page.locator('.site-header a[href="/sql"]')).toHaveCount(0);
   await page.locator("main").getByRole("link", { name: "Learn SQL on the warehouse" }).click();
   await expect(page).toHaveURL(/\/sql$/);
 });
