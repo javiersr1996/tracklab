@@ -121,7 +121,7 @@ export default function PlatformPage() {
         <h2 id="sources">Sources</h2>
         <p>
           Two kinds of ingest. SkillCorner is a pinned commit with a sha256 per file; EuroLeague is
-          a public API pulled incrementally at a limited rate, with only aggregates published.
+          a game feed with no open license, of which only aggregates are published.
           The last line of each card says whether its bytes are in the <q>out</q> of the title.
         </p>
         <ul className="platform-sources" data-sources>
@@ -152,7 +152,7 @@ export default function PlatformPage() {
             </h3>
             <dl>
               <dt>ingest</dt>
-              <dd>public API, incremental by manifest, rate-limited</dd>
+              <dd>game feed, kept out of the repository; aggregates only</dd>
               <dt>in</dt>
               <dd>
                 {EUROLEAGUE.what}:{" "}

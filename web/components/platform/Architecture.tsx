@@ -100,7 +100,7 @@ export function Architecture() {
             EuroLeague game feed
           </a>
           <span className="arch-el-line" aria-hidden="true" />
-          <span className="arch-el-label">public API, pulled incrementally: aggregates only, not counted in the bytes</span>
+          <span className="arch-el-label">aggregates only, never a shot; not counted in the bytes</span>
           <span className="arch-el-line" aria-hidden="true" />
           <Link href="/euroleague" prefetch={false} className="arch-el-end">
             /euroleague
