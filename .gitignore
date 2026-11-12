@@ -36,3 +36,4 @@ web/public/duckdb/
 
 # Local environment files: the Postgres connection strings of task 44 live there, never in git.
 .env*
+

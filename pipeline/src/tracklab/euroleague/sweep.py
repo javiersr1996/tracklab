@@ -4,7 +4,7 @@ After ``next build``, take the signatures of every real shot ``euroleague fetch`
 data root and look for them in ``web/.next``, in ``web/public`` and in every ``*.map`` under
 ``web/`` (``node_modules`` aside). Two signatures, both read from the raw ``Points`` files:
 
-* the ``UTC``, 14 digits and one per event of a game (docs/euroleague-probe.md, section 7): the
+* the ``UTC``, 14 digits and one per event of a game: the
   ``UTC`` of every row, found as any 14-digit window of any digit run, as text or as a number;
 * the triple (``COORD_X``, ``COORD_Y``, ``NUM_ANOT``) of every field goal, which a copy that
   dropped the ``UTC`` still carries (a pair (x, y) alone is not unique; a shot with a coordinate

@@ -1,9 +1,9 @@
 """The guard of the EuroLeague JSON (P14, task 115): aggregates only, read from the published files.
 
-The data has no open license (docs/superpowers/specs/2026-10-31-euroleague-design.md), so every
+The data has no open license, so every
 file under `web/public/data/euroleague/` must hold counts of hexagons (and, for lesson 12, of zone
 classes) and nothing that rebuilds a shot. This reads those files as the browser gets them and
-never calls the code that writes them: its constants (k, the byte caps of docs/euroleague-probe.md,
+never calls the code that writes them: its constants (k, the byte caps of the probe,
 the keys of the raw feed) are its own. The folder is in git, so it runs everywhere, CI included,
 and fails if the folder is gone. The second half mutates a copy of the real files and sees the
 guard fail on each mutation.

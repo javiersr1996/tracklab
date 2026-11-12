@@ -30,7 +30,6 @@ from tracklab.bronze.football.tracking import build_tracking as build_football_t
 from tracklab.build import default_record_dir, run_build
 from tracklab.euroleague.aggregates import SEASONS as EUROLEAGUE_SEASONS
 from tracklab.euroleague.aggregates import run_euroleague_publish
-from tracklab.euroleague.fetch import run_euroleague_fetch
 from tracklab.euroleague.sweep import run_euroleague_sweep
 from tracklab.fixtures import run_fixtures
 from tracklab.formats.basketball import freeze_basketball
@@ -379,6 +378,12 @@ def _cmd_sql_course(args: argparse.Namespace) -> int:
 
 
 def _cmd_euroleague_fetch(args: argparse.Namespace) -> int:
+    # The downloader is not part of the repository: the command runs only where the file is.
+    try:
+        from tracklab.euroleague.fetch import run_euroleague_fetch
+    except ModuleNotFoundError:
+        print("euroleague fetch: the downloader is not part of this repository", file=sys.stderr)
+        return 2
     return run_euroleague_fetch(args.season, args.data_dir)
 
 
