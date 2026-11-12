@@ -2,8 +2,9 @@
 
 Each game's play-by-play is read here, on this machine, and reduced to two numbers per team; what
 leaves is the top ``TOP`` of each by season and a summary by team. No row of the feed, no event id
-and no clock goes out. The definitions: a run is the most points a team scores in a row inside one game with the rival not
-scoring; the comeback of a game is the biggest deficit the team that won had overcome.
+and no clock goes out. The definitions: a run is the most points a team scores in a row inside
+one game with the rival not scoring; the comeback of a game is the biggest deficit the team that
+won had overcome.
 
 Reading the feed (what 492 games showed):
 
