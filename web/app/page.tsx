@@ -4,8 +4,9 @@ import { Band } from "../components/site/Band";
 import { SectionCards } from "../components/site/SectionCards";
 import { POSSESSIONS, rowsOf, SPORTS } from "../lib/data";
 import { PLATFORM } from "../lib/platform";
-import { SECTIONS } from "../lib/sections";
+import { AUTHOR, SECTIONS } from "../lib/sections";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   description:
@@ -31,6 +32,11 @@ export default function HomePage() {
         <p className="hero-detail">
           Track Lab takes SkillCorner&apos;s open tracking and event data for basketball and
           football and conforms both sports into one silver schema with DuckDB and dbt.
+        </p>
+        <p className="hero-byline">
+          <Link href="/about" prefetch={false}>
+            A personal learning project by {AUTHOR.name}
+          </Link>
         </p>
       </Hero>
 

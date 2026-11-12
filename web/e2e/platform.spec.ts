@@ -263,12 +263,20 @@ test("the stack strip, the ingest counters and the sources block print what the 
   await expect(page.locator("h1")).toHaveText("3.6 GB in, 7.6 MB out");
 });
 
-test("no route links to the private repository", async ({ page }) => {
-  const routes = ["/", "/tracking", "/engineering", "/tracking/runs", "/engineering/quality", "/warehouse", "/tracking/replay", "/tracking/pose", "/learn", "/sql", "/euroleague", "/engineering/bulletin", "/engineering/history"];
+// Until P20 the repository was private and no route could link to it; P20 opens it, and the
+// footer of every route links to that one repository and to no other address under the account.
+test("every route links to the public repository from its footer, and to no other repository", async ({ page }) => {
+  const routes = ["/", "/tracking", "/engineering", "/tracking/runs", "/engineering/quality", "/warehouse", "/tracking/replay", "/tracking/pose", "/learn", "/sql", "/euroleague", "/engineering/bulletin", "/engineering/history", "/about"];
   for (const route of routes) {
     await page.goto(route);
     const hrefs = await page.locator("a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href") ?? ""));
-    expect(hrefs.filter((h) => h.includes("github.com/javiersr1996/tracklab")), route).toEqual([]);
+    const account = hrefs.filter((h) => h.includes("github.com/javiersr1996"));
+    expect(account.length, route).toBeGreaterThan(0);
+    expect(new Set(account), route).toEqual(new Set(["https://github.com/javiersr1996/tracklab"]));
+    await expect(page.locator("footer.site-footer").getByRole("link", { name: "Code on GitHub, MIT license" }), route).toHaveAttribute(
+      "href",
+      "https://github.com/javiersr1996/tracklab",
+    );
   }
 });
 

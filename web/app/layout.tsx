@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Nav } from "../components/site/Nav";
-import { DATA_SOURCES, EUROLEAGUE, SITE } from "../lib/sections";
+import { AUTHOR, DATA_SOURCES, EUROLEAGUE, REPO, SITE } from "../lib/sections";
 import "./globals.css";
 
 // The MIT sources share one sentence; EuroLeague, under no open license, has its own (P14).
@@ -74,8 +74,27 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <div>
               <p className="site-footer-label">code</p>
               <ul className="site-footer-links">
-                <li>Code under the MIT license</li>
+                <li>
+                  <a href={REPO}>Code on GitHub, MIT license</a>
+                </li>
               </ul>
+            </div>
+            {/* P20, task 171: who made it and what it is not, on every route. */}
+            <div className="site-footer-author" data-footer-author>
+              <p>
+                A personal learning project by {AUTHOR.name}:{" "}
+                <Link href="/about" prefetch={false}>
+                  About
+                </Link>
+                , <a href={AUTHOR.linkedin}>LinkedIn</a>, <a href={REPO}>GitHub</a>.
+              </p>
+              <p className="site-footer-note">
+                Non-commercial, built for learning; not affiliated with SkillCorner or EuroLeague. More in{" "}
+                <Link href="/about" prefetch={false}>
+                  /about
+                </Link>
+                .
+              </p>
             </div>
           </div>
         </footer>

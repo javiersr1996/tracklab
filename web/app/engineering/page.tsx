@@ -1,5 +1,6 @@
 import { Flow } from "../../components/platform/Flow";
 import { Lineage } from "../../components/platform/Lineage";
+import { Stack } from "../../components/platform/Stack";
 import { StepGantt } from "../../components/platform/StepGantt";
 import { Band, PageHead } from "../../components/site/Band";
 import { pluralize } from "../../lib/format";
@@ -68,15 +69,7 @@ export default function PlatformPage() {
           platform</code> measured on this run, read from{" "}
           <a href="/data/platform.json">platform.json</a>, never typed by hand.
         </p>
-        <ul className="platform-stack" data-stack>
-          {Object.entries(run.versions).map(([tool, version]) => (
-            <li key={tool} data-tool={tool}>
-              {tool} <span>{version}</span>
-            </li>
-          ))}
-          <li>Parquet</li>
-          <li data-tool="postgres">Postgres <span>{PG.source.version}</span></li>
-        </ul>
+        <Stack />
         {pose && (
           <p data-pose-share>
             Of the {(pose.bytes + pose.otherBytes).toLocaleString("en-US")} raw bytes,{" "}
@@ -127,7 +120,7 @@ export default function PlatformPage() {
         <StepGantt platform={PLATFORM} />
       </Band>
       <Band>
-        <h2>Sources</h2>
+        <h2 id="sources">Sources</h2>
         <p>
           Two kinds of ingest. SkillCorner is a pinned commit with a sha256 per file; EuroLeague is
           a public API pulled incrementally at a limited rate, with only aggregates published.
@@ -185,7 +178,7 @@ export default function PlatformPage() {
         </ul>
       </Band>
       <Band dark>
-        <h2>Guarantees</h2>
+        <h2 id="guarantees">Guarantees</h2>
         <p>
           What stops a wrong number from reaching this site, counted by{" "}
           <code>tracklab publish platform</code> in the dbt manifest, the contract test folder and
@@ -261,7 +254,7 @@ export default function PlatformPage() {
         </ul>
       </Band>
       <Band>
-        <h2>Postgres</h2>
+        <h2 id="postgres">Postgres</h2>
         <p data-postgres>
           Gold also loads into Postgres, the second path next to the Parquet the browser reads,
           with <code>tracklab load postgres</code>. Each row carries a 16-byte sha256 fingerprint;
@@ -303,7 +296,7 @@ export default function PlatformPage() {
         </details>
       </Band>
       <Band dark>
-        <h2>Lineage</h2>
+        <h2 id="lineage">Lineage</h2>
         <p>
           The Dagster asset graph (<a href="/data/lineage.json">lineage.json</a>), {LINEAGE.nodes.length}{" "}
           nodes and {LINEAGE.edges.length} edges, exported by <code>tracklab publish lineage</code>{" "}
@@ -348,7 +341,7 @@ export default function PlatformPage() {
           not part of any match above.
         </p>
 
-        <h2>Silver models</h2>
+        <h2 id="silver-models">Silver models</h2>
         <p>
           The {modelRows.length} dbt-owned nodes of the silver group ({modelRows.length - seedCount}{" "}
           models, {seedCount} seeds): tests and columns from{" "}

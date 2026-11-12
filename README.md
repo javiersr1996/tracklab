@@ -2,6 +2,14 @@
 
 **Live: https://tracklab-sable.vercel.app**
 
+> **Personal learning project** by Javier Sánchez Rueda
+> ([LinkedIn](https://www.linkedin.com/in/javier-sanchez-rueda/)). Track Lab is non-commercial and
+> built for learning; it is not affiliated with, endorsed by or sponsored by SkillCorner, EuroLeague
+> Basketball or any league, club or player it names, and all trademarks, names and data belong to
+> their owners. SkillCorner's open data is used under its MIT license, of EuroLeague game data only
+> aggregates are shown, and the figures may contain errors and are not an assessment of any player
+> or team. The full disclaimer is at [/about](https://tracklab-sable.vercel.app/about).
+
 One schema, two sports, one renderer. Track Lab takes SkillCorner's open tracking and event data
 for basketball and football, verifies every provider file against a pinned manifest, conforms
 both sports into one silver schema with DuckDB and dbt, and publishes curated possessions that a

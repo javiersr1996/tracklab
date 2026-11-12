@@ -328,7 +328,7 @@ test("the ninth section: in the header, on the home page and in the sitemap", as
 });
 
 for (const width of [390, 1000, 1200, 1440]) {
-  test(`at ${width} px: the six header links neither overlap nor overflow; no sideways scroll; text 16 px or more`, async ({ page }) => {
+  test(`at ${width} px: the seven header links neither overlap nor overflow; no sideways scroll; text 16 px or more`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/euroleague");
     await page.waitForLoadState("networkidle");
@@ -340,7 +340,7 @@ for (const width of [390, 1000, 1200, 1440]) {
         return { x: r.left, y: r.top, r: r.right, b: r.bottom };
       }),
     );
-    expect(links).toHaveLength(6);
+    expect(links).toHaveLength(7); // the six sections and About (P20)
     for (const [i, a] of links.entries()) {
       expect(a.x, `link ${i} starts inside the window`).toBeGreaterThanOrEqual(0);
       expect(a.r, `link ${i} ends inside the window`).toBeLessThanOrEqual(width);

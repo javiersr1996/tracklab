@@ -53,7 +53,7 @@ export const SECTIONS = [
   },
 ] as const;
 
-// The header's six entries (P15, task 121, Javier's option 1 of 2026-11-01). Tracking,
+// The header's six entries (P15, task 121, Javier's option 1 of 2026-11-01), and About (P20). Tracking,
 // Engineering and Warehouse (P17) group pages, which a second row of the header lists on any page
 // under them.
 export type NavEntry = { href: string; nav: string; pages?: { href: string; nav: string }[] };
@@ -88,6 +88,8 @@ export const NAV: NavEntry[] = [
   { href: "/learn", nav: "Learn" },
   { href: "/sql", nav: "SQL" },
   { href: "/euroleague", nav: "EuroLeague" },
+  // P20, task 171: who made the site, not a section of it.
+  { href: "/about", nav: "About" },
 ];
 
 // The header marks a section current on its own page and on every page under it.
@@ -127,3 +129,12 @@ export const EUROLEAGUE = DATA_SOURCES.find((s) => s.name === "EuroLeague")!;
 // Where a removal request for the EuroLeague aggregates goes (Javier's choice at CP14a, 2026-11-01);
 // if it is ever emptied the page says the contact is pending.
 export const TAKEDOWN_CONTACT: string = "javiersr1996+tracklab@gmail.com";
+
+// Who made the site and where the code is (P20, task 171): the footer, the home's byline and
+// /about read these.
+export const AUTHOR = {
+  name: "Javier Sánchez Rueda",
+  linkedin: "https://www.linkedin.com/in/javier-sanchez-rueda/",
+  email: "javiersr1996@gmail.com",
+} as const;
+export const REPO = "https://github.com/javiersr1996/tracklab";
