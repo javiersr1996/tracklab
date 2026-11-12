@@ -19,9 +19,9 @@ test("the /tracking hub lists replay, runs and pose as cards that open them", as
   await expect(page.locator("h1")).toHaveText("The run that moves nobody");
 });
 
-// The header (Javier's option 1): six entries, and under Tracking, Engineering or Warehouse (P17)
-// a second row with the group's pages, the one on show marked current.
-const SIX = ["Tracking", "Engineering", "Warehouse", "Learn", "SQL", "EuroLeague"];
+// The header (Javier's option 1): six entries and About (P20), and under Tracking, Engineering or
+// Warehouse (P17) a second row with the group's pages, the one on show marked current.
+const ENTRIES = ["Tracking", "Engineering", "Warehouse", "Learn", "SQL", "EuroLeague", "About"];
 const GROUPS = [
   { path: "/tracking/pose", group: "Tracking", pages: ["Replay", "Runs", "Pose"], current: "Pose" },
   { path: "/engineering/quality", group: "Engineering", pages: ["Platform", "Quality", "Bulletin", "History"], current: "Quality" },
@@ -31,10 +31,10 @@ const GROUPS = [
   { path: "/warehouse/scouting", group: "Warehouse", pages: ["Console", "Scouting"], current: "Scouting" },
 ];
 
-test("the header has the six entries, and a group's pages only under that group", async ({ page }) => {
+test("the header has the seven entries, and a group's pages only under that group", async ({ page }) => {
   await page.goto("/learn");
   const nav = page.getByRole("navigation", { name: "Sections" });
-  await expect(nav.getByRole("link")).toHaveText(SIX);
+  await expect(nav.getByRole("link")).toHaveText(ENTRIES);
   await expect(nav.locator("[aria-current]")).toHaveText(["Learn"]);
   await expect(page.locator(".site-subnav")).toHaveCount(0);
 
@@ -56,15 +56,16 @@ test("the header has the six entries, and a group's pages only under that group"
 for (const width of [390, 1440]) {
   test(`at ${width} px the header's two rows neither overlap nor overflow, text 16 px or more`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    // The wordmark and the six, then the group's row: three under Tracking, four under Engineering,
-    // two under Warehouse.
+    // The wordmark and the seven, then the group's row: three under Tracking, four under
+    // Engineering, two under Warehouse.
     const LINKS: Record<string, number> = {
-      "/": 7,
-      "/tracking/runs": 10,
-      "/engineering/bulletin": 11,
-      "/engineering/history": 11,
-      "/warehouse": 9,
-      "/warehouse/scouting": 9,
+      "/": 8,
+      "/tracking/runs": 11,
+      "/engineering/bulletin": 12,
+      "/engineering/history": 12,
+      "/warehouse": 10,
+      "/warehouse/scouting": 10,
+      "/about": 8,
     };
     for (const path of Object.keys(LINKS)) {
       await page.goto(path);
@@ -138,18 +139,22 @@ test("the bulletin's sections are headings, its code is code and its source a li
 // footer. The body font depends on the OS (--font-body resolves to Segoe UI on Windows and to
 // another face on Linux), so the same footer measures about 476 px on Windows and 527.5 px on the
 // GitHub Ubuntu runner; a tighter limit passes in one place and fails in the other.
+// P20, task 171 adds the author line and a one-sentence disclaimer (four lines at 390 px): the
+// footer measures 606.7 px on Windows (476.3 before), about 672 px by the same Ubuntu ratio
+// (527.5 / 476.3). The limit moves by the same token to 700 px: the P15 layout that measured 622 px
+// with the old text would measure about 750 px with the new one, and still fails here.
 test("the footer is short at 390 px on every layout and keeps its notices", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });
   for (const route of ["/", "/tracking/runs", "/sql", "/learn", "/engineering", "/euroleague"]) {
     await page.goto(route);
     const footer = page.locator("footer.site-footer");
     const box = await footer.boundingBox();
-    expect(box!.height, route).toBeLessThan(560);
+    expect(box!.height, route).toBeLessThan(700);
     const labels = footer.locator(".site-footer-label", { hasText: /^code$/ });
     await expect(labels, route).toBeVisible();
     await expect(footer).toContainText("Not affiliated with SkillCorner.");
     await expect(footer).toContainText("Not affiliated with EuroLeague.");
-    await expect(footer).toContainText("Code under the MIT license");
+    await expect(footer.getByRole("link", { name: "Code on GitHub, MIT license" })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth), route).toBe(390);
   }
 });

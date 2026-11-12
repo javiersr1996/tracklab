@@ -1,11 +1,13 @@
 import { Count } from "../components/home/Count";
+import { Findings } from "../components/home/Findings";
 import { Hero } from "../components/home/Hero";
+import { Architecture } from "../components/platform/Architecture";
 import { Band } from "../components/site/Band";
 import { SectionCards } from "../components/site/SectionCards";
 import { POSSESSIONS, rowsOf, SPORTS } from "../lib/data";
-import { PLATFORM } from "../lib/platform";
-import { SECTIONS } from "../lib/sections";
+import { AUTHOR, SECTIONS } from "../lib/sections";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   description:
@@ -32,7 +34,19 @@ export default function HomePage() {
           Track Lab takes SkillCorner&apos;s open tracking and event data for basketball and
           football and conforms both sports into one silver schema with DuckDB and dbt.
         </p>
+        <p className="hero-byline">
+          <Link href="/about" prefetch={false}>
+            A personal learning project by {AUTHOR.name}
+          </Link>
+        </p>
       </Hero>
+
+      {/* The architecture (P20, task 173): the six layers' bytes, which were a row of boxes in the
+          figures below, are on it. */}
+      <Band dark>
+        <h2 className="eyebrow">Architecture</h2>
+        <Architecture />
+      </Band>
 
       {/* The figures (task 106) count up as they scroll into view; every one is a number from
           stats.json or platform.json, never typed here. */}
@@ -56,21 +70,15 @@ export default function HomePage() {
           <pre className="figures-query">
             <code>SELECT * FROM frames WHERE sport = ?</code>
           </pre>
-          <h3 className="figures-title" data-platform-title>
-            {PLATFORM.title}
-          </h3>
-          <ol className="figures-layers">
-            {PLATFORM.layers.map((l) => (
-              <li key={l.layer} className="figures-layer">
-                <span className="figures-layer-name">{l.layer}</span>
-                <span className="figures-layer-bytes" data-layer-bytes={l.layer}>
-                  <Count value={l.bytes} kind="bytes" />
-                </span>
-              </li>
-            ))}
-          </ol>
         </div>
       </section>
+
+      {/* P20, task 175: what the site found, each figure from a published file (the build's title,
+          which closed the figures above, is one of them). */}
+      <Band dark>
+        <h2 className="eyebrow">Findings</h2>
+        <Findings />
+      </Band>
 
       <Band>
         <h2 className="eyebrow">Sections</h2>

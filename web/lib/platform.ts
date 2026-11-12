@@ -3,6 +3,7 @@
 // files were built with.
 import platformJson from "../public/data/platform.json";
 import lineageJson from "../public/data/lineage.json";
+import { DATA_SOURCES } from "./sections";
 
 export type LayerName = "raw" | "bronze" | "silver" | "gold" | "quality" | "publish";
 
@@ -131,6 +132,10 @@ export const DUCKDB_VERSION = PLATFORM.run.versions.duckdb;
 
 export const POSE_SOURCE_ID = "opendata-bodypose";
 
+// `raw_sources[].source_id` (the manifest's) to the entry `DATA_SOURCES` gives the same repository.
+export const rawSourceMeta = (id: string) =>
+  DATA_SOURCES.find((s) => s.name === (id === "opendata-football" ? "SkillCorner/opendata" : `SkillCorner/${id}`));
+
 // What the P6 body-pose zips add to "in": their files and bytes, and the bytes of every other
 // raw source, all read from `raw_sources[]`, never typed. `null` if the source is not there.
 export function poseShare(
@@ -220,22 +225,6 @@ export type CounterField = "files" | "rows" | "bytes" | "seconds" | "downloaded"
 
 export function counterKey(layer: LayerName, field: CounterField): string {
   return `${layer}.${field}`;
-}
-
-// Per-layer on-screen seconds for the flow animation (task 35): every layer
-// gets at least `minSeconds` of screen time, and the rest of the loop budget
-// is split among layers in proportion to their own slowest step
-// (`layers[].seconds`), so a layer that took longer to build gets more
-// screen time and a layer that took 0s in the record still plays for
-// `minSeconds` instead of flashing by or breaking the scale.
-export function layerDurations(seconds: number[], cycleSeconds = 8, minSeconds = 0.6): number[] {
-  const floor = minSeconds * seconds.length;
-  const extra = Math.max(cycleSeconds - floor, 0);
-  const totalWeight = seconds.reduce((sum, s) => sum + Math.max(s, 0), 0);
-  return seconds.map((s) => {
-    const share = totalWeight > 0 ? Math.max(s, 0) / totalWeight : 1 / seconds.length;
-    return minSeconds + share * extra;
-  });
 }
 
 export interface StepBar {

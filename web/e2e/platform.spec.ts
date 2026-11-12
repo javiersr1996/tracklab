@@ -1,54 +1,38 @@
-import { expect, type Request, test } from "@playwright/test";
+import { expect, type Page, type Request, test } from "@playwright/test";
 
-// `figure.platform[data-state]` drives the flow the same way `figure.hook`
-// does in quality.spec.ts. The sequence itself (data-layer walking the
-// layers, data-state never touching "playing" under reduced motion) is
-// recorded by a MutationObserver installed through an init script -- before
-// any of the page's own scripts run -- rather than sampled by polling or
-// slept past, so a layer skipped between two polls still shows up in the log.
-// The idle render carries no data-layer at all (Flow.tsx), so the first layer
-// logged is the first one the animation actually played.
+// The layers' counters (P20, task 174). In production, 10 s after load, four of the six layers
+// read 0: the flow played one layer after another in a loop that started over from 0, and the
+// server sent every counter at 0. Now the server sends the figures of platform.json, and the first
+// time the figure comes into view all six layers count up together and land on them within 2 s.
+// `figure.platform[data-state]` is the count's phase (still, idle, counting, done); a
+// MutationObserver installed by an init script, before the page's own scripts run, logs each
+// state, so one that lasts less than a poll still shows up.
 
 declare global {
   interface Window {
-    __platformLog?: { states: string[]; layers: string[] };
+    __platformLog?: { states: string[] };
   }
 }
 
 // Runs in the page (stringified by Playwright), not in this test's own scope.
 function installPlatformLogger(): void {
-  const log: { states: string[]; layers: string[] } = { states: [], layers: [] };
+  const log: { states: string[] } = { states: [] };
   window.__platformLog = log;
 
-  const record = (list: string[], value: string | null) => {
-    if (value !== null && list[list.length - 1] !== value) list.push(value);
+  const record = (value: string | null) => {
+    if (value !== null && log.states[log.states.length - 1] !== value) log.states.push(value);
   };
 
   const watch = (figure: Element) => {
-    const current = {
-      "data-state": figure.getAttribute("data-state"),
-      "data-layer": figure.getAttribute("data-layer"),
-    };
-    const note = () => {
-      record(log.states, current["data-state"]);
-      record(log.layers, current["data-layer"]);
-    };
-    note();
+    record(figure.getAttribute("data-state"));
     new MutationObserver((mutations) => {
-      // One batch can hold several changes to the same attribute. Each change's
-      // new value is the next change's oldValue (the live value for the last),
-      // so a "playing" that lasted less than a batch is still replayed here.
-      mutations.forEach((mutation, i) => {
-        const name = mutation.attributeName as "data-state" | "data-layer";
-        const later = mutations.slice(i + 1).find((m) => m.attributeName === name);
-        current[name] = later ? later.oldValue : figure.getAttribute(name);
-        note();
+      // One batch can hold several changes: each change's new value is the next change's
+      // oldValue (the live value for the last), so a state shorter than a batch is still logged.
+      mutations.forEach((_, i) => {
+        const later = mutations[i + 1];
+        record(later ? later.oldValue : figure.getAttribute("data-state"));
       });
-    }).observe(figure, {
-      attributes: true,
-      attributeOldValue: true,
-      attributeFilter: ["data-state", "data-layer"],
-    });
+    }).observe(figure, { attributes: true, attributeOldValue: true, attributeFilter: ["data-state"] });
   };
 
   const existing = document.querySelector("figure.platform");
@@ -83,11 +67,61 @@ interface PlatformJson {
   raw_sources: { source_id: string; files: number; bytes: number }[];
 }
 
-const LAYER_ORDER = ["raw", "bronze", "silver", "gold", "quality", "publish"];
+// What a counter must read: the layer's field as the page prints it.
+function expected(platform: PlatformJson, key: string): { text: string; value: number } {
+  const [layerName, field] = key.split(".");
+  const layer = platform.layers.find((l) => l.layer === layerName);
+  if (!layer) throw new Error(`platform.json has no layer "${layerName}" for data-counter="${key}"`);
+  const value = (layer as unknown as Record<string, number>)[field];
+  return { text: field === "seconds" ? value.toFixed(1) : value.toLocaleString("en-US"), value };
+}
 
-test("plays on its own, walks the layers in order, and finishes cycle 1 exact", async ({
-  page,
-}) => {
+const counters = (page: Page) =>
+  page.locator("[data-counter]").evaluateAll((cells) =>
+    cells.map((cell) => ({ key: cell.getAttribute("data-counter")!, text: (cell.textContent ?? "").trim() })),
+  );
+
+async function platformJson(page: Page): Promise<PlatformJson> {
+  return (await (await page.request.get("/data/platform.json")).json()) as PlatformJson;
+}
+
+// Every counter reads its figure, and none reads 0 where the figure is not 0.
+function expectFinal(platform: PlatformJson, read: { key: string; text: string }[], when: string) {
+  expect(read.length, when).toBeGreaterThan(20);
+  for (const { key, text } of read) {
+    const want = expected(platform, key);
+    if (want.value !== 0) expect(Number(text.replace(/,/g, "")), `${when}: ${key} reads 0`).not.toBe(0);
+    expect(text, `${when}: ${key}`).toBe(want.text);
+  }
+}
+
+test("the server sends every counter at platform.json's figure", async ({ page }) => {
+  const platform = await platformJson(page);
+  const html = await (await page.request.get("/engineering")).text();
+  const read = [...html.matchAll(/data-counter="([^"]+)"[^>]*>([^<]*)</g)].map((m) => ({ key: m[1], text: m[2].trim() }));
+  expectFinal(platform, read, "server HTML");
+});
+
+test.describe("without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+  test("the counters read platform.json", async ({ page }) => {
+    const platform = await platformJson(page);
+    await page.goto("/engineering");
+    expectFinal(platform, await counters(page), "no JS");
+  });
+});
+
+test("2 s after load no counter reads 0, in view or not, and all read platform.json", async ({ page }) => {
+  const platform = await platformJson(page);
+  await page.goto("/engineering");
+  await page.waitForTimeout(2_000);
+  expectFinal(platform, await counters(page), "2 s after load, not scrolled");
+  await page.locator("figure.platform").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(2_000);
+  expectFinal(platform, await counters(page), "2 s after coming into view");
+});
+
+test("in view, the six layers count up together once and land on platform.json within 2 s", async ({ page }) => {
   const errors: string[] = [];
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   page.on("pageerror", (e) => errors.push(e.message));
@@ -96,51 +130,22 @@ test("plays on its own, walks the layers in order, and finishes cycle 1 exact", 
 
   await page.addInitScript(installPlatformLogger);
   await page.goto("/engineering");
+  const figure = page.locator("figure.platform");
+  await figure.scrollIntoViewIfNeeded();
+  await expect(figure).toHaveAttribute("data-state", "counting");
+  // All at once: while it counts, every layer is lit.
+  const phases = await page.locator(".platform-layer").evaluateAll((els) => els.map((e) => e.getAttribute("data-phase")));
+  expect(phases).toEqual(Array(phases.length).fill("active"));
+  await expect(figure).toHaveAttribute("data-state", "done", { timeout: 2_000 });
+  const platform = await platformJson(page);
+  expectFinal(platform, await counters(page), "done");
+  // Once: it does not start over.
+  await page.waitForTimeout(1_500);
+  expect((await page.evaluate(() => window.__platformLog))?.states).toEqual(["idle", "counting", "done"]);
 
-  await expect(page.locator("figure.platform")).toHaveAttribute("data-state", "playing", {
-    timeout: 2_000,
-  });
-
-  // State, cycle, log and every counter read in one page evaluation: "done"
-  // holds for 700 ms, and separate Playwright round-trips could straddle the
-  // start of cycle 2 and read interpolated counters.
-  const snapshot = await (
-    await page.waitForFunction(() => {
-      const figure = document.querySelector("figure.platform");
-      if (figure?.getAttribute("data-state") !== "done" || figure.getAttribute("data-cycle") !== "1") {
-        return null;
-      }
-      const counters = [...document.querySelectorAll("[data-counter]")].map((cell) => ({
-        key: cell.getAttribute("data-counter") ?? "",
-        text: (cell.textContent ?? "").trim(),
-      }));
-      return { log: window.__platformLog, counters };
-    })
-  ).jsonValue();
-  if (!snapshot) throw new Error("waitForFunction resolved without a snapshot");
-
-  expect(snapshot.log?.layers.slice(0, LAYER_ORDER.length)).toEqual(LAYER_ORDER);
-
-  const platform = (await (await page.request.get("/data/platform.json")).json()) as PlatformJson;
   // The H1 and the line under it are the title and subtitle the script printed (task 46).
   await expect(page.locator("h1")).toHaveText(platform.title);
   await expect(page.locator("[data-subtitle]")).toHaveText(platform.subtitle);
-  const count = snapshot.counters.length;
-  expect(count).toBeGreaterThan(0);
-
-  let compared = 0;
-  for (const { key, text } of snapshot.counters) {
-    const [layerName, field] = key.split(".");
-    const layer = platform.layers.find((l) => l.layer === layerName);
-    expect(layer, `platform.json has no layer "${layerName}" for data-counter="${key}"`).toBeTruthy();
-    const value = (layer as unknown as Record<string, number>)[field];
-    const stripped = text.replace(/,/g, "");
-    const expected = field === "seconds" ? value.toFixed(1) : String(value);
-    expect(stripped, `${key}: page shows "${text}", platform.json has ${value}`).toBe(expected);
-    compared++;
-  }
-  console.log(`/engineering: ${compared} counters checked against platform.json at data-state="done"`);
-  expect(compared).toBe(count);
 
   await page.waitForLoadState("networkidle");
   let transferred = 0;
@@ -157,20 +162,21 @@ test("plays on its own, walks the layers in order, and finishes cycle 1 exact", 
 test.describe("prefers-reduced-motion", () => {
   test.use({ reducedMotion: "reduce" });
 
-  test("jumps straight to done, never through playing", async ({ page }) => {
+  test("never counts: still, with platform.json's figures", async ({ page }) => {
     const errors: string[] = [];
     page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
     page.on("pageerror", (e) => errors.push(e.message));
 
     await page.addInitScript(installPlatformLogger);
     await page.goto("/engineering");
-
-    await expect(page.locator("figure.platform")).toHaveAttribute("data-state", "done");
-    await expect(page.locator("figure.platform")).toHaveAttribute("data-cycle", "1");
-
+    const figure = page.locator("figure.platform");
+    await expect(figure).toHaveAttribute("data-state", "still");
+    await figure.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500);
     const log = await page.evaluate(() => window.__platformLog);
-    expect(log?.states ?? []).not.toContain("playing");
-    expect(log?.states.at(-1)).toBe("done");
+    expect(log?.states ?? []).not.toContain("counting");
+    expect(log?.states.at(-1)).toBe("still");
+    expectFinal(await platformJson(page), await counters(page), "reduced motion");
 
     expect(errors).toEqual([]);
   });
@@ -183,13 +189,13 @@ test("the logger keeps a state that lasted less than one mutation batch", async 
   const states = await page.evaluate(async () => {
     const figure = document.querySelector("figure.platform") as Element;
     // Two changes in one task land in the same MutationObserver batch.
-    figure.setAttribute("data-state", "playing");
+    figure.setAttribute("data-state", "counting");
     figure.setAttribute("data-state", "done");
     await new Promise((resolve) => setTimeout(resolve, 0));
     return window.__platformLog?.states;
   });
 
-  expect(states).toEqual(["idle", "playing", "done"]);
+  expect(states).toEqual(["idle", "counting", "done"]);
 });
 
 test("the raw bytes line names the body-pose share, with the figures platform.json holds", async ({
@@ -263,12 +269,20 @@ test("the stack strip, the ingest counters and the sources block print what the 
   await expect(page.locator("h1")).toHaveText("3.6 GB in, 7.6 MB out");
 });
 
-test("no route links to the private repository", async ({ page }) => {
-  const routes = ["/", "/tracking", "/engineering", "/tracking/runs", "/engineering/quality", "/warehouse", "/tracking/replay", "/tracking/pose", "/learn", "/sql", "/euroleague", "/engineering/bulletin", "/engineering/history"];
+// Until P20 the repository was private and no route could link to it; P20 opens it, and the
+// footer of every route links to that one repository and to no other address under the account.
+test("every route links to the public repository from its footer, and to no other repository", async ({ page }) => {
+  const routes = ["/", "/tracking", "/engineering", "/tracking/runs", "/engineering/quality", "/warehouse", "/tracking/replay", "/tracking/pose", "/learn", "/sql", "/euroleague", "/engineering/bulletin", "/engineering/history", "/about"];
   for (const route of routes) {
     await page.goto(route);
     const hrefs = await page.locator("a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href") ?? ""));
-    expect(hrefs.filter((h) => h.includes("github.com/javiersr1996/tracklab")), route).toEqual([]);
+    const account = hrefs.filter((h) => h.includes("github.com/javiersr1996"));
+    expect(account.length, route).toBeGreaterThan(0);
+    expect(new Set(account), route).toEqual(new Set(["https://github.com/javiersr1996/tracklab"]));
+    await expect(page.locator("footer.site-footer").getByRole("link", { name: "Code on GitHub, MIT license" }), route).toHaveAttribute(
+      "href",
+      "https://github.com/javiersr1996/tracklab",
+    );
   }
 });
 

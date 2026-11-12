@@ -1,20 +1,18 @@
+import { Architecture } from "../../components/platform/Architecture";
 import { Flow } from "../../components/platform/Flow";
 import { Lineage } from "../../components/platform/Lineage";
+import { Stack } from "../../components/platform/Stack";
 import { StepGantt } from "../../components/platform/StepGantt";
 import { Band, PageHead } from "../../components/site/Band";
 import { pluralize } from "../../lib/format";
 import { LEAGUE } from "../../lib/euroleague/data";
-import { firstBeforeBars, firstEvents, LINEAGE, PLATFORM, poseShare, silverModelRows } from "../../lib/platform";
-import { DATA_SOURCES, EUROLEAGUE } from "../../lib/sections";
+import { firstBeforeBars, firstEvents, LINEAGE, PLATFORM, poseShare, rawSourceMeta, silverModelRows } from "../../lib/platform";
+import { EUROLEAGUE } from "../../lib/sections";
 import pgJson from "../../public/data/warehouse_pg.json";
 import { sectionMetadata } from "../../lib/page-metadata";
 import { latestContractRun, runLabel } from "../../lib/history";
 
 export const metadata = sectionMetadata("/engineering");
-
-// `raw_sources[].source_id` (the manifest's) to the name `DATA_SOURCES` gives the same repository.
-const skillcorner = (id: string) =>
-  DATA_SOURCES.find((s) => s.name === (id === "opendata-football" ? "SkillCorner/opendata" : `SkillCorner/${id}`));
 
 const PG = pgJson as {
   measured_at: string;
@@ -68,15 +66,7 @@ export default function PlatformPage() {
           platform</code> measured on this run, read from{" "}
           <a href="/data/platform.json">platform.json</a>, never typed by hand.
         </p>
-        <ul className="platform-stack" data-stack>
-          {Object.entries(run.versions).map(([tool, version]) => (
-            <li key={tool} data-tool={tool}>
-              {tool} <span>{version}</span>
-            </li>
-          ))}
-          <li>Parquet</li>
-          <li data-tool="postgres">Postgres <span>{PG.source.version}</span></li>
-        </ul>
+        <Stack />
         {pose && (
           <p data-pose-share>
             Of the {(pose.bytes + pose.otherBytes).toLocaleString("en-US")} raw bytes,{" "}
@@ -88,6 +78,7 @@ export default function PlatformPage() {
         )}
       </PageHead>
       <Band dark>
+        <Architecture />
         <Flow layers={PLATFORM.layers} />
         <footer className="platform-footer">
           <p>
@@ -127,15 +118,15 @@ export default function PlatformPage() {
         <StepGantt platform={PLATFORM} />
       </Band>
       <Band>
-        <h2>Sources</h2>
+        <h2 id="sources">Sources</h2>
         <p>
           Two kinds of ingest. SkillCorner is a pinned commit with a sha256 per file; EuroLeague is
-          a public API pulled incrementally at a limited rate, with only aggregates published.
+          a game feed with no open license, of which only aggregates are published.
           The last line of each card says whether its bytes are in the <q>out</q> of the title.
         </p>
         <ul className="platform-sources" data-sources>
           {PLATFORM.raw_sources.map((src) => {
-            const meta = skillcorner(src.source_id);
+            const meta = rawSourceMeta(src.source_id);
             return (
               <li key={src.source_id} data-source={src.source_id}>
                 <h3>{meta ? <a href={meta.href}>{meta.name}</a> : src.source_id}</h3>
@@ -161,7 +152,7 @@ export default function PlatformPage() {
             </h3>
             <dl>
               <dt>ingest</dt>
-              <dd>public API, incremental by manifest, rate-limited</dd>
+              <dd>game feed, kept out of the repository; aggregates only</dd>
               <dt>in</dt>
               <dd>
                 {EUROLEAGUE.what}:{" "}
@@ -185,7 +176,7 @@ export default function PlatformPage() {
         </ul>
       </Band>
       <Band dark>
-        <h2>Guarantees</h2>
+        <h2 id="guarantees">Guarantees</h2>
         <p>
           What stops a wrong number from reaching this site, counted by{" "}
           <code>tracklab publish platform</code> in the dbt manifest, the contract test folder and
@@ -261,7 +252,7 @@ export default function PlatformPage() {
         </ul>
       </Band>
       <Band>
-        <h2>Postgres</h2>
+        <h2 id="postgres">Postgres</h2>
         <p data-postgres>
           Gold also loads into Postgres, the second path next to the Parquet the browser reads,
           with <code>tracklab load postgres</code>. Each row carries a 16-byte sha256 fingerprint;
@@ -303,7 +294,7 @@ export default function PlatformPage() {
         </details>
       </Band>
       <Band dark>
-        <h2>Lineage</h2>
+        <h2 id="lineage">Lineage</h2>
         <p>
           The Dagster asset graph (<a href="/data/lineage.json">lineage.json</a>), {LINEAGE.nodes.length}{" "}
           nodes and {LINEAGE.edges.length} edges, exported by <code>tracklab publish lineage</code>{" "}
@@ -348,7 +339,7 @@ export default function PlatformPage() {
           not part of any match above.
         </p>
 
-        <h2>Silver models</h2>
+        <h2 id="silver-models">Silver models</h2>
         <p>
           The {modelRows.length} dbt-owned nodes of the silver group ({modelRows.length - seedCount}{" "}
           models, {seedCount} seeds): tests and columns from{" "}

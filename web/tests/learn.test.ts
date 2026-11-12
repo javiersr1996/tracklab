@@ -42,8 +42,8 @@ describe("isCurrent", () => {
     expect(SECTIONS.map((s) => s.href).slice(-3)).toEqual(["/learn", "/sql", "/euroleague"]);
   });
 
-  it("gives the header six entries (P15), each group's pages under its href and every section in the menu", () => {
-    expect(NAV.map((n) => n.nav)).toEqual(["Tracking", "Engineering", "Warehouse", "Learn", "SQL", "EuroLeague"]);
+  it("gives the header six entries (P15) and About (P20), each group's pages under its href and every section in the menu", () => {
+    expect(NAV.map((n) => n.nav)).toEqual(["Tracking", "Engineering", "Warehouse", "Learn", "SQL", "EuroLeague", "About"]);
     for (const n of NAV) for (const p of n.pages ?? []) expect(isCurrent(p.href, n.href), p.href).toBe(true);
     const reachable = NAV.flatMap((n) => [n.href, ...(n.pages ?? []).map((p) => p.href)]);
     for (const s of SECTIONS) expect(reachable, s.href).toContain(s.href);

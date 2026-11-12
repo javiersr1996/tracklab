@@ -6,7 +6,7 @@ and no clock goes out. The definitions are the spec's (docs/superpowers/specs/20
 design.md): a run is the most points a team scores in a row inside one game with the rival not
 scoring; the comeback of a game is the biggest deficit the team that won had overcome.
 
-Reading the feed (docs/euroleague-probe.md section 6, and what 492 games showed):
+Reading the feed (what 492 games showed):
 
 - Only plays that carry the scoreboard (``POINTS_A``/``POINTS_B``, a team's blank is 0) count. A
   foul, a turnover or a miss has none, so it never cuts a run: only the rival scoring does.

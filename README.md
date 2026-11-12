@@ -2,6 +2,14 @@
 
 **Live: https://tracklab-sable.vercel.app**
 
+> **Personal learning project** by Javier Sánchez Rueda
+> ([LinkedIn](https://www.linkedin.com/in/javier-sanchez-rueda/)). Track Lab is non-commercial and
+> built for learning; it is not affiliated with, endorsed by or sponsored by SkillCorner, EuroLeague
+> Basketball or any league, club or player it names, and all trademarks, names and data belong to
+> their owners. SkillCorner's open data is used under its MIT license, of EuroLeague game data only
+> aggregates are shown, and the figures may contain errors and are not an assessment of any player
+> or team. The full disclaimer is at [/about](https://tracklab-sable.vercel.app/about).
+
 One schema, two sports, one renderer. Track Lab takes SkillCorner's open tracking and event data
 for basketball and football, verifies every provider file against a pinned manifest, conforms
 both sports into one silver schema with DuckDB and dbt, and publishes curated possessions that a
@@ -33,8 +41,7 @@ possessions (`bytes.published.total`).
 
 ## Layout
 
-A monorepo with `pipeline/` (Python, DuckDB, dbt, Dagster) and `web/` (Next.js). See
-`tasks/todo.md` for the plan, task by task, with what each one measured.
+A monorepo with `pipeline/` (Python, DuckDB, dbt, Dagster) and `web/` (Next.js).
 
 ## Development
 
@@ -291,11 +298,11 @@ Windows checkout turned its line endings into CRLF, the message says so and name
 ## EuroLeague
 
 The EuroLeague game files have no open license, so the site gets aggregates only: hexagon counts
-with a minimum of shots per cell, never a shot (`docs/superpowers/specs/2026-10-31-euroleague-design.md`,
-`docs/euroleague-probe.md`). The download stays under the data root, out of git. From `pipeline/`:
+with a minimum of shots per cell, never a shot. Neither the game files nor the code that reads
+them from the provider are part of this repository; what is here turns files already under the
+data root into those aggregates and guards what gets published. From `pipeline/`:
 
 ```
-uv run tracklab euroleague fetch --season E2025 --season E2026   # new games only, to data/euroleague/raw
 uv run tracklab euroleague publish                                # web/public/data/euroleague/
 uv run pytest tests/publish/test_euroleague_guard.py              # the guard of those files
 (cd ../web && npm run build) && uv run tracklab euroleague sweep

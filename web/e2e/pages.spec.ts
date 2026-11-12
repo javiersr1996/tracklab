@@ -38,17 +38,21 @@ test("the home page starts playing on its own, light, with the figures of stats.
   if (EXPOSED) await expect.poll(() => page.evaluate(() => window.__replay?.trail)).toBeGreaterThan(0);
 
   // The figures (task 106) count up once they scroll into view, then land on the JSON's numbers:
-  // two sports from stats.json, six layers and the title from platform.json.
+  // two sports from stats.json; the title from platform.json, and its six layers' bytes, which P20
+  // moved from counters here onto the architecture (task 173).
   await page.locator(".figures").scrollIntoViewIfNeeded();
   const counters = page.locator("[data-count]");
-  await expect(counters).toHaveCount(8);
+  await expect(counters).toHaveCount(2);
   await expect.poll(() => counters.evaluateAll((els) => els.map((e) => e.getAttribute("data-count")))).toContain(
     "counting",
   );
+  // Landed within 2 s of coming into view (P20, task 174: the /engineering counters' rule).
   await expect.poll(() => counters.evaluateAll((els) => els.every((e) => e.getAttribute("data-count") === "done")), {
-    timeout: 10_000,
+    timeout: 2_000,
   }).toBe(true);
   const stats = (await (await page.request.get("/data/stats.json")).json()) as Stats;
+  // The server's HTML already carries each number, so no reader without JS sees a 0.
+  const html = await (await page.request.get("/")).text();
   for (const sport of ["basketball", "football"]) {
     const expected = stats.tables
       .filter((t) => t.table === "frames" && t.sport === sport)
@@ -56,6 +60,8 @@ test("the home page starts playing on its own, light, with the figures of stats.
     const shown = await page.locator(`[data-rows="${sport}"]`).textContent();
     console.log(`frames rows, ${sport}: page ${shown}, stats.json ${expected}`);
     expect(Number(shown?.replaceAll(",", ""))).toBe(expected);
+    const served = html.match(new RegExp(`data-rows="${sport}"[^>]*><span[^>]*>([^<]*)<`))?.[1];
+    expect(served, `${sport} in the server's HTML`).toBe(expected.toLocaleString("en-US"));
   }
   const platform = (await (await page.request.get("/data/platform.json")).json()) as Platform;
   await expect(page.locator("[data-platform-title]")).toHaveText(platform.title);
@@ -214,9 +220,9 @@ test("under prefers-reduced-motion the hero is a still frame, no trails, and off
   // The figures never count: they are the final numbers from the first paint.
   await page.locator(".figures").scrollIntoViewIfNeeded();
   const counters = page.locator("[data-count]");
-  await expect(counters).toHaveCount(8);
+  await expect(counters).toHaveCount(2);
   expect(await counters.evaluateAll((els) => els.map((e) => e.getAttribute("data-count")))).toEqual(
-    Array(8).fill("still"),
+    Array(2).fill("still"),
   );
   const stats = (await (await page.request.get("/data/stats.json")).json()) as Stats;
   const expected = stats.tables

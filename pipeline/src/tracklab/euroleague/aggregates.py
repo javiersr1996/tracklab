@@ -2,9 +2,9 @@
 
 Reads what ``euroleague fetch`` left under ``<data root>/euroleague/raw`` and writes
 ``<out>/euroleague/league.json`` and ``<out>/euroleague/teams/<CODE>.json``. The data has no
-open license (docs/superpowers/specs/2026-10-31-euroleague-design.md), so only hexagon counts
+open license, so only hexagon counts
 leave: a cell with fewer than ``K`` shots is dropped, and no event id, clock, minute or shot
-coordinate is ever written. The figures come from the probe (docs/euroleague-probe.md):
+coordinate is ever written. The figures come from the probe:
 
 - hexagons of 1.0 m side, pointy top, axial ``(q, r)`` with the origin at the hoop, ``K`` = 5;
 - ``COORD_X``/``COORD_Y`` are cm from the hoop; a field goal with a blank ``ZONE`` has no

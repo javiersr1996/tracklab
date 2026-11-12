@@ -637,7 +637,7 @@ test("the clip is fetched when asked for, not at load (task 158)", async ({ page
 
 test("the home page links to /tracking/pose", async ({ page }) => {
   await page.goto("/");
-  const link = page.getByRole("link", { name: "Body pose" });
+  const link = page.getByRole("link", { name: "Body pose", exact: true });
   await expect(link).toHaveAttribute("href", "/tracking/pose");
   await link.click();
   await expect(page).toHaveURL(/\/tracking\/pose$/);
