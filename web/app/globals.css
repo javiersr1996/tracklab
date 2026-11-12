@@ -2118,6 +2118,193 @@ body:has(.home) .site-header::after {
   margin-top: var(--space-2);
 }
 
+/* /engineering/quality's charts (task 183): a card per check, one column, two from 1000 px. A row
+   per sport: its label and median in text, then a strip whose dots stack where matches share a
+   value. Basketball's dots cyan (12.3:1 on the card), football's magenta (5.8:1), the median a
+   white line (18.9:1), the reference a dashed slate one (7.4:1), the baseline 3.1:1; the labels
+   say which is which. */
+.qcharts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-4);
+  margin: var(--space-5) 0 var(--space-6);
+}
+
+@media (min-width: 1000px) {
+  .qcharts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.qchart {
+  --dot: 0.75rem;
+  --rise: 0.4rem; /* between two stacked dots */
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.qchart h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--step-2);
+}
+
+.qchart-unit {
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+
+.qchart p {
+  max-width: none;
+}
+
+.qchart-ref {
+  margin: 0;
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.qchart-ref-swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 0;
+  margin-right: var(--space-1);
+  vertical-align: middle;
+  border-top: 2px dashed var(--neon-muted);
+}
+
+.qrow-label {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.qrow-sport {
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+.qrow-sport::before {
+  content: "";
+  display: inline-block;
+  width: var(--dot);
+  height: var(--dot);
+  margin-right: var(--space-2);
+  border-radius: 50%;
+  vertical-align: -0.05em;
+}
+
+.qrow[data-sport="basketball"] .qrow-sport::before,
+.qrow[data-sport="basketball"] .qdot {
+  background: var(--neon);
+}
+
+.qrow[data-sport="football"] .qrow-sport::before,
+.qrow[data-sport="football"] .qdot {
+  background: var(--neon-alt);
+}
+
+.qrow-label output {
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+
+.qrow-note {
+  margin: var(--space-1) 0 0;
+  color: var(--fg-muted);
+}
+
+/* The strip and the axis share their inset, so a dot at either end stays inside the card. */
+.qstrip,
+.qaxis {
+  position: relative;
+  margin-inline: calc(var(--dot) / 2);
+}
+
+.qstrip {
+  height: calc(var(--dot) + (var(--levels) - 1) * var(--rise) + var(--space-2));
+  margin-top: var(--space-1);
+  border-bottom: 1px solid var(--canvas-axis);
+}
+
+.qdot {
+  position: absolute;
+  bottom: calc(var(--space-1) + var(--level) * var(--rise));
+  width: var(--dot);
+  height: var(--dot);
+  border: 1px solid var(--raised);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.qstrip-median,
+.qstrip-ref {
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  bottom: 0;
+  transform: translateX(-50%);
+}
+
+.qstrip-median {
+  width: 2px;
+  background: var(--canvas-hi);
+}
+
+.qstrip-ref {
+  border-left: 2px dashed var(--neon-muted);
+}
+
+.qaxis {
+  height: 1.5rem;
+  margin-top: var(--space-2);
+  font-family: var(--font-neon);
+  color: var(--fg-muted);
+}
+
+.qaxis span {
+  position: absolute;
+  top: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.qaxis span:first-child {
+  transform: translateX(calc(-1 * var(--dot) / 2));
+}
+
+.qaxis span:last-child {
+  transform: translateX(calc(-100% + var(--dot) / 2));
+}
+
+.qchart-reading {
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+}
+
+.qtable summary {
+  display: list-item;
+  padding-block: var(--space-2);
+  font-family: var(--font-neon);
+  font-weight: 600;
+  color: var(--neon);
+  cursor: pointer;
+}
+
+.qtable summary:hover {
+  color: var(--fg-strong);
+}
+
+.qtable[open] summary {
+  margin-bottom: var(--space-3);
+}
+
 /* The architecture (P20, task 173): a window onto the canvas's near-black on any band, boxes on a
    grid, top to bottom below 80rem and left to right from it. The connectors are a box's ::after
    (the dashes, cyan 13.1:1, magenta 6.2:1 on the canvas) and ::before (the arrowhead), as long as
