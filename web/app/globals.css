@@ -3694,6 +3694,33 @@ figure.run-here {
   margin-bottom: var(--space-4);
 }
 
+/* A source's own wording folded under the plain sentence it backs (a rule, a published note), one
+   click away and still in the HTML. */
+.runs-rule > summary,
+.pose-note > summary,
+.platform-note > summary {
+  cursor: pointer;
+  width: fit-content;
+  font-family: var(--font-neon);
+  color: var(--link);
+}
+
+.runs-rule[open] > summary,
+.pose-note[open] > summary,
+.platform-note[open] > summary {
+  margin-bottom: var(--space-2);
+}
+
+/* The stage's plain name under its code, and an id after a player's name: secondary text. */
+.runs-stage-name {
+  display: block;
+  color: var(--fg-muted);
+}
+
+.runs-id {
+  color: var(--fg-muted);
+}
+
 /* "Skip to content" (P19, task 152): off screen until it takes the focus, then a neon button over
    the header, the first stop of the tab order. */
 .skip-link {

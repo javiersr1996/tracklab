@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { at, type Runs, STAGES, type Stage } from "../../lib/runs/types";
+import { at, type Runs, STAGE_NAMES, STAGES, type Stage } from "../../lib/runs/types";
 import { Band, PageHead } from "../site/Band";
 import { RunsHook } from "./Hook";
 
@@ -74,6 +74,8 @@ function StageFigures({ runs, stage }: { runs: Runs; stage: Stage }) {
         <span key={k}>
           {j > 0 ? ", " : ""}
           {k.replaceAll("_", " ")} <F runs={runs} p={`${base}.${k}`} />
+          {/* A figure that is itself a stage ("died at M5a") gets the stage's name too. */}
+          {(STAGES as unknown[]).includes(figures[k]) ? ` (${STAGE_NAMES[figures[k] as Stage]})` : null}
         </span>
       ))}
     </>
@@ -89,13 +91,13 @@ function Status({ runs }: { runs: Runs }) {
           Dead at{" "}
           <strong>
             <F runs={runs} p="dead_at" />
-          </strong>
-          : <StageFigures runs={runs} stage={diedAt} />. The negative is published under the same
-          title.{" "}
+          </strong>{" "}
+          ({STAGE_NAMES[diedAt]}): <StageFigures runs={runs} stage={diedAt} />. The negative is published
+          under the same title.{" "}
         </>
       ) : (
         <>
-          Alive: <StageFigures runs={runs} stage="M5a" />.{" "}
+          Alive at {STAGE_NAMES.M5a}: <StageFigures runs={runs} stage="M5a" />.{" "}
         </>
       )}
       {runs.never_opened.opened ? (
@@ -125,8 +127,8 @@ function TitleNote({ runs }: { runs: Runs }) {
           Against its placebo, all runs together, the marker (the nearest opponent) shifts{" "}
           <F runs={runs} p={`${i}.mean_m`} /> m along the run, the same sign in{" "}
           <F runs={runs} p={`${i}.same_sign_matches`} /> of <F runs={runs} p={`${i}.of_matches`} />{" "}
-          matches: M2 passed. What failed is telling that shift from the runner&apos;s own
-          acceleration: at M3 every subtype left.
+          matches: {STAGE_NAMES.M2} passed. What failed is telling that shift from the runner&apos;s
+          own acceleration: at {STAGE_NAMES.M3} every subtype left.
         </>
       ) : null}
     </p>
@@ -154,12 +156,18 @@ function Stages({ runs }: { runs: Runs }) {
               data-state={runs.stages[stage].state}
               data-died={String(runs.status === "dead" && runs.dead_at === stage)}
             >
-              <td className="text">{stage}</td>
+              <td className="text">
+                {stage} <span className="runs-stage-name">{STAGE_NAMES[stage]}</span>
+              </td>
               <td className="text" data-fig={`stages.${stage}.state`}>
                 {runs.stages[stage].state}
               </td>
-              <td className="text" data-fig={`stages.${stage}.rule`}>
-                {runs.stages[stage].rule}
+              {/* The rule as the protocol wrote it, with its own task numbers: folded. */}
+              <td className="text">
+                <details className="runs-rule">
+                  <summary>the rule</summary>
+                  <span data-fig={`stages.${stage}.rule`}>{runs.stages[stage].rule}</span>
+                </details>
               </td>
               <td className="text">
                 <StageFigures runs={runs} stage={stage} />
@@ -375,8 +383,7 @@ function Calibration({ runs }: { runs: Runs }) {
     <section data-section="calibration">
       <h2>Calibration, per match</h2>
       <p>
-        The probes that ran before any effect was read (tasks 49 and 50), on the calibration half
-        only.
+        The probes that ran before any effect was read, on the calibration half only.
       </p>
       <h3>Funnel: runs to pairs</h3>
       <Scroll>
@@ -724,6 +731,14 @@ export function RunsView({ runs }: { runs: Runs }) {
     <>
       <PageHead eyebrow="Off-ball runs">
         <h1>The run that moves nobody</h1>
+        <p className="lede" data-lede>
+          When a footballer runs without the ball, does the nearest opponent shift along with him?
+          This page put that question to the tracking data under rules fixed before any result was
+          read
+          {runs.status === "dead"
+            ? ", and no kind of run passed them all."
+            : "; the verdict and its evidence follow."}
+        </p>
         <Status runs={runs} />
         <TitleNote runs={runs} />
       </PageHead>

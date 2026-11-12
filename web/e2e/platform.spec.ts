@@ -212,7 +212,7 @@ test("the raw bytes line names the body-pose share, with the figures platform.js
   await expect(line).toHaveText(
     `Of the ${n(raw!.bytes)} raw bytes, ${n(pose!.bytes)} come from the ${pose!.files} ` +
       `body-pose zip${pose!.files === 1 ? "" : "s"} of ` +
-      `opendata-bodypose that P6 added (see /tracking/pose); the other sources account for ${n(others)}.`,
+      `opendata-bodypose (the body pose on /tracking/pose); the other sources account for ${n(others)}.`,
   );
   await expect(line.getByRole("link", { name: "/tracking/pose" })).toHaveAttribute("href", "/tracking/pose");
 });

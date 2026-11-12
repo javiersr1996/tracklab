@@ -4,6 +4,16 @@
 export type Stage = "M1" | "M2" | "M3" | "M4" | "M5a" | "M5b";
 export const STAGES: Stage[] = ["M1", "M2", "M3", "M4", "M5a", "M5b"];
 
+// What each stage checks, in a few words from its rule in runs.json: printed beside the code.
+export const STAGE_NAMES: Record<Stage, string> = {
+  M1: "enough testable subtypes",
+  M2: "the instrument check",
+  M3: "the pre-trend check",
+  M4: "the detection check",
+  M5a: "the candidate count",
+  M5b: "the held-out replication",
+};
+
 export interface StageEntry {
   state: string;
   rule: string;

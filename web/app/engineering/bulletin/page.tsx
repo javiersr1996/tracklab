@@ -52,7 +52,13 @@ export default function BulletinPage() {
     .filter(Boolean);
   return (
     <main id="main" className="page">
-      <PageHead eyebrow="Data quality">{title ? <h1>{title}</h1> : null}</PageHead>
+      <PageHead eyebrow="Data quality">
+        {title ? <h1>{title}</h1> : null}
+        <p className="lede" data-lede>
+          The quality checks written up in prose: what each one measures, what it found across the
+          matches, and what that means for anyone building on the data.
+        </p>
+      </PageHead>
       <Band>
         <div className="bulletin">{blocks.map(block)}</div>
       </Band>

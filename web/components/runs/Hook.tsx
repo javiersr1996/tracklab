@@ -59,6 +59,27 @@ function arrowOverlay(clip: Clip, possession: Possession, direction: [number, nu
   };
 }
 
+// A player as the clip names him, "#7 Kosta Barbarouses", when it carries his number or name;
+// nothing when it carries neither (the id beside it is then the only label).
+function personOf(clips: Possession[], entityId: string): string | null {
+  const e = clips.flatMap((p) => p.entities).find((x) => x.entity_id === entityId);
+  if (!e || (e.jersey === null && e.name === null)) return null;
+  return [e.jersey === null ? null : `#${e.jersey}`, e.name].filter(Boolean).join(" ");
+}
+
+// The person's label, then the id as secondary text.
+function Who({ clips, id, fig }: { clips: Possession[]; id: string; fig?: string }) {
+  const person = personOf(clips, id);
+  const code = <code data-fig={fig}>{id}</code>;
+  return person ? (
+    <>
+      {person} <span className="runs-id">({code})</span>
+    </>
+  ) : (
+    code
+  );
+}
+
 function Leg({ runs, k, possession }: { runs: Runs; k: number; possession: Possession }) {
   const clip = runs.hook.clips[k];
   const base = `hook.clips.${k}`;
@@ -71,7 +92,7 @@ function Leg({ runs, k, possession }: { runs: Runs; k: number; possession: Posse
       <h3>{clip.role === "run" ? "The run" : "Its placebo"}</h3>
       <Replay key={possession.possession_id} possession={possession} autoplay overlay={overlay} name={clip.role} />
       <p>
-        Marker <code>{clip.marker_entity_id}</code>:{" "}
+        Marker <Who clips={[possession]} id={clip.marker_entity_id} />:{" "}
         <span data-fig={`${base}.marker_displacement_m`}>
           {String(at(runs, `${base}.marker_displacement_m`))}
         </span>{" "}
@@ -89,7 +110,9 @@ function Leg({ runs, k, possession }: { runs: Runs; k: number; possession: Posse
           <tbody>
             {clip.defence.map((d, j) => (
               <tr key={d.entity_id} data-opponent={d.entity_id}>
-                <td>{d.entity_id}</td>
+                <td>
+                  <Who clips={[possession]} id={d.entity_id} />
+                </td>
                 <td>{d.is_marker ? "marker" : d.is_goalkeeper ? "goalkeeper" : ""}</td>
                 <td data-fig={`${base}.defence.${j}.displacement_m`}>
                   {String(at(runs, `${base}.defence.${j}.displacement_m`))}
@@ -106,12 +129,16 @@ function Leg({ runs, k, possession }: { runs: Runs; k: number; possession: Posse
 export function RunsHook({ runs }: { runs: Runs }) {
   const [clips, setClips] = useState<Possession[] | "failed" | null>(null);
   const { hook } = runs;
+  // The clips carry the match's teams and the players' numbers and names; until they load (or if
+  // they fail) the ids stand alone.
+  const loaded = Array.isArray(clips) ? clips : [];
+  const match = loaded[0]?.match;
   // The marker of each clip: the pair's figure is the run's minus the placebo's, two players.
   const marker = (role: Clip["role"]) => {
     const j = hook.clips.findIndex((c) => c.role === role);
     return (
       <>
-        <code data-fig={`hook.clips.${j}.marker_entity_id`}>{hook.clips[j].marker_entity_id}</code> shifts{" "}
+        <Who clips={loaded} id={hook.clips[j].marker_entity_id} fig={`hook.clips.${j}.marker_entity_id`} /> shifts{" "}
         <span data-fig={`hook.clips.${j}.marker_displacement_m`}>{String(hook.clips[j].marker_displacement_m)}</span> m
       </>
     );
@@ -133,9 +160,10 @@ export function RunsHook({ runs }: { runs: Runs }) {
     <section className="runs-hook" data-section="hook">
       <h2>One run and its placebo</h2>
       <p>
-        Match <span data-fig="hook.pair.match_id">{String(hook.pair.match_id)}</span>, run{" "}
+        {match ? `${match.home} v ${match.away}, match ` : "Match "}
+        <span data-fig="hook.pair.match_id">{String(hook.pair.match_id)}</span>: run{" "}
         <code data-fig="hook.pair.run_id">{hook.pair.run_id}</code> by{" "}
-        <code data-fig="hook.pair.runner_entity_id">{hook.pair.runner_entity_id}</code>, subtype{" "}
+        <Who clips={loaded} id={hook.pair.runner_entity_id} fig="hook.pair.runner_entity_id" />, subtype{" "}
         <code data-fig="hook.subtype">{hook.subtype}</code>, and the placebo the protocol paired
         with it: the same runner at another instant. Chosen by rule, not for the size of its
         effect: <span data-fig="hook.pair.marker_effect_m">{String(hook.pair.marker_effect_m)}</span>{" "}
@@ -155,9 +183,12 @@ export function RunsHook({ runs }: { runs: Runs }) {
         s, drawn {ARROW_GAIN} times longer than they are; dashed points against the run; the
         marker is ringed.
       </p>
-      <p>
-        Rule: <span data-fig="hook.rule">{hook.rule}</span>
-      </p>
+      <details className="runs-rule">
+        <summary>How this pair was chosen</summary>
+        <p>
+          Rule: <span data-fig="hook.rule">{hook.rule}</span>
+        </p>
+      </details>
       {clips === null ? (
         <div className="replay-placeholder" />
       ) : clips === "failed" ? (

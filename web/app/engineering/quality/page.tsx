@@ -11,7 +11,13 @@ export default function QualityPage() {
     <main id="main" className="page">
       <PageHead eyebrow="One figure per match">
         <h1>Data quality</h1>
-        <p className="lede">
+        <p className="lede" data-lede>
+          Tracking data is never perfect, and this page measures where it is off: how often the ball
+          and the players are actually seen, how much their positions jitter, whether a ball in flight
+          falls at real gravity. Each check is measured match by match, so you can see how far to trust
+          each one.
+        </p>
+        <p>
           A calibration kit for anyone building on the two bundles: {tabulatedChecks().length} checks, one figure per
           match, read from the same reports as <a href="/engineering/bulletin">the bulletin</a>.
         </p>

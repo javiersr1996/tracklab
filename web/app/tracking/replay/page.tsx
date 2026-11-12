@@ -59,9 +59,11 @@ function Picker() {
           value={current.possession_id}
           onChange={(e) => choose(inMatch.find((p) => p.possession_id === e.target.value))}
         >
-          {inMatch.map((p) => (
-            <option key={p.possession_id} value={p.possession_id}>
-              {p.possession_id} ({p.duration_s} s)
+          {/* The index has no period or clock: the label is the order in the match and the
+              length, the id stays the value. */}
+          {inMatch.map((p, k) => (
+            <option key={p.possession_id} value={p.possession_id} title={p.possession_id}>
+              Possession {k + 1} of {inMatch.length}, {p.duration_s} s
             </option>
           ))}
         </select>
@@ -80,6 +82,11 @@ export default function ReplayPage() {
     <main id="main" className="page">
       <PageHead eyebrow="One renderer">
         <h1>Replay any possession</h1>
+        <p className="lede" data-lede>
+          Watch a real possession again from above: every player and the ball, where SkillCorner&apos;s
+          open tracking data puts them, many times a second. Pick a sport, a match and a possession,
+          then play it, scrub through it or slow it down.
+        </p>
       </PageHead>
       <Band dark>
         <Suspense fallback={<div className="replay-placeholder" />}>

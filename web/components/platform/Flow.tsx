@@ -102,7 +102,12 @@ export function Flow({ layers }: { layers: PlatformLayer[] }) {
                   </dd>
                 </div>
               </dl>
-              {layer.note && <p className="platform-note">{layer.note}</p>}
+              {layer.note && (
+                <details className="platform-note">
+                  <summary>How it is counted</summary>
+                  <p>{layer.note}</p>
+                </details>
+              )}
             </div>
           );
         })}
