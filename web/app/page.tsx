@@ -1,5 +1,6 @@
 import { Count } from "../components/home/Count";
 import { Hero } from "../components/home/Hero";
+import { Architecture } from "../components/platform/Architecture";
 import { Band } from "../components/site/Band";
 import { SectionCards } from "../components/site/SectionCards";
 import { POSSESSIONS, rowsOf, SPORTS } from "../lib/data";
@@ -40,6 +41,13 @@ export default function HomePage() {
         </p>
       </Hero>
 
+      {/* The architecture (P20, task 173): the six layers' bytes, which were a row of boxes in the
+          figures below, are on it. */}
+      <Band dark>
+        <h2 className="eyebrow">Architecture</h2>
+        <Architecture />
+      </Band>
+
       {/* The figures (task 106) count up as they scroll into view; every one is a number from
           stats.json or platform.json, never typed here. */}
       <section className="band figures" aria-labelledby="figures-title">
@@ -65,16 +73,6 @@ export default function HomePage() {
           <h3 className="figures-title" data-platform-title>
             {PLATFORM.title}
           </h3>
-          <ol className="figures-layers">
-            {PLATFORM.layers.map((l) => (
-              <li key={l.layer} className="figures-layer">
-                <span className="figures-layer-name">{l.layer}</span>
-                <span className="figures-layer-bytes" data-layer-bytes={l.layer}>
-                  <Count value={l.bytes} kind="bytes" />
-                </span>
-              </li>
-            ))}
-          </ol>
         </div>
       </section>
 

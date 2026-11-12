@@ -38,10 +38,11 @@ test("the home page starts playing on its own, light, with the figures of stats.
   if (EXPOSED) await expect.poll(() => page.evaluate(() => window.__replay?.trail)).toBeGreaterThan(0);
 
   // The figures (task 106) count up once they scroll into view, then land on the JSON's numbers:
-  // two sports from stats.json, six layers and the title from platform.json.
+  // two sports from stats.json; the title from platform.json, and its six layers' bytes, which P20
+  // moved from counters here onto the architecture (task 173).
   await page.locator(".figures").scrollIntoViewIfNeeded();
   const counters = page.locator("[data-count]");
-  await expect(counters).toHaveCount(8);
+  await expect(counters).toHaveCount(2);
   await expect.poll(() => counters.evaluateAll((els) => els.map((e) => e.getAttribute("data-count")))).toContain(
     "counting",
   );
@@ -214,9 +215,9 @@ test("under prefers-reduced-motion the hero is a still frame, no trails, and off
   // The figures never count: they are the final numbers from the first paint.
   await page.locator(".figures").scrollIntoViewIfNeeded();
   const counters = page.locator("[data-count]");
-  await expect(counters).toHaveCount(8);
+  await expect(counters).toHaveCount(2);
   expect(await counters.evaluateAll((els) => els.map((e) => e.getAttribute("data-count")))).toEqual(
-    Array(8).fill("still"),
+    Array(2).fill("still"),
   );
   const stats = (await (await page.request.get("/data/stats.json")).json()) as Stats;
   const expected = stats.tables

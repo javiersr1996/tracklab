@@ -1,3 +1,4 @@
+import { Architecture } from "../../components/platform/Architecture";
 import { Flow } from "../../components/platform/Flow";
 import { Lineage } from "../../components/platform/Lineage";
 import { Stack } from "../../components/platform/Stack";
@@ -5,17 +6,13 @@ import { StepGantt } from "../../components/platform/StepGantt";
 import { Band, PageHead } from "../../components/site/Band";
 import { pluralize } from "../../lib/format";
 import { LEAGUE } from "../../lib/euroleague/data";
-import { firstBeforeBars, firstEvents, LINEAGE, PLATFORM, poseShare, silverModelRows } from "../../lib/platform";
-import { DATA_SOURCES, EUROLEAGUE } from "../../lib/sections";
+import { firstBeforeBars, firstEvents, LINEAGE, PLATFORM, poseShare, rawSourceMeta, silverModelRows } from "../../lib/platform";
+import { EUROLEAGUE } from "../../lib/sections";
 import pgJson from "../../public/data/warehouse_pg.json";
 import { sectionMetadata } from "../../lib/page-metadata";
 import { latestContractRun, runLabel } from "../../lib/history";
 
 export const metadata = sectionMetadata("/engineering");
-
-// `raw_sources[].source_id` (the manifest's) to the name `DATA_SOURCES` gives the same repository.
-const skillcorner = (id: string) =>
-  DATA_SOURCES.find((s) => s.name === (id === "opendata-football" ? "SkillCorner/opendata" : `SkillCorner/${id}`));
 
 const PG = pgJson as {
   measured_at: string;
@@ -81,6 +78,7 @@ export default function PlatformPage() {
         )}
       </PageHead>
       <Band dark>
+        <Architecture />
         <Flow layers={PLATFORM.layers} />
         <footer className="platform-footer">
           <p>
@@ -128,7 +126,7 @@ export default function PlatformPage() {
         </p>
         <ul className="platform-sources" data-sources>
           {PLATFORM.raw_sources.map((src) => {
-            const meta = skillcorner(src.source_id);
+            const meta = rawSourceMeta(src.source_id);
             return (
               <li key={src.source_id} data-source={src.source_id}>
                 <h3>{meta ? <a href={meta.href}>{meta.name}</a> : src.source_id}</h3>

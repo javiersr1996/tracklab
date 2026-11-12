@@ -129,8 +129,6 @@ dt,
 .site-footer-label,
 .card-tag,
 .figure-value,
-.figures-layer-name,
-.figures-layer-bytes,
 .replay-hero-readout,
 .replay-hero-player,
 .hero-action,
@@ -1199,8 +1197,8 @@ body:has(.home) .site-header::after {
   color: var(--fg-strong);
 }
 
-/* The figures (task 106): two big counts, the query that reads them, then the six layers of
-   the build as a row that reads raw to publish. */
+/* The figures (task 106): two big counts, the query that reads them, then the build's title (its
+   six layers moved onto the architecture, P20). */
 .figures-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
@@ -1241,52 +1239,6 @@ body:has(.home) .site-header::after {
   margin: 0 0 var(--space-5);
   font-size: var(--step-h2);
   letter-spacing: -0.02em;
-}
-
-.figures-layers {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.figures-layer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  max-width: none;
-  padding: var(--space-4);
-  background: var(--raised);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-}
-
-/* What goes in and what comes out are the story: lit. */
-.figures-layer:first-child,
-.figures-layer:last-child {
-  border-color: var(--neon-line-strong);
-  box-shadow: 0 0 20px -6px var(--neon-glow);
-}
-
-.figures-layer-name {
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--tag);
-}
-
-.figures-layer-name::before {
-  content: "// ";
-  color: var(--neon-line-strong);
-}
-
-.figures-layer-bytes {
-  font-size: var(--step-3);
-  font-weight: 700;
-  color: var(--fg-strong);
-  font-variant-numeric: tabular-nums;
 }
 
 .split {
@@ -1935,6 +1887,384 @@ body:has(.home) .site-header::after {
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
   margin-top: var(--space-2);
+}
+
+/* The architecture (P20, task 173): a window onto the canvas's near-black on any band, boxes on a
+   grid, top to bottom below 80rem and left to right from it. The connectors are a box's ::after
+   (the dashes, cyan 13.1:1, magenta 6.2:1 on the canvas) and ::before (the arrowhead), as long as
+   the grid's gap; the dashes flow where motion is welcome. Dagster is a dashed frame round its
+   label and the layers (--neon-line-strong, 3.7:1). All text is 16 px or more. */
+.arch {
+  --arch-gap: 1.5rem;
+  --arch-rail: 1.45rem; /* a connector meets a box at its first line */
+  --arch-out: var(--space-3); /* how far the Dagster frame stands out of what it frames */
+  margin: 0 0 var(--space-6);
+  padding: var(--space-4) calc(var(--arch-out) + var(--space-2));
+  background: var(--canvas);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.arch-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "sources" "dagster" "stages" "consumers" "pg" "el";
+  gap: var(--arch-gap);
+  align-items: start;
+}
+
+.arch p,
+.arch li {
+  max-width: none;
+  margin: 0;
+}
+
+.arch ul,
+.arch ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.arch-sources {
+  grid-area: sources;
+}
+
+.arch-dagster {
+  grid-area: dagster;
+  position: relative;
+  z-index: 1;
+  color: var(--fg-muted);
+}
+
+.arch-dagster a {
+  font-family: var(--font-neon);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.arch-frame {
+  grid-row: dagster-start / stages-end;
+  grid-column: dagster;
+  align-self: stretch;
+  margin: calc(-1 * var(--arch-out));
+  border: 1px dashed var(--neon-line-strong);
+  border-radius: var(--radius);
+  pointer-events: none;
+}
+
+.arch-stages {
+  grid-area: stages;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: var(--arch-gap);
+}
+
+.arch-consumers {
+  grid-area: consumers;
+}
+
+.arch-pg {
+  grid-area: pg;
+}
+
+.arch-el {
+  grid-area: el;
+}
+
+.arch-box {
+  position: relative;
+  min-width: 0;
+  padding: var(--space-3);
+  background: var(--neon-raised);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+}
+
+.arch-label,
+.arch-name {
+  font-family: var(--font-neon);
+  font-weight: 700;
+  line-height: var(--leading-snug);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tag);
+}
+
+.arch .arch-label {
+  margin-bottom: var(--space-2);
+}
+
+.arch-name a {
+  color: inherit;
+  text-decoration-color: var(--neon-line-strong);
+}
+
+.arch-bytes {
+  font-family: var(--font-neon);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-strong);
+}
+
+.arch-stage .arch-bytes {
+  font-size: var(--step-1);
+}
+
+.arch-tool {
+  color: var(--fg);
+}
+
+.arch-role,
+.arch-consumers span {
+  color: var(--fg-muted);
+}
+
+.arch-sources li,
+.arch-consumers li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+}
+
+.arch-sources .arch-bytes {
+  color: var(--fg-muted);
+  font-weight: 500;
+}
+
+/* The second paths: magenta, dashed, outside the frame. */
+.arch-side {
+  border: 1px dashed var(--neon-alt);
+}
+
+.arch-pg .arch-name {
+  color: var(--fg-strong);
+}
+
+.arch-el {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+}
+
+.arch-el-end {
+  font-family: var(--font-neon);
+  font-weight: 700;
+}
+
+.arch-el-label {
+  color: var(--fg-muted);
+}
+
+.arch-el-line {
+  width: 2px;
+  height: var(--arch-gap);
+  margin-left: var(--space-5);
+  background: repeating-linear-gradient(180deg, var(--neon-alt) 0 4px, transparent 4px 8px);
+}
+
+/* The connectors, down on a phone: from the sources into the frame, from its label to raw, from
+   each layer to the next and from publish to the browser. */
+.arch-flow::after,
+.arch-dagster::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: var(--space-5);
+  width: 2px;
+  height: var(--arch-gap);
+  background: repeating-linear-gradient(180deg, var(--neon) 0 4px, transparent 4px 8px);
+}
+
+.arch-flow::before,
+.arch-dagster::before {
+  content: "";
+  position: absolute;
+  top: calc(100% + var(--arch-gap) - 7px);
+  left: calc(var(--space-5) - 4px);
+  border-top: 7px solid var(--neon);
+  border-inline: 5px solid transparent;
+}
+
+/* A phone keeps a box's lines stacked, the bytes beside the name; from 40rem a layer is one row:
+   name, tool, role, bytes. */
+.arch-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "name bytes" "tool tool" "role role";
+  gap: 0 var(--space-3);
+}
+
+.arch-stage .arch-name {
+  grid-area: name;
+}
+
+.arch-stage .arch-bytes {
+  grid-area: bytes;
+}
+
+.arch-stage .arch-tool {
+  grid-area: tool;
+}
+
+.arch-stage .arch-role {
+  grid-area: role;
+}
+
+@media (min-width: 40rem) {
+  .arch-stage {
+    grid-template-columns: 7rem minmax(0, 1fr) minmax(0, 1fr) 6.5rem;
+    grid-template-areas: "name tool role bytes";
+    align-items: baseline;
+  }
+
+  .arch-stage .arch-bytes {
+    text-align: right;
+  }
+
+  .arch-sources ul,
+  .arch-consumers ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+  }
+
+  .arch-el {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .arch-el-end {
+    flex: none;
+  }
+
+  .arch-el-label {
+    flex: 0 1 auto;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .arch-el-line {
+    flex: 1 1 2rem;
+    width: auto;
+    height: 2px;
+    margin: 0;
+    background: repeating-linear-gradient(90deg, var(--neon-alt) 0 4px, transparent 4px 8px);
+  }
+}
+
+/* From 80rem, left to right: the sources, the six layers under Dagster's label, the browser; under
+   gold its Postgres, and along the foot the EuroLeague lane. */
+@media (min-width: 80rem) {
+  .arch-grid {
+    grid-template-columns: minmax(0, 1.3fr) repeat(6, minmax(0, 1fr)) minmax(0, 1.4fr);
+    grid-template-areas:
+      ".       dagster dagster dagster dagster dagster dagster .        "
+      "sources stages  stages  stages  stages  stages  stages  consumers"
+      ".       .       .       .       pg      pg      .       .        "
+      "el      el      el      el      el      el      el      el       ";
+  }
+
+  .arch-stages {
+    grid-template-columns: subgrid;
+  }
+
+  .arch-stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "name" "bytes" "tool" "role";
+    gap: var(--space-1);
+    align-items: start;
+  }
+
+  .arch-stage .arch-bytes {
+    text-align: left;
+  }
+
+  .arch-sources ul,
+  .arch-consumers ul {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .arch-dagster::after,
+  .arch-dagster::before {
+    content: none;
+  }
+
+  .arch-flow::after {
+    top: var(--arch-rail);
+    left: 100%;
+    width: var(--arch-gap);
+    height: 2px;
+    background: repeating-linear-gradient(90deg, var(--neon) 0 4px, transparent 4px 8px);
+  }
+
+  .arch-flow::before {
+    top: calc(var(--arch-rail) - 4px);
+    left: calc(100% + var(--arch-gap) - 7px);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 7px solid var(--neon);
+    border-right: 0;
+  }
+
+  /* Gold down to Postgres, magenta like the path: the box spans gold and quality, the line leaves
+     from the middle of gold's column. */
+  .arch-pg::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: calc((100% - var(--arch-gap)) / 4);
+    width: 2px;
+    height: var(--arch-gap);
+    background: repeating-linear-gradient(180deg, var(--neon-alt) 0 4px, transparent 4px 8px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .arch-flow::after,
+  .arch-dagster::after,
+  .arch-el-line,
+  .arch-pg::before {
+    animation: arch-flow-down 0.6s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 40rem) {
+  .arch-el-line {
+    animation-name: arch-flow-right;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 80rem) {
+  .arch-flow::after {
+    animation-name: arch-flow-right;
+  }
+}
+
+@keyframes arch-flow-down {
+  to {
+    background-position: 0 8px;
+  }
+}
+
+@keyframes arch-flow-right {
+  to {
+    background-position: 8px 0;
+  }
+}
+
+.arch figcaption {
+  margin-top: calc(var(--arch-gap) + var(--space-2));
+  color: var(--fg-muted);
+  max-width: var(--measure);
 }
 
 .platform {

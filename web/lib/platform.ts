@@ -3,6 +3,7 @@
 // files were built with.
 import platformJson from "../public/data/platform.json";
 import lineageJson from "../public/data/lineage.json";
+import { DATA_SOURCES } from "./sections";
 
 export type LayerName = "raw" | "bronze" | "silver" | "gold" | "quality" | "publish";
 
@@ -130,6 +131,10 @@ export const PLATFORM = platformJson as unknown as PlatformData;
 export const DUCKDB_VERSION = PLATFORM.run.versions.duckdb;
 
 export const POSE_SOURCE_ID = "opendata-bodypose";
+
+// `raw_sources[].source_id` (the manifest's) to the entry `DATA_SOURCES` gives the same repository.
+export const rawSourceMeta = (id: string) =>
+  DATA_SOURCES.find((s) => s.name === (id === "opendata-football" ? "SkillCorner/opendata" : `SkillCorner/${id}`));
 
 // What the P6 body-pose zips add to "in": their files and bytes, and the bytes of every other
 // raw source, all read from `raw_sources[]`, never typed. `null` if the source is not there.
