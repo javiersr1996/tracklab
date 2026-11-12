@@ -109,3 +109,17 @@ test("/about is in the sitemap", async ({ page }) => {
   const xml = await (await page.request.get("/sitemap.xml")).text();
   expect(xml).toContain("<loc>https://tracklab-sable.vercel.app/about</loc>");
 });
+
+// P20, task 172: the card a link to /about (and to any page without its own) unfurls into is the
+// drawn default, 1200 x 630, its alternative text naming the author.
+test("the default og:image answers as a 1200 x 630 PNG whose alt names the author", async ({ page }) => {
+  const html = await (await page.request.get("/about")).text();
+  const src = html.match(/<meta property="og:image" content="([^"]+)"/)?.[1];
+  expect(new URL(src!).pathname).toBe("/opengraph-image");
+  expect(html).toMatch(new RegExp(`<meta property="og:image:alt" content="[^"]*A personal learning project by ${NAME}`));
+  const res = await page.request.get(new URL(src!).pathname + new URL(src!).search);
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toBe("image/png");
+  const png = await res.body();
+  expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
+});

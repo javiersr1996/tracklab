@@ -14,8 +14,12 @@ export const OG_TYPE = "image/png";
 
 const FONT = join(process.cwd(), "app", "fonts", "JetBrainsMono-latin-bold.ttf");
 
+// The one face every card is set in (the site's default card, app/opengraph-image.tsx, too).
+export async function ogFonts() {
+  return [{ name: "JetBrains Mono", data: await readFile(FONT), weight: 700 as const, style: "normal" as const }];
+}
+
 export async function card(eyebrow: string, title: string) {
-  const data = await readFile(FONT);
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 72, background: "#030712", color: "#e2e8f0", fontFamily: "JetBrains Mono" }}>
@@ -26,7 +30,7 @@ export async function card(eyebrow: string, title: string) {
         </div>
       </div>
     ),
-    { ...OG_SIZE, fonts: [{ name: "JetBrains Mono", data, weight: 700, style: "normal" }] },
+    { ...OG_SIZE, fonts: await ogFonts() },
   );
 }
 
