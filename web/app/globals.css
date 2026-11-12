@@ -1197,8 +1197,8 @@ body:has(.home) .site-header::after {
   color: var(--fg-strong);
 }
 
-/* The figures (task 106): two big counts, the query that reads them, then the build's title (its
-   six layers moved onto the architecture, P20). */
+/* The figures (task 106): two big counts and the query that reads them (the six layers moved onto
+   the architecture and the build's title into the findings, P20). */
 .figures-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
@@ -1235,10 +1235,100 @@ body:has(.home) .site-header::after {
   margin-bottom: var(--space-8);
 }
 
-.figures-title {
-  margin: 0 0 var(--space-5);
-  font-size: var(--step-h2);
+/* The findings (P20, task 175): a claim per card, its figure lit like a lesson's result, the
+   whole card the link's target. Four across where they fit, two, then one. */
+.findings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.finding {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: none;
+  padding: var(--space-5);
+  background: var(--raised);
+  border: 1px solid var(--neon-line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 24px -10px var(--neon-glow);
+}
+
+.finding:hover {
+  border-color: var(--neon);
+  box-shadow: 0 0 28px -6px var(--neon-glow);
+}
+
+.finding:has(a:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.finding p {
+  margin: 0;
+}
+
+.finding-value {
+  font-family: var(--font-neon);
+  font-size: clamp(2rem, 1.5rem + 1.6vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.05;
   letter-spacing: -0.02em;
+  color: var(--neon);
+  text-shadow: 0 0 18px var(--neon-glow);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.finding-unit {
+  margin-left: 0.3em;
+  font-size: max(1rem, 0.45em);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--fg-muted);
+  text-shadow: none;
+}
+
+.finding-vs,
+.finding-tag {
+  font-family: var(--font-neon);
+}
+
+.finding-vs,
+.finding-about {
+  color: var(--fg-muted);
+}
+
+.finding h3 {
+  margin: var(--space-3) 0 0;
+  font-size: var(--step-2);
+}
+
+.finding h3 a {
+  color: var(--fg-strong);
+  text-decoration: none;
+}
+
+.finding h3 a:focus-visible {
+  outline: none;
+}
+
+.finding h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.finding .finding-tag {
+  margin-top: auto;
+  padding-top: var(--space-2);
+  color: var(--tag);
 }
 
 .split {

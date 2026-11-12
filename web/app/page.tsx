@@ -1,10 +1,10 @@
 import { Count } from "../components/home/Count";
+import { Findings } from "../components/home/Findings";
 import { Hero } from "../components/home/Hero";
 import { Architecture } from "../components/platform/Architecture";
 import { Band } from "../components/site/Band";
 import { SectionCards } from "../components/site/SectionCards";
 import { POSSESSIONS, rowsOf, SPORTS } from "../lib/data";
-import { PLATFORM } from "../lib/platform";
 import { AUTHOR, SECTIONS } from "../lib/sections";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -70,11 +70,15 @@ export default function HomePage() {
           <pre className="figures-query">
             <code>SELECT * FROM frames WHERE sport = ?</code>
           </pre>
-          <h3 className="figures-title" data-platform-title>
-            {PLATFORM.title}
-          </h3>
         </div>
       </section>
+
+      {/* P20, task 175: what the site found, each figure from a published file (the build's title,
+          which closed the figures above, is one of them). */}
+      <Band dark>
+        <h2 className="eyebrow">Findings</h2>
+        <Findings />
+      </Band>
 
       <Band>
         <h2 className="eyebrow">Sections</h2>

@@ -1,0 +1,126 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { CURRENT_SEASON, seasonLabel } from "../../lib/euroleague/atlas";
+import { LEAGUE } from "../../lib/euroleague/data";
+import { GRAVITY_HOOK } from "../../lib/learn/gravity-data";
+import { PLATFORM } from "../../lib/platform";
+import { readRuns } from "../../lib/runs/data";
+
+// What the site found (P20, task 175): one claim per card, its figure large, in the words of the
+// page the card opens, never stronger. Every figure is read here at build time through the loaders
+// those pages use (quality.json's hook, platform.json, runs.json, league.json); none is typed.
+// `data-finding` names the card for the e2e, which compare each figure with its file.
+
+interface Finding {
+  key: string;
+  href: string;
+  value: ReactNode;
+  vs: ReactNode;
+  title: string;
+  about: ReactNode;
+}
+
+function findings(): Finding[] {
+  const runs = readRuns();
+  // The card says "dead at" a stage with no candidates left; if the file ever says otherwise, the
+  // claim has expired and the build stops here rather than print it.
+  const died = runs.status === "dead" ? runs.dead_at : null;
+  const candidates = died ? runs.stages[died].figures.candidates : undefined;
+  if (!died || typeof candidates !== "number") throw new Error("runs.json: no stage with its candidates to quote");
+  const season = LEAGUE.seasons.find((s) => s.season !== CURRENT_SEASON)!;
+
+  return [
+    {
+      key: "gravity",
+      href: "/learn/gravity",
+      value: (
+        <>
+          <span data-fig="g_data">{GRAVITY_HOOK.g_data}</span>
+          <span className="finding-unit">m/s²</span>
+        </>
+      ),
+      vs: (
+        <>
+          standard gravity <span data-fig="g_real">{GRAVITY_HOOK.g_real}</span> m/s²
+        </>
+      ),
+      title: "The ball falls as if the Earth were lighter",
+      about: "The g of the lesson's shot: a parabola fitted to a basketball's height in flight, in SkillCorner's open basketball tracking.",
+    },
+    {
+      key: "bytes",
+      href: "/engineering",
+      value: (
+        <span data-fig="title" data-platform-title>
+          {PLATFORM.title}
+        </span>
+      ),
+      vs: <span data-fig="subtitle">{PLATFORM.subtitle}</span>,
+      title: `One pipeline run, ${PLATFORM.layers.length} layers`,
+      about: "What the latest build read from SkillCorner and what it published from it, as the build itself measured them.",
+    },
+    {
+      key: "runs",
+      href: "/tracking/runs",
+      value: (
+        <>
+          <span data-fig="candidates">{candidates}</span>
+          <span className="finding-unit">candidates</span>
+        </>
+      ),
+      vs: (
+        <>
+          dead at <span data-fig="dead_at">{died}</span>
+        </>
+      ),
+      title: "The project that died, published dead",
+      about: (
+        <>
+          The run that moves nobody: the negative is published under the same title. The held-out half (
+          <span data-fig="held_out">{runs.never_opened.match_ids.length}</span> matches) was never opened.
+        </>
+      ),
+    },
+    {
+      key: "euroleague",
+      href: "/euroleague",
+      value: <span data-fig="shots_total">{season.shots_total.toLocaleString("en-US")}</span>,
+      vs: (
+        <>
+          field goals, <span data-fig="season">{seasonLabel(season.season)}</span>,{" "}
+          <span data-fig="games">{season.games_played}</span> games
+        </>
+      ),
+      title: "Where EuroLeague shoots from",
+      about: (
+        <>
+          Binned into hexagons with sides of <span data-fig="side_m">{LEAGUE.hex.side_m}</span> m on a FIBA half
+          court: how often each spot is tried, and how often it goes in compared with the rest of the league.
+          Aggregates only, never a shot.
+        </>
+      ),
+    },
+  ];
+}
+
+export function Findings() {
+  return (
+    <ul className="findings">
+      {findings().map((f) => (
+        <li key={f.key} className="finding" data-finding={f.key}>
+          <p className="finding-value">{f.value}</p>
+          <p className="finding-vs">{f.vs}</p>
+          <h3>
+            <Link href={f.href} prefetch={false}>
+              {f.title}
+            </Link>
+          </h3>
+          <p className="finding-about">{f.about}</p>
+          <p className="finding-tag" aria-hidden="true">
+            {f.href} →
+          </p>
+        </li>
+      ))}
+    </ul>
+  );
+}
