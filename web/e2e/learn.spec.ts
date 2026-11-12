@@ -65,6 +65,40 @@ test("the index groups the lessons by level and names each one's sport as text",
   }
 });
 
+// Task 182: a drawing per lesson, hidden from screen readers (the link names the lesson), no two
+// alike, beside the title from 640 px and beside the number and title on a phone, inside the card.
+for (const width of WIDTHS) {
+  test(`at ${width} px each lesson card has its own drawing beside its title, decorative`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/learn");
+    const items = page.locator("[data-lesson]");
+    await expect(items).toHaveCount(LESSONS.length);
+    const thumbs = page.locator("[data-lesson] svg.lesson-thumb");
+    await expect(thumbs).toHaveCount(LESSONS.length);
+    for (const l of LESSONS) await expect(page.locator(`[data-lesson="${l.slug}"] svg[data-thumb="${l.slug}"]`)).toHaveAttribute("aria-hidden", "true");
+    const drawn = await thumbs.evaluateAll((els) => els.map((e) => e.innerHTML));
+    expect(new Set(drawn).size, "no two drawings alike").toBe(LESSONS.length);
+    for (const l of LESSONS) {
+      const item = page.locator(`[data-lesson="${l.slug}"]`);
+      const card = (await item.boundingBox())!;
+      const thumb = (await item.locator("svg").boundingBox())!;
+      const title = (await item.locator("h3").boundingBox())!;
+      expect(thumb.x + thumb.width, `${l.slug}: the drawing sits left of the title`).toBeLessThanOrEqual(title.x);
+      expect(thumb.width, `${l.slug} drawing width`).toBeGreaterThanOrEqual(width < 640 ? 110 : 150);
+      expect(thumb.x + thumb.width, `${l.slug} inside its card`).toBeLessThanOrEqual(card.x + card.width);
+      // The whole card opens the lesson: a click on the drawing follows the title's link.
+      if (l.slug === "speed") {
+        await item.scrollIntoViewIfNeeded();
+        const shown = (await item.locator("svg").boundingBox())!;
+        await page.mouse.click(shown.x + shown.width / 2, shown.y + shown.height / 2);
+        await expect(page).toHaveURL(new RegExp(`${lessonHref(l)}$`));
+        await page.goBack();
+      }
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  });
+}
+
 test("the index asks for no OG image, and its own card is 200 image/png", async ({ page }) => {
   const requested: string[] = [];
   page.on("request", (r) => requested.push(r.url()));
