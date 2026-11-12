@@ -92,6 +92,9 @@ jobs:
       - run: uv run tracklab publish examples --check
       # Task 134 (P17): scouting.json is what the published warehouse Parquet give (their sha256 inside).
       - run: uv run tracklab publish scouting --check
+      # Task 184b (P22): occupancy.json recomputed from the silver this job built, match by match
+      # (FULL 10/10, never PARTIAL), and compared byte for byte.
+      - run: uv run tracklab publish occupancy --check
       # Task 164 (P19): the three publications that had no check. Each recomputes from the silver
       # and bronze this job built (FULL, never PARTIAL) and compares bytes with the versioned
       # files: possessions/*.json and index.json, stats.json (its row counts and byte totals) and

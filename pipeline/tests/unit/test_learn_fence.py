@@ -27,6 +27,12 @@ held-out matches; `index.json` names them), `stats.json`, `quality.json`, `runs.
 `platform.json` (each holds all ten ids), nor the Parquet of the warehouse, which this test never
 opens. `held_out()` is applied only by `learn/possession.py`. Widening the fence to every public
 file is a separate decision, not a gap of this test.
+
+P22 (task 184b) adds by hand the one publication outside /learn and /sql that stays clear of the
+Cup: `web/public/data/occupancy.json`, its publisher `publish/occupancy.py` (which applies
+`held_out()` too) and the web code of /tracking/occupancy. No held-out id anywhere in them, no
+forbidden key in the JSON or the publisher, and none of them names what the Cup studies and a
+plain occupancy map leaves alone: the detection flag, phases of play and possession, team shape.
 """
 
 from __future__ import annotations
@@ -52,6 +58,20 @@ CODE_DIRS = [
     SQL_DIR,
 ]
 TEAM_SHAPE = re.compile(r"possession_(?:width|length)|_(?:width|length)_")
+OCCUPANCY_JSON = REPO / "web" / "public" / "data" / "occupancy.json"
+OCCUPANCY_SRC = REPO / "pipeline" / "src" / "tracklab" / "publish" / "occupancy.py"
+OCCUPANCY_WEB = [
+    REPO / "web" / "lib" / "occupancy",
+    REPO / "web" / "components" / "occupancy",
+    REPO / "web" / "app" / "tracking" / "occupancy",
+]
+# The occupancy map is where players are, whole matches pooled: it never reads the detection flag,
+# phases of play, possession (in or out of it) or a team-shape column. TEAM_SHAPE's `_length_`
+# would also match the pitch's own `surface_length_m`, so the team-shape columns are named here.
+NOT_OCCUPANCY = re.compile(
+    r"is_detected|phases_of_play|frame_possession|frames_attacking|(?:in|out_of)_possession"
+    r"|possession_(?:width|length)"
+)
 
 
 def _walk(value: Any) -> tuple[list[str], list[str]]:
@@ -129,6 +149,31 @@ def team_shape_problems() -> tuple[int, list[str]]:
     return len(files), problems
 
 
+def occupancy_problems() -> tuple[int, list[str]]:
+    """How many files the occupancy map is built from or publishes, and what each breaks."""
+    problems: list[str] = []
+    jsons = [OCCUPANCY_JSON] if OCCUPANCY_JSON.exists() else []
+    for path in jsons:
+        keys, scalars = _walk(json.loads(path.read_text("utf-8")))
+        problems += [
+            f"{path.name}: {t!r} names {f!r}"
+            for t in keys + scalars
+            for f in FENCE["forbidden_keys"] + FENCE["held_out"]
+            if f in t
+        ]
+        problems += [f"{path.name}: {m.group(0)!r}" for t in keys if (m := NOT_OCCUPANCY.search(t))]
+    sources = ([OCCUPANCY_SRC] if OCCUPANCY_SRC.exists() else []) + _files(
+        [d for d in OCCUPANCY_WEB if d.exists()]
+    )
+    for path in sources:
+        text = path.read_text("utf-8")
+        problems += [f"{path.name}: id {h}" for h in FENCE["held_out"] if h in text]
+        problems += [f"{path.name}: {m.group(0)!r}" for m in NOT_OCCUPANCY.finditer(text)]
+        if path == OCCUPANCY_SRC:
+            problems += [f"{path.name}: key {k!r}" for k in FENCE["forbidden_keys"] if k in text]
+    return len(jsons) + len(sources), problems
+
+
 def test_the_fence_is_not_lifted_before_its_date() -> None:
     assert not FENCE["lifted"] or date.today() >= date.fromisoformat(FENCE["until"])
 
@@ -144,6 +189,13 @@ def test_no_sql_course_file_crosses_the_fence() -> None:
     seen, problems = sql_course_problems()
     print(f"sql course fence: {seen} files seen")
     assert seen > 0, "the fence looked at no file, so it protects nothing"
+    assert problems == []
+
+
+def test_no_occupancy_file_crosses_the_fence() -> None:
+    seen, problems = occupancy_problems()
+    print(f"occupancy fence: {seen} files seen")
+    assert OCCUPANCY_JSON.exists() and OCCUPANCY_SRC.exists(), "the occupancy map moved"
     assert problems == []
 
 
