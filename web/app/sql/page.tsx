@@ -26,7 +26,8 @@ export default function SqlPage() {
       <PageHead eyebrow="Learn SQL" aside={<SketchPanel href="/sql" label="A query, typed" />}>
         <h1>Learn SQL on the warehouse</h1>
         <p className="lede">
-          Eight lessons that take you from your first <code>SELECT</code> to window functions and CTEs. Each
+          <span data-sql-count>{SQL_LESSONS.length}</span> lessons that take you from your first <code>SELECT</code> to window
+          functions and CTEs. Each
           answers a question about the tables of <Link href="/warehouse">the warehouse</Link>, SkillCorner&apos;s
           season aggregates for basketball and football, and ends with exercises that are checked in your
           browser: DuckDB runs your query here, nothing is sent anywhere, and no account is needed. Written for

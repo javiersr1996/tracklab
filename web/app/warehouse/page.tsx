@@ -10,6 +10,7 @@ import { BASKETBALL_README, FOOTBALL_README } from "../../lib/warehouse/readmes"
 import { WAREHOUSE } from "../../lib/warehouse/registry";
 import { formatBytes } from "../../lib/format";
 import { SECTIONS } from "../../lib/sections";
+import { SQL_LESSONS } from "../../lib/sql/course";
 
 export const metadata = sectionMetadata("/warehouse");
 
@@ -39,8 +40,8 @@ export default function WarehousePage() {
           answers in time its rows are shown live, and if not, the snapshot taken when it was loaded.
         </p>
         <p>
-          <Link href="/sql">Learn SQL on these tables</Link>: eight lessons with exercises checked in this
-          browser.{" "}
+          <Link href="/sql">Learn SQL on these tables</Link>: <span data-sql-count>{SQL_LESSONS.length}</span> lessons with
+          exercises checked in this browser.{" "}
           <Link href="/warehouse/scouting" prefetch={false}>
             Scout the players
           </Link>

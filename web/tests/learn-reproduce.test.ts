@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { browserSql, parseBrowserSql } from "../lib/learn/browser-sql";
 import { reproduced } from "../lib/learn/reproduce";
@@ -37,5 +39,22 @@ describe("browserSql", () => {
   it("refuses a file that is not views followed by one query", () => {
     expect(() => parseBrowserSql("x", "CREATE VIEW a AS SELECT 1;\nSELECT 2\n")).toThrow(/files/);
     expect(() => parseBrowserSql("x", "-- files: /data/a.json\nSELECT 1;\nSELECT 2\n")).toThrow(/CREATE VIEW/);
+  });
+});
+
+// The lessons print their SQL as written ("Reproduce it", "Run it here" and its views): no internal
+// code a visitor would not know (P24 took "P3's" out of gravity.browser.sql). The pattern is the
+// one e2e/plain.spec.ts applies to the visible copy.
+describe("the lessons' SQL", () => {
+  const dir = join(process.cwd(), "..", "pipeline", "src", "tracklab", "learn");
+  const files = readdirSync(dir).filter((f) => f.endsWith(".sql"));
+
+  it.each(files)("%s carries no internal code", (file) => {
+    const text = readFileSync(join(dir, file), "utf-8");
+    expect(text.match(/\bP\d{1,2}\b|\bM\d[ab]?\b|\btask \d+|\bdecision \d|\bCP\d*\b/g) ?? []).toEqual([]);
+  });
+
+  it("reads the lessons' files", () => {
+    expect(files).toContain("gravity.browser.sql");
   });
 });

@@ -71,7 +71,10 @@ function findings(): Finding[] {
       ),
       vs: (
         <>
-          dead at <span data-fig="dead_at">{died}</span>, {STAGE_NAMES[died]}
+          dead at{" "}
+          <span data-fig="dead_at" data-stage={died}>
+            {STAGE_NAMES[died]}
+          </span>
         </>
       ),
       title: "The project that died, published dead",

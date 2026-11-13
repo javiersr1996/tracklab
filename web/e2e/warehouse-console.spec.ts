@@ -374,3 +374,21 @@ test("a query that wants gigabytes fails with a readable error and the engine su
   expect(sum.query, sum.error).toBe("done");
   expect((await resultTable(page)).rows).toEqual([["4999999950000000"]]);
 });
+
+// P24: on a slow CPU hydration lasts long enough for `fill` to straddle it, and hydrating the
+// textarea dropped the selection, so "SELECT 1" landed in front of the example instead of replacing
+// it (seen once on production, 2026-11-13; 12 runs of 12 at 6x throttling). The editor is now
+// read-only until hydrated, so typing waits for React.
+test("on a slow CPU an edit typed as the page hydrates replaces the example", async ({ page }) => {
+  test.setTimeout(180_000);
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 6 });
+  await page.goto("/warehouse");
+  await page.getByLabel("SQL").fill("SELECT 1");
+  await expect(page.getByLabel("SQL")).toHaveValue("SELECT 1");
+  const before = Number(await figure(page).getAttribute("data-run"));
+  await page.getByRole("button", { name: "Run", exact: true }).click();
+  const f = await finished(page, before);
+  expect(f.error).toBeUndefined();
+  expect(f.rows).toBe("1");
+});

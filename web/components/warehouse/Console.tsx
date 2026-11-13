@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { formatBytes } from "../../lib/format";
 import { cancel, dispose, explain, run, useWarehouse } from "../../lib/warehouse/engine";
 import { EXAMPLES } from "../../lib/warehouse/examples";
@@ -20,8 +20,13 @@ import { type PgState, PostgresPanel } from "./PostgresPanel";
 
 const SHOWN_ROWS = 20;
 
+// False in the server's HTML and while React hydrates it, true once React owns the page.
+const subscribe = () => () => {};
+const useHydrated = () => useSyncExternalStore(subscribe, () => true, () => false);
+
 export function Console({ pg }: { pg: PgSnapshotSummary }) {
   const s = useWarehouse();
+  const hydrated = useHydrated();
   const [sql, setSql] = useState(EXAMPLES.find((e) => e.id === "fact")!.sql);
   const [example, setExample] = useState("");
   const [asked, setAsked] = useState<PgState | null>(null);
@@ -91,10 +96,14 @@ export function Console({ pg }: { pg: PgSnapshotSummary }) {
         ))}
       </div>
       <p>{current ? current.about : "Pick an example, or write a SELECT of your own."}</p>
+      {/* Read-only until hydrated: hydrating the textarea drops its selection and leaves the caret at
+          the start, so text typed over a selection made before it would land in front of the example
+          instead of replacing it (P24). */}
       <textarea
         aria-label="SQL"
         rows={9}
         spellCheck={false}
+        readOnly={!hydrated}
         value={sql}
         onChange={(event) => {
           setSql(event.target.value);

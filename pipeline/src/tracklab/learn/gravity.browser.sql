@@ -3,7 +3,7 @@
 CREATE VIEW hook AS
 SELECT unnest(hook.t_s) AS t_s, unnest(hook.z_data_m) AS z_m, hook.g_real AS g_real
 FROM read_json('/data/quality.json');
--- P3's gravity check, one row per basketball match and metric.
+-- The gravity check of /engineering/quality, one row per basketball match and metric.
 CREATE VIEW gravity AS
 SELECT r.match_id, r.metric, r.value
 FROM (SELECT unnest(checks.gravity) AS r FROM read_json('/data/quality.json'))
