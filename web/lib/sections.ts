@@ -1,3 +1,5 @@
+import { SQL_LESSONS } from "./sql/course";
+
 // The sections that have a card. `title` is the link text the home page carries (the e2e find those
 // links by name), `about` a line from the section's own page or the README, not new copy. The home
 // picks its cards by address (EXPLORE and BUILT below); the /tracking hub takes the ones under it.
@@ -61,7 +63,7 @@ export const SECTIONS = [
     // Its own section since P12 (until then a second link in the Learn card, task 101).
     href: "/sql",
     title: "Learn SQL on the warehouse",
-    about: "Eight lessons that take you from your first SELECT to window functions and CTEs.",
+    about: `${SQL_LESSONS.length} lessons that take you from your first SELECT to window functions and CTEs.`,
   },
   {
     // P14: the first data that is not SkillCorner's, aggregates only.
