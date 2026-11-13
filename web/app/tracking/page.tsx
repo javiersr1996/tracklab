@@ -6,11 +6,11 @@ import { SECTIONS } from "../../lib/sections";
 export const metadata: Metadata = {
   title: "Tracking | Track Lab",
   description:
-    "The tracking data itself, drawn in your browser: replay a possession, see the run that moves nobody, follow each player's body pose.",
+    "The tracking data itself, drawn in your browser: replay a possession, see the run that moves nobody, follow each player's body pose, see where each football position plays.",
 };
 
-// The hub of the tracking itself (P15, task 121): the three pages under it, as the home page's
-// cards, with no figure of its own.
+// The hub of the tracking itself (P15, task 121): the pages under it (the occupancy map since P23),
+// as the home page's cards, with no figure of its own.
 const PAGES = SECTIONS.filter((s) => s.href.startsWith("/tracking/"));
 
 export default function TrackingPage() {
@@ -20,7 +20,7 @@ export default function TrackingPage() {
         <h1>Tracking</h1>
         <p className="lede">
           The tracking data itself, drawn in your browser: replay a possession, see the run that
-          moves nobody, follow each player&apos;s body pose.
+          moves nobody, follow each player&apos;s body pose, see where each football position plays.
         </p>
       </PageHead>
       <Band>

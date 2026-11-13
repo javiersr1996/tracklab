@@ -140,10 +140,10 @@ test("/warehouse, /learn and / link to /sql", async ({ page }) => {
     "/sql",
   );
   await page.goto("/");
-  // Since P12 the page links /sql twice in main: the hero's [RUN SQL] (task 108) and the section's
-  // card. Since P21 the header's entry for it is Learn, whose row lists the course on Learn's pages.
-  await expect(page.locator('main a[href="/sql"]')).toHaveCount(2);
-  await expect(page.getByRole("link", { name: "Run SQL" })).toHaveAttribute("href", "/sql");
+  // Since P23 the page links /sql once in main, under the lessons (the hero's [RUN SQL] and the
+  // section's card are gone). Since P21 the header's entry for it is Learn, whose row lists the
+  // course on Learn's pages.
+  await expect(page.locator('main a[href="/sql"]')).toHaveCount(1);
   await expect(page.locator('.site-header a[href="/sql"]')).toHaveCount(0);
   await page.locator("main").getByRole("link", { name: "Learn SQL on the warehouse" }).click();
   await expect(page).toHaveURL(/\/sql$/);

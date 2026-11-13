@@ -1,6 +1,7 @@
 import { sectionMetadata } from "../../lib/page-metadata";
 import Link from "next/link";
 import { Band, PageHead } from "../../components/site/Band";
+import { SectionCards } from "../../components/site/SectionCards";
 import { Console } from "../../components/warehouse/Console";
 import { rowsOf } from "../../lib/data";
 import { EXAMPLES_FILE } from "../../lib/warehouse/examples";
@@ -8,10 +9,14 @@ import { exampleIds, summary } from "../../lib/warehouse/pg";
 import { BASKETBALL_README, FOOTBALL_README } from "../../lib/warehouse/readmes";
 import { WAREHOUSE } from "../../lib/warehouse/registry";
 import { formatBytes } from "../../lib/format";
+import { SECTIONS } from "../../lib/sections";
 
 export const metadata = sectionMetadata("/warehouse");
 
 const fixed = (value: number) => value.toFixed(1);
+
+// The warehouse's other pages (P23), as the /tracking hub lists its own: the cards under the console.
+const PAGES = SECTIONS.filter((s) => s.href.startsWith("/warehouse/"));
 
 export default function WarehousePage() {
   const { aliases, params } = EXAMPLES_FILE;
@@ -50,6 +55,11 @@ export default function WarehousePage() {
 
       <Band dark>
         <Console pg={summary()} />
+      </Band>
+
+      <Band className="warehouse-pages">
+        <h2 className="eyebrow">More on these tables</h2>
+        <SectionCards sections={PAGES} />
       </Band>
 
       <Band>

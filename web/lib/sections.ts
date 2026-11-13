@@ -1,6 +1,6 @@
-// The nine sections, in the order the home page lists them. `title` is the link text the home page
-// has always carried (the e2e find those links by name), `about` a line from the section's own page
-// or the README, not new copy.
+// The sections that have a card. `title` is the link text the home page carries (the e2e find those
+// links by name), `about` a line from the section's own page or the README, not new copy. The home
+// picks its cards by address (EXPLORE and BUILT below); the /tracking hub takes the ones under it.
 export const SECTIONS = [
   {
     href: "/tracking/replay",
@@ -25,6 +25,18 @@ export const SECTIONS = [
       "SQL over the season aggregates of both bundles, run by DuckDB in this browser on Parquet files that are read by HTTP range.",
   },
   {
+    // P23: the warehouse's two other pages, which had no card; the lines are their ledes'.
+    href: "/warehouse/scouting",
+    title: "Scout the players",
+    about:
+      "Find players by the numbers: everyone with a large enough sample, sortable by any statistic, each value with a percentile among comparable players.",
+  },
+  {
+    href: "/warehouse/positions",
+    title: "How football positions differ physically",
+    about: "How far and how fast the players of each football position group run, in the provider's season aggregates, each group drawn where it plays.",
+  },
+  {
     href: "/tracking/runs",
     title: "The run that moves nobody",
     about: "The project that died, published dead.",
@@ -33,6 +45,12 @@ export const SECTIONS = [
     href: "/tracking/pose",
     title: "Body pose",
     about: "The joints of the players SkillCorner's Body Pose resolves in each frame, each with its predicted error.",
+  },
+  {
+    // P23: the occupancy map, a card on the home and on the /tracking hub; the line is its own.
+    href: "/tracking/occupancy",
+    title: "Where football positions play",
+    about: "A heat map of where the players of each football position group were, every team turned to attack the same way.",
   },
   {
     href: "/learn",
@@ -52,6 +70,24 @@ export const SECTIONS = [
     about: "EuroLeague field goals binned into hexagons on a FIBA half court: the league, each team and its main shooters.",
   },
 ] as const;
+
+export type SectionHref = (typeof SECTIONS)[number]["href"];
+export const sectionAt = (href: SectionHref) => SECTIONS.find((s) => s.href === href)!;
+
+// The home's cards (P23), by address in the order it shows them: what a visitor can open and look
+// at under "Explore", the engineering under "How it is built", near the end. The lessons and the
+// SQL course have their own band, so they are not cards there.
+export const EXPLORE: readonly SectionHref[] = [
+  "/tracking/replay",
+  "/tracking/occupancy",
+  "/warehouse/positions",
+  "/euroleague",
+  "/tracking/pose",
+  "/tracking/runs",
+  "/warehouse",
+  "/warehouse/scouting",
+];
+export const BUILT: readonly SectionHref[] = ["/engineering", "/engineering/quality"];
 
 // The header's entries (P15, task 121, Javier's option 1 of 2026-11-01), and About (P20). Tracking,
 // Engineering, Warehouse (P17) and Learn group pages, which a second row of the header lists on any

@@ -1142,9 +1142,9 @@ body:has(.home) .site-header::after {
   pointer-events: auto;
 }
 
-/* Three lines: "One schema," / "two sports," / "one renderer". */
+/* Two lines on a wide screen (P23): "Watch a possession," / "then ask it a question". */
 .hero-copy h1 {
-  max-width: 14ch;
+  max-width: 22ch;
 }
 
 .hero-detail {
@@ -1389,6 +1389,111 @@ body:has(.home) .site-header::after {
   color: var(--tag);
 }
 
+/* The home's lessons (P23): under 1000 px a rail that scrolls inside its own box, out to the edges
+   of the screen, each card snapping to the gutter and the next one peeking in, so the page itself
+   never scrolls sideways; from 1000 px a grid, four across, six from 1320 px. Each card is /learn's
+   drawing over the lesson's number and its question, the whole card the link. */
+.questions {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(75%, 17rem);
+  gap: var(--space-4);
+  margin: var(--space-5) calc(-1 * var(--gutter));
+  padding: var(--space-1) var(--gutter) var(--space-4);
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+}
+
+@media (min-width: 1000px) {
+  .questions {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+  }
+}
+
+@media (min-width: 1320px) {
+  .questions {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.question {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: none; /* .band li keeps prose at --measure; a card is not prose */
+  padding: var(--space-4);
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  scroll-snap-align: start;
+}
+
+.question:hover {
+  border-color: var(--neon-line-strong);
+  box-shadow: 0 0 24px -8px var(--neon-glow);
+}
+
+/* Inside the rail's box an outer ring would be clipped: it is drawn inside the card. */
+.question:has(a:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.question .lesson-thumb {
+  margin-bottom: var(--space-2);
+}
+
+.question .lesson-meta {
+  margin: 0;
+}
+
+.question h3 {
+  margin: 0;
+  font-size: var(--step-1);
+  line-height: var(--leading-snug);
+}
+
+.question h3 a {
+  color: var(--fg-strong);
+  text-decoration: none;
+}
+
+.question h3 a:focus-visible {
+  outline: none;
+}
+
+.question h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.question:hover h3 a {
+  color: var(--neon);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .question {
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+}
+
+/* The figures sit under the architecture, apart from it. */
+.home-built .figures {
+  margin-top: var(--space-7);
+}
+
 .split {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1406,8 +1511,10 @@ body:has(.home) .site-header::after {
   width: 100%;
 }
 
-/* The sections as a bento (task 107): one column, two from 640 px, four from 1000 px where the
-   first, second and last two cards take two columns each and lay their sketch beside the text. */
+/* The sections as a bento (task 107): one column, two from 640 px, four from 1000 px. On the home
+   (P23) a card in each row of "Explore", and both under "How it is built", take two columns and lay
+   their sketch beside the text, as do the two under /warehouse's console; /tracking's four stay one
+   column each. */
 .cards {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1428,28 +1535,13 @@ body:has(.home) .site-header::after {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .card[data-section="/tracking/replay"],
-  .card[data-section="/engineering"],
-  .card[data-section="/learn"],
-  .card[data-section="/sql"] {
+  .home-explore .card[data-section="/tracking/replay"],
+  .home-explore .card[data-section="/euroleague"],
+  .home-explore .card[data-section="/warehouse"],
+  .home-explore .card[data-section="/warehouse/scouting"],
+  .home-built .card,
+  .warehouse-pages .card {
     grid-column: span 2;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto auto 1fr auto;
-    grid-template-areas:
-      "tag preview"
-      "title preview"
-      "about preview"
-      "arrow preview";
-  }
-}
-
-/* The ninth card (P14) takes a row of its own from 640 px, where the eight others fill theirs,
-   with its sketch beside the text; wider than --measure, so it lifts `.band li`'s cap, which a
-   bare `.card` does not outrank. */
-@media (min-width: 640px) {
-  .card[data-section="/euroleague"] {
-    grid-column: 1 / -1;
-    max-width: none;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: auto auto 1fr auto;
     grid-template-areas:
@@ -1718,6 +1810,56 @@ body:has(.home) .site-header::after {
   fill: var(--el-lo);
 }
 
+/* The occupancy sketch's squares: cyan, more opaque where the group spends more time. */
+.pv-heat {
+  fill: var(--neon);
+}
+
+.pv-heat-hi {
+  fill-opacity: 0.85;
+}
+
+.pv-heat-mid {
+  fill-opacity: 0.45;
+}
+
+.pv-heat-lo {
+  fill-opacity: 0.18;
+}
+
+/* The positions sketch: each row's middle half, its median and its players. */
+.pv-box {
+  fill: var(--neon-line);
+  stroke: var(--neon);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.pv-median {
+  stroke: #ffffff;
+  stroke-width: 1.5;
+}
+
+.pv-dot {
+  fill: var(--neon-alt);
+}
+
+/* The scouting sketch's bars, each growing out of the middle line. */
+.pv-bar {
+  transform-box: fill-box;
+}
+
+.pv-bar-a {
+  fill: var(--neon);
+  transform-origin: right center;
+}
+
+.pv-bar-b {
+  fill: var(--neon-alt);
+  transform-origin: left center;
+}
+
 /* Every sketch moves only where motion is welcome; still, each shows its last frame above. */
 @media (prefers-reduced-motion: no-preference) {
   .pv-mark-a {
@@ -1793,6 +1935,21 @@ body:has(.home) .site-header::after {
   .pv-hex {
     animation: pv-hex 3.2s ease-in-out infinite;
     animation-delay: calc(var(--i) * 0.3s);
+  }
+
+  .pv-heat {
+    animation: pv-fill 4s ease-out infinite;
+    animation-delay: calc(var(--i) * 0.4s);
+  }
+
+  .pv-box {
+    animation: pv-type 4s ease-out infinite;
+    animation-delay: calc(var(--i) * 0.3s);
+  }
+
+  .pv-bar {
+    animation: pv-type 4s ease-out infinite;
+    animation-delay: calc(var(--i) * 0.25s);
   }
 }
 

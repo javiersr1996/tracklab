@@ -17,7 +17,7 @@ import { AUTHOR } from "../lib/sections";
 // white, the markings cyan at 60%.
 export const size = OG_SIZE;
 export const contentType = OG_TYPE;
-export const alt = `Track Lab: one schema, two sports, one renderer. A basketball possession's last two seconds on a half court. A personal learning project by ${AUTHOR.name}.`;
+export const alt = `Track Lab: watch a possession, then ask it a question. A basketball possession's last two seconds on a half court. A personal learning project by ${AUTHOR.name}.`;
 
 const TRAIL_S = 2;
 const SAMPLES = 10;
@@ -97,10 +97,12 @@ export default async function Image() {
         </svg>
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: 640, height: "100%", padding: "56px 0 56px 64px", color: "#e2e8f0" }}>
           <div style={{ display: "flex", fontSize: 26, letterSpacing: 3, textTransform: "uppercase", color: "#00e5ff" }}>Open tracking data</div>
-          <div style={{ display: "flex", flexDirection: "column", fontSize: 68, lineHeight: 1.12, letterSpacing: -1, color: "#ffffff" }}>
-            <div style={{ display: "flex" }}>One schema,</div>
-            <div style={{ display: "flex" }}>two sports,</div>
-            <div style={{ display: "flex", color: "#00e5ff" }}>one renderer</div>
+          {/* The home's headline since P23, its second half lit as there, in four lines as on a phone. */}
+          <div style={{ display: "flex", flexDirection: "column", fontSize: 64, lineHeight: 1.12, letterSpacing: -1, color: "#ffffff" }}>
+            <div style={{ display: "flex" }}>Watch a</div>
+            <div style={{ display: "flex" }}>possession,</div>
+            <div style={{ display: "flex", color: "#00e5ff" }}>then ask it</div>
+            <div style={{ display: "flex", color: "#00e5ff" }}>a question</div>
           </div>
           <div style={{ display: "flex", fontSize: 26, lineHeight: 1.35, color: "#94a3b8" }}>
             A personal learning project by {AUTHOR.name}

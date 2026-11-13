@@ -155,20 +155,22 @@ for (const width of [390, 1440]) {
   });
 }
 
-test("the hero's actions: Open replay follows the possession playing, Run SQL opens the course", async ({
+// Since P23 the first action opens the lessons, the second the replay.
+test("the hero's actions: Browse the lessons opens /learn, Open replay follows the possession playing", async ({
   page,
 }) => {
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Pause" })).toBeVisible({ timeout: 2_000 });
+  const lessons = page.getByRole("link", { name: "Browse the lessons" });
   const open = page.getByRole("link", { name: "Open replay" });
-  const sql = page.getByRole("link", { name: "Run SQL" });
   // Both inside the first screen, 44 px tall, real links.
-  for (const link of [open, sql]) {
+  for (const link of [lessons, open]) {
     const box = (await link.boundingBox())!;
     expect(box.height).toBeGreaterThanOrEqual(44);
     expect(box.y + box.height).toBeLessThanOrEqual(page.viewportSize()!.height);
   }
-  await expect(sql).toHaveAttribute("href", "/sql");
+  await expect(lessons).toHaveAttribute("href", "/learn");
+  await expect(lessons).toHaveClass(/hero-action-primary/);
   const href = (await open.getAttribute("href"))!;
   expect(href).toMatch(/^\/tracking\/replay\?p=(bb|fb)_/);
   if (EXPOSED) {
