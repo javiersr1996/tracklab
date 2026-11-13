@@ -119,9 +119,11 @@ for (const width of [390, 1440]) {
   });
 }
 
+// Since P23 /warehouse links the page twice: in its head and as a card under the console (ia.spec.ts).
 test("/warehouse links the page, and the sitemap lists it", async ({ page }) => {
   await page.goto("/warehouse");
-  await page.locator("main").getByRole("link", { name: "How football positions differ physically" }).click();
+  await expect(page.locator('main a[href="/warehouse/positions"]')).toHaveCount(2);
+  await page.locator(".page-head").getByRole("link", { name: "How football positions differ physically" }).click();
   await expect(page).toHaveURL(new RegExp(`${PATH}$`));
   const xml = await (await page.request.get("/sitemap.xml")).text();
   expect(xml).toContain(`${PATH}</loc>`);
