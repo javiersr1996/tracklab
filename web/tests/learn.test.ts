@@ -49,8 +49,8 @@ describe("isCurrent", () => {
     expect([...home].sort()).toEqual(SECTIONS.map((s) => s.href).sort());
   });
 
-  it("gives the header its entries (P15; P21: SQL under Learn) and About (P20), each group current on its pages and every section in the menu", () => {
-    expect(NAV.map((n) => n.nav)).toEqual(["Tracking", "Engineering", "Warehouse", "Learn", "EuroLeague", "About"]);
+  it("gives the header its entries (P15; P21: SQL under Learn) and About (P20), each group current on its pages and every section but /euroleague in the menu", () => {
+    expect(NAV.map((n) => n.nav)).toEqual(["Tracking", "Engineering", "Warehouse", "Learn", "About"]);
     for (const n of NAV) for (const p of n.pages ?? []) expect(inEntry(p.href, n), p.href).toBe(true);
     const learn = NAV.find((n) => n.nav === "Learn")!;
     expect(learn.pages!.map((p) => p.href)).toEqual(["/learn", "/sql"]);
@@ -63,6 +63,7 @@ describe("isCurrent", () => {
     expect(pageOf("/engineering", engineering.pages!)?.nav).toBe("Platform");
     expect(pageOf("/tracking", NAV[0].pages!)).toBeUndefined();
     const reachable = NAV.flatMap((n) => [n.href, ...(n.pages ?? []).map((p) => p.href)]);
-    for (const s of SECTIONS) expect(reachable, s.href).toContain(s.href);
+    // /euroleague is the one section off the menu (P27): the home and a lesson lead to it.
+    for (const s of SECTIONS) expect(reachable.includes(s.href), s.href).toBe(s.href !== "/euroleague");
   });
 });
