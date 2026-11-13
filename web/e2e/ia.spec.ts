@@ -151,7 +151,7 @@ for (const viewport of [
 // The header (Javier's option 1): the entries and About (P20), and under Tracking, Engineering,
 // Warehouse (P17) or Learn (P21: the lessons and the SQL course, one idea, one entry) a second row
 // with the group's pages, the one on show marked current.
-const ENTRIES = ["Tracking", "Engineering", "Warehouse", "Learn", "EuroLeague", "About"];
+const ENTRIES = ["Tracking", "Engineering", "Warehouse", "Learn", "About"];
 const GROUPS = [
   { path: "/tracking/pose", group: "Tracking", pages: ["Replay", "Runs", "Pose", "Occupancy"], current: "Pose" },
   { path: "/tracking/occupancy", group: "Tracking", pages: ["Replay", "Runs", "Pose", "Occupancy"], current: "Occupancy" },
@@ -167,11 +167,11 @@ const GROUPS = [
   { path: "/sql/joins", group: "Learn", pages: ["Lessons", "SQL course"], current: "SQL course" },
 ];
 
-test("the header has the six entries, and a group's pages only under that group", async ({ page }) => {
+test("the header has the five entries, and a group's pages only under that group", async ({ page }) => {
   await page.goto("/euroleague");
   const nav = page.getByRole("navigation", { name: "Sections" });
   await expect(nav.getByRole("link")).toHaveText(ENTRIES);
-  await expect(nav.locator("[aria-current]")).toHaveText(["EuroLeague"]);
+  await expect(nav.locator("[aria-current]")).toHaveCount(0);
   await expect(page.locator(".site-subnav")).toHaveCount(0);
 
   for (const g of GROUPS) {
@@ -198,20 +198,20 @@ for (const width of [390, 1440]) {
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    // The wordmark and the six, then the group's row: four under Tracking (Occupancy, task 184b)
+    // The wordmark and the five, then the group's row: four under Tracking (Occupancy, task 184b)
     // and under Engineering, three under Warehouse (Positions, task 184a), two under Learn.
     const LINKS: Record<string, number> = {
-      "/": 7,
-      "/tracking/runs": 11,
-      "/tracking/occupancy": 11,
-      "/engineering/bulletin": 11,
-      "/engineering/history": 11,
-      "/warehouse": 10,
-      "/warehouse/scouting": 10,
-      "/warehouse/positions": 10,
-      "/learn/gravity": 9,
-      "/sql/windows": 9,
-      "/about": 7,
+      "/": 6,
+      "/tracking/runs": 10,
+      "/tracking/occupancy": 10,
+      "/engineering/bulletin": 10,
+      "/engineering/history": 10,
+      "/warehouse": 9,
+      "/warehouse/scouting": 9,
+      "/warehouse/positions": 9,
+      "/learn/gravity": 8,
+      "/sql/windows": 8,
+      "/about": 6,
     };
     for (const path of Object.keys(LINKS)) {
       await page.goto(path);
@@ -235,11 +235,11 @@ for (const width of [390, 1440]) {
       }
       // The entries are one line, and on a phone the header is short: about 100 px, 140 with a
       // group's row (it was 143 and 196 px with the entries in two lines).
-      const tops = new Set(links.slice(1, 7).map((l) => Math.round(l.y)));
+      const tops = new Set(links.slice(1, 6).map((l) => Math.round(l.y)));
       expect(tops.size, `${path}: the entries in one line`).toBe(1);
       if (width < 640) {
         const height = (await page.locator(".site-header").boundingBox())!.height;
-        expect(height, `${path} header height`).toBeLessThanOrEqual(LINKS[path] > 7 ? 140 : 100);
+        expect(height, `${path} header height`).toBeLessThanOrEqual(LINKS[path] > 6 ? 140 : 100);
       }
     }
   });

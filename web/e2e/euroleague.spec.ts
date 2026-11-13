@@ -311,7 +311,7 @@ test("/euroleague is light: under 400,000 B before a team is chosen", async ({ p
   expect(transferred).toBeLessThan(400_000);
 });
 
-test("the ninth section: in the header, on the home page and in the sitemap", async ({ page }) => {
+test("the ninth section: off the header (P27), on the home page and in the sitemap", async ({ page }) => {
   await page.goto("/");
   // Since P23 a card under the home's Explore (the home's cards are counted in ia.spec.ts).
   const card = page.locator('.home-explore [data-section="/euroleague"]');
@@ -320,8 +320,8 @@ test("the ninth section: in the header, on the home page and in the sitemap", as
   await card.getByRole("link").click();
   await expect(page).toHaveURL(/\/euroleague$/);
   const nav = page.getByRole("navigation", { name: "Sections" });
-  await expect(nav.getByRole("link", { name: "EuroLeague" })).toHaveAttribute("aria-current", "page");
-  await expect(nav.locator("[aria-current]")).toHaveCount(1);
+  await expect(nav.getByRole("link", { name: "EuroLeague" })).toHaveCount(0);
+  await expect(nav.locator("[aria-current]")).toHaveCount(0);
   const xml = await (await page.request.get("/sitemap.xml")).text();
   expect(xml).toContain("<loc>https://pitchandparquet.vercel.app/euroleague</loc>");
   const og = await page.request.get("/euroleague/opengraph-image");
@@ -330,21 +330,20 @@ test("the ninth section: in the header, on the home page and in the sitemap", as
 });
 
 for (const width of [390, 1000, 1200, 1440]) {
-  test(`at ${width} px: the six header links neither overlap nor overflow; no sideways scroll; text 16 px or more`, async ({ page }) => {
+  test(`at ${width} px: the five header links neither overlap nor overflow; no sideways scroll; text 16 px or more`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/euroleague");
     await page.waitForLoadState("networkidle");
     const sideways = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(sideways, "page wider than the window by").toBeLessThanOrEqual(0);
-    // The five sections and About (P21: Learn holds the SQL course). On a phone they are a strip
+    // The four sections and About (P21: Learn holds the SQL course; P27: EuroLeague is not one). On a phone they are a strip
     // that scrolls: its box stays in the window, and a link past its edge is hidden in it.
     const links = (await headerLinks(page)).slice(1);
-    expect(links).toHaveLength(6);
+    expect(links).toHaveLength(5);
     for (const [i, a] of links.entries()) {
       expect(a.strip!.x, `link ${i}'s row starts inside the window`).toBeGreaterThanOrEqual(0);
       expect(a.strip!.r, `link ${i}'s row ends inside the window`).toBeLessThanOrEqual(width);
       if (!whole(a)) expect(a.strip!.scrolls && width < 640, `link ${i} cut by a row that does not scroll`).toBe(true);
-      if (a.current) expect(whole(a), "EuroLeague in view").toBe(true);
       for (const b of links.slice(i + 1)) {
         if (a.shownR <= a.shownX || b.shownR <= b.shownX) continue; // scrolled out of view
         expect(a.shownX < b.shownR && b.shownX < a.shownR && a.y < b.b && b.y < a.b, `header link ${i} overlaps another`).toBe(false);

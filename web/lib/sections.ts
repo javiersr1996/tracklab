@@ -94,6 +94,7 @@ export const BUILT: readonly SectionHref[] = ["/engineering", "/engineering/qual
 // The header's entries (P15, task 121, Javier's option 1 of 2026-11-01), and About (P20). Tracking,
 // Engineering, Warehouse (P17) and Learn group pages, which a second row of the header lists on any
 // page under them; Learn holds the lessons and the SQL course, whose addresses did not move (P21).
+// /euroleague is no entry (P27): the home's Explore and the expected-points lesson lead to it.
 export type NavEntry = { href: string; nav: string; pages?: { href: string; nav: string }[] };
 export const NAV: NavEntry[] = [
   {
@@ -133,7 +134,6 @@ export const NAV: NavEntry[] = [
       { href: "/sql", nav: "SQL course" },
     ],
   },
-  { href: "/euroleague", nav: "EuroLeague" },
   // P20, task 171: who made the site, not a section of it.
   { href: "/about", nav: "About" },
 ];

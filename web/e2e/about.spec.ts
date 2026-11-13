@@ -95,7 +95,7 @@ test("at 390 px the header's entries are one line and About is in view on /about
   await page.goto("/about");
   const nav = page.getByRole("navigation", { name: "Sections" });
   const tops = await nav.getByRole("link").evaluateAll((as) => as.map((a) => Math.round(a.getBoundingClientRect().top)));
-  expect(tops).toHaveLength(6);
+  expect(tops).toHaveLength(5);
   expect(new Set(tops).size).toBe(1);
   const about = nav.getByRole("link", { name: "About" });
   await expect(about).toHaveAttribute("aria-current", "page");
