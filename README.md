@@ -10,6 +10,10 @@
 > aggregates are shown, and the figures may contain errors and are not an assessment of any player
 > or team. The full disclaimer is at [/about](https://tracklab-sable.vercel.app/about).
 
+Watch a possession, then ask it a question: replay football and basketball tracking data, follow
+lessons that each start from one question, and run SQL on the season statistics, all in your
+browser.
+
 One schema, two sports, one renderer. Track Lab takes SkillCorner's open tracking and event data
 for basketball and football, verifies every provider file against a pinned manifest, conforms
 both sports into one silver schema with DuckDB and dbt, and publishes curated possessions that a
