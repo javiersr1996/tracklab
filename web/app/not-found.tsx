@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHead } from "../components/site/Band";
 
-export const metadata: Metadata = { title: "Page not found | Track Lab" };
+export const metadata: Metadata = { title: "Page not found | Pitch & Parquet" };
 
 // The 404 (P19, task 151): the shared header and footer come from the root layout; the way back
 // reuses the home page's two actions.

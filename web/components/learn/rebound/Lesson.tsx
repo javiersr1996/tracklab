@@ -391,7 +391,7 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             The query is the race of the table in DuckDB, written for the public files of match {r("example.match_id")}: the
             events file, read once for the rebounds and once for the shots, and the tracking file. It needs nothing else: no
-            Track Lab code and no intermediate tables.
+            Pitch & Parquet code and no intermediate tables.
           </p>
           <ol>
             <li>

@@ -537,7 +537,7 @@ export function Lesson({ sql }: { sql: string }) {
         <Reproduce sql={sql} browser="gravity">
           <p>
             The query is the check&apos;s basketball fit in DuckDB, written for the two public files of match{" "}
-            {q("hook.match_id")}. It needs nothing else: no Track Lab code and no intermediate tables.
+            {q("hook.match_id")}. It needs nothing else: no Pitch & Parquet code and no intermediate tables.
           </p>
           <ol>
             <li>

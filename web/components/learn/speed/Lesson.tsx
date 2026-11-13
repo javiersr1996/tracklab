@@ -541,7 +541,7 @@ export function Lesson({ sql }: { sql: string }) {
         <Reproduce sql={sql} browser="speed">
           <p>
             The query is the comparison of the table in DuckDB, written for the public tracking file of match{" "}
-            {s("example.match_id")}. It needs nothing else: no Track Lab code and no intermediate tables.
+            {s("example.match_id")}. It needs nothing else: no Pitch & Parquet code and no intermediate tables.
           </p>
           <ol>
             <li>

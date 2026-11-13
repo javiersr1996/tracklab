@@ -17,7 +17,7 @@ import { AUTHOR } from "../lib/sections";
 // white, the markings cyan at 60%.
 export const size = OG_SIZE;
 export const contentType = OG_TYPE;
-export const alt = `Track Lab: watch a possession, then ask it a question. A basketball possession's last two seconds on a half court. A personal learning project by ${AUTHOR.name}.`;
+export const alt = `Pitch & Parquet: watch a possession, then ask it a question. A basketball possession's last two seconds on a half court. A personal learning project by ${AUTHOR.name}.`;
 
 const TRAIL_S = 2;
 const SAMPLES = 10;
@@ -108,7 +108,7 @@ export default async function Image() {
             A personal learning project by {AUTHOR.name}
           </div>
           <div style={{ display: "flex", fontSize: 44, letterSpacing: -1, color: "#ffffff" }}>
-            track<span style={{ color: "#00e5ff" }}>lab</span>
+            pitch<span style={{ color: "#00e5ff" }}>parquet</span>
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 -- Run it with DuckDB from a folder that holds the two public SkillCorner repositories side by side,
--- opendata and opendata-basketball. Two results: no Track Lab code, no intermediate table.
+-- opendata and opendata-basketball. Two results: no Pitch & Parquet code, no intermediate table.
 
 -- 1. Football, one match: its phases of play, read through five columns only. A run is a
 --    stretch of consecutive phases of one period with the same team in possession, from its first

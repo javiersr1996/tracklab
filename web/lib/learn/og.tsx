@@ -4,7 +4,7 @@ import { ImageResponse } from "next/og";
 import { LESSONS } from "./series";
 
 // The card a link to a lesson unfurls into: the question, "Lesson n · Level" and the mark, in the
-// site's neon (P13): the page's near-black, the eyebrow and "lab" in cyan (13.1:1), the question in
+// site's neon (P13): the page's near-black, the eyebrow and "parquet" in cyan (13.1:1), the question in
 // the ink (16.3:1). No figure of any kind, so the rule that every number comes from an artifact has
 // nothing to check. Satori reads TTF, not WOFF2: JetBrainsMono-latin-bold.ttf is the site's own
 // JetBrains Mono file instanced at wght 700 with fontTools (OFL, app/fonts/OFL-JetBrainsMono.txt),
@@ -26,7 +26,7 @@ export async function card(eyebrow: string, title: string) {
         <div style={{ display: "flex", fontSize: 30, letterSpacing: 3, textTransform: "uppercase", color: "#00e5ff" }}>{eyebrow}</div>
         <div style={{ display: "flex", fontSize: title.length > 34 ? 68 : 80, lineHeight: 1.15, letterSpacing: -1 }}>{title}</div>
         <div style={{ display: "flex", fontSize: 44, letterSpacing: -1, color: "#ffffff" }}>
-          track<span style={{ color: "#00e5ff" }}>lab</span>
+          pitch<span style={{ color: "#00e5ff" }}>parquet</span>
         </div>
       </div>
     ),

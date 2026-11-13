@@ -323,7 +323,7 @@ test("the ninth section: in the header, on the home page and in the sitemap", as
   await expect(nav.getByRole("link", { name: "EuroLeague" })).toHaveAttribute("aria-current", "page");
   await expect(nav.locator("[aria-current]")).toHaveCount(1);
   const xml = await (await page.request.get("/sitemap.xml")).text();
-  expect(xml).toContain("<loc>https://tracklab-sable.vercel.app/euroleague</loc>");
+  expect(xml).toContain("<loc>https://pitchandparquet.vercel.app/euroleague</loc>");
   const og = await page.request.get("/euroleague/opengraph-image");
   expect(og.status()).toBe(200);
   expect(og.headers()["content-type"]).toBe("image/png");

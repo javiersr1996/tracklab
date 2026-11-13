@@ -13,7 +13,7 @@ set -euo pipefail
 
 repo=$(git -C "$(dirname "$0")/.." rev-parse --show-toplevel)
 readme="$repo/README.md"
-url="https://github.com/javiersr1996/tracklab.git"
+url="https://github.com/javiersr1996/pitch-and-parquet.git"
 
 from_existing=""
 if [[ "${1:-}" == "--from-existing" ]]; then

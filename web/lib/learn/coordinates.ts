@@ -1,4 +1,4 @@
-// Lesson 3's arithmetic: points in a frame, the affine maps that move them to Track Lab's common
+// Lesson 3's arithmetic: points in a frame, the affine maps that move them to Pitch & Parquet's common
 // frame, and the clocks of two sports on one time axis. Pure functions, no data.
 
 export type Point = readonly [number, number];
@@ -35,7 +35,7 @@ export function affine(a: Matrix, b: Point = [0, 0]): (p: Point) => Point {
   return ([x, y]) => [a[0][0] * x + a[0][1] * y + b[0], a[1][0] * x + a[1][1] * y + b[1]];
 }
 
-// A provider's point in Track Lab's frame: to metres by `unitToM`, then turned by the attack sign
+// A provider's point in Pitch & Parquet's frame: to metres by `unitToM`, then turned by the attack sign
 // `k` (+1 leaves it, -1 is half a turn). Both providers put the origin at the centre, so b = 0.
 export const toCommon = (p: Point, unitToM: number, k: 1 | -1): Point => affine(scaled(k * unitToM))(p);
 

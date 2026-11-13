@@ -271,7 +271,7 @@ test("terminates the engine's worker when the page unmounts", async ({ page }) =
   // A client-side navigation keeps this document (and its JS) alive: only the component's own
   // cleanup can end the worker, not a page load.
   await page.evaluate(() => ((window as unknown as { __sameDocument: boolean }).__sameDocument = true));
-  await page.getByRole("link", { name: "Track Lab" }).click();
+  await page.getByRole("link", { name: "Pitch & Parquet" }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator("h1")).toHaveText("Watch a possession, then ask it a question");
   expect(await page.evaluate(() => (window as unknown as { __sameDocument?: boolean }).__sameDocument)).toBe(true);

@@ -9,7 +9,7 @@ import { Fig } from "../Fig";
 import { INK } from "../gravity/Plot";
 
 // The first frame of each home-page possession, step by step from the provider's numbers to
-// Track Lab's frame. Positions are drawn in metres throughout: a change of unit relabels the axes
+// Pitch & Parquet's frame. Positions are drawn in metres throughout: a change of unit relabels the axes
 // and leaves every player where he is, while the sign k turns the picture. Nothing moves until
 // the reader picks a step.
 export const MARKS = {

@@ -278,7 +278,7 @@ export function Lesson({ sql }: { sql: string }) {
         <Reproduce sql={sql} browser="clock">
           <p>
             The query is the table&apos;s method in DuckDB, written for the public tracking file of match {c("examples.0.match_id")}.
-            It reads the clock fields of every frame and nothing else, so it needs no Track Lab code and no intermediate tables.
+            It reads the clock fields of every frame and nothing else, so it needs no Pitch & Parquet code and no intermediate tables.
           </p>
           <ol>
             <li>

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tracklab.dev/replay/possession.schema.json",
-  "title": "Track Lab replay possession",
+  "title": "Pitch & Parquet replay possession",
   "description": "One curated possession (task 17 of tasks/todo.md), as written by `tracklab publish possessions` from silver. Strict on purpose: an unknown field or a value outside its enum is a publishing bug, not a shape the player has to tolerate.",
   "type": "object",
   "additionalProperties": false,

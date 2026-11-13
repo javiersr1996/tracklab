@@ -96,7 +96,7 @@ export function Lesson({ sql }: { sql: string }) {
       >
         <p className="lede">
           A basketball court arrives in feet and a football pitch in metres; one clock ticks every {l("step_bb_ms")}&nbsp;ms,
-          the other every {l("step_fb_ms")}. Track Lab keeps both in one table and reads either with the same query. A
+          the other every {l("step_fb_ms")}. Pitch & Parquet keeps both in one table and reads either with the same query. A
           little geometry and a little arithmetic on time make that work, and both fit on one page.
         </p>
       </LessonHead>
@@ -170,7 +170,7 @@ export function Lesson({ sql }: { sql: string }) {
           </p>
           <h3>The direction</h3>
           <p>
-            The teams change ends, so a team&apos;s attack runs towards +x in one period and −x in another. Track Lab
+            The teams change ends, so a team&apos;s attack runs towards +x in one period and −x in another. Pitch & Parquet
             records it as an attack sign <M><mi>k</mi></M>, plus or minus one, and turns a frame for a team by
             multiplying both coordinates by it:
           </p>
@@ -202,8 +202,8 @@ export function Lesson({ sql }: { sql: string }) {
             matrix with determinant one <Quote id="mathworld-rotation" /> (<Cite id="mathworld-rotation" />). A turn
             keeps a team&apos;s left wing on its left; a mirror swaps the wings.
           </p>
-          <p>Put together, a provider&apos;s point reaches Track Lab&apos;s frame in one product:</p>
-          <Formula label="From the provider's frame to Track Lab's">
+          <p>Put together, a provider&apos;s point reaches Pitch & Parquet&apos;s frame in one product:</p>
+          <Formula label="From the provider's frame to Pitch & Parquet's">
             <mrow>
               {sub("p", "common")}
               <mo>=</mo>
@@ -264,7 +264,7 @@ export function Lesson({ sql }: { sql: string }) {
         <section aria-labelledby="time-h">
           <h2 id="time-h">Two clocks on one axis</h2>
           <p>
-            Space is half the problem. A row also carries a time, and the sports sample at different rates. Track Lab
+            Space is half the problem. A row also carries a time, and the sports sample at different rates. Pitch & Parquet
             keeps each at its own: a row is a native frame of the provider, and its time is the frame number over the
             rate,
           </p>
@@ -416,7 +416,7 @@ export function Lesson({ sql }: { sql: string }) {
             and a statistic about the left wing would quietly become one about the right.
           </p>
           <p>
-            A common clock is a choice, not a given. Either the table keeps native rates, as Track Lab does, and every
+            A common clock is a choice, not a given. Either the table keeps native rates, as Pitch & Parquet does, and every
             reader interpolates for itself, or a build resamples once and every row after that is partly an average.
             The same questions come back with any new provider: what the unit is, where the origin sits and which way
             the axes run, and what the clock counts. Answer them with a map of the form{" "}
@@ -491,7 +491,7 @@ export function Lesson({ sql }: { sql: string }) {
             The query rebuilds the first figure&apos;s numbers from SkillCorner&apos;s public files with DuckDB: the
             attack sign of each team in each period of basketball match {pf(BB, "match.match_id")}, the first frame of
             its possession in feet and in metres, and the pitch and the signs of football match{" "}
-            {pf(FB, "match.match_id")}. It needs nothing else: no Track Lab code and no intermediate tables.
+            {pf(FB, "match.match_id")}. It needs nothing else: no Pitch & Parquet code and no intermediate tables.
           </p>
           <ol>
             <li>

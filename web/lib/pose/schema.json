@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tracklab.dev/pose/clip.schema.json",
-  "title": "Track Lab pose clip",
+  "title": "Pitch & Parquet pose clip",
   "description": "A clip of SkillCorner Body Pose (task 55 of tasks/todo.md, P6): 29 joints per detected player at 25 fps. Per frame, each player is [idx, x_cm, y_cm, detected, joints|null]: idx points into `players`, (x_cm, y_cm) is the player's position in the pose file (not the tracking's), `joints` is null when the file has no pose for that player in that frame (it is never interpolated or carried over) and otherwise [xyz, mae]: xyz is 29 [dx, dy, dz] in whole centimetres from the player's own (x, y, 0), in the order of the clip's `joints`; z is relative to the player's centroid, not a height above the pitch; mae is the 29 p90_mae_cm in whole millimetres.",
   "type": "object",
   "additionalProperties": false,

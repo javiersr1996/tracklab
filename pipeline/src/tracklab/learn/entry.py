@@ -7,7 +7,7 @@ basketball bundle, or give it one.
     python entry.py                          # in data/matches/114086
     python entry.py data/matches/114099      # any other match
 
-The method is Track Lab's entry-angle check, written out in full:
+The method is Pitch & Parquet's entry-angle check, written out in full:
 
 1. The shots: every made, unblocked field goal of `<id>_dynamic_events.json` with a start frame,
    an end frame and a distance.

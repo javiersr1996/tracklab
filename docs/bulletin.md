@@ -1,6 +1,6 @@
-# Track Lab data quality bulletin
+# Pitch & Parquet data quality bulletin
 
-A calibration kit for anyone building on the two Track Lab bundles, not a verdict on SkillCorner: six checks, each one number (or its range) per match, read straight off `pipeline/reports/quality_*.csv`. `web/public/data/quality.json` carries the same figures for the `/engineering/quality` page, and every number below is one or the other.
+A calibration kit for anyone building on the two Pitch & Parquet bundles, not a verdict on SkillCorner: six checks, each one number (or its range) per match, read straight off `pipeline/reports/quality_*.csv`. `web/public/data/quality.json` carries the same figures for the `/engineering/quality` page, and every number below is one or the other.
 
 ## Detection
 

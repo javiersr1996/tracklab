@@ -278,10 +278,10 @@ test("every route links to the public repository from its footer, and to no othe
     const hrefs = await page.locator("a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href") ?? ""));
     const account = hrefs.filter((h) => h.includes("github.com/javiersr1996"));
     expect(account.length, route).toBeGreaterThan(0);
-    expect(new Set(account), route).toEqual(new Set(["https://github.com/javiersr1996/tracklab"]));
+    expect(new Set(account), route).toEqual(new Set(["https://github.com/javiersr1996/pitch-and-parquet"]));
     await expect(page.locator("footer.site-footer").getByRole("link", { name: "Code on GitHub, MIT license" }), route).toHaveAttribute(
       "href",
-      "https://github.com/javiersr1996/tracklab",
+      "https://github.com/javiersr1996/pitch-and-parquet",
     );
   }
 });

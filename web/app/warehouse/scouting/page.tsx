@@ -9,7 +9,7 @@ import { BASKETBALL_README, FOOTBALL_README } from "../../../lib/warehouse/readm
 import "./scouting.css";
 
 export const metadata: Metadata = {
-  title: "Scouting | Track Lab",
+  title: "Scouting | Pitch & Parquet",
   description:
     "Every player who passes a sample floor in the season aggregates, sortable by any metric, with percentiles inside their pool and a side-by-side comparison of two players.",
 };

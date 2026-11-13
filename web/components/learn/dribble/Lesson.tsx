@@ -287,7 +287,7 @@ export function Lesson({ sql }: { sql: string }) {
         <Reproduce sql={sql} browser="dribble">
           <p>
             The query is the table&apos;s method in DuckDB, written for the public files of match {d("example.match_id")}: the
-            events file for the dribbles and the tracking file for the ball&apos;s height. It needs nothing else: no Track Lab code
+            events file for the dribbles and the tracking file for the ball&apos;s height. It needs nothing else: no Pitch & Parquet code
             and no intermediate tables.
           </p>
           <ol>

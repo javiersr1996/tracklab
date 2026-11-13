@@ -155,7 +155,7 @@ export default function WarehousePage() {
         </div>
 
         <p>
-          <Link href="/">Track Lab</Link>
+          <Link href="/">Pitch & Parquet</Link>
         </p>
       </Band>
     </main>
