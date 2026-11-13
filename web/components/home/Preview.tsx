@@ -159,6 +159,96 @@ function EuroleaguePreview() {
   );
 }
 
+// A pitch from above and the squares one group fills, brighter where it spends more time, lighting
+// from the busiest outwards: the idea of the heat map, not its data (the squares here are drawn).
+function OccupancyPreview() {
+  const cells = [
+    { c: 2, r: 1, tone: "pv-heat-hi", ring: 0 },
+    { c: 2, r: 2, tone: "pv-heat-hi", ring: 0 },
+    { c: 1, r: 1, tone: "pv-heat-mid", ring: 1 },
+    { c: 1, r: 2, tone: "pv-heat-mid", ring: 1 },
+    { c: 3, r: 1, tone: "pv-heat-mid", ring: 1 },
+    { c: 3, r: 2, tone: "pv-heat-mid", ring: 1 },
+    { c: 2, r: 0, tone: "pv-heat-mid", ring: 1 },
+    { c: 2, r: 3, tone: "pv-heat-mid", ring: 1 },
+    { c: 0, r: 1, tone: "pv-heat-lo", ring: 2 },
+    { c: 0, r: 2, tone: "pv-heat-lo", ring: 2 },
+    { c: 1, r: 0, tone: "pv-heat-lo", ring: 2 },
+    { c: 3, r: 0, tone: "pv-heat-lo", ring: 2 },
+    { c: 1, r: 3, tone: "pv-heat-lo", ring: 2 },
+    { c: 3, r: 3, tone: "pv-heat-lo", ring: 2 },
+    { c: 4, r: 1, tone: "pv-heat-lo", ring: 2 },
+    { c: 4, r: 2, tone: "pv-heat-lo", ring: 2 },
+    { c: 5, r: 1, tone: "pv-heat-lo", ring: 3 },
+  ];
+  return (
+    <svg viewBox={VIEW} className="pv pv-occupancy">
+      {cells.map((cell, k) => (
+        <rect
+          key={k}
+          x={4 + cell.c * 14}
+          y={6 + cell.r * 15}
+          width="14"
+          height="15"
+          className={`pv-heat ${cell.tone}`}
+          style={nth(cell.ring)}
+        />
+      ))}
+      <rect x="4" y="6" width="112" height="60" className="pv-line" />
+      <line x1="60" y1="6" x2="60" y2="66" className="pv-line" />
+      <circle cx="60" cy="36" r="9" className="pv-line" />
+    </svg>
+  );
+}
+
+// Four position groups, a row each: the middle half as a box that opens out, the median a tick, a
+// few players as dots. The rows are drawn, not read.
+function PositionsPreview() {
+  const rows = [
+    { y: 15, lo: 30, hi: 62, med: 44, dots: [24, 50, 70] },
+    { y: 30, lo: 50, hi: 86, med: 70, dots: [42, 78, 96] },
+    { y: 45, lo: 40, hi: 76, med: 56, dots: [34, 64, 84] },
+    { y: 60, lo: 20, hi: 52, med: 34, dots: [14, 44, 60] },
+  ];
+  return (
+    <svg viewBox={VIEW} className="pv pv-positions">
+      {rows.map((r, k) => (
+        <g key={r.y} style={nth(k)}>
+          <line x1="8" y1={r.y} x2="112" y2={r.y} className="pv-line" />
+          <rect x={r.lo} y={r.y - 4} width={r.hi - r.lo} height="8" className="pv-box" />
+          {r.dots.map((x) => (
+            <circle key={x} cx={x} cy={r.y} r="1.6" className="pv-dot" />
+          ))}
+          <line x1={r.med} y1={r.y - 6} x2={r.med} y2={r.y + 6} className="pv-median" />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+// Two players side by side, a bar each way for each statistic, growing out from the middle: the
+// comparison's shape, not its figures.
+function ScoutingPreview() {
+  const rows = [
+    { a: 34, b: 22 },
+    { a: 18, b: 40 },
+    { a: 44, b: 30 },
+    { a: 26, b: 36 },
+    { a: 38, b: 14 },
+  ];
+  return (
+    <svg viewBox={VIEW} className="pv pv-scouting">
+      {rows.map((r, k) => (
+        <g key={k} style={nth(k)}>
+          <rect x={60 - r.a} y={9 + k * 12} width={r.a} height="6" className="pv-bar pv-bar-a" />
+          <rect x="60" y={9 + k * 12} width={r.b} height="6" className="pv-bar pv-bar-b" />
+        </g>
+      ))}
+      <line x1="60" y1="4" x2="60" y2="68" className="pv-line" />
+    </svg>
+  );
+}
+
 const PREVIEWS: Record<string, () => React.JSX.Element> = {
   "/tracking/replay": ReplayPreview,
   "/engineering": PlatformPreview,
@@ -169,6 +259,9 @@ const PREVIEWS: Record<string, () => React.JSX.Element> = {
   "/learn": LearnPreview,
   "/sql": SqlPreview,
   "/euroleague": EuroleaguePreview,
+  "/tracking/occupancy": OccupancyPreview,
+  "/warehouse/positions": PositionsPreview,
+  "/warehouse/scouting": ScoutingPreview,
 };
 
 export function Preview({ href }: { href: string }) {

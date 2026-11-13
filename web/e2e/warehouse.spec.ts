@@ -273,7 +273,7 @@ test("terminates the engine's worker when the page unmounts", async ({ page }) =
   await page.evaluate(() => ((window as unknown as { __sameDocument: boolean }).__sameDocument = true));
   await page.getByRole("link", { name: "Track Lab" }).click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator("h1")).toHaveText("One schema, two sports, one renderer");
+  await expect(page.locator("h1")).toHaveText("Watch a possession, then ask it a question");
   expect(await page.evaluate(() => (window as unknown as { __sameDocument?: boolean }).__sameDocument)).toBe(true);
 
   await expect.poll(() => page.workers().length, { timeout: 10_000 }).toBe(0);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { LESSONS } from "../lib/learn/series";
 import { SOURCES, sourceProblems } from "../lib/learn/sources";
-import { inEntry, isCurrent, NAV, pageOf, SECTIONS } from "../lib/sections";
+import { BUILT, EXPLORE, inEntry, isCurrent, NAV, pageOf, SECTIONS } from "../lib/sections";
 
 describe("the series", () => {
   it("numbers its lessons in order with no gap (P9 renumbers after the lesson Javier dropped)", () => {
@@ -37,9 +37,16 @@ describe("isCurrent", () => {
     expect(isCurrent("/", "/learn")).toBe(false);
   });
 
-  it("makes Learn the seventh section, SQL the eighth (P12) and EuroLeague the ninth (P14)", () => {
-    expect(SECTIONS).toHaveLength(9);
+  it("keeps Learn, SQL (P12) and EuroLeague (P14) last; P23 adds scouting, positions and occupancy", () => {
+    expect(SECTIONS).toHaveLength(12);
     expect(SECTIONS.map((s) => s.href).slice(-3)).toEqual(["/learn", "/sql", "/euroleague"]);
+    expect(SECTIONS.map((s) => s.href)).toEqual(expect.arrayContaining(["/warehouse/scouting", "/warehouse/positions", "/tracking/occupancy"]));
+  });
+
+  it("puts every section on the home (P23): a card under Explore or How it is built, or the lessons' band", () => {
+    const home = [...EXPLORE, ...BUILT, "/learn", "/sql"];
+    expect(new Set(home).size).toBe(home.length);
+    expect([...home].sort()).toEqual(SECTIONS.map((s) => s.href).sort());
   });
 
   it("gives the header its entries (P15; P21: SQL under Learn) and About (P20), each group current on its pages and every section in the menu", () => {

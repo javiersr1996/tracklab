@@ -3,22 +3,131 @@ import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import { headerLinks, whole } from "./header";
 
-// P15, task 121: the information architecture. /tracking is the hub of the three pages that
-// show the tracking itself; each card opens its page.
-test("the /tracking hub lists replay, runs and pose as cards that open them", async ({ page }) => {
+// P15, task 121: the information architecture. /tracking is the hub of the pages that show the
+// tracking itself (the occupancy map joined them in P23); each card opens its page.
+test("the /tracking hub lists replay, runs, pose and occupancy as cards that open them", async ({ page }) => {
   await page.goto("/tracking");
   await expect(page.locator("h1")).toHaveText("Tracking");
   const cards = page.locator(".cards > li");
-  await expect(cards).toHaveCount(3);
+  await expect(cards).toHaveCount(4);
   expect(await cards.evaluateAll((els) => els.map((e) => e.getAttribute("data-section")))).toEqual([
     "/tracking/replay",
     "/tracking/runs",
     "/tracking/pose",
+    "/tracking/occupancy",
   ]);
   await page.locator('[data-section="/tracking/runs"]').getByRole("link").click();
   await expect(page).toHaveURL(/\/tracking\/runs$/);
   await expect(page.locator("h1")).toHaveText("The run that moves nobody");
+  await page.goto("/tracking");
+  await page.locator('[data-section="/tracking/occupancy"]').getByRole("link").click();
+  await expect(page).toHaveURL(/\/tracking\/occupancy$/);
+  await expect(page.locator("h1")).toHaveText("Where football positions play");
 });
+
+// P23, Javier's "reorder it all": the home opens on what a visitor can watch and learn (the hero,
+// then the lessons), then what to explore and what the site found, and how it is built at the end.
+test("the home reads lessons, Explore, Findings, How it is built, and every card opens its page", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("main h2")).toHaveText(["Start with a question", "Explore", "Findings", "How it is built"]);
+  const order = (sel: string) => page.locator(sel).evaluateAll((els) => els.map((e) => e.getAttribute("data-section")));
+  expect(await order(".home-explore .cards > li")).toEqual([
+    "/tracking/replay",
+    "/tracking/occupancy",
+    "/warehouse/positions",
+    "/euroleague",
+    "/tracking/pose",
+    "/tracking/runs",
+    "/warehouse",
+    "/warehouse/scouting",
+  ]);
+  expect(await order(".home-built .cards > li")).toEqual(["/engineering", "/engineering/quality"]);
+  await expect(page.locator(".home-built figure[data-architecture]")).toHaveCount(1);
+  await expect(page.locator(".home-built .figures")).toHaveCount(1);
+  for (const href of await page.locator(".cards h3 a").evaluateAll((as) => as.map((a) => a.getAttribute("href")!))) {
+    expect((await page.request.get(href)).status(), href).toBe(200);
+  }
+  await page.locator('[data-section="/warehouse/positions"]').getByRole("link").click();
+  await expect(page).toHaveURL(/\/warehouse\/positions$/);
+});
+
+// The lessons on the home are /learn's published ones, by their number (/learn groups them by
+// level), each with its drawing; the counts in the prose are the lists' lengths on /learn and /sql,
+// so a typed number fails here.
+test("the home lists every published lesson with its drawing, and counts the lessons of /learn and /sql", async ({ page }) => {
+  await page.goto("/learn");
+  const published = (
+    await page
+      .locator(".lessons li[data-status=published]")
+      .evaluateAll((els) =>
+        els.map((e) => ({ slug: e.getAttribute("data-lesson")!, n: Number(e.querySelector("[data-series-n]")!.textContent) })),
+      )
+  )
+    .sort((a, b) => a.n - b.n)
+    .map((l) => l.slug);
+  expect(published.length).toBeGreaterThan(0);
+  await page.goto("/sql");
+  const sql = await page.locator(".sql-lessons > li").count();
+  expect(sql).toBeGreaterThan(0);
+
+  await page.goto("/");
+  const cards = page.locator(".questions > li");
+  expect(await cards.evaluateAll((els) => els.map((e) => e.getAttribute("data-lesson")))).toEqual(published);
+  for (const slug of published) {
+    const card = page.locator(`.questions [data-lesson="${slug}"]`);
+    await expect(card.locator(`svg[data-thumb="${slug}"]`)).toHaveCount(1);
+    await expect(card.locator("h3 a")).toHaveAttribute("href", `/learn/${slug}`);
+  }
+  await expect(page.locator("[data-lesson-count]")).toHaveText(String(published.length));
+  await expect(page.locator("[data-sql-count]")).toHaveText(String(sql));
+  // The whole card opens its lesson: a click on the drawing, under the link's cover, goes there.
+  const first = page.locator(`.questions [data-lesson="${published[0]}"] svg`);
+  await first.scrollIntoViewIfNeeded();
+  const box = (await first.boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page).toHaveURL(new RegExp(`/learn/${published[0]}$`));
+});
+
+// The lessons are a rail on a phone that scrolls inside itself, never the page; a grid on a wide
+// screen, every card inside the window.
+for (const viewport of [
+  { width: 390, height: 844 },
+  { width: 1440, height: 900 },
+]) {
+  test(`at ${viewport.width} px the home's lessons fit, ${viewport.width < 1000 ? "a rail that scrolls inside itself" : "a grid"}, no sideways page scroll`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    const rail = page.locator(".questions");
+    await rail.scrollIntoViewIfNeeded();
+    const sideways = () => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(await sideways()).toBeLessThanOrEqual(0);
+    const box = (await rail.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+    const inner = await rail.evaluate((el) => el.scrollWidth - el.clientWidth);
+    const cards = await page.locator(".questions > li").evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON() as DOMRect));
+    if (viewport.width < 1000) {
+      expect(inner, "the rail scrolls sideways inside itself").toBeGreaterThan(0);
+      expect(cards[0].x, "the first card starts at the gutter").toBeGreaterThanOrEqual(8);
+      expect(cards[1].x, "the next one peeks in").toBeLessThan(viewport.width);
+      // Scrolled to its end, the rail shows the last card whole and the page still does not scroll.
+      await rail.evaluate((el) => el.scrollTo({ left: el.scrollWidth }));
+      await expect.poll(async () => {
+        const last = (await page.locator(".questions > li").last().boundingBox())!;
+        return last.x + last.width;
+      }).toBeLessThanOrEqual(viewport.width);
+      expect(await sideways()).toBeLessThanOrEqual(0);
+    } else {
+      expect(inner, "no inner scroll on a wide screen").toBe(0);
+      for (const c of cards) {
+        expect(c.x).toBeGreaterThanOrEqual(0);
+        expect(c.x + c.width).toBeLessThanOrEqual(viewport.width);
+      }
+    }
+  });
+}
 
 // The header (Javier's option 1): the entries and About (P20), and under Tracking, Engineering,
 // Warehouse (P17) or Learn (P21: the lessons and the SQL course, one idea, one entry) a second row

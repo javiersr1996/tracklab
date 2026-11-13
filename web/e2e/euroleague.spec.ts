@@ -313,9 +313,10 @@ test("/euroleague is light: under 400,000 B before a team is chosen", async ({ p
 
 test("the ninth section: in the header, on the home page and in the sitemap", async ({ page }) => {
   await page.goto("/");
-  const card = page.locator('[data-section="/euroleague"]');
+  // Since P23 a card under the home's Explore (the home's cards are counted in ia.spec.ts).
+  const card = page.locator('.home-explore [data-section="/euroleague"]');
   await expect(card).toBeVisible();
-  await expect(page.locator(".cards > li")).toHaveCount(9);
+  await expect(page.locator('[data-section="/euroleague"]')).toHaveCount(1);
   await card.getByRole("link").click();
   await expect(page).toHaveURL(/\/euroleague$/);
   const nav = page.getByRole("navigation", { name: "Sections" });
