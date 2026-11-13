@@ -1513,7 +1513,8 @@ body:has(.home) .site-header::after {
 
 /* The sections as a bento (task 107): one column, two from 640 px, four from 1000 px. On the home
    (P23) a card in each row of "Explore", and both under "How it is built", take two columns and lay
-   their sketch beside the text; a hub's cards stay one column each. */
+   their sketch beside the text, as do the two under /warehouse's console; /tracking's four stay one
+   column each. */
 .cards {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1538,7 +1539,8 @@ body:has(.home) .site-header::after {
   .home-explore .card[data-section="/euroleague"],
   .home-explore .card[data-section="/warehouse"],
   .home-explore .card[data-section="/warehouse/scouting"],
-  .home-built .card {
+  .home-built .card,
+  .warehouse-pages .card {
     grid-column: span 2;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: auto auto 1fr auto;

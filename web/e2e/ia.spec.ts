@@ -25,6 +25,25 @@ test("the /tracking hub lists replay, runs, pose and occupancy as cards that ope
   await expect(page.locator("h1")).toHaveText("Where football positions play");
 });
 
+// P23: /warehouse lists its two other pages as cards under the console, each half the row on a
+// wide screen, each opening its page.
+test("the /warehouse hub lists scouting and positions as cards that open them", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/warehouse");
+  const cards = page.locator(".warehouse-pages .cards > li");
+  expect(await cards.evaluateAll((els) => els.map((e) => e.getAttribute("data-section")))).toEqual([
+    "/warehouse/scouting",
+    "/warehouse/positions",
+  ]);
+  const list = (await page.locator(".warehouse-pages .cards").boundingBox())!;
+  const [a, b] = await cards.evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON() as DOMRect));
+  expect(a.y, "side by side").toBe(b.y);
+  for (const box of [a, b]) expect(box.width, "half the row").toBeGreaterThan(list.width * 0.45);
+  await page.locator('[data-section="/warehouse/positions"]').getByRole("link").click();
+  await expect(page).toHaveURL(/\/warehouse\/positions$/);
+  await expect(page.locator("h1")).toHaveText("How football positions differ physically");
+});
+
 // P23, Javier's "reorder it all": the home opens on what a visitor can watch and learn (the hero,
 // then the lessons), then what to explore and what the site found, and how it is built at the end.
 test("the home reads lessons, Explore, Findings, How it is built, and every card opens its page", async ({ page }) => {
