@@ -403,7 +403,7 @@ export function Lesson({ sql }: { sql: string }) {
         <Reproduce sql={sql} browser="expected-points">
           <p>
             Every figure of this lesson comes from one file of counts, the one this page reads. The query below rebuilds the
-            tables&apos; rows from those counts in DuckDB, with no Track Lab code and nothing from the feed itself.
+            tables&apos; rows from those counts in DuckDB, with no Pitch & Parquet code and nothing from the feed itself.
           </p>
           <ol>
             <li>

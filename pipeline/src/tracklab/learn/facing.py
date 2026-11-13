@@ -1,7 +1,7 @@
 """Which way a player faces, frame by frame, from one published pose clip.
 
 Lesson 11 of /learn ("Which way is a player facing?") shows this file as "Reproduce it". It
-needs Python 3 and nothing else: it reads the clip Track Lab publishes, takes the player the
+needs Python 3 and nothing else: it reads the clip Pitch & Parquet publishes, takes the player the
 clip's window names (or the player index given as a second argument), and for every frame where
 that player has both shoulders and the nose, a position in the frame before and the frame after,
 and a speed over MIN_SPEED, it prints three angles in degrees:
@@ -29,7 +29,7 @@ import sys
 import urllib.request
 from typing import Any
 
-URL = "https://tracklab-sable.vercel.app/data/pose/hook_1925299.json"
+URL = "https://pitchandparquet.vercel.app/data/pose/hook_1925299.json"
 MIN_SPEED = 2.0  # m/s, over the central difference
 SIDE_DEG = 45.0
 BACK_DEG = 135.0

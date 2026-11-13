@@ -104,7 +104,7 @@ export function Lesson({ script }: { script: string }) {
         <section aria-labelledby="question-h">
           <h2 id="question-h">The question</h2>
           <p>
-            Cadence is the number of steps a runner takes per second. On <a href="/tracking/pose">/tracking/pose</a> Track Lab publishes one
+            Cadence is the number of steps a runner takes per second. On <a href="/tracking/pose">/tracking/pose</a> Pitch & Parquet publishes one
             for every player of two football matches, in the fast band from {p("protocol.bands.high_m_s_from")}&nbsp;m/s, with
             an sd beside each. This lesson takes that number apart. It asks two things that any reading of a repeating signal
             has to answer: how do you find the period of a signal only a few cycles long, and how sure can you be of it when
@@ -558,7 +558,7 @@ export function Lesson({ script }: { script: string }) {
             </li>
             <li>
               Run <code>python cadence.py</code>. It downloads{" "}
-              <code>https://tracklab-sable.vercel.app/data/pose/hook_1925299.json</code>, {p("clips.0.bytes")} bytes with
+              <code>https://pitchandparquet.vercel.app/data/pose/hook_1925299.json</code>, {p("clips.0.bytes")} bytes with
               checksum <code>{p("clips.0.sha256")}</code>. Pass a saved copy of that file, or of the other clip, as its
               argument to work offline.
             </li>

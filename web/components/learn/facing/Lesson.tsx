@@ -426,7 +426,7 @@ export function Lesson({ script }: { script: string }) {
 
         <Reproduce sql={script} browser="facing">
           <p>
-            The script reads the clip /tracking/pose already publishes and needs nothing but Python&apos;s standard library: no Track Lab
+            The script reads the clip /tracking/pose already publishes and needs nothing but Python&apos;s standard library: no Pitch & Parquet
             code, no numpy, and the provider&apos;s match files only through the clip.
           </p>
           <ol>
@@ -435,7 +435,7 @@ export function Lesson({ script }: { script: string }) {
             </li>
             <li>
               Run <code>python facing.py</code>. It downloads{" "}
-              <code>https://tracklab-sable.vercel.app/data/pose/hook_1925299.json</code>, {p("clips.0.bytes")} bytes with checksum{" "}
+              <code>https://pitchandparquet.vercel.app/data/pose/hook_1925299.json</code>, {p("clips.0.bytes")} bytes with checksum{" "}
               <code>{p("clips.0.sha256")}</code>. Pass a saved copy of that file, or of the other clip, as its first argument to work
               offline, and a player&apos;s index in the clip as its second to read another player.
             </li>

@@ -8,7 +8,7 @@ import { pitchPath } from "../../../lib/warehouse/positions";
 import "./occupancy.css";
 
 export const metadata: Metadata = {
-  title: "Where football positions play | Track Lab",
+  title: "Where football positions play | Pitch & Parquet",
   description:
     "A heat map of where the players of each football position group were, from every tracked frame of the provider's open matches outside the Analytics Cup fence, every team turned to attack the same way.",
 };

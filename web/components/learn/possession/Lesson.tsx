@@ -289,7 +289,7 @@ export function Lesson({ sql }: { sql: string }) {
           <p>
             The two queries are the tables&apos; method in DuckDB, one per sport, written for the public files of football match{" "}
             {p("football.timeline.match_id")} and basketball match {p("basketball.timeline.match_id")}. The football query reads
-            five columns of the phases file and no other; neither needs Track Lab code or an intermediate table.
+            five columns of the phases file and no other; neither needs Pitch & Parquet code or an intermediate table.
           </p>
           <ol>
             <li>

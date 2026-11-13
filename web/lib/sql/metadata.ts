@@ -7,7 +7,7 @@ import { SQL_LESSONS, type SqlSlug, sqlHref, sqlLessonMeta } from "./course";
 export function sqlLessonMetadata(slug: SqlSlug): Metadata {
   const l = sqlLessonMeta(slug);
   return {
-    title: `${l.title} | Learn SQL | Track Lab`,
+    title: `${l.title} | Learn SQL | Pitch & Parquet`,
     description: l.about,
     openGraph: { type: "article", title: l.title, description: l.about, url: sqlHref(slug) },
     twitter: { card: "summary_large_image", title: l.title, description: l.about },
@@ -17,7 +17,7 @@ export function sqlLessonMetadata(slug: SqlSlug): Metadata {
 const ABOUT = `${SQL_LESSONS.length} lessons from a first SELECT to window functions and CTEs, each on the season aggregates of /warehouse, with exercises checked in the browser.`;
 
 export const sqlMetadata: Metadata = {
-  title: "Learn SQL on the warehouse | Track Lab",
+  title: "Learn SQL on the warehouse | Pitch & Parquet",
   description: ABOUT,
   openGraph: { type: "website", title: "Learn SQL on the warehouse", description: ABOUT, url: "/sql" },
   twitter: { card: "summary_large_image", title: "Learn SQL on the warehouse", description: ABOUT },

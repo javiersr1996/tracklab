@@ -1,23 +1,26 @@
-# Track Lab
+# Pitch & Parquet
 
-**Live: https://tracklab-sable.vercel.app**
+**Live: https://pitchandparquet.vercel.app**
 
 > **Personal learning project** by Javier Sánchez Rueda
-> ([LinkedIn](https://www.linkedin.com/in/javier-sanchez-rueda/)). Track Lab is non-commercial and
+> ([LinkedIn](https://www.linkedin.com/in/javier-sanchez-rueda/)). Pitch & Parquet is non-commercial and
 > built for learning; it is not affiliated with, endorsed by or sponsored by SkillCorner, EuroLeague
 > Basketball or any league, club or player it names, and all trademarks, names and data belong to
 > their owners. SkillCorner's open data is used under its MIT license, of EuroLeague game data only
 > aggregates are shown, and the figures may contain errors and are not an assessment of any player
-> or team. The full disclaimer is at [/about](https://tracklab-sable.vercel.app/about).
+> or team. The full disclaimer is at [/about](https://pitchandparquet.vercel.app/about).
 
 Watch a possession, then ask it a question: replay football and basketball tracking data, follow
 lessons that each start from one question, and run SQL on the season statistics, all in your
 browser.
 
-One schema, two sports, one renderer. Track Lab takes SkillCorner's open tracking and event data
+One schema, two sports, one renderer. Pitch & Parquet takes SkillCorner's open tracking and event data
 for basketball and football, verifies every provider file against a pinned manifest, conforms
 both sports into one silver schema with DuckDB and dbt, and publishes curated possessions that a
 single Canvas renderer replays in the browser.
+
+The project used to be called Track Lab: the Python package and its CLI keep the name
+`tracklab`.
 
 ## Layers
 
@@ -66,7 +69,7 @@ Python version pinned in `pipeline/.python-version`. From `web/`:
 npm ci
 npm run lint && npm run typecheck && npm run test && npm run build
 npm run e2e                                              # Playwright against a local next start
-BASE_URL=https://tracklab-sable.vercel.app npx playwright test   # the same suite, against production
+BASE_URL=https://pitchandparquet.vercel.app npx playwright test   # the same suite, against production
 ```
 
 ## Orchestration
@@ -91,7 +94,7 @@ against the working directory on Windows.
 
 ## Platform
 
-The pipeline as a product: [`/engineering`](https://tracklab-sable.vercel.app/engineering) draws the
+The pipeline as a product: [`/engineering`](https://pitchandparquet.vercel.app/engineering) draws the
 Dagster asset graph and animates the layers, raw to publish, with the numbers the latest
 `tracklab build` actually produced. Its H1 and the line under it are the title and subtitle
 `uv run tracklab publish platform` prints, from `web/public/data/platform.json`. "Out" counts what
@@ -110,7 +113,7 @@ subtitle: 5.5 MB to watch, 2.1 MB to query
 
 ## The run that moves nobody
 
-[`/tracking/runs`](https://tracklab-sable.vercel.app/tracking/runs) is the project that died, published dead. It
+[`/tracking/runs`](https://pitchandparquet.vercel.app/tracking/runs) is the project that died, published dead. It
 asked which off-ball run types move the defence in the tracking, with a protocol written before
 any outcome was computed (`pipeline/reports/runs_protocol.json`) and death criteria M1 to M5b.
 It stopped at M5a: no subtype was left to take to the held-out matches, which were never opened.
@@ -146,7 +149,7 @@ uv run tracklab publish runs --check       # runs.json and the two clips
 
 ## Body pose
 
-[`/tracking/pose`](https://tracklab-sable.vercel.app/tracking/pose) is the Body Pose SkillCorner publishes for two
+[`/tracking/pose`](https://pitchandparquet.vercel.app/tracking/pose) is the Body Pose SkillCorner publishes for two
 full matches: the joints of the players it resolves in each frame, each with its predicted error. It
 is meant for detected players, but a few rows with a pose are not flagged as detected (counted below). The question is narrow, the cadence and the step in the high-speed stretches,
 per match and per player, and the instrument is the signal of the ankles' separation along the
@@ -182,7 +185,7 @@ uv run tracklab publish pose --check            # pose.json and the clips
 
 ## Occupancy
 
-[`/tracking/occupancy`](https://tracklab-sable.vercel.app/tracking/occupancy) is where the players of
+[`/tracking/occupancy`](https://pitchandparquet.vercel.app/tracking/occupancy) is where the players of
 each football position group are, a share per cell of one pitch with every team attacking the same
 way, pooled over the football matches the Analytics Cup fence leaves open.
 
@@ -192,7 +195,7 @@ uv run tracklab publish occupancy --check       # occupancy.json from silver, on
 
 ## Learn
 
-[`/learn`](https://tracklab-sable.vercel.app/learn) is a series of short lessons that start from one
+[`/learn`](https://pitchandparquet.vercel.app/learn) is a series of short lessons that start from one
 question the data can answer and build the tool by hand, grouped by level. The text carries no figure
 of its own: every number on a page is read from a published file or computed in the browser from one,
 and the end-to-end test compares each with its source. Where a lesson needs the data it says what the
@@ -283,7 +286,7 @@ orientation probe, silver, the published JSON and every contract test.
 
 <!-- clean-clone:begin -->
 ```sh
-git clone https://github.com/javiersr1996/tracklab.git && cd tracklab/pipeline
+git clone https://github.com/javiersr1996/pitch-and-parquet.git && cd pitch-and-parquet/pipeline
 uv sync --locked
 uv run dbt parse --project-dir dbt --profiles-dir dbt
 uv run tracklab build

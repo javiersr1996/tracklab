@@ -1,7 +1,7 @@
 """Steps per second from one published pose clip, and the sd its ankles' predicted error gives.
 
 Lesson 5 of /learn ("How many steps per second?") shows this file as "Reproduce it". It needs
-Python 3 and nothing else: it reads the clip Track Lab publishes, takes the window the clip
+Python 3 and nothing else: it reads the clip Pitch & Parquet publishes, takes the window the clip
 names, builds s(t), the two ankles' separation along the direction of travel, reads the cadence
 from the first peak of its autocorrelation, and moves every sample by the ankles' predicted error
 to see how far the cadence moves.
@@ -17,7 +17,7 @@ import urllib.request
 from collections.abc import Callable
 from typing import Any
 
-URL = "https://tracklab-sable.vercel.app/data/pose/hook_1925299.json"
+URL = "https://pitchandparquet.vercel.app/data/pose/hook_1925299.json"
 BAND_Z = 1.96  # white noise stays inside +-1.96 / sqrt(n - k) 95 % of the time
 DRAWS = 200
 SEED = 59

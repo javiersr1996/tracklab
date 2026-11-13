@@ -132,11 +132,11 @@ test("/sitemap.xml lists every published lesson and /robots.txt answers", async 
   const sitemap = await page.request.get("/sitemap.xml");
   expect(sitemap.status()).toBe(200);
   const xml = await sitemap.text();
-  for (const l of LESSONS.filter((x) => x.status === "published")) expect(xml, l.slug).toContain(`<loc>https://tracklab-sable.vercel.app${lessonHref(l)}</loc>`);
-  expect(xml).toContain("<loc>https://tracklab-sable.vercel.app/learn</loc>");
+  for (const l of LESSONS.filter((x) => x.status === "published")) expect(xml, l.slug).toContain(`<loc>https://pitchandparquet.vercel.app${lessonHref(l)}</loc>`);
+  expect(xml).toContain("<loc>https://pitchandparquet.vercel.app/learn</loc>");
   const robots = await page.request.get("/robots.txt");
   expect(robots.status()).toBe(200);
-  expect(await robots.text()).toContain("Sitemap: https://tracklab-sable.vercel.app/sitemap.xml");
+  expect(await robots.text()).toContain("Sitemap: https://pitchandparquet.vercel.app/sitemap.xml");
 });
 
 test("the lesson link opens a page, not a 404", async ({ page }) => {

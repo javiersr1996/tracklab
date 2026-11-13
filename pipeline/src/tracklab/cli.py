@@ -412,7 +412,7 @@ def _cmd_build(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tracklab",
-        description="Track Lab data pipeline. --data-dir defaults to $TRACKLAB_DATA_ROOT or data.",
+        description="Pitch & Parquet data pipeline. --data-dir defaults to $TRACKLAB_DATA_ROOT or data.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 

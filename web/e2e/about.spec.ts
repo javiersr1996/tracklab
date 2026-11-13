@@ -5,12 +5,12 @@ import { expect, test } from "@playwright/test";
 // in lib/sections.ts fails here.
 const NAME = "Javier Sánchez Rueda";
 const LINKEDIN = "https://www.linkedin.com/in/javier-sanchez-rueda/";
-const REPO = "https://github.com/javiersr1996/tracklab";
+const REPO = "https://github.com/javiersr1996/pitch-and-parquet";
 const EMAIL = "javiersr1996@gmail.com";
 const TAKEDOWN = "javiersr1996+tracklab@gmail.com";
 
 const DISCLAIMER = [
-  "Track Lab is a personal, non-commercial project built for learning.",
+  "Pitch & Parquet is a personal, non-commercial project built for learning.",
   "It is not affiliated with, endorsed by or sponsored by SkillCorner, EuroLeague Basketball or any league, club or player named on this site.",
   "All trademarks, names and data belong to their respective owners.",
   "SkillCorner's open data is used under its MIT license; of EuroLeague game data only aggregates are shown.",
@@ -20,7 +20,7 @@ const DISCLAIMER = [
 
 test("/about names the author, links to him and to the code, and prints the stack and the disclaimer", async ({ page }) => {
   await page.goto("/about");
-  await expect(page).toHaveTitle("About | Track Lab");
+  await expect(page).toHaveTitle("About | Pitch & Parquet");
   await expect(page.locator("h1")).toHaveText("A personal learning project");
   const author = page.locator("[data-about-author]");
   await expect(author).toContainText(NAME);
@@ -109,7 +109,7 @@ test("at 390 px the header's entries are one line and About is in view on /about
 
 test("/about is in the sitemap", async ({ page }) => {
   const xml = await (await page.request.get("/sitemap.xml")).text();
-  expect(xml).toContain("<loc>https://tracklab-sable.vercel.app/about</loc>");
+  expect(xml).toContain("<loc>https://pitchandparquet.vercel.app/about</loc>");
 });
 
 // P20, task 172: the card a link to /about (and to any page without its own) unfurls into is the

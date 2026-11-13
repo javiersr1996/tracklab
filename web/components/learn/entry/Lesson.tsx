@@ -283,7 +283,7 @@ export function Lesson({ script }: { script: string }) {
         <Reproduce sql={script} browser="entry">
           <p>
             The script reruns the whole check on the public files of one match and needs nothing but Python&apos;s standard
-            library: no Track Lab code and no numpy. Its docstring spells out every rule.
+            library: no Pitch & Parquet code and no numpy. Its docstring spells out every rule.
           </p>
           <ol>
             <li>

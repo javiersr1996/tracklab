@@ -12,7 +12,7 @@ import { freshnessRows, HISTORY, MIN_EARLIER, modeSummary, runLabel, sameTestCou
 import { PLATFORM } from "../../../lib/platform";
 
 export const metadata: Metadata = {
-  title: "Build history | Track Lab",
+  title: "Build history | Pitch & Parquet",
   description:
     "Every tracklab build the project has recorded, compared only with builds of the same selection, from the history file the publish step keeps.",
 };

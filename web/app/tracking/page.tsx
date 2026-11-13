@@ -4,7 +4,7 @@ import { SectionCards } from "../../components/site/SectionCards";
 import { SECTIONS } from "../../lib/sections";
 
 export const metadata: Metadata = {
-  title: "Tracking | Track Lab",
+  title: "Tracking | Pitch & Parquet",
   description:
     "The tracking data itself, drawn in your browser: replay a possession, see the run that moves nobody, follow each player's body pose, see where each football position plays.",
 };

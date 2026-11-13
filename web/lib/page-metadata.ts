@@ -6,5 +6,5 @@ import { SECTIONS } from "./sections";
 export function sectionMetadata(href: (typeof SECTIONS)[number]["href"]): Metadata {
   const s = SECTIONS.find((x) => x.href === href);
   if (!s) throw new Error(`no section ${href} in sections.ts`);
-  return { title: `${s.title} | Track Lab`, description: s.about };
+  return { title: `${s.title} | Pitch & Parquet`, description: s.about };
 }

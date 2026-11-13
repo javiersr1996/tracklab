@@ -5,7 +5,7 @@ import { Band, PageHead } from "../../../components/site/Band";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Data quality bulletin | Track Lab",
+  title: "Data quality bulletin | Pitch & Parquet",
   description:
     "The data quality bulletin: what the checks on the two tracking bundles found, written from the quality tables at each build.",
 };

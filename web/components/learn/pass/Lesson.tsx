@@ -283,7 +283,7 @@ export function Lesson({ sql }: { sql: string }) {
         <Reproduce sql={sql} browser="pass">
           <p>
             The query is the table&apos;s method in DuckDB, written for the public files of match {p("example.match_id")}: the
-            events file for the passes and the tracking file for the ball. It needs nothing else: no Track Lab code and no
+            events file for the passes and the tracking file for the ball. It needs nothing else: no Pitch & Parquet code and no
             intermediate tables.
           </p>
           <ol>

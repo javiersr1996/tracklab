@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://tracklab.dev/pose/summary.schema.json",
-  "title": "Track Lab pose summary",
+  "title": "Pitch & Parquet pose summary",
   "description": "What /pose says (task 62 of tasks/todo.md, P6): the state of the project, the three limits of SkillCorner with their README line, the coverage, the protocol with the sha of each stage, the tables per match and per player of pose_metric.json when P6 lives or is unreplicated, and the clips under pose/. Every figure is read from a report in pipeline/reports/; the clip schema is schema.json.",
   "type": "object",
   "additionalProperties": false,

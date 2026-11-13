@@ -8,7 +8,7 @@ import { FOOTBALL_README } from "../../../lib/warehouse/readmes";
 import "./positions.css";
 
 export const metadata: Metadata = {
-  title: "How football positions differ physically | Track Lab",
+  title: "How football positions differ physically | Pitch & Parquet",
   description:
     "Distance per minute, high-speed and sprint distance and peak speed by football position group, from the season aggregates of the warehouse: each group's median, middle half and every player, on a pitch and on one axis.",
 };

@@ -151,7 +151,7 @@ export const pageOf = (path: string, pages: NonNullable<NavEntry["pages"]>) =>
   pages.filter((p) => isCurrent(path, p.href)).sort((a, b) => b.href.length - a.href.length)[0];
 
 // Where the site is served, so a relative og:image becomes the absolute URL a link preview needs.
-export const SITE = "https://tracklab-sable.vercel.app";
+export const SITE = "https://pitchandparquet.vercel.app";
 
 // Where the data comes from. SkillCorner's three, as `pipeline/manifest/sources.json` pins them,
 // are MIT; EuroLeague's is not under any open license, so the footer gives it its own note and
@@ -192,4 +192,4 @@ export const AUTHOR = {
   linkedin: "https://www.linkedin.com/in/javier-sanchez-rueda/",
   email: "javiersr1996@gmail.com",
 } as const;
-export const REPO = "https://github.com/javiersr1996/tracklab";
+export const REPO = "https://github.com/javiersr1996/pitch-and-parquet";

@@ -1,5 +1,5 @@
 -- Run it with DuckDB from a folder that holds the two public SkillCorner repositories side by side,
--- opendata-basketball and opendata. Three results: no Track Lab code, no intermediate table.
+-- opendata-basketball and opendata. Three results: no Pitch & Parquet code, no intermediate table.
 
 -- 1. Basketball, match 114086: the attack sign of each team in each period, from `leftHoop`
 --    (true when the offence shoots at the hoop on the left of the broadcast, at negative x).

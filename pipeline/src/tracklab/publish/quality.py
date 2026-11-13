@@ -371,9 +371,9 @@ def build_hook(data_dir: Path) -> dict[str, Any]:
 def render_bulletin(summary: dict[str, Any], hook: dict[str, Any]) -> str:
     r = summary["ranges"]
     lines = [
-        "# Track Lab data quality bulletin",
+        "# Pitch & Parquet data quality bulletin",
         "",
-        "A calibration kit for anyone building on the two Track Lab bundles, not a "
+        "A calibration kit for anyone building on the two Pitch & Parquet bundles, not a "
         "verdict on SkillCorner: six checks, each one number (or its range) per match, "
         "read straight off `pipeline/reports/quality_*.csv`. `web/public/data/quality.json` "
         "carries the same figures for the `/engineering/quality` page, and every number below "

@@ -5,8 +5,8 @@ import { Band, PageHead } from "../../components/site/Band";
 import { AUTHOR, REPO, TAKEDOWN_CONTACT } from "../../lib/sections";
 
 export const metadata: Metadata = {
-  title: "About | Track Lab",
-  description: `Track Lab is a personal, non-commercial learning project in data engineering on open sports tracking data, by ${AUTHOR.name}.`,
+  title: "About | Pitch & Parquet",
+  description: `Pitch & Parquet is a personal, non-commercial learning project in data engineering on open sports tracking data, by ${AUTHOR.name}.`,
 };
 
 // What the project shows, each with the page that shows it. The lines say what the pages and the
@@ -76,7 +76,7 @@ export default function AboutPage() {
       >
         <h1>A personal learning project</h1>
         <p className="lede">
-          Track Lab is a project {AUTHOR.name} built to learn data engineering end to end, on open sports tracking
+          Pitch & Parquet is a project {AUTHOR.name} built to learn data engineering end to end, on open sports tracking
           data, and to show what he learned.
         </p>
         <p>
@@ -111,7 +111,7 @@ export default function AboutPage() {
         <section aria-labelledby="disclaimer-title" data-disclaimer>
           <h2 id="disclaimer-title">Disclaimer</h2>
           <p>
-            Track Lab is a personal, non-commercial project built for learning. It is not affiliated with, endorsed
+            Pitch & Parquet is a personal, non-commercial project built for learning. It is not affiliated with, endorsed
             by or sponsored by SkillCorner, EuroLeague Basketball or any league, club or player named on this site.
             All trademarks, names and data belong to their respective owners.
           </p>

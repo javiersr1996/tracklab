@@ -77,7 +77,7 @@ test.describe(ROUTE, () => {
     expect(first.fromFile).toBeGreaterThan(60);
     if (EXPOSED) expect(first.fromBrowser).toBeGreaterThan(30);
 
-    await page.getByLabel("pitch").check();
+    await page.getByRole("radio", { name: "pitch" }).check();
     await page.getByLabel("× k, turned for the other team").check();
     await page.getByRole("slider", { name: "Instant" }).fill("333");
     await expect(page.locator('figure[data-figure="frame"]')).toHaveAttribute("data-step", "turn-other");

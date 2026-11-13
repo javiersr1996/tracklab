@@ -22,7 +22,7 @@ const mono = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: "Track Lab",
+  title: "Pitch & Parquet",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <header className="site-header surface-neon">
           <div className="wrap site-header-row">
             <Link href="/" className="wordmark">
-              track<span>lab</span>
+              pitch<span>parquet</span>
               <span className="wordmark-caret" aria-hidden="true">
                 _
               </span>
@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <footer className="site-footer surface-neon">
           <div className="wrap site-footer-grid">
             <p className="wordmark">
-              track<span>lab</span>
+              pitch<span>parquet</span>
             </p>
             <div>
               <p className="site-footer-label">data</p>
