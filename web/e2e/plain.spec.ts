@@ -41,9 +41,10 @@ for (const path of PAGES) {
 }
 
 // Codes a visitor would not know. Where one stays, the page prints its meaning beside it: the runs
-// stage table (each code with its plain name), its status line and the home's runs card.
+// stage table (each code with its plain name) and its status line. The home's runs card names the
+// stage without its code since P24, so it is checked like the rest.
 const CODES = /\bP\d{1,2}\b|\bM\d[ab]?\b|\btask \d+|\bdecision \d|\bCP\d*\b/g;
-const PAIRED = ["tr[data-stage]", "[data-status]", '[data-finding="runs"] .finding-vs'];
+const PAIRED = ["tr[data-stage]", "[data-status]"];
 
 // The bulletin is docs/bulletin.md as the pipeline writes it, outside this app: not checked here.
 for (const path of ["/", ...PAGES.filter((p) => p !== "/engineering/bulletin")]) {

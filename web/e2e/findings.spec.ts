@@ -1,5 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import { CURRENT_SEASON, seasonLabel } from "../lib/euroleague/atlas";
+import { type Stage, STAGE_NAMES } from "../lib/runs/types";
 
 // P20, task 175: the home's findings. Each figure is compared with the published file it comes
 // from, and each card's claim is looked up on the page the card opens, so the strip neither
@@ -39,7 +40,9 @@ test("the four findings print their files' figures and open the pages that make 
   await expect(page.locator('[data-finding="bytes"] h3')).toHaveText(`One pipeline run, ${platform.layers.length} layers`);
 
   expect(runs.status).toBe("dead");
-  await expect(fig("runs", "dead_at")).toHaveText(runs.dead_at);
+  // The stage by its name, never its code (P24): the code is the attribute, the name the text.
+  await expect(fig("runs", "dead_at")).toHaveAttribute("data-stage", runs.dead_at);
+  await expect(fig("runs", "dead_at")).toHaveText(STAGE_NAMES[runs.dead_at as Stage]);
   await expect(fig("runs", "candidates")).toHaveText(String(runs.stages[runs.dead_at].figures.candidates));
   await expect(fig("runs", "held_out")).toHaveText(String(runs.never_opened.match_ids.length));
 
