@@ -321,13 +321,15 @@ test("the bulletin's sections are headings, its code is code and its source a li
 // footer measures 606.7 px on Windows (476.3 before), about 672 px by the same Ubuntu ratio
 // (527.5 / 476.3). The limit moves by the same token to 700 px: the P15 layout that measured 622 px
 // with the old text would measure about 750 px with the new one, and still fails here.
+// Measured on CI's Ubuntu after the rename (P26): 709.1 px on /, over the 672 the ratio promised.
+// The limit goes to 730 px, still under the 750 of that layout.
 test("the footer is short at 390 px on every layout and keeps its notices", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });
   for (const route of ["/", "/tracking/runs", "/sql", "/learn", "/engineering", "/euroleague"]) {
     await page.goto(route);
     const footer = page.locator("footer.site-footer");
     const box = await footer.boundingBox();
-    expect(box!.height, route).toBeLessThan(700);
+    expect(box!.height, route).toBeLessThan(730);
     const labels = footer.locator(".site-footer-label", { hasText: /^code$/ });
     await expect(labels, route).toBeVisible();
     await expect(footer).toContainText("Not affiliated with SkillCorner.");

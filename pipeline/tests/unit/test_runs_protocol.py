@@ -874,8 +874,10 @@ def test_the_split_lists_are_read_only_in_data_and_protocol() -> None:
         rel = path.relative_to(src).as_posix()
         text = path.read_text(encoding="utf-8")
         # learn/possession.py reads the held_out of the Analytics Cup fence (lib/learn/fence.json),
-        # another list than the runs split this guard protects.
-        if rel not in ("runs/data.py", "runs/protocol.py", "learn/possession.py"):
+        # another list than the runs split this guard protects; publish/occupancy.py calls that
+        # function to leave the fenced matches out.
+        fence = ("learn/possession.py", "publish/occupancy.py")
+        if rel not in ("runs/data.py", "runs/protocol.py", *fence):
             assert "held_out" not in text, rel
         if rel not in ("runs/data.py", "runs/protocol.py", "pose/data.py"):
             assert '["split"]' not in text, rel

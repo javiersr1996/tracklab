@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import importlib
 import os
 import re
 import sys
@@ -384,12 +385,13 @@ def _cmd_sql_course(args: argparse.Namespace) -> int:
 
 def _cmd_euroleague_fetch(args: argparse.Namespace) -> int:
     # The downloader is not part of the repository: the command runs only where the file is.
+    # Imported by name, so the type check reads the same with the file and without it.
     try:
-        from tracklab.euroleague.fetch import run_euroleague_fetch
+        fetch = importlib.import_module("tracklab.euroleague.fetch")
     except ModuleNotFoundError:
         print("euroleague fetch: the downloader is not part of this repository", file=sys.stderr)
         return 2
-    return run_euroleague_fetch(args.season, args.data_dir)
+    return int(fetch.run_euroleague_fetch(args.season, args.data_dir))
 
 
 def _cmd_euroleague_publish(args: argparse.Namespace) -> int:
@@ -412,7 +414,8 @@ def _cmd_build(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tracklab",
-        description="Pitch & Parquet data pipeline. --data-dir defaults to $TRACKLAB_DATA_ROOT or data.",
+        description="Pitch & Parquet data pipeline. "
+        "--data-dir defaults to $TRACKLAB_DATA_ROOT or data.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
