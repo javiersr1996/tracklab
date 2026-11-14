@@ -158,6 +158,17 @@ def test_what_is_not_swept(data: Path, web: Path) -> None:
     assert _sweep(data, web) == 0
 
 
+def test_in_the_compilers_cache_only_a_utc_fails(data: Path, web: Path) -> None:
+    # Its logs list file numbers, where three in a row match a shot by chance; a UTC does not.
+    _plant(web, ".next/cache/turbopack/v1/LOG", "| 00000007 -312 415 META DELETED\n")
+    assert _sweep(data, web) == 0
+    _plant(web, ".next/cache/turbopack/v1/LOG", f"| {SHOTS[0]['UTC']} META\n")
+    assert _sweep(data, web) == 1
+    _plant(web, ".next/cache/turbopack/v1/LOG", "")
+    _plant(web, ".next/server/LOG", "| 00000007 -312 415 META DELETED\n")
+    assert _sweep(data, web) == 1
+
+
 def test_a_binary_file_is_not_read_for_shots(data: Path, web: Path) -> None:
     (web / "public" / "a.wasm").write_bytes(b"\x00asm[-312,415,7]")
     assert _sweep(data, web) == 0

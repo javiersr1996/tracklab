@@ -12,6 +12,9 @@ data root and look for them in ``web/.next``, in ``web/public`` and in every ``*
   shapes a copy takes: three integers in a row, in any order (an array, a CSV line), and the
   integers of one ``{...}`` object, whatever its keys (x and y with that ``NUM_ANOT``).
 
+``web/.next/cache`` is the compiler's own store and is not served: its logs are lists of small
+integers, where three in a row match a shot by chance, so there only the ``UTC`` is looked for.
+
 One hit fails, and so does ``productionBrowserSourceMaps`` switched on in ``web/next.config.ts``.
 
 It reads the raw files and the built files only, never the code that writes the aggregates.
@@ -159,8 +162,12 @@ def run_euroleague_sweep(data_dir: Path, web: Path, seasons: Iterable[str] = SEA
         data = path.read_bytes()
         files += 1
         swept += len(data)
-        for needle in sorted(utc_hits(data, sig.utcs) | triple_hits(data, sig)):
-            found.append(f"{path.relative_to(web).as_posix()}: {needle}")
+        name = path.relative_to(web).as_posix()
+        hits = utc_hits(data, sig.utcs)
+        if not name.startswith(".next/cache/"):
+            hits |= triple_hits(data, sig)
+        for needle in sorted(hits):
+            found.append(f"{name}: {needle}")
     for line in found:
         print(f"  hit: {line}")
     built = (web / ".next").is_dir()

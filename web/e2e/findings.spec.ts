@@ -1,5 +1,4 @@
 import { expect, type Page, test } from "@playwright/test";
-import { CURRENT_SEASON, seasonLabel } from "../lib/euroleague/atlas";
 import { type Stage, STAGE_NAMES } from "../lib/runs/types";
 
 // P20, task 175: the home's findings. Each figure is compared with the published file it comes
@@ -8,7 +7,7 @@ import { type Stage, STAGE_NAMES } from "../lib/runs/types";
 
 const json = async <T,>(page: Page, path: string) => (await (await page.request.get(path)).json()) as T;
 
-test("the four findings print their files' figures and open the pages that make the claims", async ({ page }) => {
+test("the three findings print their files' figures and open the pages that make the claims", async ({ page }) => {
   const quality = await json<{ hook: { g_data: number; g_real: number } }>(page, "/data/quality.json");
   const platform = await json<{ title: string; subtitle: string; layers: unknown[] }>(page, "/data/platform.json");
   const runs = await json<{
@@ -17,10 +16,6 @@ test("the four findings print their files' figures and open the pages that make 
     stages: Record<string, { figures: { candidates?: number } }>;
     never_opened: { match_ids: number[] };
   }>(page, "/data/runs.json");
-  const league = await json<{ hex: { side_m: number }; seasons: { season: string; shots_total: number; games_played: number }[] }>(
-    page,
-    "/data/euroleague/league.json",
-  );
 
   await page.goto("/");
   const cards = page.locator("[data-finding]");
@@ -28,7 +23,6 @@ test("the four findings print their files' figures and open the pages that make 
     "gravity",
     "bytes",
     "runs",
-    "euroleague",
   ]);
   const fig = (card: string, name: string) => page.locator(`[data-finding="${card}"] [data-fig="${name}"]`);
 
@@ -46,19 +40,12 @@ test("the four findings print their files' figures and open the pages that make 
   await expect(fig("runs", "candidates")).toHaveText(String(runs.stages[runs.dead_at].figures.candidates));
   await expect(fig("runs", "held_out")).toHaveText(String(runs.never_opened.match_ids.length));
 
-  const season = league.seasons.find((s) => s.season !== CURRENT_SEASON)!;
-  await expect(fig("euroleague", "shots_total")).toHaveText(season.shots_total.toLocaleString("en-US"));
-  await expect(fig("euroleague", "games")).toHaveText(String(season.games_played));
-  await expect(fig("euroleague", "season")).toHaveText(seasonLabel(season.season));
-  await expect(fig("euroleague", "side_m")).toHaveText(String(league.hex.side_m));
-
   // Each claim is its page's own words (the runs page's line is its section card's, which the page
   // carries as its description).
   const claims: [string, string, string[]][] = [
     ["gravity", "/learn/gravity", ["The ball falls as if the Earth were lighter."]],
     ["bytes", "/engineering", [`One pipeline run, ${platform.layers.length} layers`]],
     ["runs", "/tracking/runs", ["The project that died, published dead.", "The run that moves nobody", "The negative is published under the same title."]],
-    ["euroleague", "/euroleague", ["Where EuroLeague shoots from", "how often each spot is tried, and how often it goes in compared with the rest of the league"]],
   ];
   for (const [card, href, words] of claims) {
     await expect(page.locator(`[data-finding="${card}"] h3 a`)).toHaveAttribute("href", href);

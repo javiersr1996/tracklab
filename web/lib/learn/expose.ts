@@ -18,4 +18,5 @@ export function expose(part: Learn): void {
 
 // A figure as the page prints it: rounded to `digits` decimals, and the same number in
 // `window.__learn`, so the text and the exposed value compare with `String(value)`.
-export const shown = (x: number, digits: number): number => Number(x.toFixed(digits));
+// `+ 0` turns the -0 of a small negative into 0, which is what the pipeline's files carry.
+export const shown = (x: number, digits: number): number => Number(x.toFixed(digits)) + 0;
