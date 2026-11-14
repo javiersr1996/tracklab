@@ -580,7 +580,7 @@ def build_parser() -> argparse.ArgumentParser:
     publish_sub = publish.add_subparsers(dest="publish_command", required=True)
 
     publish_possessions = publish_sub.add_parser(
-        "possessions", help="Pick 6 curated possessions per sport and write their JSON."
+        "possessions", help="Pick the curated possessions of each sport and write their JSON."
     )
     publish_possessions.add_argument(
         "--data-dir",

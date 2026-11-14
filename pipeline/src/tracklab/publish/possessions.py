@@ -1,16 +1,19 @@
-"""`tracklab publish possessions`: six curated possessions per sport, picked in
-code rather than by hand (task 17 of tasks/todo.md).
+"""`tracklab publish possessions`: the curated possessions of each sport, picked in
+code rather than by hand.
 
 * **Basketball**: a `chances` row that is `usable`, `qualityIndex = 5` and
   `ptsScored > 0` -- SkillCorner's own top-quality, scored look -- on the
   possession it belongs to; 8-20 s long; the 10 players on the floor with
   `is_detected` in 90% or more of the possession's frames; the ball present
   in 90% or more (see the deviation below); from at least 4 distinct matches.
+  Every possession that passes is published.
 * **Football**: a derived team possession (task 12's `chain` rule, already in
   silver `events`) that contains a `phases_of_play` phase with
   `team_possession_lead_to_shot`; 10-25 s long; the 22 players and the ball
   present in 90% or more of the possession's frames; from at least 4 distinct
-  matches.
+  matches. The first two of each match are published, earliest first. A match
+  inside the fence of `web/lib/learn/fence.json` publishes nothing new: only the
+  three possessions that went out before the fence existed.
 
 Coverage is measured against silver `frames`, never against an event's own
 coordinates: task 9 found that `shots.location` does not say where the
@@ -36,9 +39,9 @@ keeps `is_detected` for players (basketball) or presence for players
 the basketball ball's number measures anything at all; it is not a lowered
 bar; the same 90% still applies, to a metric that is not always-zero.
 
-If a rule cannot fill 6 possessions from at least 4 matches, this module does
-not relax it: `run_publish_possessions` prints how many candidates survive
-each stage and returns 1.
+If a rule cannot reach 4 matches, or one of those three possessions stops
+passing it, this module does not relax it: `run_publish_possessions` prints how
+many candidates survive each stage and returns 1.
 """
 
 from __future__ import annotations
@@ -51,11 +54,18 @@ from typing import Any
 
 import duckdb
 
+from tracklab.learn.possession import held_out
 from tracklab.silver.stats import table_glob
 
 SCHEMA_VERSION = 1
-N_POSSESSIONS = 6
 MIN_MATCHES = 4
+FOOTBALL_PER_MATCH = 2
+# Football possessions of fenced matches, published before the fence: they stay, alone.
+BEFORE_THE_FENCE = (
+    "fb:possession:1899585:123",
+    "fb:possession:1927964:41",
+    "fb:possession:1953632:69",
+)
 COVERAGE_PCT = 90.0
 MAX_BYTES = 300_000
 ROUND_NDIGITS = 2
@@ -320,31 +330,30 @@ def football_candidates(con: duckdb.DuckDBPyConnection) -> tuple[list[Candidate]
     return candidates, funnel
 
 
-def select_six(candidates: list[Candidate]) -> list[Candidate]:
-    """Round-robins across matches, earliest possession first within a match:
-    reproducible, and it spreads the pick across matches instead of clustering
-    in whichever one happens to have the most qualifying possessions. `frames`
-    orders by (match, frame) and nothing else (a documented invariant), so the
-    tie-break here is this module's own, not inherited from a read order."""
-    by_match: dict[str, list[Candidate]] = {}
-    for c in sorted(candidates, key=lambda c: (c.match_id, c.frame_start, c.possession_id)):
-        by_match.setdefault(c.match_id, []).append(c)
-    matches = sorted(by_match)
+def _in_order(candidates: list[Candidate]) -> list[Candidate]:
+    """By match, earliest possession first within a match. `frames` orders by (match, frame) and
+    nothing else (a documented invariant), so the order here is this module's own, not
+    inherited from a read order."""
+    return sorted(candidates, key=lambda c: (c.match_id, c.frame_start, c.possession_id))
 
+
+def select_basketball(candidates: list[Candidate]) -> list[Candidate]:
+    """Every possession that passed the filters."""
+    return _in_order(candidates)
+
+
+def select_football(candidates: list[Candidate], fenced: set[str]) -> list[Candidate]:
+    """The first `FOOTBALL_PER_MATCH` of each match outside the fence; of a match whose native id
+    is in `fenced`, only what `BEFORE_THE_FENCE` names."""
     chosen: list[Candidate] = []
-    round_idx = 0
-    while len(chosen) < N_POSSESSIONS:
-        added = False
-        for match_id in matches:
-            bucket = by_match[match_id]
-            if round_idx < len(bucket):
-                chosen.append(bucket[round_idx])
-                added = True
-                if len(chosen) == N_POSSESSIONS:
-                    break
-        if not added:
-            break
-        round_idx += 1
+    taken: dict[str, int] = {}
+    for c in _in_order(candidates):
+        if str(c.native_match_id) in fenced:
+            if c.possession_id in BEFORE_THE_FENCE:
+                chosen.append(c)
+        elif taken.get(c.match_id, 0) < FOOTBALL_PER_MATCH:
+            taken[c.match_id] = taken.get(c.match_id, 0) + 1
+            chosen.append(c)
     return chosen
 
 
@@ -503,9 +512,10 @@ def build_payload(con: duckdb.DuckDBPyConnection, candidate: Candidate) -> dict[
 
 
 def _select_all(con: duckdb.DuckDBPyConnection) -> dict[str, list[Candidate]] | None:
-    """The six possessions of each sport, or None (after saying why) if a sport falls short."""
+    """The possessions of each sport, or None (after saying why) if a sport falls short."""
     ok = True
     chosen: dict[str, list[Candidate]] = {}
+    fenced = held_out()
     for sport, candidates, funnel in (
         ("basketball", *basketball_candidates(con)),
         ("football", *football_candidates(con)),
@@ -515,13 +525,20 @@ def _select_all(con: duckdb.DuckDBPyConnection) -> dict[str, list[Candidate]] | 
             f"{funnel.duration} in the duration window, {funnel.coverage} meet "
             f"{COVERAGE_PCT}% coverage, across {funnel.matches} matches"
         )
-        picked = select_six(candidates)
-        if len(picked) < N_POSSESSIONS or len({c.match_id for c in picked}) < MIN_MATCHES:
+        if sport == "basketball":
+            picked = select_basketball(candidates)
+        else:
+            picked = select_football(candidates, fenced)
+            gone = sorted(set(BEFORE_THE_FENCE) - {c.possession_id for c in picked})
+            if gone:
+                print(f"FAIL publish possessions football: {gone} no longer pass the rule")
+                ok = False
+        n_matches = len({c.match_id for c in picked})
+        print(f"publish possessions {sport}: {len(picked)} picked from {n_matches} matches")
+        if n_matches < MIN_MATCHES:
             print(
-                f"FAIL publish possessions {sport}: only {len(picked)} of {N_POSSESSIONS} "
-                f"possessions available across {len({c.match_id for c in picked})} of "
-                f"{MIN_MATCHES} required matches; not relaxing the rule, fix the filter "
-                "or the plan"
+                f"FAIL publish possessions {sport}: {n_matches} of {MIN_MATCHES} required "
+                "matches; not relaxing the rule, fix the filter or the plan"
             )
             ok = False
         chosen[sport] = picked

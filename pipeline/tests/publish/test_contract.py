@@ -1,8 +1,8 @@
-"""The 12 published possessions against `web/lib/replay/schema.json`.
+"""The published possessions against `web/lib/replay/schema.json`.
 
 Skipped when the real bundle has not been built and published (CI has no real
 data, same as `tests/contracts`): this is the pytest half of task 17's
-acceptance, `uv run pytest tests/publish -q` printing `12/12 valid`. The
+acceptance, `uv run pytest tests/publish -q` printing how many are valid. The
 schema file itself is the one `web/lib/replay/schema.ts` re-exports, so this
 is also the only place a mismatch between the two would show.
 """
@@ -16,13 +16,16 @@ from typing import Any
 import pytest
 from jsonschema import Draft202012Validator
 
+from tracklab.publish.possessions import BEFORE_THE_FENCE, FOOTBALL_PER_MATCH
+
 PIPELINE = Path(__file__).resolve().parents[2]
 REPO_ROOT = PIPELINE.parent
 SCHEMA_PATH = REPO_ROOT / "web" / "lib" / "replay" / "schema.json"
 DATA_DIR = REPO_ROOT / "web" / "public" / "data"
 POSSESSIONS_DIR = DATA_DIR / "possessions"
 MAX_BYTES = 300_000
-N_EXPECTED = 12
+N_EXPECTED = 32
+FENCE = json.loads((REPO_ROOT / "web" / "lib" / "learn" / "fence.json").read_text("utf-8"))
 
 pytestmark = pytest.mark.skipif(
     not POSSESSIONS_DIR.is_dir() or not any(POSSESSIONS_DIR.glob("*.json")),
@@ -89,8 +92,9 @@ def test_index_lists_exactly_the_published_files() -> None:
 
 
 def test_at_least_four_matches_per_sport() -> None:
-    """The plan's own floor: 6 possessions per sport from at least 4 distinct
-    matches, so the bundle does not lean on one or two matches."""
+    """The plan's own floor: at least 4 distinct matches per sport, so the bundle does not
+    lean on one or two matches. Basketball publishes every possession that passes its rule,
+    football two per match outside the fence and the three that predate it."""
     index = json.loads((DATA_DIR / "index.json").read_text(encoding="utf-8"))
     by_sport: dict[str, set[str]] = {}
     counts: dict[str, int] = {}
@@ -98,8 +102,23 @@ def test_at_least_four_matches_per_sport() -> None:
         by_sport.setdefault(entry["sport"], set()).add(entry["match_id"])
         counts[entry["sport"]] = counts.get(entry["sport"], 0) + 1
     print({sport: sorted(matches) for sport, matches in by_sport.items()})
-    assert counts == {"basketball": 6, "football": 6}
+    assert counts == {"basketball": 11, "football": 21}
     assert all(len(matches) >= 4 for matches in by_sport.values())
+
+
+def test_a_fenced_match_publishes_only_what_predates_the_fence() -> None:
+    index = json.loads((DATA_DIR / "index.json").read_text(encoding="utf-8"))
+    fenced = sorted(
+        entry["possession_id"]
+        for entry in index["possessions"]
+        if entry["match_id"].removeprefix("fb:") in FENCE["held_out"]
+    )
+    assert fenced == sorted(BEFORE_THE_FENCE)
+    per_match: dict[str, int] = {}
+    for entry in index["possessions"]:
+        if entry["sport"] == "football" and entry["possession_id"] not in fenced:
+            per_match[entry["match_id"]] = per_match.get(entry["match_id"], 0) + 1
+    assert set(per_match.values()) == {FOOTBALL_PER_MATCH}
 
 
 def test_frames_are_consecutive_at_the_native_rate() -> None:

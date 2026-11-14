@@ -17,13 +17,15 @@ import duckdb
 import pytest
 
 from tracklab.publish.possessions import (
+    BEFORE_THE_FENCE,
     COVERAGE_PCT,
     Candidate,
     basketball_candidates,
     football_candidates,
     register_basketball_chances_view,
     register_candidate_views,
-    select_six,
+    select_basketball,
+    select_football,
 )
 
 
@@ -228,61 +230,49 @@ class TestFootballCoverage:
         assert candidates == []
 
 
-def test_select_six_round_robins_across_matches_deterministically() -> None:
-    """3 possessions from match A, 1 from B, 1 from C, 1 from D: picking the
-    earliest-per-match first spreads the 6 across all 4 rather than taking
-    A's 3 and starving the rest, and repeating the call changes nothing."""
+def _candidate(sport: str, match_id: str, frame_start: int, possession_id: str = "") -> Candidate:
+    return Candidate(
+        possession_id=possession_id or f"{match_id}:{frame_start}",
+        sport=sport,
+        match_id=match_id,
+        native_match_id=int(match_id.split(":")[1]),
+        period=1,
+        frame_start=frame_start,
+        frame_end=frame_start + 100,
+        team_id="x:1",
+        duration_s=10.0,
+        n_players=10,
+        min_player_coverage_pct=100.0,
+        ball_coverage_pct=100.0,
+    )
 
-    def make(match_id: str, frame_start: int) -> Candidate:
-        return Candidate(
-            possession_id=f"{match_id}:{frame_start}",
-            sport="basketball",
-            match_id=match_id,
-            native_match_id=1,
-            period=1,
-            frame_start=frame_start,
-            frame_end=frame_start + 100,
-            team_id="bb:1",
-            duration_s=10.0,
-            n_players=10,
-            min_player_coverage_pct=100.0,
-            ball_coverage_pct=100.0,
-        )
 
+def test_basketball_publishes_every_candidate_by_match_then_frame() -> None:
     candidates = [
-        make("bb:a", 300),
-        make("bb:a", 100),
-        make("bb:a", 200),
-        make("bb:b", 50),
-        make("bb:c", 10),
-        make("bb:d", 5),
+        _candidate("basketball", m, f) for m, f in (("bb:2", 5), ("bb:1", 300), ("bb:1", 100))
     ]
-
-    picked = select_six(candidates)
-
-    assert len(picked) == 6
-    assert {c.match_id for c in picked} == {"bb:a", "bb:b", "bb:c", "bb:d"}
-    # The single possession of b, c and d always makes it in before a's 2nd or 3rd.
-    assert sum(1 for c in picked if c.match_id == "bb:a") == 3
-    assert select_six(candidates) == picked  # deterministic
+    picked = select_basketball(candidates)
+    assert [c.possession_id for c in picked] == ["bb:1:100", "bb:1:300", "bb:2:5"]
+    assert select_basketball(list(reversed(candidates))) == picked  # deterministic
 
 
-def test_select_six_reports_short_when_fewer_than_six_exist() -> None:
-    def make(match_id: str) -> Candidate:
-        return Candidate(
-            possession_id=match_id,
-            sport="basketball",
-            match_id=match_id,
-            native_match_id=1,
-            period=1,
-            frame_start=0,
-            frame_end=100,
-            team_id="bb:1",
-            duration_s=10.0,
-            n_players=10,
-            min_player_coverage_pct=100.0,
-            ball_coverage_pct=100.0,
-        )
-
-    picked = select_six([make("bb:a"), make("bb:b")])
-    assert len(picked) == 2
+def test_football_takes_the_first_two_of_an_open_match_and_nothing_new_from_a_fenced_one() -> None:
+    old = BEFORE_THE_FENCE[0]  # fb:possession:<match>:<n>
+    fenced_match = "fb:" + old.split(":")[2]
+    candidates = [
+        _candidate("football", "fb:1", 300),
+        _candidate("football", "fb:1", 100),
+        _candidate("football", "fb:1", 200),
+        _candidate("football", "fb:2", 50),
+        _candidate("football", fenced_match, 10),  # earlier than the published one, and fenced
+        _candidate("football", fenced_match, 20, old),
+        _candidate("football", fenced_match, 30),
+    ]
+    fenced = {fenced_match.removeprefix("fb:")}
+    picked = select_football(candidates, fenced)
+    assert [c.possession_id for c in picked] == ["fb:1:100", "fb:1:200", old, "fb:2:50"]
+    assert select_football(list(reversed(candidates)), fenced) == picked  # deterministic
+    # Outside the fence the same match is one more open match: its first two, by frame.
+    assert [
+        c.frame_start for c in select_football(candidates, set()) if c.match_id == fenced_match
+    ] == [10, 20]
