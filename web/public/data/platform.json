@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "title": "3.6 GB in, 7.6 MB out",
-  "subtitle": "5.5 MB to watch, 2.1 MB to query",
+  "title": "3.6 GB in, 9.6 MB out",
+  "subtitle": "7.6 MB to watch, 2.1 MB to query",
   "run": {
     "git_sha": "5caf04b6b9f65bf9209ca7084f747ed506600a2e",
     "started_utc": "2026-11-02T19:00:29+00:00",
@@ -67,13 +67,13 @@
     },
     {
       "layer": "publish",
-      "files": 43,
+      "files": 63,
       "rows": null,
-      "bytes": 7599972,
+      "bytes": 9621038,
       "seconds": 14.9,
       "seconds_sum": 23.9,
-      "watch_files": 33,
-      "watch_bytes": 5548445,
+      "watch_files": 53,
+      "watch_bytes": 7569511,
       "query_files": 10,
       "query_bytes": 2051527,
       "note": "split by use: to watch, the possessions and the JSON the other pages are built from; to query, what only /warehouse uses, the Parquet and the warehouse*.json that describe them; as `tracklab build` measured them, without lineage.json and platform.json (counting platform.json would make the title depend on its own previous value, decision 1); the query engine is not data and is not counted, nor is euroleague/, whose source is not in the pipeline's raw layer"
@@ -1051,8 +1051,8 @@
       "bronze_tracking_rows": 124796,
       "silver_frames_rows": 1014068,
       "silver_events_rows": 6975,
-      "published_possessions": 1,
-      "published_bytes": 91458
+      "published_possessions": 2,
+      "published_bytes": 170240
     },
     {
       "sport": "basketball",
@@ -1062,8 +1062,8 @@
       "bronze_tracking_rows": 147892,
       "silver_frames_rows": 832205,
       "silver_events_rows": 7174,
-      "published_possessions": 1,
-      "published_bytes": 99127
+      "published_possessions": 3,
+      "published_bytes": 336157
     },
     {
       "sport": "basketball",
@@ -1128,8 +1128,8 @@
       "bronze_tracking_rows": 154021,
       "silver_frames_rows": 851708,
       "silver_events_rows": 7145,
-      "published_possessions": 1,
-      "published_bytes": 89788
+      "published_possessions": 3,
+      "published_bytes": 355629
     },
     {
       "sport": "basketball",
@@ -1161,8 +1161,8 @@
       "bronze_tracking_rows": 60301,
       "silver_frames_rows": 1017612,
       "silver_events_rows": 5531,
-      "published_possessions": 1,
-      "published_bytes": 87914
+      "published_possessions": 2,
+      "published_bytes": 180990
     },
     {
       "sport": "football",
@@ -1172,8 +1172,8 @@
       "bronze_tracking_rows": 59061,
       "silver_frames_rows": 999534,
       "silver_events_rows": 5751,
-      "published_possessions": 1,
-      "published_bytes": 73996
+      "published_possessions": 2,
+      "published_bytes": 165032
     },
     {
       "sport": "football",
@@ -1194,8 +1194,8 @@
       "bronze_tracking_rows": 61301,
       "silver_frames_rows": 1102666,
       "silver_events_rows": 5909,
-      "published_possessions": 1,
-      "published_bytes": 144419
+      "published_possessions": 2,
+      "published_bytes": 275688
     },
     {
       "sport": "football",
@@ -1227,8 +1227,8 @@
       "bronze_tracking_rows": 58541,
       "silver_frames_rows": 982997,
       "silver_events_rows": 5320,
-      "published_possessions": 0,
-      "published_bytes": 0
+      "published_possessions": 2,
+      "published_bytes": 188049
     },
     {
       "sport": "football",
@@ -1249,8 +1249,8 @@
       "bronze_tracking_rows": 57621,
       "silver_frames_rows": 1001213,
       "silver_events_rows": 5819,
-      "published_possessions": 0,
-      "published_bytes": 0
+      "published_possessions": 2,
+      "published_bytes": 166198
     },
     {
       "sport": "football",
@@ -1260,8 +1260,8 @@
       "bronze_tracking_rows": 60280,
       "silver_frames_rows": 990518,
       "silver_events_rows": 4507,
-      "published_possessions": 0,
-      "published_bytes": 0
+      "published_possessions": 2,
+      "published_bytes": 156758
     },
     {
       "sport": "football",
@@ -1315,8 +1315,8 @@
       "bronze_tracking_rows": 58991,
       "silver_frames_rows": 1046983,
       "silver_events_rows": 5228,
-      "published_possessions": 0,
-      "published_bytes": 0
+      "published_possessions": 2,
+      "published_bytes": 176996
     },
     {
       "sport": "football",
@@ -1326,8 +1326,8 @@
       "bronze_tracking_rows": 71851,
       "silver_frames_rows": 897345,
       "silver_events_rows": 4673,
-      "published_possessions": 0,
-      "published_bytes": 0
+      "published_possessions": 2,
+      "published_bytes": 205928
     },
     {
       "sport": "football",
@@ -1348,8 +1348,8 @@
       "bronze_tracking_rows": 72101,
       "silver_frames_rows": 1116466,
       "silver_events_rows": 5329,
-      "published_possessions": 0,
-      "published_bytes": 0
+      "published_possessions": 2,
+      "published_bytes": 223315
     },
     {
       "sport": "football",
@@ -1537,7 +1537,7 @@
     }
   },
   "freshness": {
-    "published_utc": "2026-11-12T22:49:19+00:00",
+    "published_utc": "2026-11-14T14:00:37+00:00",
     "partitions": [
       {
         "layer": "silver",

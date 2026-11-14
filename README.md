@@ -43,7 +43,7 @@ SkillCorner repos --ingest--> raw ------bronze------> Parquet ---dbt---> silver 
 
 The same query reads both sports: `SELECT * FROM frames WHERE sport = ?` returns 9,126,744 rows
 of basketball and 20,213,849 of football (`web/public/data/stats.json`). The provider bundles
-weigh 3,583,918,346 bytes as pinned (`bytes.raw.total`); the site ships 1,110,509 bytes of
+weigh 3,583,918,346 bytes as pinned (`bytes.raw.total`); the site ships 3,124,787 bytes of
 possessions (`bytes.published.total`).
 
 ## Layout
@@ -104,8 +104,8 @@ describe them (`lineage.json` and `platform.json` excluded, as they describe the
 than its data).
 
 ```
-title: 3.6 GB in, 7.6 MB out
-subtitle: 5.5 MB to watch, 2.1 MB to query
+title: 3.6 GB in, 9.6 MB out
+subtitle: 7.6 MB to watch, 2.1 MB to query
 ```
 
 `uv run dagster asset list -m tracklab.dagster_defs` lists `88` assets, the graph

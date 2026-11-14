@@ -113,9 +113,11 @@ describe("the arithmetic", () => {
 });
 
 describe("the published slice", () => {
-  it("reads every published possession but those of a held-out match", () => {
+  it("reads nine published possessions, one per match, none of a held-out match", () => {
     const allowed = INDEX.possessions.filter((p) => !heldOut(p.match_id)).map((p) => stemOf(p.file));
-    expect(Object.keys(PUBLISHED).sort()).toEqual(allowed.sort());
+    for (const stem of Object.keys(PUBLISHED)) expect(allowed).toContain(stem);
+    expect(Object.keys(PUBLISHED)).toHaveLength(9);
+    expect(new Set(Object.values(PUBLISHED).map((p) => p.match.match_id)).size).toBe(9);
     expect(Object.values(PUBLISHED).filter((p) => heldOut(p.match.match_id))).toEqual([]);
     expect(HOME_STEMS).toEqual({
       basketball: "bb_possessions_possession-114086-1-36",

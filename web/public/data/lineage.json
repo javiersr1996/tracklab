@@ -603,7 +603,7 @@
       "key": "publish_possessions",
       "group": "publish",
       "kind": "asset",
-      "description": "6 curated possessions per sport, written to web/public/data/possessions/.",
+      "description": "The curated possessions of each sport, written to web/public/data/possessions/.",
       "step": "publish_possessions",
       "sport": null,
       "schema": "none"

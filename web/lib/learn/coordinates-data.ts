@@ -33,8 +33,8 @@ export const PROVIDER: Record<Sport, { unit: "ft" | "m"; unit_to_m: number }> = 
 const HELD_OUT = new Set(fence.held_out);
 export const isHeldOut = (match_id: string) => HELD_OUT.has(match_id.replace(/^[a-z]+:/, ""));
 
-// The published possessions this lesson may read: every one of `index.json` but those of a held-out
-// football match (tests/learn-coordinates.test.ts checks the two lists agree).
+// The published possessions this lesson reads: the nine it was written on, one per match and none
+// of a held-out football match (tests/learn-coordinates.test.ts checks both). The replay has more.
 export const PUBLISHED: Readonly<Record<string, Possession>> = Object.fromEntries(
   [bb114086, bb114099, bb114169, bb114243, bb184439, bb191313, fb1874553, fb1886347, fb1925299].map((p) => {
     const possession = p as unknown as Possession;
