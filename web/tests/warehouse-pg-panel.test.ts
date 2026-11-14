@@ -44,8 +44,10 @@ describe("the Postgres panel", () => {
 });
 
 describe("the warehouse page", () => {
-  it("says how many queries the route runs, as many as warehouse_pg.json holds", () => {
-    const html = renderToStaticMarkup(createElement(WarehousePage));
-    expect(html).toContain(`runs only those ${SUMMARY.examples.length} queries`);
+  // The sentence lives in the panel, which a deployment without a database never draws, so the
+  // page above it promises no Postgres.
+  it("leaves it to the panel to say how many queries the route runs, as many as warehouse_pg.json holds", () => {
+    expect(panel({ id: EXAMPLE.id, backend: "running" })).toContain(`runs only those ${SUMMARY.examples.length} queries`);
+    expect(renderToStaticMarkup(createElement(WarehousePage))).not.toContain("Postgres");
   });
 });

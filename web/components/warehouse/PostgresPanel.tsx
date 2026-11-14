@@ -43,6 +43,11 @@ export function PostgresPanel({
   return (
     <section data-pg-panel data-pg-source={live ? "live" : "snapshot"}>
       <h3>Postgres</h3>
+      <p>
+        Each example also asks a Postgres holding the same data in a dimensional model, through this site&apos;s own
+        route, which runs only those {summary.examples.length} queries: if that Postgres answers in time its rows are
+        shown live, and if not, the snapshot taken when it was loaded.
+      </p>
       {pg.backend === "running" ? <p>Asking Postgres, for up to {CLIENT_LIMIT_MS / 1000} seconds.</p> : null}
       {pg.backend === "live" ? (
         <p>
