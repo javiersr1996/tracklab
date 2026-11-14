@@ -15,6 +15,8 @@ import { SQL_LESSONS } from "../../lib/sql/course";
 export const metadata = sectionMetadata("/warehouse");
 
 const fixed = (value: number) => value.toFixed(1);
+// What the route reads: without it the page says nothing of a Postgres it cannot ask.
+const HAS_POSTGRES = Boolean(process.env.DATABASE_URL);
 
 // The warehouse's other pages (P23), as the /tracking hub lists its own: the cards under the console.
 const PAGES = SECTIONS.filter((s) => s.href.startsWith("/warehouse/"));
@@ -35,9 +37,15 @@ export default function WarehousePage() {
           SQL over the season aggregates of both bundles, run by DuckDB in this browser on Parquet
           files that are read by HTTP range. Nothing of the engine is downloaded until you run a
           query, and the panel under the editor counts the engine&apos;s bytes and the data&apos;s
-          separately. Each example also asks a Postgres holding the same data in a dimensional model,
-          through this site&apos;s own route, which runs only those {exampleIds().length} queries: if that Postgres
-          answers in time its rows are shown live, and if not, the snapshot taken when it was loaded.
+          separately.
+          {HAS_POSTGRES ? (
+            <>
+              {" "}
+              Each example also asks a Postgres holding the same data in a dimensional model, through this
+              site&apos;s own route, which runs only those {exampleIds().length} queries: if that Postgres answers in
+              time its rows are shown live, and if not, the snapshot taken when it was loaded.
+            </>
+          ) : null}
         </p>
         <p>
           <Link href="/sql">Learn SQL on these tables</Link>: <span data-sql-count>{SQL_LESSONS.length}</span> lessons with

@@ -2,7 +2,8 @@ import { expect, type Page, test } from "@playwright/test";
 
 // Task 45: the Postgres half of /warehouse, driven by `figure.warehouse[data-backend]`
 // (`idle`, `running`, then `live`, `snapshot` or `absent`), never by a screenshot or a sleep.
-// (a) a deployment without DATABASE_URL: `absent`, every example `done` from Parquet.
+// (a) a deployment without DATABASE_URL: `absent`, every example `done` from Parquet, and the
+//     page neither draws a Postgres panel nor mentions one.
 // (b) the page's own route blocked, or never answering, or answering badly: `snapshot`, every
 //     example still `done`, no error thrown on the page.
 // (c) a live backend: `live`, and the rows equal the Parquet ones. It needs a server started
@@ -79,7 +80,7 @@ test.describe("the route takes an example id and nothing else", () => {
 test.describe("(a) without DATABASE_URL", () => {
   test.skip(LIVE, "this server has a backend");
 
-  test("every example is done from Parquet, the Postgres panel says absent and shows the snapshot", async ({ page }) => {
+  test("every example is done from Parquet and no Postgres panel is drawn, nor promised above", async ({ page }) => {
     test.setTimeout(240_000);
     const { errors, blocked } = watch(page);
     const snap = await snapshot(page);
@@ -90,10 +91,9 @@ test.describe("(a) without DATABASE_URL", () => {
       await ask(page, example.id);
       await done(page);
       await expect(figure(page)).toHaveAttribute("data-backend", "absent");
-      await expect(page.locator("[data-pg-why]")).toContainText("No Postgres is configured");
-      expect(await cells(page.locator("[data-pg-result]"))).toEqual(example.rows.map((r) => r.map((c) => (c === null ? "" : String(c)))));
-      await expect(page.locator("[data-pg-compare] [data-side=postgres][data-figure=buffers]")).toBeVisible();
+      await expect(page.locator("[data-pg-panel]")).toHaveCount(0);
     }
+    await expect(page.locator("main")).not.toContainText("Postgres");
     expect(errors).toEqual([]);
     expect(blocked).toEqual([]);
   });

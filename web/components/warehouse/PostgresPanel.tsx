@@ -6,7 +6,7 @@ import type { PgCell, PgSnapshotExample, PgSnapshotSummary } from "../../lib/war
 // The Postgres half of /warehouse (task 45), beside the Parquet panel of the same example.
 // `backend` is what `figure.warehouse[data-backend]` says: `running` while the route is asked,
 // then `live` (Postgres answered the route), `snapshot` (it did not, in time) or `absent` (this
-// deployment has no database configured). The buffers, the indexes and the execution time of the
+// deployment has no database configured: the console does not draw this panel). The buffers, the indexes and the execution time of the
 // plan are always the snapshot's, measured when the data was loaded; only the rows and the
 // milliseconds of the route are live.
 
@@ -48,11 +48,6 @@ export function PostgresPanel({
         <p>
           Live: Postgres answered this page&apos;s own route in {pg.ms.toFixed(1)} ms (the query alone, as the
           route measured it; the connection is not in it).
-        </p>
-      ) : null}
-      {pg.backend === "absent" ? (
-        <p data-pg-why>
-          No Postgres is configured on this deployment, so the table below is the snapshot. {snapshotLine}
         </p>
       ) : null}
       {pg.backend === "snapshot" ? (

@@ -30,6 +30,7 @@ export function Console({ pg }: { pg: PgSnapshotSummary }) {
   const [sql, setSql] = useState(EXAMPLES.find((e) => e.id === "fact")!.sql);
   const [example, setExample] = useState("");
   const [asked, setAsked] = useState<PgState | null>(null);
+  const [hasBackend, setHasBackend] = useState(false);
   const asking = useRef<AbortController | null>(null);
   // The worker lives as long as the page that started it, and so does a question to Postgres.
   useEffect(
@@ -47,7 +48,10 @@ export function Console({ pg }: { pg: PgSnapshotSummary }) {
     asking.current = controller;
     setAsked({ id, backend: "running" });
     askPostgres(id, controller.signal).then(
-      (answer) => setAsked({ id, ...answer }),
+      (answer) => {
+        setAsked({ id, ...answer });
+        if (answer.backend !== "absent") setHasBackend(true);
+      },
       () => {},
     );
   }
@@ -56,6 +60,9 @@ export function Console({ pg }: { pg: PgSnapshotSummary }) {
   const current = EXAMPLES.find((e) => e.id === example);
   const forExample = current && asked?.id === current.id ? asked : null;
   const snapshotOf = pg.examples.find((e) => e.id === current?.id);
+  // A deployment without a database shows no Postgres panel, and none while the first question is
+  // out: until an answer says there is a backend, there is nothing to wait for in sight.
+  const showPanel = forExample !== null && forExample.backend !== "absent" && (forExample.backend !== "running" || hasBackend);
   const noRead = r !== null && r.requests === 0;
   const listing = r !== null && r.rowCount === 0;
   return (
@@ -258,7 +265,7 @@ export function Console({ pg }: { pg: PgSnapshotSummary }) {
           )}
         </>
       )}
-      {forExample && snapshotOf ? (
+      {forExample && snapshotOf && showPanel ? (
         <PostgresPanel
           pg={forExample}
           summary={pg}
