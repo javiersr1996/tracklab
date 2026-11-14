@@ -1,7 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CURRENT_SEASON, seasonLabel } from "../../lib/euroleague/atlas";
-import { LEAGUE } from "../../lib/euroleague/data";
 import { GRAVITY_HOOK } from "../../lib/learn/gravity-data";
 import { PLATFORM } from "../../lib/platform";
 import { readRuns } from "../../lib/runs/data";
@@ -9,7 +7,7 @@ import { STAGE_NAMES } from "../../lib/runs/types";
 
 // What the site found (P20, task 175): one claim per card, its figure large, in the words of the
 // page the card opens, never stronger. Every figure is read here at build time through the loaders
-// those pages use (quality.json's hook, platform.json, runs.json, league.json); none is typed.
+// those pages use (quality.json's hook, platform.json, runs.json); none is typed.
 // `data-finding` names the card for the e2e, which compare each figure with its file.
 
 interface Finding {
@@ -28,7 +26,6 @@ function findings(): Finding[] {
   const died = runs.status === "dead" ? runs.dead_at : null;
   const candidates = died ? runs.stages[died].figures.candidates : undefined;
   if (!died || typeof candidates !== "number") throw new Error("runs.json: no stage with its candidates to quote");
-  const season = LEAGUE.seasons.find((s) => s.season !== CURRENT_SEASON)!;
 
   return [
     {
@@ -82,25 +79,6 @@ function findings(): Finding[] {
         <>
           The run that moves nobody: the negative is published under the same title. The held-out half (
           <span data-fig="held_out">{runs.never_opened.match_ids.length}</span> matches) was never opened.
-        </>
-      ),
-    },
-    {
-      key: "euroleague",
-      href: "/euroleague",
-      value: <span data-fig="shots_total">{season.shots_total.toLocaleString("en-US")}</span>,
-      vs: (
-        <>
-          field goals, <span data-fig="season">{seasonLabel(season.season)}</span>,{" "}
-          <span data-fig="games">{season.games_played}</span> games
-        </>
-      ),
-      title: "Where EuroLeague shoots from",
-      about: (
-        <>
-          Binned into hexagons with sides of <span data-fig="side_m">{LEAGUE.hex.side_m}</span> m on a FIBA half
-          court: how often each spot is tried, and how often it goes in compared with the rest of the league.
-          Aggregates only, never a shot.
         </>
       ),
     },
