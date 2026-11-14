@@ -38,7 +38,7 @@ _SILVER_DEPS = (
     name="publish_possessions",
     group_name="publish",
     deps=[*_SILVER_DEPS, "bronze_basketball_events_chances"],
-    description="6 curated possessions per sport, written to web/public/data/possessions/.",
+    description="The curated possessions of each sport, written to web/public/data/possessions/.",
 )
 def publish_possessions(context: AssetExecutionContext) -> None:
     code = run_publish_possessions(data_root(), WEB_DATA_DIR)

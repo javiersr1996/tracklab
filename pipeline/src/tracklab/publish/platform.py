@@ -6,7 +6,7 @@ the same JSON task 32 writes, rows from Parquet footers and bytes from
 `stat` -- except the published bytes (`disk.publish`), which are measured live on
 `web/public/data` by `build.measure_publish` on every run and every `--check`, because a
 record taken before a later commit added JSON there would otherwise go stale unnoticed
--- plus `web/public/data/index.json`, the six curated possessions'
+-- plus `web/public/data/index.json`, the curated possessions'
 own index (task 17), for `matches[].published_*`.
 
 Two decisions, not forced.
